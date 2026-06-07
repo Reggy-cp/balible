@@ -1,0 +1,154 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  image     String?
+  role      Role     @default(TOURIST)
+  createdAt DateTime @default(now())
+
+  bookings  Booking[]
+  reviews   Review[]
+  wishlist  WishlistItem[]
+  operator  Operator?
+}
+
+model Operator {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id])
+  businessName String
+  description  String
+  avatar       String?
+  verified     Boolean  @default(false)
+  rating       Float    @default(0)
+  totalReviews Int      @default(0)
+
+  experiences Experience[]
+}
+
+model Experience {
+  id             String     @id @default(cuid())
+  slug           String     @unique
+  operatorId     String
+  operator       Operator   @relation(fields: [operatorId], references: [id])
+  title          String
+  description    String
+  category       Category
+  area           Area
+  price          Int
+  duration       String
+  level          String
+  language       String     @default("English")
+  maxGuests      Int
+  images         String[]
+  highlights     String[]
+  includes       String[]
+  excludes       String[]
+  meetingPoint   String
+  latitude       Float
+  longitude      Float
+  instantConfirm Boolean    @default(false)
+  ecoLabel       Boolean    @default(false)
+  featured       Boolean    @default(false)
+  rating         Float      @default(0)
+  totalReviews   Int        @default(0)
+  status         Status     @default(ACTIVE)
+  createdAt      DateTime   @default(now())
+
+  bookings Booking[]
+  reviews  Review[]
+}
+
+model Booking {
+  id           String        @id @default(cuid())
+  bookingRef   String        @unique @default(cuid())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id])
+  experienceId String
+  experience   Experience    @relation(fields: [experienceId], references: [id])
+  date         DateTime
+  guests       Int
+  totalPrice   Int
+  status       BookingStatus @default(PENDING)
+  paymentId    String?
+  guestName    String
+  guestEmail   String
+  guestPhone   String?
+  createdAt    DateTime      @default(now())
+}
+
+model Review {
+  id           String     @id @default(cuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id])
+  experienceId String
+  experience   Experience @relation(fields: [experienceId], references: [id])
+  rating       Int
+  comment      String
+  createdAt    DateTime   @default(now())
+}
+
+model WishlistItem {
+  id           String     @id @default(cuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id])
+  experienceId String
+  createdAt    DateTime   @default(now())
+
+  @@unique([userId, experienceId])
+}
+
+enum Role {
+  TOURIST
+  OPERATOR
+  ADMIN
+}
+
+enum Category {
+  WELLNESS
+  ART_CRAFT
+  CULTURE
+  FOOD_DRINK
+  NATURE
+  ARCHITECTURE
+  SURF_WATER
+  DIVING
+  COOKING
+}
+
+enum Area {
+  UBUD
+  CANGGU
+  KUTA
+  SEMINYAK
+  ULUWATU
+  GIANYAR
+  SANUR
+  NUSA_DUA
+  AMED
+  MEDEWI
+  JIMBARAN
+  KINTAMANI
+}
+
+enum Status {
+  ACTIVE
+  DRAFT
+  PAUSED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}

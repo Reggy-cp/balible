@@ -1,0 +1,249 @@
+'use client'
+
+import { useState, useRef, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
+import {
+  Heart, User, Menu, X, Map, ChevronDown,
+  Leaf, Scissors, Landmark, Utensils, Mountain, Waves,
+} from 'lucide-react'
+
+const CATEGORIES = [
+  { label: 'Wellness',     Icon: Leaf,      slug: 'wellness' },
+  { label: 'Art & Craft',  Icon: Scissors,  slug: 'art-craft' },
+  { label: 'Culture',      Icon: Landmark,  slug: 'culture' },
+  { label: 'Food & Drink', Icon: Utensils,  slug: 'food-drink' },
+  { label: 'Nature',       Icon: Mountain,  slug: 'nature' },
+  { label: 'Surf & Water', Icon: Waves,     slug: 'surf-water' },
+]
+
+const NAV_LINKS = [
+  { label: 'Experiences',  href: '/search',       hasDropdown: true },
+  { label: 'Destinations', href: '/destinations',  hasDropdown: false },
+  { label: 'Journal',      href: '/blog',          hasDropdown: false },
+  { label: 'For Hosts',    href: '/for-hosts',     hasDropdown: false },
+]
+
+const MOBILE_LINKS = [
+  { label: 'All Experiences', href: '/search' },
+  { label: 'Destinations',    href: '/destinations' },
+  { label: 'Map View',        href: '/map' },
+  { label: 'Journal',         href: '/blog' },
+  { label: 'For Hosts',       href: '/for-hosts' },
+  { label: 'About Balible',   href: '/about' },
+  { label: 'How It Works',    href: '/how-it-works' },
+  { label: 'Help Centre',     href: '/help' },
+]
+
+export default function Navbar() {
+  const pathname = usePathname()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [dropOpen, setDropOpen] = useState(false)
+  const dropRef = useRef<HTMLDivElement>(null)
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (dropRef.current && !dropRef.current.contains(e.target as Node)) {
+        setDropOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  // Close mobile menu on route change
+  useEffect(() => { setMenuOpen(false); setDropOpen(false) }, [pathname])
+
+  const isActive = (href: string) =>
+    href === '/' ? pathname === '/' : pathname.startsWith(href)
+
+  return (
+    <>
+      <nav className="sticky top-0 z-50 bg-white" style={{ height: 64, borderBottom: '1px solid #E8E4DE' }}>
+        <div className="flex items-center justify-between h-full px-5 lg:px-12 max-w-[1440px] mx-auto">
+
+          {/* Logo */}
+          <a href="/" className="flex flex-col leading-none flex-shrink-0" style={{ textDecoration: 'none' }}>
+            <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', letterSpacing: '0.02em' }}>
+              BALIBLE
+            </span>
+            <span className="hidden sm:block" style={{ fontSize: 8, letterSpacing: '0.2em', color: '#6F675C', textTransform: 'uppercase' }}>
+              CURATED EXPERIENCES IN BALI
+            </span>
+          </a>
+
+          {/* Desktop nav */}
+          <div className="hidden lg:flex items-center gap-1">
+            {NAV_LINKS.map(({ label, href, hasDropdown }) =>
+              hasDropdown ? (
+                <div key={label} className="relative" ref={dropRef}>
+                  <button
+                    onClick={() => setDropOpen(o => !o)}
+                    className="flex items-center gap-1 px-3 py-2 rounded-lg transition-colors hover:bg-stone-50"
+                    style={{
+                      fontFamily: 'var(--font-inter)', fontSize: 14,
+                      color: isActive(href) ? '#C8A97E' : '#111111',
+                      fontWeight: isActive(href) ? 600 : 400,
+                      background: 'none', border: 'none', cursor: 'pointer',
+                    }}
+                  >
+                    {label}
+                    <ChevronDown
+                      size={13}
+                      style={{ color: '#6F675C', transition: 'transform 0.15s', transform: dropOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                    />
+                  </button>
+
+                  {/* Dropdown */}
+                  {dropOpen && (
+                    <div
+                      className="absolute top-full left-0 mt-2 bg-white rounded-2xl shadow-xl"
+                      style={{ width: 280, border: '1px solid #E8E4DE', padding: '12px 8px' }}
+                    >
+                      <a
+                        href="/search"
+                        className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors"
+                        style={{ textDecoration: 'none', marginBottom: 4 }}
+                      >
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#F5F1EB' }}>
+                          <span style={{ fontSize: 14 }}>🌟</span>
+                        </div>
+                        <div>
+                          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111' }}>All Experiences</p>
+                          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>Browse all 16+ experiences</p>
+                        </div>
+                      </a>
+                      <div style={{ height: 1, backgroundColor: '#F5F1EB', marginBottom: 8, marginInline: 8 }} />
+                      <p style={{ fontFamily: 'var(--font-inter)', fontSize: 10, fontWeight: 700, color: '#6F675C', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '4px 12px 8px' }}>
+                        Browse by category
+                      </p>
+                      {CATEGORIES.map(({ label: catLabel, Icon, slug }) => (
+                        <a
+                          key={slug}
+                          href={`/categories/${slug}`}
+                          className="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-stone-50 transition-colors"
+                          style={{ textDecoration: 'none' }}
+                        >
+                          <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#F5F1EB' }}>
+                            <Icon size={13} style={{ color: '#C8A97E' }} />
+                          </div>
+                          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>{catLabel}</span>
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <a
+                  key={label}
+                  href={href}
+                  className="px-3 py-2 rounded-lg transition-colors hover:bg-stone-50"
+                  style={{
+                    fontFamily: 'var(--font-inter)', fontSize: 14, textDecoration: 'none',
+                    color: isActive(href) ? '#C8A97E' : '#111111',
+                    fontWeight: isActive(href) ? 600 : 400,
+                  }}
+                >
+                  {label}
+                </a>
+              )
+            )}
+            <a
+              href="/map"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg transition-colors hover:bg-stone-50"
+              style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: isActive('/map') ? '#C8A97E' : '#6F675C', fontWeight: 500, textDecoration: 'none' }}
+            >
+              <Map size={14} /> Map
+            </a>
+          </div>
+
+          {/* Right icons */}
+          <div className="flex items-center gap-2">
+            <a
+              href="/wishlist"
+              className="hidden sm:flex w-9 h-9 rounded-full items-center justify-center hover:bg-stone-50 transition-colors"
+              style={{ textDecoration: 'none' }}
+              title="Wishlist"
+            >
+              <Heart size={19} style={{ color: isActive('/wishlist') ? '#ef4444' : '#111111' }} fill={isActive('/wishlist') ? '#ef4444' : 'none'} />
+            </a>
+            <a
+              href="/profile"
+              className="hidden sm:flex w-9 h-9 rounded-full items-center justify-center hover:bg-stone-50 transition-colors"
+              style={{ border: '1.5px solid #E8E4DE', textDecoration: 'none' }}
+              title="Profile"
+            >
+              <User size={15} style={{ color: '#111111' }} />
+            </a>
+            {/* Hamburger */}
+            <button
+              className="lg:hidden flex items-center justify-center w-9 h-9 rounded-lg hover:bg-stone-50 transition-colors"
+              style={{ border: 'none', background: 'none', cursor: 'pointer' }}
+              onClick={() => setMenuOpen(o => !o)}
+              aria-label="Toggle menu"
+            >
+              {menuOpen ? <X size={22} style={{ color: '#111111' }} /> : <Menu size={22} style={{ color: '#111111' }} />}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile menu */}
+        {menuOpen && (
+          <div
+            className="lg:hidden absolute left-0 right-0 bg-white shadow-xl"
+            style={{ top: 64, borderBottom: '1px solid #E8E4DE', zIndex: 100 }}
+          >
+            {/* Links */}
+            <div className="px-4 pt-3 pb-2 space-y-1">
+              {MOBILE_LINKS.map(({ label, href }) => (
+                <a
+                  key={label}
+                  href={href}
+                  className="flex items-center px-4 py-3 rounded-xl transition-colors hover:bg-stone-50"
+                  style={{
+                    fontFamily: 'var(--font-inter)', fontSize: 15, textDecoration: 'none',
+                    color: isActive(href) ? '#C8A97E' : '#111111',
+                    fontWeight: isActive(href) ? 600 : 400,
+                  }}
+                >
+                  {label}
+                  {isActive(href) && <span style={{ marginLeft: 'auto', width: 6, height: 6, borderRadius: '50%', backgroundColor: '#C8A97E' }} />}
+                </a>
+              ))}
+            </div>
+
+            {/* Categories */}
+            <div className="px-4 pt-2 pb-3" style={{ borderTop: '1px solid #F5F1EB' }}>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 10, fontWeight: 700, color: '#6F675C', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '8px 16px 6px' }}>
+                Categories
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {CATEGORIES.map(({ label: catLabel, Icon, slug }) => (
+                  <a
+                    key={slug}
+                    href={`/categories/${slug}`}
+                    className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-stone-50 transition-colors"
+                    style={{ textDecoration: 'none', backgroundColor: '#F5F1EB' }}
+                  >
+                    <Icon size={16} style={{ color: '#C8A97E' }} />
+                    <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#111111', textAlign: 'center', lineHeight: 1.3 }}>{catLabel}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* Auth row */}
+            <div className="flex gap-2 px-4 pb-5 pt-2" style={{ borderTop: '1px solid #F5F1EB' }}>
+              <a href="/auth/signin" style={{ flex: 1, height: 42, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #E8E4DE', borderRadius: 10, fontSize: 14, fontWeight: 500, color: '#111111', textDecoration: 'none', fontFamily: 'var(--font-inter)' }}>
+                Sign in
+              </a>
+              <a href="/auth/signup" style={{ flex: 1, height: 42, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#111111', borderRadius: 10, fontSize: 14, fontWeight: 600, color: 'white', textDecoration: 'none', fontFamily: 'var(--font-inter)' }}>
+                Sign up
+              </a>
+            </div>
+          </div>
+        )}
+      </nav>
+    </>
+  )
+}

@@ -1,0 +1,309 @@
+'use client'
+
+import { useState } from 'react'
+import { Star, CheckCircle2, XCircle } from 'lucide-react'
+
+type Review = {
+  id: string
+  rating: number
+  comment: string
+  createdAt: string | Date
+  user: { name: string; image?: string | null }
+}
+
+type ExperienceData = {
+  description: string
+  highlights: string[]
+  includes: string[]
+  excludes: string[]
+  duration: string
+  level: string
+  language: string
+  maxGuests: number
+  meetingPoint: string
+  operator: {
+    businessName: string
+    description: string
+    avatar?: string | null
+    rating: number
+    totalReviews: number
+    user: { name: string; image?: string | null }
+  }
+  reviews: Review[]
+  rating: number
+  totalReviews: number
+}
+
+const TABS = ['About', 'Itinerary', "What's included", 'Reviews', 'Host']
+
+export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
+  const [active, setActive] = useState('About')
+
+  return (
+    <>
+      {/* Tab bar */}
+      <div className="relative mt-8" style={{ borderBottom: '1px solid #E8E4DE' }}>
+        <div className="flex gap-1 overflow-x-auto scrollbar-none">
+          {TABS.map(tab => {
+            const label = tab === 'Reviews' ? `Reviews (${exp.totalReviews})` : tab
+            const isActive = active === tab
+            return (
+              <button
+                key={tab}
+                onClick={() => setActive(tab)}
+                className="flex-shrink-0 px-4 py-2 rounded-full transition-all"
+                style={{
+                  fontFamily: 'var(--font-inter)',
+                  fontSize: 14,
+                  backgroundColor: isActive ? '#111111' : 'transparent',
+                  color: isActive ? 'white' : '#6F675C',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: isActive ? 500 : 400,
+                  marginBottom: -1,
+                }}
+              >
+                {label}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Tab content */}
+      <div className="mt-6">
+
+        {/* ── ABOUT ── */}
+        {active === 'About' && (
+          <div className="flex gap-8">
+            <div className="flex-1">
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: '#6F675C', lineHeight: 1.7 }}>
+                {exp.description}
+              </p>
+              {exp.highlights.length > 0 && (
+                <div className="mt-6">
+                  <h4 className="mb-3" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111' }}>
+                    Highlights
+                  </h4>
+                  <ul className="space-y-2">
+                    {exp.highlights.map((h, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <CheckCircle2 size={15} style={{ color: '#4A7C59', marginTop: 2, flexShrink: 0 }} />
+                        <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.5 }}>{h}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            {/* Host card */}
+            <div className="flex-shrink-0 hidden lg:block" style={{ width: 200 }}>
+              <div className="p-4 rounded-xl" style={{ border: '1px solid #E8E4DE' }}>
+                <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>Your host</p>
+                <div className="flex items-center gap-3 mt-2">
+                  {exp.operator.avatar || exp.operator.user.image ? (
+                    <img
+                      src={(exp.operator.avatar || exp.operator.user.image)!}
+                      alt={exp.operator.user.name}
+                      className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#F5F1EB' }}>
+                      <span style={{ fontFamily: 'var(--font-inter)', fontSize: 18, fontWeight: 700, color: '#111111' }}>
+                        {exp.operator.user.name[0]}
+                      </span>
+                    </div>
+                  )}
+                  <div>
+                    <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111' }}>{exp.operator.user.name}</p>
+                    <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>{exp.operator.businessName}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 mt-2">
+                  <Star size={11} fill="#C8A97E" color="#C8A97E" />
+                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 700, color: '#111111' }}>{exp.operator.rating}</span>
+                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>({exp.operator.totalReviews})</span>
+                </div>
+                <a href="#" className="mt-3 inline-block underline hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>
+                  View profile →
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── WHAT'S INCLUDED ── */}
+        {active === "What's included" && (
+          <div className="grid sm:grid-cols-2 gap-8">
+            <div>
+              <h4 className="mb-3" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111' }}>Included</h4>
+              <ul className="space-y-2">
+                {exp.includes.map((item, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <CheckCircle2 size={15} style={{ color: '#4A7C59', marginTop: 2, flexShrink: 0 }} />
+                    <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h4 className="mb-3" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111' }}>Not included</h4>
+              <ul className="space-y-2">
+                {exp.excludes.map((item, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <XCircle size={15} style={{ color: '#B66A45', marginTop: 2, flexShrink: 0 }} />
+                    <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h4 className="mb-2" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111' }}>Meeting point</h4>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>{exp.meetingPoint}</p>
+            </div>
+          </div>
+        )}
+
+        {/* ── REVIEWS ── */}
+        {active === 'Reviews' && (
+          <div>
+            <div className="flex items-center gap-4 mb-8 pb-6" style={{ borderBottom: '1px solid #E8E4DE' }}>
+              <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 52, fontWeight: 700, color: '#111111', lineHeight: 1 }}>
+                {exp.rating.toFixed(1)}
+              </span>
+              <div>
+                <div className="flex gap-0.5 mb-1">
+                  {[1,2,3,4,5].map(i => (
+                    <Star key={i} size={16} fill={i <= Math.round(exp.rating) ? '#C8A97E' : 'none'} color="#C8A97E" />
+                  ))}
+                </div>
+                <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>
+                  {exp.totalReviews} reviews
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              {exp.reviews.map(rev => (
+                <div key={rev.id} className="pb-6" style={{ borderBottom: '1px solid #E8E4DE' }}>
+                  <div className="flex items-center gap-3 mb-3">
+                    {rev.user.image ? (
+                      <img src={rev.user.image} alt={rev.user.name} className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
+                    ) : (
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-semibold" style={{ backgroundColor: '#F5F1EB', color: '#111111' }}>
+                        {rev.user.name[0]}
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111' }}>{rev.user.name}</p>
+                      <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>
+                        {new Date(rev.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                      </p>
+                    </div>
+                    <div className="flex gap-0.5">
+                      {[1,2,3,4,5].map(i => (
+                        <Star key={i} size={12} fill={i <= rev.rating ? '#C8A97E' : 'none'} color="#C8A97E" />
+                      ))}
+                    </div>
+                  </div>
+                  <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.6 }}>{rev.comment}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── HOST ── */}
+        {active === 'Host' && (
+          <div className="flex flex-col sm:flex-row gap-6">
+            <div className="flex-shrink-0">
+              {exp.operator.avatar || exp.operator.user.image ? (
+                <img
+                  src={(exp.operator.avatar || exp.operator.user.image)!}
+                  alt={exp.operator.user.name}
+                  className="w-24 h-24 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-24 h-24 rounded-full flex items-center justify-center" style={{ backgroundColor: '#F5F1EB' }}>
+                  <span style={{ fontSize: 32, fontWeight: 700, color: '#111111' }}>{exp.operator.user.name[0]}</span>
+                </div>
+              )}
+            </div>
+            <div>
+              <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#111111' }}>
+                {exp.operator.user.name}
+              </h3>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', marginTop: 4 }}>
+                {exp.operator.businessName}
+              </p>
+              <div className="flex items-center gap-2 mt-2">
+                <Star size={13} fill="#C8A97E" color="#C8A97E" />
+                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111' }}>{exp.operator.rating}</span>
+                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>· {exp.operator.totalReviews} reviews</span>
+              </div>
+              <p className="mt-4" style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: '#6F675C', lineHeight: 1.7, maxWidth: 480 }}>
+                {exp.operator.description}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {active === 'Itinerary' && (
+          <div>
+            {/* Derive steps from duration */}
+            {(() => {
+              const totalMins = (() => {
+                const d = exp.duration.toLowerCase()
+                if (d.includes('hour')) {
+                  const n = parseFloat(d)
+                  return Math.round(n * 60)
+                }
+                if (d.includes('min')) return parseInt(d)
+                return 120
+              })()
+              const steps = [
+                { label: 'Welcome & Introduction', mins: Math.max(10, Math.round(totalMins * 0.1)), desc: `Meet your host ${exp.operator.user.name} at ${exp.meetingPoint}. Get a brief introduction to the experience, the tools, and the cultural context behind what you're about to make or do.` },
+                { label: 'Demonstration', mins: Math.max(15, Math.round(totalMins * 0.2)), desc: 'Watch your host demonstrate the core techniques with calm expertise. Ask as many questions as you like — this is where the real learning begins.' },
+                { label: 'Hands-On Practice', mins: Math.max(30, Math.round(totalMins * 0.45)), desc: 'Now it\'s your turn. Your host guides you through the process step by step, offering individual feedback and encouragement. This is the heart of the experience.' },
+                { label: 'Refinement & Finishing', mins: Math.max(10, Math.round(totalMins * 0.15)), desc: 'Add the finishing touches to your creation or practice. Your host shows you the final details that separate good from beautiful.' },
+                { label: 'Reflection & Farewell', mins: Math.max(5, Math.round(totalMins * 0.1)), desc: 'Enjoy a brief moment of reflection with your host, hear the stories behind the craft, and take your creation (or experience) home with you.' },
+              ]
+              let elapsed = 0
+              return (
+                <div className="space-y-0">
+                  {steps.map(({ label, mins, desc }, i) => {
+                    const start = elapsed
+                    elapsed += mins
+                    const fmt = (m: number) => m < 60 ? `${m} min` : `${Math.floor(m / 60)}h ${m % 60 > 0 ? `${m % 60}m` : ''}`.trim()
+                    return (
+                      <div key={label} className="flex gap-5" style={{ paddingBottom: i < steps.length - 1 ? 28 : 0 }}>
+                        <div className="flex flex-col items-center flex-shrink-0">
+                          <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: i === 2 ? '#111111' : '#F5F1EB', border: '2px solid #E8E4DE', flexShrink: 0 }}>
+                            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 700, color: i === 2 ? '#C8A97E' : '#6F675C' }}>{i + 1}</span>
+                          </div>
+                          {i < steps.length - 1 && <div style={{ flex: 1, width: 1, backgroundColor: '#E8E4DE', marginTop: 4 }} />}
+                        </div>
+                        <div style={{ paddingTop: 4 }}>
+                          <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                            <h4 style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 700, color: '#111111' }}>{label}</h4>
+                            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C', backgroundColor: '#F5F1EB', padding: '2px 8px', borderRadius: 20 }}>{fmt(start)} – {fmt(start + mins)}</span>
+                            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#C8A97E' }}>~{fmt(mins)}</span>
+                          </div>
+                          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.75 }}>{desc}</p>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )
+            })()}
+            <p className="mt-6" style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', fontStyle: 'italic' }}>
+              * Times are approximate and may vary based on group pace and host discretion.
+            </p>
+          </div>
+        )}
+      </div>
+    </>
+  )
+}
