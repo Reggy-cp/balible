@@ -242,10 +242,32 @@ function ReviewsTab() {
 
 // ── Settings tab ───────────────────────────────────────────────────────────────
 
+const PROFILE_INFO_DEFAULTS = { name: PROFILE.name, email: PROFILE.email, phone: '+1 234 567 8900', nationality: 'Australian' }
+const PROFILE_NOTIF_DEFAULTS = { bookingConfirm: true, reminders: true, offers: false }
+
+function lsp<T>(key: string, fallback: T): T {
+  if (typeof window === 'undefined') return fallback
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback } catch { return fallback }
+}
+
 function SettingsTab() {
+  const [info, setInfo]   = useState(() => lsp('balible_profile_info', PROFILE_INFO_DEFAULTS))
+  const [notifs, setNotifs] = useState(() => lsp('balible_profile_notifs', PROFILE_NOTIF_DEFAULTS))
   const [saved, setSaved] = useState(false)
-  const save = () => { setSaved(true); setTimeout(() => setSaved(false), 2000) }
-  const [notifs, setNotifs] = useState({ bookingConfirm: true, reminders: true, offers: false })
+
+  const save = () => {
+    localStorage.setItem('balible_profile_info',   JSON.stringify(info))
+    localStorage.setItem('balible_profile_notifs', JSON.stringify(notifs))
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
+  }
+
+  const INFO_FIELDS: { label: string; key: keyof typeof PROFILE_INFO_DEFAULTS }[] = [
+    { label: 'Full Name',   key: 'name'        },
+    { label: 'Email',       key: 'email'       },
+    { label: 'Phone',       key: 'phone'       },
+    { label: 'Nationality', key: 'nationality' },
+  ]
 
   return (
     <div className="space-y-5">
@@ -255,16 +277,12 @@ function SettingsTab() {
       <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
         <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111', marginBottom: 16 }}>Personal Information</h3>
         <div className="grid sm:grid-cols-2 gap-4">
-          {[
-            { label: 'Full Name',     defaultValue: PROFILE.name },
-            { label: 'Email',         defaultValue: PROFILE.email },
-            { label: 'Phone',         defaultValue: '+1 234 567 8900' },
-            { label: 'Nationality',   defaultValue: 'Australian' },
-          ].map(f => (
-            <div key={f.label}>
+          {INFO_FIELDS.map(f => (
+            <div key={f.key}>
               <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{f.label}</label>
               <input
-                defaultValue={f.defaultValue}
+                value={info[f.key]}
+                onChange={e => setInfo(p => ({ ...p, [f.key]: e.target.value }))}
                 style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }}
                 onFocus={e => (e.target.style.borderColor = '#C8A97E')}
                 onBlur={e => (e.target.style.borderColor = '#E8E4DE')}

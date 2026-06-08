@@ -714,11 +714,35 @@ function ReviewsPanel() {
   )
 }
 
+// ── localStorage helper ───────────────────────────────────────────────────────
+
+function lsh<T>(key: string, fallback: T): T {
+  if (typeof window === 'undefined') return fallback
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback } catch { return fallback }
+}
+
 // ── Profile Panel ─────────────────────────────────────────────────────────────
 
+const HOST_PROFILE_DEFAULTS = {
+  name: 'Made Sari', businessName: 'Made Sari Pottery Studio',
+  email: 'made.sari@balible.com', phone: '+62 812 3456 7890',
+  bio: "Third-generation Balinese potter offering authentic clay experiences in the heart of Ubud. I believe every piece of clay carries a story — and I love helping visitors find their own.",
+  area: 'Ubud', languages: 'English, Bahasa Indonesia',
+}
+
 function ProfilePanel() {
-  const [saved, setSaved] = useState(false)
-  const save = () => { setSaved(true); setTimeout(() => setSaved(false), 2000) }
+  const [profile, setProfile] = useState(() => lsh('balible_host_profile', HOST_PROFILE_DEFAULTS))
+  const [saved, setSaved]     = useState(false)
+
+  const save = () => {
+    localStorage.setItem('balible_host_profile', JSON.stringify(profile))
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
+  }
+  const discard = () => setProfile(lsh('balible_host_profile', HOST_PROFILE_DEFAULTS))
+
+  const set = (key: keyof typeof HOST_PROFILE_DEFAULTS) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+    setProfile(p => ({ ...p, [key]: e.target.value }))
 
   return (
     <div>
@@ -737,8 +761,8 @@ function ProfilePanel() {
               <Camera size={12} style={{ color: 'white' }} />
             </button>
           </div>
-          <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>Made Sari</h3>
-          <p style={{ fontSize: 13, color: '#6F675C', marginTop: 2 }}>Operator · Ubud</p>
+          <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>{profile.name}</h3>
+          <p style={{ fontSize: 13, color: '#6F675C', marginTop: 2 }}>Operator · {profile.area}</p>
           <div className="flex items-center gap-1 mt-2">
             <Star size={13} fill="#C8A97E" color="#C8A97E" />
             <span style={{ fontSize: 13, fontWeight: 600, color: '#111111' }}>4.9</span>
@@ -763,33 +787,33 @@ function ProfilePanel() {
         <div className="lg:col-span-2 bg-white rounded-xl p-6" style={{ border: '1px solid #E8E4DE' }}>
           <h2 className="mb-5" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Edit Profile</h2>
           <div className="grid sm:grid-cols-2 gap-4">
-            {[
-              { label: 'Full Name',     defaultValue: 'Made Sari' },
-              { label: 'Business Name', defaultValue: 'Made Sari Pottery Studio' },
-              { label: 'Email',         defaultValue: 'made.sari@balible.com' },
-              { label: 'Phone',         defaultValue: '+62 812 3456 7890' },
-            ].map(f => (
-              <div key={f.label}>
+            {([
+              { label: 'Full Name',     key: 'name' as const },
+              { label: 'Business Name', key: 'businessName' as const },
+              { label: 'Email',         key: 'email' as const },
+              { label: 'Phone',         key: 'phone' as const },
+            ]).map(f => (
+              <div key={f.key}>
                 <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{f.label}</label>
-                <input defaultValue={f.defaultValue}
+                <input value={profile[f.key]} onChange={set(f.key)}
                   style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }} />
               </div>
             ))}
             <div className="sm:col-span-2">
               <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Bio</label>
-              <textarea rows={4} defaultValue="Third-generation Balinese potter offering authentic clay experiences in the heart of Ubud. I believe every piece of clay carries a story — and I love helping visitors find their own."
+              <textarea rows={4} value={profile.bio} onChange={set('bio')}
                 style={{ width: '100%', borderRadius: 10, border: '1px solid #E8E4DE', padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', resize: 'none', outline: 'none', lineHeight: 1.6 }} />
             </div>
             <div>
               <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Primary Area</label>
-              <select defaultValue="Ubud"
+              <select value={profile.area} onChange={set('area')}
                 style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none', backgroundColor: 'white', cursor: 'pointer' }}>
                 {['Ubud','Canggu','Kuta','Seminyak','Uluwatu','Gianyar','Sanur'].map(a => <option key={a}>{a}</option>)}
               </select>
             </div>
             <div>
               <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Languages</label>
-              <input defaultValue="English, Bahasa Indonesia"
+              <input value={profile.languages} onChange={set('languages')}
                 style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }} />
             </div>
           </div>
@@ -798,7 +822,7 @@ function ProfilePanel() {
               style={{ height: 44, paddingInline: 24, borderRadius: 10, border: 'none', backgroundColor: saved ? '#4A7C59' : '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s', minWidth: 140 }}>
               {saved ? <><Check size={14} /> Saved!</> : 'Save Changes'}
             </button>
-            <button style={{ height: 44, paddingInline: 24, borderRadius: 10, border: '1px solid #E8E4DE', background: 'none', fontSize: 14, color: '#6F675C', cursor: 'pointer' }}>Discard</button>
+            <button onClick={discard} style={{ height: 44, paddingInline: 24, borderRadius: 10, border: '1px solid #E8E4DE', background: 'none', fontSize: 14, color: '#6F675C', cursor: 'pointer' }}>Discard</button>
           </div>
         </div>
       </div>
@@ -808,10 +832,20 @@ function ProfilePanel() {
 
 // ── Settings Panel ────────────────────────────────────────────────────────────
 
+const HOST_NOTIF_DEFAULTS  = { newBooking: true, cancellation: true, review: false, reminders: true }
+const HOST_PAYOUT_DEFAULTS = { bankName: 'Bank Central Asia (BCA)', accountNumber: '•••• •••• 4521', accountHolder: 'Made Sari' }
+
 function SettingsPanel() {
-  const [notifs, setNotifs] = useState({ newBooking: true, cancellation: true, review: false, reminders: true })
+  const [notifs, setNotifs] = useState(() => lsh('balible_host_notifs',  HOST_NOTIF_DEFAULTS))
+  const [payout, setPayout] = useState(() => lsh('balible_host_payout',  HOST_PAYOUT_DEFAULTS))
   const [saved, setSaved]   = useState(false)
-  const save   = () => { setSaved(true); setTimeout(() => setSaved(false), 2000) }
+
+  const save = () => {
+    localStorage.setItem('balible_host_notifs',  JSON.stringify(notifs))
+    localStorage.setItem('balible_host_payout',  JSON.stringify(payout))
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
+  }
   const toggle = (key: keyof typeof notifs) => setNotifs(n => ({ ...n, [key]: !n[key] }))
 
   return (
@@ -850,17 +884,17 @@ function SettingsPanel() {
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2">
               <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Bank Name</label>
-              <input defaultValue="Bank Central Asia (BCA)"
+              <input value={payout.bankName} onChange={e => setPayout(p => ({ ...p, bankName: e.target.value }))}
                 style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }} />
             </div>
             <div>
               <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Account Number</label>
-              <input defaultValue="•••• •••• 4521"
+              <input value={payout.accountNumber} onChange={e => setPayout(p => ({ ...p, accountNumber: e.target.value }))}
                 style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }} />
             </div>
             <div>
               <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Account Holder</label>
-              <input defaultValue="Made Sari"
+              <input value={payout.accountHolder} onChange={e => setPayout(p => ({ ...p, accountHolder: e.target.value }))}
                 style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }} />
             </div>
           </div>

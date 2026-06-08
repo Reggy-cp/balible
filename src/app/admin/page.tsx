@@ -936,18 +936,41 @@ function AnalyticsPanel() {
 
 // ── Settings Panel ────────────────────────────────────────────────────────────
 
+const PLATFORM_DEFAULTS = {
+  platformName:     'Balible',
+  ownerEmail:       'reggy.caesar@gmail.com',
+  supportEmail:     'support@balible.com',
+  currency:         'IDR (Indonesian Rupiah)',
+}
+
+const NOTIF_DEFAULTS = { newHost: true, newBooking: false, flaggedReview: true, weeklyReport: true }
+
+function ls<T>(key: string, fallback: T): T {
+  if (typeof window === 'undefined') return fallback
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback } catch { return fallback }
+}
+
 function SettingsPanel() {
-  const [commission, setCommission] = useState(() =>
-    typeof window !== 'undefined' ? (localStorage.getItem('balible_commission') ?? '10') : '10'
-  )
+  const [commission, setCommission] = useState(() => ls('balible_commission', '10'))
+  const [platform, setPlatform]     = useState(() => ls('balible_platform', PLATFORM_DEFAULTS))
+  const [notifs, setNotifs]         = useState(() => ls('balible_notifs', NOTIF_DEFAULTS))
   const [saved, setSaved]           = useState(false)
-  const [notifs, setNotifs]         = useState({ newHost: true, newBooking: false, flaggedReview: true, weeklyReport: true })
+
   const save = () => {
-    localStorage.setItem('balible_commission', commission)
+    localStorage.setItem('balible_commission', JSON.stringify(commission))
+    localStorage.setItem('balible_platform',   JSON.stringify(platform))
+    localStorage.setItem('balible_notifs',     JSON.stringify(notifs))
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
   const toggle = (k: keyof typeof notifs) => setNotifs(n => ({ ...n, [k]: !n[k] }))
+
+  const PLATFORM_FIELDS: { label: string; key: keyof typeof PLATFORM_DEFAULTS }[] = [
+    { label: 'Platform Name',    key: 'platformName'  },
+    { label: 'Owner Email',      key: 'ownerEmail'    },
+    { label: 'Support Email',    key: 'supportEmail'  },
+    { label: 'Default Currency', key: 'currency'      },
+  ]
 
   return (
     <div>
@@ -958,15 +981,12 @@ function SettingsPanel() {
         <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
           <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: CHARCOAL }}>Platform</h2>
           <div className="grid sm:grid-cols-2 gap-4">
-            {[
-              { label: 'Platform Name',     defaultValue: 'Balible' },
-              { label: 'Owner Email',       defaultValue: 'reggy.caesar@gmail.com' },
-              { label: 'Support Email',     defaultValue: 'support@balible.com' },
-              { label: 'Default Currency',  defaultValue: 'IDR (Indonesian Rupiah)' },
-            ].map(f => (
-              <div key={f.label}>
+            {PLATFORM_FIELDS.map(f => (
+              <div key={f.key}>
                 <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: COCONUT, marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{f.label}</label>
-                <input defaultValue={f.defaultValue}
+                <input
+                  value={platform[f.key]}
+                  onChange={e => setPlatform(p => ({ ...p, [f.key]: e.target.value }))}
                   style={{ width: '100%', height: 42, borderRadius: 10, border: `1px solid ${SAND}`, padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: CHARCOAL, outline: 'none' }} />
               </div>
             ))}
