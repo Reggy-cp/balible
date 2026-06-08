@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
-import { Heart, ShoppingBag, User, MapPin, Star, Clock, Users, Globe, Camera, Menu } from 'lucide-react'
+import { MapPin, Star, Clock, Users, Globe, Camera } from 'lucide-react'
+import Navbar from '@/components/Navbar'
 import BookingWidget from '@/components/BookingWidget'
 import ExperienceTabs from '@/components/ExperienceTabs'
 import RecommendationsSection from '@/components/RecommendationsSection'
@@ -748,28 +749,7 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
   return (
     <div style={{ fontFamily: 'var(--font-inter)' }}>
 
-      {/* ── NAVBAR ── */}
-      <nav className="sticky top-0 z-50 bg-white" style={{ height: 64, borderBottom: '1px solid #E8E4DE' }}>
-        <div className="flex items-center justify-between h-full px-6 lg:px-16 max-w-[1440px] mx-auto">
-          <a href="/" className="flex flex-col leading-none">
-            <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111' }}>BALIBLE</span>
-            <span className="hidden sm:block" style={{ fontSize: 8, letterSpacing: '0.2em', color: '#6F675C', textTransform: 'uppercase' }}>CURATED EXPERIENCES IN BALI</span>
-          </a>
-          <div className="hidden lg:flex items-center gap-8">
-            {['Experiences','Categories','Destinations','For Hosts','About Us'].map(l => (
-              <a key={l} href="#" className="hover:text-gold transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111' }}>{l}</a>
-            ))}
-          </div>
-          <div className="flex items-center gap-4">
-            <Heart size={20} className="cursor-pointer hidden sm:block hover:text-gold transition-colors" style={{ color: '#111111' }} />
-            <ShoppingBag size={20} className="cursor-pointer hidden sm:block" style={{ color: '#111111' }} />
-            <div className="w-8 h-8 rounded-full border hidden sm:flex items-center justify-center" style={{ borderColor: '#E8E4DE' }}>
-              <User size={15} style={{ color: '#111111' }} />
-            </div>
-            <Menu size={22} className="lg:hidden cursor-pointer" style={{ color: '#111111' }} />
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       <div className="max-w-[1440px] mx-auto px-6 lg:px-16 py-8">
 

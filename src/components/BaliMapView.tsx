@@ -298,10 +298,18 @@ export default function BaliMapView() {
                         <Clock size={10} />{exp.duration}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1 mt-1">
-                      <Star size={11} fill="#C8A97E" color="#C8A97E" />
-                      <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>{exp.rating}</span>
-                      <span style={{ fontSize: 12, color: '#6F675C' }}>({exp.reviews})</span>
+                    <div className="flex items-center justify-between mt-1.5">
+                      <div className="flex items-center gap-1">
+                        <Star size={11} fill="#C8A97E" color="#C8A97E" />
+                        <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>{exp.rating}</span>
+                        <span style={{ fontSize: 12, color: '#6F675C' }}>({exp.reviews})</span>
+                      </div>
+                      <a
+                        href={`/experiences/${exp.slug}`}
+                        onClick={e => e.stopPropagation()}
+                        style={{ fontSize: 12, fontWeight: 600, color: '#C8A97E', textDecoration: 'none' }}>
+                        Book →
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -384,10 +392,18 @@ export default function BaliMapView() {
                           <span className="flex items-center gap-1" style={{ fontSize: 11, color: '#6F675C' }}><MapPin size={10} />{exp.area}</span>
                           <span style={{ fontSize: 13, fontWeight: 700, color: '#111111' }}>{fmtPrice(exp.price)}</span>
                         </div>
-                        <div className="flex items-center gap-1 mt-0.5">
-                          <Star size={10} fill="#C8A97E" color="#C8A97E" />
-                          <span style={{ fontSize: 11, fontWeight: 600, color: '#111111' }}>{exp.rating}</span>
-                          <span style={{ fontSize: 11, color: '#6F675C' }}>({exp.reviews})</span>
+                        <div className="flex items-center justify-between mt-0.5">
+                          <div className="flex items-center gap-1">
+                            <Star size={10} fill="#C8A97E" color="#C8A97E" />
+                            <span style={{ fontSize: 11, fontWeight: 600, color: '#111111' }}>{exp.rating}</span>
+                            <span style={{ fontSize: 11, color: '#6F675C' }}>({exp.reviews})</span>
+                          </div>
+                          <a
+                            href={`/experiences/${exp.slug}`}
+                            onClick={e => e.stopPropagation()}
+                            style={{ fontSize: 12, fontWeight: 600, color: '#C8A97E', textDecoration: 'none' }}>
+                            Book →
+                          </a>
                         </div>
                       </div>
                     </div>
