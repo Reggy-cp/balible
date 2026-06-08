@@ -888,9 +888,10 @@ const HOST_NOTIF_DEFAULTS  = { newBooking: true, cancellation: true, review: fal
 const HOST_PAYOUT_DEFAULTS = { bankName: 'Bank Central Asia (BCA)', accountNumber: '•••• •••• 4521', accountHolder: 'Made Sari' }
 
 function SettingsPanel() {
-  const [notifs, setNotifs] = useState(() => lsh('balible_host_notifs',  HOST_NOTIF_DEFAULTS))
-  const [payout, setPayout] = useState(() => lsh('balible_host_payout',  HOST_PAYOUT_DEFAULTS))
-  const [saved, setSaved]   = useState(false)
+  const [notifs, setNotifs]       = useState(() => lsh('balible_host_notifs',  HOST_NOTIF_DEFAULTS))
+  const [payout, setPayout]       = useState(() => lsh('balible_host_payout',  HOST_PAYOUT_DEFAULTS))
+  const [saved, setSaved]         = useState(false)
+  const [notifSaved, setNotifSaved] = useState(false)
 
   const save = () => {
     localStorage.setItem('balible_host_notifs',  JSON.stringify(notifs))
@@ -898,7 +899,13 @@ function SettingsPanel() {
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
-  const toggle = (key: keyof typeof notifs) => setNotifs(n => ({ ...n, [key]: !n[key] }))
+  const toggle = (key: keyof typeof notifs) => {
+    const next = { ...notifs, [key]: !notifs[key] }
+    setNotifs(next)
+    localStorage.setItem('balible_host_notifs', JSON.stringify(next))
+    setNotifSaved(true)
+    setTimeout(() => setNotifSaved(false), 1500)
+  }
 
   return (
     <div>
@@ -906,7 +913,14 @@ function SettingsPanel() {
 
       <div className="space-y-5">
         <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
-          <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Notifications</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Notifications</h2>
+            {notifSaved && (
+              <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#4A7C59', fontWeight: 600, transition: 'opacity 0.3s' }}>
+                <Check size={12} /> Saved
+              </span>
+            )}
+          </div>
           <div className="space-y-5">
             {[
               { key: 'newBooking',    label: 'New booking received',  desc: 'Get notified when a guest books your experience' },

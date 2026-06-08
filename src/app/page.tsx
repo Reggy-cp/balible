@@ -8,6 +8,7 @@ import {
   MapPin, Home, Instagram, Facebook, Twitter, Map,
 } from 'lucide-react'
 import Navbar from '@/components/Navbar'
+import MobileNav from '@/components/MobileNav'
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
@@ -141,30 +142,6 @@ function HostCard({ host }: { host: typeof HOSTS[0] }) {
   )
 }
 
-function MobileBottomNav() {
-  const items = [
-    { id: 'home',     Icon: Home,        label: 'Home',     href: '/' },
-    { id: 'search',   Icon: Search,      label: 'Search',   href: '/search' },
-    { id: 'map',      Icon: Map,         label: 'Map',      href: '/map' },
-    { id: 'wishlist', Icon: Heart,       label: 'Wishlist', href: '/wishlist' },
-    { id: 'profile',  Icon: User,        label: 'Profile',  href: '/profile' },
-  ]
-  return (
-    <nav
-      className="fixed bottom-0 left-0 right-0 bg-white z-50 md:hidden flex items-center justify-around"
-      style={{ height: 64, borderTop: '1px solid #E8E4DE' }}
-    >
-      {items.map(({ id, Icon, label, href }) => (
-        <a key={id} href={href} className="flex flex-col items-center justify-center gap-1">
-          <Icon size={20} color={id === 'home' ? '#C8A97E' : '#6F675C'} fill={id === 'home' ? '#C8A97E' : 'none'} />
-          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 10, color: id === 'home' ? '#C8A97E' : '#6F675C' }}>
-            {label}
-          </span>
-        </a>
-      ))}
-    </nav>
-  )
-}
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
@@ -396,7 +373,7 @@ export default function HomePage() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer style={{ backgroundColor: '#111111' }} className="px-6 lg:px-16 pt-12 pb-8">
+      <footer style={{ backgroundColor: '#111111' }} className="px-6 lg:px-16 pt-12 pb-8 md:pb-8 pb-24">
         <div className="max-w-[1440px] mx-auto">
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-10 pb-8" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
 
@@ -446,8 +423,7 @@ export default function HomePage() {
         </div>
       </footer>
 
-      {/* ── MOBILE BOTTOM NAV ── */}
-      <MobileBottomNav />
+      <MobileNav />
     </div>
   )
 }

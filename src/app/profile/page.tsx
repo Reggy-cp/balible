@@ -6,6 +6,7 @@ import {
   Edit2, Camera, Check, ArrowRight, Home, Search, Map, X,
 } from 'lucide-react'
 import Navbar from '@/components/Navbar'
+import MobileNav from '@/components/MobileNav'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -668,20 +669,7 @@ export default function ProfilePage() {
       </div>
 
       {/* MOBILE BOTTOM NAV */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white z-50 md:hidden flex items-center justify-around" style={{ height: 64, borderTop: '1px solid #E8E4DE' }}>
-        {[
-          { id: 'home',    Icon: Home,   label: 'Home',    href: '/' },
-          { id: 'search',  Icon: Search, label: 'Search',  href: '/search' },
-          { id: 'map',     Icon: Map,    label: 'Map',     href: '/map' },
-          { id: 'wishlist', Icon: Heart, label: 'Wishlist', href: '/wishlist' },
-          { id: 'profile', Icon: User,   label: 'Profile', href: '/profile' },
-        ].map(({ id, Icon, label, href }) => (
-          <a key={id} href={href} className="flex flex-col items-center justify-center gap-1">
-            <Icon size={20} color={id === 'profile' ? '#C8A97E' : '#6F675C'} fill={id === 'profile' ? '#C8A97E' : 'none'} />
-            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 10, color: id === 'profile' ? '#C8A97E' : '#6F675C' }}>{label}</span>
-          </a>
-        ))}
-      </nav>
+      <MobileNav />
     </div>
   )
 }

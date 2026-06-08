@@ -3,6 +3,7 @@
 import { useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { ChevronUp, Shield, Award, Clock, Edit2, Lock } from 'lucide-react'
+import MobileNav from '@/components/MobileNav'
 
 const STEPS = ['Experience & Date', 'Your Details', 'Payment', 'Confirmation']
 type Step = 0 | 1 | 2 | 3
@@ -451,7 +452,7 @@ function CheckoutInner() {
         </div>
       </nav>
 
-      <div className="max-w-[1100px] mx-auto px-4 py-8">
+      <div className="max-w-[1100px] mx-auto px-4 py-8 pb-24 md:pb-8">
         <h1 className="mb-6 hidden sm:block" style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 700, color: '#111111' }}>
           Checkout
         </h1>
@@ -472,6 +473,7 @@ function CheckoutInner() {
           )}
         </div>
       </div>
+      <MobileNav />
     </div>
   )
 }

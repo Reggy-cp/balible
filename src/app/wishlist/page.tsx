@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { Heart, Star, MapPin, Clock, Trash2, Search, Home, Map, User, SlidersHorizontal } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import WishlistHeart from '@/components/WishlistHeart'
+import MobileNav from '@/components/MobileNav'
 
 // All known experiences — this mirrors the static data in the app
 const ALL_EXPERIENCES = [
@@ -230,20 +231,7 @@ export default function WishlistPage() {
       </div>
 
       {/* MOBILE BOTTOM NAV */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white z-50 md:hidden flex items-center justify-around" style={{ height: 64, borderTop: '1px solid #E8E4DE' }}>
-        {[
-          { id: 'home',     Icon: Home,        label: 'Home',     href: '/' },
-          { id: 'search',   Icon: Search,      label: 'Search',   href: '/search' },
-          { id: 'map',      Icon: Map,         label: 'Map',      href: '/map' },
-          { id: 'wishlist', Icon: Heart,       label: 'Wishlist', href: '/wishlist' },
-          { id: 'profile',  Icon: User,        label: 'Profile',  href: '/profile' },
-        ].map(({ id, Icon, label, href }) => (
-          <a key={id} href={href} className="flex flex-col items-center justify-center gap-1">
-            <Icon size={20} color={id === 'wishlist' ? '#C8A97E' : '#6F675C'} fill={id === 'wishlist' ? '#C8A97E' : 'none'} />
-            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 10, color: id === 'wishlist' ? '#C8A97E' : '#6F675C' }}>{label}</span>
-          </a>
-        ))}
-      </nav>
+      <MobileNav />
     </div>
   )
 }

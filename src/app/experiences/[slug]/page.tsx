@@ -6,6 +6,7 @@ import ExperienceTabs from '@/components/ExperienceTabs'
 import RecommendationsSection from '@/components/RecommendationsSection'
 import ReadMore from '@/components/ReadMore'
 import WishlistHeart from '@/components/WishlistHeart'
+import MobileNav from '@/components/MobileNav'
 import { prisma } from '@/lib/prisma'
 
 // ── Static fallback (used when DB is not yet connected) ───────────────────────
@@ -848,6 +849,7 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
 
       {/* ── AI RECOMMENDATIONS ── */}
       <RecommendationsSection current={currentForRec} others={allOthers} />
+      <MobileNav />
     </div>
   )
 }

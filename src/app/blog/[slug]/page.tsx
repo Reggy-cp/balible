@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft, Clock, Calendar } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import NewsletterSignup from '@/components/NewsletterSignup'
+import MobileNav from '@/components/MobileNav'
 
 type Article = {
   slug: string
@@ -379,6 +380,7 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
           </div>
         </div>
       </footer>
+      <MobileNav />
     </div>
   )
 }

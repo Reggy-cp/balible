@@ -1,6 +1,7 @@
 import { Clock, Calendar } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import NewsletterSignup from '@/components/NewsletterSignup'
+import MobileNav from '@/components/MobileNav'
 
 export const metadata = {
   title: 'Journal — Balible',
@@ -245,6 +246,7 @@ export default function BlogPage() {
           </div>
         </div>
       </footer>
+      <MobileNav />
     </div>
   )
 }
