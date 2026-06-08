@@ -1,5 +1,6 @@
 import dynamic from 'next/dynamic'
 import type { Metadata } from 'next'
+import MobileNav from '@/components/MobileNav'
 
 export const metadata: Metadata = {
   title: 'Map — Browse Experiences in Bali | Balible',
@@ -56,5 +57,10 @@ function MapLoading() {
 }
 
 export default function MapPage() {
-  return <BaliMapView />
+  return (
+    <>
+      <BaliMapView />
+      <MobileNav />
+    </>
+  )
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { Search, X, Star, MapPin, Clock, ArrowLeft, SlidersHorizontal } from 'lucide-react'
+import { Search, X, Star, MapPin, Clock, ArrowLeft, SlidersHorizontal, ChevronLeft, ChevronRight } from 'lucide-react'
 import WishlistHeart from '@/components/WishlistHeart'
 
 // ── Experience data with coordinates ─────────────────────────────────────────
@@ -81,6 +81,7 @@ export default function BaliMapView() {
   const [search, setSearch]       = useState('')
   const [mobileView, setMobileView] = useState<'map' | 'list'>('map')
   const [showFilters, setShowFilters] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(true)
 
   const visible = MAP_EXPERIENCES.filter(e => {
     const matchCat = category === 'All' || e.category === category
@@ -188,12 +189,11 @@ export default function BaliMapView() {
         {/* ── SIDEBAR ─────────────────────────────────────────────────────── */}
         <aside
           style={{
-            width: 340, flexShrink: 0, display: 'flex', flexDirection: 'column',
+            width: 340, flexShrink: 0, flexDirection: 'column',
             backgroundColor: '#ffffff', borderRight: '1px solid #E8E4DE',
             height: '100svh', overflow: 'hidden',
-            // On mobile the sidebar becomes a bottom sheet
           }}
-          className="hidden lg:flex"
+          className={sidebarOpen ? 'hidden lg:flex' : 'hidden'}
         >
           {/* Header */}
           <div style={{ padding: '16px 20px 0', borderBottom: '1px solid #E8E4DE' }}>
@@ -201,11 +201,21 @@ export default function BaliMapView() {
               <a href="/" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111', textDecoration: 'none', letterSpacing: '0.02em' }}>
                 BALIBLE
               </a>
-              <a href="/search"
-                className="flex items-center gap-1.5 hover:opacity-70 transition-opacity"
-                style={{ fontSize: 13, color: '#6F675C', textDecoration: 'none' }}>
-                <ArrowLeft size={14} /> All experiences
-              </a>
+              <div className="flex items-center gap-2">
+                <a href="/search"
+                  className="flex items-center gap-1.5 hover:opacity-70 transition-opacity"
+                  style={{ fontSize: 13, color: '#6F675C', textDecoration: 'none' }}>
+                  <ArrowLeft size={14} /> All experiences
+                </a>
+                <button
+                  onClick={() => setSidebarOpen(false)}
+                  title="Hide sidebar"
+                  style={{ width: 28, height: 28, borderRadius: 8, border: '1px solid #E8E4DE', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  className="hover:bg-stone-50 transition-colors"
+                >
+                  <ChevronLeft size={14} style={{ color: '#6F675C' }} />
+                </button>
+              </div>
             </div>
 
             {/* Search */}
@@ -416,7 +426,7 @@ export default function BaliMapView() {
             <div
               className="lg:hidden"
               style={{
-                position: 'absolute', bottom: 16, left: 12, right: 12, zIndex: 1000,
+                position: 'absolute', bottom: 80, left: 12, right: 12, zIndex: 1000,
                 backgroundColor: 'white', borderRadius: 16, overflow: 'hidden',
                 boxShadow: '0 8px 32px rgba(0,0,0,0.2)', border: '1px solid #E8E4DE',
               }}>
@@ -504,6 +514,27 @@ export default function BaliMapView() {
             }}>
             {visible.length} experience{visible.length !== 1 ? 's' : ''} in this area
           </div>
+
+          {/* Desktop: expand sidebar button (shown when sidebar is collapsed) */}
+          {!sidebarOpen && (
+            <div className="hidden lg:block" style={{ position: 'absolute', top: 16, left: 16, zIndex: 999 }}>
+              <button
+                onClick={() => setSidebarOpen(true)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  backgroundColor: 'white', border: '1px solid #E8E4DE',
+                  borderRadius: 10, padding: '8px 14px',
+                  cursor: 'pointer', boxShadow: '0 2px 10px rgba(0,0,0,0.12)',
+                  fontSize: 13, fontWeight: 600, color: '#111111',
+                  fontFamily: 'var(--font-inter)',
+                }}
+                className="hover:bg-stone-50 transition-colors"
+              >
+                <ChevronRight size={14} style={{ color: '#6F675C' }} />
+                Show list
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </>

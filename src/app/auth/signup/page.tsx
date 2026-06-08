@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
+import MobileNav from '@/components/MobileNav'
 
 export default function SignUpPage() {
   const [showPw, setShowPw] = useState(false)
@@ -12,7 +13,7 @@ export default function SignUpPage() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center relative py-10"
+      className="min-h-screen flex items-center justify-center relative py-10 pb-24 md:pb-10"
       style={{ fontFamily: 'var(--font-inter)' }}
     >
       {/* Background */}
@@ -136,6 +137,7 @@ export default function SignUpPage() {
           </a>
         </p>
       </div>
+      <MobileNav />
     </div>
   )
 }

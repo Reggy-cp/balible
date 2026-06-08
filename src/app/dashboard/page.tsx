@@ -281,16 +281,101 @@ function ExperiencesPanel() {
   const [filter, setFilter]   = useState('All')
   const [exps, setExps]       = useState(EXPERIENCES)
   const [showForm, setShowForm] = useState(false)
+  const [editingExp, setEditingExp] = useState<typeof EXPERIENCES[0] | null>(null)
   const [menuOpen, setMenuOpen] = useState<number | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [imageDragging, setImageDragging] = useState(false)
+  const [galleryPreviews, setGalleryPreviews] = useState<string[]>([])
+  const [galleryDragging, setGalleryDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const galleryInputRef = useRef<HTMLInputElement>(null)
+
+  const BLANK_FORM = { title: '', category: 'Art & Craft', area: 'Ubud', price: '', duration: '', maxGuests: '' }
+  const [formData, setFormData] = useState(BLANK_FORM)
+  const setField = (k: keyof typeof BLANK_FORM, v: string) => setFormData(p => ({ ...p, [k]: v }))
 
   const handleImageFile = (file: File) => {
     if (!file.type.startsWith('image/')) return
     const reader = new FileReader()
     reader.onload = e => setImagePreview(e.target?.result as string)
     reader.readAsDataURL(file)
+  }
+
+  const handleGalleryFiles = (files: FileList | null) => {
+    if (!files) return
+    const slots = 8 - galleryPreviews.length
+    Array.from(files).slice(0, slots).forEach(file => {
+      if (!file.type.startsWith('image/')) return
+      const reader = new FileReader()
+      reader.onload = e => setGalleryPreviews(prev => [...prev, e.target?.result as string])
+      reader.readAsDataURL(file)
+    })
+  }
+
+  const removeGalleryImage = (idx: number) =>
+    setGalleryPreviews(prev => prev.filter((_, i) => i !== idx))
+
+  const [itinerary, setItinerary] = useState([{ time: '', activity: '' }])
+
+  const addStep = () => setItinerary(prev => [...prev, { time: '', activity: '' }])
+  const removeStep = (idx: number) =>
+    setItinerary(prev => prev.length === 1 ? prev : prev.filter((_, i) => i !== idx))
+  const updateStep = (idx: number, field: 'time' | 'activity', value: string) =>
+    setItinerary(prev => prev.map((s, i) => i === idx ? { ...s, [field]: value } : s))
+
+  const [formStep, setFormStep] = useState(1)
+
+  const WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+  const [schedule, setSchedule] = useState(
+    WEEK.map(day => ({ day, enabled: false, open: '09:00', close: '17:00' }))
+  )
+  const toggleDay = (i: number) =>
+    setSchedule(prev => prev.map((d, j) => j === i ? { ...d, enabled: !d.enabled } : d))
+  const updateSchedule = (i: number, field: 'open' | 'close', val: string) =>
+    setSchedule(prev => prev.map((d, j) => j === i ? { ...d, [field]: val } : d))
+
+  const openEdit = (exp: typeof EXPERIENCES[0]) => {
+    setEditingExp(exp)
+    setImagePreview(exp.image)
+    setFormStep(1)
+    setFormData({ title: exp.title, category: exp.category, area: exp.area, price: String(exp.price), duration: exp.duration, maxGuests: String(exp.maxGuests) })
+    const saved = localStorage.getItem(`balible_schedule_${exp.slug}`)
+    if (saved) setSchedule(JSON.parse(saved))
+    else setSchedule(WEEK.map(day => ({ day, enabled: false, open: '09:00', close: '17:00' })))
+    setShowForm(true)
+  }
+
+  const saveAndClose = () => {
+    const slug = editingExp?.slug ?? (formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'new-experience')
+    const expData = {
+      title: formData.title || editingExp?.title || '',
+      category: formData.category,
+      area: formData.area,
+      price: Number(formData.price) || editingExp?.price || 0,
+      duration: formData.duration || editingExp?.duration || '',
+      maxGuests: Number(formData.maxGuests) || editingExp?.maxGuests || 8,
+    }
+    try {
+      localStorage.setItem(`balible_exp_data_${slug}`, JSON.stringify(expData))
+      localStorage.setItem(`balible_schedule_${slug}`, JSON.stringify(schedule))
+    } catch {}
+    if (editingExp) {
+      setExps(prev => prev.map(e => e.id === editingExp.id ? { ...e, ...expData } : e))
+    } else {
+      setExps(prev => [...prev, { id: Date.now(), slug, ...expData, rating: 0, totalReviews: 0, bookings: 0, status: 'Draft', image: imagePreview ?? '', earnings: 0 }])
+    }
+    closeForm()
+  }
+
+  const closeForm = () => {
+    setShowForm(false)
+    setEditingExp(null)
+    setFormStep(1)
+    setImagePreview(null)
+    setGalleryPreviews([])
+    setItinerary([{ time: '', activity: '' }])
+    setSchedule(WEEK.map(day => ({ day, enabled: false, open: '09:00', close: '17:00' })))
+    setFormData(BLANK_FORM)
   }
 
   const tabs    = ['All', 'Active', 'Draft', 'Paused']
@@ -355,7 +440,7 @@ function ExperiencesPanel() {
                 style={{ border: '1px solid #E8E4DE', color: '#6F675C' }}>
                 <Eye size={14} />
               </a>
-              <button className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-ivory transition-colors"
+              <button onClick={() => openEdit(exp)} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-ivory transition-colors"
                 style={{ border: '1px solid #E8E4DE', background: 'none', cursor: 'pointer', color: '#6F675C' }}>
                 <Edit2 size={14} />
               </button>
@@ -383,7 +468,8 @@ function ExperiencesPanel() {
                           <Pause size={12} /> Pause
                         </button>
                       )}
-                      <button className="w-full flex items-center gap-2.5 px-4 py-2.5 hover:bg-ivory transition-colors"
+                      <button onClick={() => { setExps(prev => prev.filter(e => e.id !== exp.id)); setMenuOpen(null) }}
+                        className="w-full flex items-center gap-2.5 px-4 py-2.5 hover:bg-ivory transition-colors"
                         style={{ fontSize: 13, color: '#B66A45', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
                         <Trash2 size={12} /> Delete
                       </button>
@@ -403,99 +489,261 @@ function ExperiencesPanel() {
         </button>
       </div>
 
-      {/* Create modal */}
-      {showForm && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div className="bg-white rounded-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-5">
-              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111' }}>Create New Experience</h2>
-              <button onClick={() => { setShowForm(false); setImagePreview(null) }} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={20} style={{ color: '#6F675C' }} /></button>
-            </div>
-            <div className="space-y-4">
-              {/* Image upload */}
-              <div>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#111111', marginBottom: 6 }}>Cover Photo</label>
-                <input ref={fileInputRef} type="file" accept="image/*" className="hidden"
-                  onChange={e => { const f = e.target.files?.[0]; if (f) handleImageFile(f) }} />
-                {imagePreview ? (
-                  <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', height: 160 }}>
-                    <img src={imagePreview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    <button
-                      onClick={() => { setImagePreview(null); if (fileInputRef.current) fileInputRef.current.value = '' }}
-                      style={{ position: 'absolute', top: 8, right: 8, width: 28, height: 28, borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.55)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <X size={14} style={{ color: 'white' }} />
-                    </button>
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      style={{ position: 'absolute', bottom: 8, right: 8, height: 28, padding: '0 10px', borderRadius: 8, backgroundColor: 'rgba(0,0,0,0.55)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'white', fontWeight: 500 }}>
-                      <Camera size={12} /> Change
-                    </button>
+      {/* Create modal — step-by-step wizard */}
+      {showForm && (() => {
+        const STEPS = ['Basics', 'Details', 'Photos', 'Itinerary', 'Schedule']
+        const inputStyle: React.CSSProperties = { width: '100%', borderRadius: 10, border: '1px solid #E8E4DE', padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }
+        const labelStyle: React.CSSProperties = { display: 'block', fontSize: 13, fontWeight: 600, color: '#111111', marginBottom: 6 }
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+            <div className="bg-white rounded-2xl w-full max-w-lg p-6 max-h-[92vh] overflow-y-auto">
+
+              {/* Header */}
+              <div className="flex items-start justify-between mb-5">
+                <div>
+                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', margin: 0 }}>{editingExp ? 'Edit Experience' : 'New Experience'}</h2>
+                  <p style={{ fontSize: 12, color: '#9E9A94', margin: '3px 0 0' }}>Step {formStep} of {STEPS.length} · {STEPS[formStep - 1]}</p>
+                </div>
+                <button onClick={closeForm} style={{ background: 'none', border: 'none', cursor: 'pointer', marginTop: 2 }}><X size={20} style={{ color: '#6F675C' }} /></button>
+              </div>
+
+              {/* Progress bar */}
+              <div style={{ height: 4, borderRadius: 99, backgroundColor: '#F0EDE8', marginBottom: 24 }}>
+                <div style={{ height: '100%', borderRadius: 99, backgroundColor: '#111111', width: `${(formStep / STEPS.length) * 100}%`, transition: 'width 0.3s ease' }} />
+              </div>
+
+              {/* Step 1 — Basics */}
+              {formStep === 1 && (
+                <div key={`basics-${editingExp?.id ?? 'new'}`} className="space-y-4">
+                  <div>
+                    <label style={labelStyle}>Experience title</label>
+                    <input type="text" value={formData.title} onChange={e => setField('title', e.target.value)} placeholder="e.g. Traditional Batik Dyeing Class" style={inputStyle} />
                   </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label style={labelStyle}>Category</label>
+                      <select value={formData.category} onChange={e => setField('category', e.target.value)} style={{ ...inputStyle, backgroundColor: 'white', cursor: 'pointer' }}>
+                        {['Art & Craft','Wellness','Culture','Food & Drink','Nature','Architecture','Surf & Water','Diving','Cooking'].map(c => <option key={c}>{c}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Area</label>
+                      <select value={formData.area} onChange={e => setField('area', e.target.value)} style={{ ...inputStyle, backgroundColor: 'white', cursor: 'pointer' }}>
+                        {['Ubud','Canggu','Kuta','Seminyak','Uluwatu','Gianyar','Sanur','Nusa Dua','Amed','Jimbaran'].map(a => <option key={a}>{a}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Description</label>
+                    <textarea placeholder="Describe what guests will experience..." rows={4}
+                      style={{ ...inputStyle, resize: 'none' }} />
+                  </div>
+                </div>
+              )}
+
+              {/* Step 2 — Details */}
+              {formStep === 2 && (
+                <div key={`details-${editingExp?.id ?? 'new'}`} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label style={labelStyle}>Price per person (IDR)</label>
+                      <input type="number" value={formData.price} onChange={e => setField('price', e.target.value)} placeholder="450000" style={inputStyle} />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Duration</label>
+                      <input type="text" value={formData.duration} onChange={e => setField('duration', e.target.value)} placeholder="e.g. 2.5 hours" style={inputStyle} />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label style={labelStyle}>Max guests</label>
+                      <input type="number" value={formData.maxGuests} onChange={e => setField('maxGuests', e.target.value)} placeholder="8" style={inputStyle} />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Min guests</label>
+                      <input type="number" placeholder="1" style={inputStyle} />
+                    </div>
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Meeting point</label>
+                    <input type="text" placeholder="Studio address or landmark" style={inputStyle} />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>What&apos;s included</label>
+                    <textarea placeholder="e.g. Materials, refreshments, transport..." rows={3}
+                      style={{ ...inputStyle, resize: 'none' }} />
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3 — Photos */}
+              {formStep === 3 && (
+                <div className="space-y-4">
+                  {/* Cover photo */}
+                  <div>
+                    <label style={labelStyle}>Cover Photo</label>
+                    <input ref={fileInputRef} type="file" accept="image/*" className="hidden"
+                      onChange={e => { const f = e.target.files?.[0]; if (f) handleImageFile(f) }} />
+                    {imagePreview ? (
+                      <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', height: 180 }}>
+                        <img src={imagePreview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <button onClick={() => { setImagePreview(null); if (fileInputRef.current) fileInputRef.current.value = '' }}
+                          style={{ position: 'absolute', top: 8, right: 8, width: 28, height: 28, borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.55)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <X size={14} style={{ color: 'white' }} />
+                        </button>
+                        <button onClick={() => fileInputRef.current?.click()}
+                          style={{ position: 'absolute', bottom: 8, right: 8, height: 28, padding: '0 10px', borderRadius: 8, backgroundColor: 'rgba(0,0,0,0.55)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'white', fontWeight: 500 }}>
+                          <Camera size={12} /> Change
+                        </button>
+                      </div>
+                    ) : (
+                      <div onClick={() => fileInputRef.current?.click()}
+                        onDragOver={e => { e.preventDefault(); setImageDragging(true) }}
+                        onDragLeave={() => setImageDragging(false)}
+                        onDrop={e => { e.preventDefault(); setImageDragging(false); const f = e.dataTransfer.files[0]; if (f) handleImageFile(f) }}
+                        style={{ height: 150, borderRadius: 12, border: `2px dashed ${imageDragging ? '#C8A97E' : '#E8E4DE'}`, backgroundColor: imageDragging ? '#FFFDF9' : '#F9F9F7', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer', transition: 'all 0.2s' }}>
+                        <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: '#F0EDE8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Camera size={18} style={{ color: '#6F675C' }} />
+                        </div>
+                        <div style={{ textAlign: 'center' }}>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: '#111111', margin: 0 }}>Upload cover photo</p>
+                          <p style={{ fontSize: 12, color: '#6F675C', margin: '2px 0 0' }}>Click or drag & drop · JPG, PNG, WEBP</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Gallery */}
+                  <div>
+                    <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
+                      <label style={{ fontSize: 13, fontWeight: 600, color: '#111111' }}>Gallery Photos</label>
+                      <span style={{ fontSize: 12, color: '#9E9A94' }}>{galleryPreviews.length}/8</span>
+                    </div>
+                    <input ref={galleryInputRef} type="file" accept="image/*" multiple className="hidden"
+                      onChange={e => { handleGalleryFiles(e.target.files); if (galleryInputRef.current) galleryInputRef.current.value = '' }} />
+                    {galleryPreviews.length > 0 && (
+                      <div className="grid grid-cols-3 gap-2 mb-2">
+                        {galleryPreviews.map((src, i) => (
+                          <div key={i} style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', aspectRatio: '4/3' }}>
+                            <img src={src} alt={`Gallery ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <button onClick={() => removeGalleryImage(i)}
+                              style={{ position: 'absolute', top: 4, right: 4, width: 22, height: 22, borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.6)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <X size={11} style={{ color: 'white' }} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {galleryPreviews.length < 8 && (
+                      <div onClick={() => galleryInputRef.current?.click()}
+                        onDragOver={e => { e.preventDefault(); setGalleryDragging(true) }}
+                        onDragLeave={() => setGalleryDragging(false)}
+                        onDrop={e => { e.preventDefault(); setGalleryDragging(false); handleGalleryFiles(e.dataTransfer.files) }}
+                        style={{ height: 68, borderRadius: 10, border: `2px dashed ${galleryDragging ? '#C8A97E' : '#E8E4DE'}`, backgroundColor: galleryDragging ? '#FFFDF9' : '#F9F9F7', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer', transition: 'all 0.2s' }}>
+                        <Camera size={15} style={{ color: '#6F675C' }} />
+                        <span style={{ fontSize: 13, color: '#6F675C' }}>{galleryPreviews.length === 0 ? 'Add gallery photos' : 'Add more photos'}</span>
+                      </div>
+                    )}
+                    <p style={{ fontSize: 11, color: '#9E9A94', marginTop: 4 }}>Up to 8 photos · shown in your experience listing</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 4 — Itinerary */}
+              {formStep === 4 && (
+                <div>
+                  <p style={{ fontSize: 13, color: '#6F675C', marginBottom: 12, marginTop: 0 }}>Walk guests through the schedule, step by step.</p>
+                  <div className="space-y-2">
+                    {itinerary.map((step, i) => (
+                      <div key={i} className="flex gap-2 items-center">
+                        <input type="time" value={step.time} onChange={e => updateStep(i, 'time', e.target.value)}
+                          style={{ width: 110, flexShrink: 0, borderRadius: 10, border: '1px solid #E8E4DE', padding: '9px 10px', fontSize: 13, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }} />
+                        <input type="text" value={step.activity} onChange={e => updateStep(i, 'activity', e.target.value)}
+                          placeholder="Activity or description"
+                          style={{ flex: 1, borderRadius: 10, border: '1px solid #E8E4DE', padding: '9px 12px', fontSize: 13, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }} />
+                        <button onClick={() => removeStep(i)} disabled={itinerary.length === 1}
+                          style={{ flexShrink: 0, width: 28, height: 28, borderRadius: 8, border: '1px solid #E8E4DE', background: 'none', cursor: itinerary.length === 1 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: itinerary.length === 1 ? 0.35 : 1 }}>
+                          <X size={13} style={{ color: '#6F675C' }} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <button onClick={addStep}
+                    style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 600, color: '#C8A97E', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                    <Plus size={14} /> Add step
+                  </button>
+                </div>
+              )}
+
+              {/* Step 5 — Schedule */}
+              {formStep === 5 && (
+                <div>
+                  <p style={{ fontSize: 13, color: '#6F675C', marginBottom: 14, marginTop: 0 }}>
+                    Set which days your experience is available and the operating hours.
+                  </p>
+                  <div className="space-y-2">
+                    {schedule.map((row, i) => (
+                      <div key={row.day} className="flex items-center gap-3"
+                        style={{ padding: '10px 14px', borderRadius: 12, border: '1px solid #E8E4DE', backgroundColor: row.enabled ? '#FAFAF8' : 'white', transition: 'background 0.15s' }}>
+                        {/* Toggle */}
+                        <button
+                          onClick={() => toggleDay(i)}
+                          style={{
+                            flexShrink: 0, width: 36, height: 20, borderRadius: 99,
+                            backgroundColor: row.enabled ? '#111111' : '#E8E4DE',
+                            border: 'none', cursor: 'pointer', position: 'relative', transition: 'background 0.2s',
+                          }}>
+                          <span style={{
+                            position: 'absolute', top: 2, left: row.enabled ? 18 : 2,
+                            width: 16, height: 16, borderRadius: '50%', backgroundColor: 'white',
+                            transition: 'left 0.2s', display: 'block',
+                          }} />
+                        </button>
+                        {/* Day label */}
+                        <span style={{ width: 32, fontSize: 13, fontWeight: 600, color: row.enabled ? '#111111' : '#9E9A94', flexShrink: 0 }}>{row.day}</span>
+                        {/* Time inputs */}
+                        {row.enabled ? (
+                          <div className="flex items-center gap-2 flex-1">
+                            <input type="time" value={row.open}
+                              onChange={e => updateSchedule(i, 'open', e.target.value)}
+                              style={{ flex: 1, borderRadius: 8, border: '1px solid #E8E4DE', padding: '6px 8px', fontSize: 13, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }} />
+                            <span style={{ fontSize: 12, color: '#9E9A94', flexShrink: 0 }}>to</span>
+                            <input type="time" value={row.close}
+                              onChange={e => updateSchedule(i, 'close', e.target.value)}
+                              style={{ flex: 1, borderRadius: 8, border: '1px solid #E8E4DE', padding: '6px 8px', fontSize: 13, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }} />
+                          </div>
+                        ) : (
+                          <span style={{ fontSize: 13, color: '#C8C4BE', flex: 1 }}>Closed</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Footer nav */}
+              <div className="flex gap-3 mt-6">
+                {formStep > 1 ? (
+                  <button onClick={() => setFormStep(s => s - 1)}
+                    style={{ flex: 1, height: 44, borderRadius: 10, border: '1px solid #E8E4DE', background: 'none', fontSize: 14, fontWeight: 600, color: '#6F675C', cursor: 'pointer' }}>Back</button>
                 ) : (
-                  <div
-                    onClick={() => fileInputRef.current?.click()}
-                    onDragOver={e => { e.preventDefault(); setImageDragging(true) }}
-                    onDragLeave={() => setImageDragging(false)}
-                    onDrop={e => { e.preventDefault(); setImageDragging(false); const f = e.dataTransfer.files[0]; if (f) handleImageFile(f) }}
-                    style={{
-                      height: 140, borderRadius: 12, border: `2px dashed ${imageDragging ? '#C8A97E' : '#E8E4DE'}`,
-                      backgroundColor: imageDragging ? '#FFFDF9' : '#F9F9F7',
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                      gap: 8, cursor: 'pointer', transition: 'all 0.2s',
-                    }}>
-                    <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: '#F0EDE8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Camera size={18} style={{ color: '#6F675C' }} />
-                    </div>
-                    <div style={{ textAlign: 'center' }}>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: '#111111', margin: 0 }}>Upload a cover photo</p>
-                      <p style={{ fontSize: 12, color: '#6F675C', margin: '2px 0 0' }}>Click or drag & drop · JPG, PNG, WEBP</p>
-                    </div>
-                  </div>
+                  <button onClick={closeForm}
+                    style={{ flex: 1, height: 44, borderRadius: 10, border: '1px solid #E8E4DE', background: 'none', fontSize: 14, fontWeight: 600, color: '#6F675C', cursor: 'pointer' }}>Cancel</button>
+                )}
+                {formStep < STEPS.length ? (
+                  <button onClick={() => setFormStep(s => s + 1)}
+                    style={{ flex: 2, height: 44, borderRadius: 10, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Next →</button>
+                ) : (
+                  <button onClick={saveAndClose}
+                    style={{ flex: 2, height: 44, borderRadius: 10, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>{editingExp ? 'Save Changes' : 'Save as Draft'}</button>
                 )}
               </div>
 
-              {[
-                { label: 'Title',              placeholder: 'e.g. Traditional Batik Dyeing Class', type: 'text' },
-                { label: 'Price per person (IDR)', placeholder: '450000',                          type: 'number' },
-                { label: 'Duration',           placeholder: 'e.g. 2.5 hours',                     type: 'text' },
-                { label: 'Max guests',         placeholder: '8',                                   type: 'number' },
-                { label: 'Meeting point',      placeholder: 'Studio address or landmark',          type: 'text' },
-              ].map(({ label, placeholder, type }) => (
-                <div key={label}>
-                  <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#111111', marginBottom: 6 }}>{label}</label>
-                  <input type={type} placeholder={placeholder}
-                    style={{ width: '100%', borderRadius: 10, border: '1px solid #E8E4DE', padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }} />
-                </div>
-              ))}
-              <div>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#111111', marginBottom: 6 }}>Description</label>
-                <textarea placeholder="Describe what guests will experience..." rows={3}
-                  style={{ width: '100%', borderRadius: 10, border: '1px solid #E8E4DE', padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', resize: 'none', outline: 'none' }} />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#111111', marginBottom: 6 }}>Category</label>
-                  <select style={{ width: '100%', borderRadius: 10, border: '1px solid #E8E4DE', padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none', backgroundColor: 'white', cursor: 'pointer' }}>
-                    {['Art & Craft','Wellness','Culture','Food & Drink','Nature','Architecture','Surf & Water','Diving','Cooking'].map(c => <option key={c}>{c}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#111111', marginBottom: 6 }}>Area</label>
-                  <select style={{ width: '100%', borderRadius: 10, border: '1px solid #E8E4DE', padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none', backgroundColor: 'white', cursor: 'pointer' }}>
-                    {['Ubud','Canggu','Kuta','Seminyak','Uluwatu','Gianyar','Sanur','Nusa Dua','Amed','Jimbaran'].map(a => <option key={a}>{a}</option>)}
-                  </select>
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-3 mt-6">
-              <button onClick={() => { setShowForm(false); setImagePreview(null) }}
-                style={{ flex: 1, height: 44, borderRadius: 10, border: '1px solid #E8E4DE', background: 'none', fontSize: 14, fontWeight: 600, color: '#6F675C', cursor: 'pointer' }}>Cancel</button>
-              <button onClick={() => { setShowForm(false); setImagePreview(null) }}
-                style={{ flex: 2, height: 44, borderRadius: 10, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Save as Draft</button>
             </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
     </div>
   )
 }
@@ -528,7 +776,13 @@ function BookingsPanel() {
           <input placeholder="Search guest, experience, or ref..." value={search} onChange={e => setSearch(e.target.value)}
             style={{ width: '100%', height: 40, borderRadius: 10, border: '1px solid #E8E4DE', paddingLeft: 34, paddingRight: 14, fontSize: 13, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none', backgroundColor: 'white' }} />
         </div>
-        <button className="flex items-center gap-2 px-4 rounded-xl flex-shrink-0"
+        <button
+          onClick={() => {
+            const rows = [['Ref','Guest','Experience','Date','Guests','Total','Status'], ...bookings.map(b => [b.ref, b.guest, b.experience, b.date, b.guests, b.total, b.status])]
+            const csv = rows.map(r => r.join(',')).join('\n')
+            const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'bookings.csv'; a.click()
+          }}
+          className="flex items-center gap-2 px-4 rounded-xl flex-shrink-0 hover:opacity-80"
           style={{ height: 40, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 13, color: '#6F675C', cursor: 'pointer' }}>
           <Download size={14} /> Export
         </button>
@@ -679,9 +933,15 @@ function EarningsPanel() {
               </div>
             ))}
           </div>
-          <button className="w-full mt-4 py-2.5 rounded-xl hover:opacity-80 transition-opacity"
+          <button
+            onClick={() => {
+              const rows = [['Period','Amount','Status','Date'], ...PAYOUTS.map(p => [p.period, p.amount, p.status, p.date])]
+              const csv = rows.map(r => r.join(',')).join('\n')
+              const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'payout-statements.csv'; a.click()
+            }}
+            className="w-full mt-4 py-2.5 rounded-xl hover:opacity-80 transition-opacity flex items-center justify-center gap-2"
             style={{ border: '1px solid #E8E4DE', background: 'none', color: '#6F675C', cursor: 'pointer', fontSize: 13 }}>
-            Download statements
+            <Download size={13} /> Download statements
           </button>
         </div>
       </div>
@@ -990,6 +1250,70 @@ function SettingsPanel() {
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 
+const HOST_NOTIFICATIONS = [
+  { id: 1, title: 'New booking received', body: 'Sarah Kim booked Pottery Making Class for Jun 15', time: '2 min ago', unread: true },
+  { id: 2, title: 'New 5★ review', body: 'Thomas R. left a review on Pottery Making Class', time: '1 hr ago', unread: true },
+  { id: 3, title: 'Booking confirmed', body: 'Priya M. confirmed her Batik Painting Workshop slot', time: 'Yesterday', unread: false },
+]
+
+function HostNotifBell({ onSettings, align = 'left', dark = false }: { onSettings: () => void; align?: 'left' | 'right'; dark?: boolean }) {
+  const [notifOpen, setNotifOpen] = useState(false)
+  const [notifs, setNotifs] = useState(HOST_NOTIFICATIONS)
+  const unreadCount = notifs.filter(n => n.unread).length
+  const bellColor = dark ? (unreadCount > 0 ? '#111111' : '#6F675C') : (unreadCount > 0 ? 'white' : 'rgba(255,255,255,0.55)')
+
+  return (
+    <div className="relative">
+      <button onClick={() => setNotifOpen(o => !o)}
+        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+        <Bell size={17} style={{ color: bellColor }} />
+        {unreadCount > 0 && (
+          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: '#B66A45', fontSize: 9, color: 'white', fontWeight: 700 }}>{unreadCount}</span>
+        )}
+      </button>
+      {notifOpen && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setNotifOpen(false)} />
+          <div className="absolute top-9 z-50 bg-white rounded-xl shadow-2xl overflow-hidden"
+            style={{ [align === 'right' ? 'right' : 'left']: 0, width: 'min(300px, calc(100vw - 32px))', border: '1px solid #E8E4DE' }}>
+            <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid #E8E4DE' }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: '#111111' }}>Notifications</span>
+              {unreadCount > 0 && (
+                <button onClick={() => setNotifs(n => n.map(x => ({ ...x, unread: false })))}
+                  style={{ fontSize: 11, color: '#C8A97E', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
+                  Mark all read
+                </button>
+              )}
+            </div>
+            <div>
+              {notifs.map(n => (
+                <div key={n.id} onClick={() => setNotifs(prev => prev.map(x => x.id === n.id ? { ...x, unread: false } : x))}
+                  className="px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors"
+                  style={{ borderBottom: '1px solid #F5F1EB', backgroundColor: n.unread ? '#FFFDF9' : 'white' }}>
+                  <div className="flex items-start gap-2">
+                    {n.unread && <span className="mt-1.5 flex-shrink-0 w-2 h-2 rounded-full" style={{ backgroundColor: '#C8A97E' }} />}
+                    <div className={n.unread ? '' : 'pl-4'}>
+                      <p style={{ fontSize: 13, fontWeight: n.unread ? 600 : 400, color: '#111111', marginBottom: 2 }}>{n.title}</p>
+                      <p style={{ fontSize: 12, color: '#6F675C', lineHeight: 1.4 }}>{n.body}</p>
+                      <p style={{ fontSize: 11, color: '#9E9A94', marginTop: 3 }}>{n.time}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button onClick={() => { onSettings(); setNotifOpen(false) }}
+              className="w-full py-3 text-center hover:bg-gray-50 transition-colors"
+              style={{ fontSize: 12, color: '#C8A97E', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', borderTop: '1px solid #E8E4DE' }}>
+              Notification settings →
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 function SidebarInner({ activeNav, setActiveNav }: { activeNav: string; setActiveNav: (id: string) => void }) {
   return (
     <>
@@ -998,13 +1322,6 @@ function SidebarInner({ activeNav, setActiveNav }: { activeNav: string; setActiv
           <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: 'white' }}>BALIBLE</span>
           <span style={{ fontSize: 7, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>HOST DASHBOARD</span>
         </a>
-        <button onClick={() => setActiveNav('settings')}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-          className="relative" title="Notification settings">
-          <Bell size={17} style={{ color: 'rgba(255,255,255,0.7)' }} />
-          <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: '#B66A45', fontSize: 9, color: 'white', fontWeight: 700 }}>2</span>
-        </button>
       </div>
 
       <div className="flex items-center gap-3 mx-3 px-3 py-3 rounded-xl mb-3" style={{ backgroundColor: 'rgba(255,255,255,0.06)' }}>
@@ -1093,7 +1410,7 @@ export default function DashboardPage() {
           <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>
             {NAV_ITEMS.find(n => n.id === activeNav)?.label ?? 'Dashboard'}
           </span>
-          <div style={{ width: 22 }} />
+          <HostNotifBell onSettings={() => setActiveNav('settings')} align="right" dark />
         </div>
 
         {renderPanel()}

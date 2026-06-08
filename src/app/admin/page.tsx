@@ -367,7 +367,13 @@ function ExperiencesPanel() {
 
       <div className="flex gap-3 mb-4">
         <SearchBar value={search} onChange={setSearch} placeholder="Search title or host…" />
-        <button className="flex items-center gap-2 px-4 rounded-xl flex-shrink-0 hover:opacity-80"
+        <button
+          onClick={() => {
+            const rows = [['ID','Title','Host','Area','Category','Price','Status'], ...exps.map(e => [e.id, e.title, e.host, e.area, e.category, e.price, e.status])]
+            const csv = rows.map(r => r.join(',')).join('\n')
+            const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'experiences.csv'; a.click()
+          }}
+          className="flex items-center gap-2 px-4 rounded-xl flex-shrink-0 hover:opacity-80"
           style={{ height: 38, border: `1px solid ${SAND}`, backgroundColor: 'white', fontSize: 13, color: COCONUT, cursor: 'pointer' }}>
           <Download size={13} /> Export
         </button>
@@ -422,7 +428,7 @@ function ExperiencesPanel() {
                       {exp.status !== 'Active' && <button onClick={() => setStatus(exp.id, 'Active')} className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-stone-50" style={{ fontSize: 13, color: FOREST, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}><Play size={12} />Activate</button>}
                       {exp.status === 'Active' && <button onClick={() => setStatus(exp.id, 'Paused')} className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-stone-50" style={{ fontSize: 13, color: GOLD, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}><Pause size={12} />Pause</button>}
                       <button onClick={() => setStatus(exp.id, 'Draft')} className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-stone-50" style={{ fontSize: 13, color: COCONUT, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}><Edit2 size={12} />Set Draft</button>
-                      <button className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-stone-50" style={{ fontSize: 13, color: TERRACOTTA, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}><Trash2 size={12} />Remove</button>
+                      <button onClick={() => { setExps(p => p.filter(e => e.id !== exp.id)); setMenuOpen(null) }} className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-stone-50" style={{ fontSize: 13, color: TERRACOTTA, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}><Trash2 size={12} />Remove</button>
                     </div>
                   </>
                 )}
@@ -576,7 +582,13 @@ function BookingsPanel() {
 
       <div className="flex gap-3 mb-4">
         <SearchBar value={search} onChange={setSearch} placeholder="Search guest, experience, host or ref…" />
-        <button className="flex items-center gap-2 px-4 rounded-xl flex-shrink-0 hover:opacity-80"
+        <button
+          onClick={() => {
+            const rows = [['Ref','Guest','Experience','Host','Date','Guests','Total','Status'], ...bookings.map(b => [b.ref, b.guest, b.experience, b.host, b.date, b.guests, b.total, b.status])]
+            const csv = rows.map(r => r.join(',')).join('\n')
+            const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'bookings.csv'; a.click()
+          }}
+          className="flex items-center gap-2 px-4 rounded-xl flex-shrink-0 hover:opacity-80"
           style={{ height: 38, border: `1px solid ${SAND}`, backgroundColor: 'white', fontSize: 13, color: COCONUT, cursor: 'pointer' }}>
           <Download size={13} /> CSV
         </button>
@@ -1057,10 +1069,68 @@ function SettingsPanel() {
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 
+function AdminNotifBell({ onNavigate, align = 'left', dark = false }: { onNavigate: (section: string) => void; align?: 'left' | 'right'; dark?: boolean }) {
+  const pendingHosts   = ALL_HOSTS.filter(h => h.status === 'Pending').length
+  const flaggedReviews = ALL_REVIEWS.filter(r => r.status === 'Flagged').length
+  const [notifOpen, setNotifOpen] = useState(false)
+  const unreadCount = pendingHosts + flaggedReviews
+
+  const adminNotifs = [
+    ...(pendingHosts > 0   ? [{ id: 'hosts',   title: `${pendingHosts} host application${pendingHosts > 1 ? 's' : ''} pending`, body: 'New hosts are waiting for approval',    action: 'hosts',    dot: TERRACOTTA }] : []),
+    ...(flaggedReviews > 0 ? [{ id: 'reviews', title: `${flaggedReviews} review${flaggedReviews > 1 ? 's' : ''} flagged`,       body: 'Flagged content needs your attention', action: 'reviews',  dot: TERRACOTTA }] : []),
+    { id: 'sys', title: 'Platform running normally', body: 'No critical issues detected', action: 'overview', dot: '#4A7C59' },
+  ]
+
+  const bellColor = dark ? (unreadCount > 0 ? '#111111' : '#6F675C') : (unreadCount > 0 ? 'white' : 'rgba(255,255,255,0.55)')
+
+  return (
+    <div className="relative">
+      <button onClick={() => setNotifOpen(o => !o)}
+        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+        <Bell size={17} style={{ color: bellColor }} />
+        {unreadCount > 0 && (
+          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: TERRACOTTA, fontSize: 9, color: 'white', fontWeight: 700 }}>{unreadCount}</span>
+        )}
+      </button>
+      {notifOpen && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setNotifOpen(false)} />
+          <div className="absolute top-9 z-50 bg-white rounded-xl shadow-2xl overflow-hidden"
+            style={{ [align === 'right' ? 'right' : 'left']: 0, width: 'min(300px, calc(100vw - 32px))', border: '1px solid #E8E4DE' }}>
+            <div className="px-4 py-3" style={{ borderBottom: '1px solid #E8E4DE' }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: '#111111' }}>Admin Notifications</span>
+            </div>
+            <div>
+              {adminNotifs.map(n => (
+                <div key={n.id} onClick={() => { onNavigate(n.action); setNotifOpen(false) }}
+                  className="px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors"
+                  style={{ borderBottom: '1px solid #F5F1EB' }}>
+                  <div className="flex items-start gap-2">
+                    <span className="mt-1.5 flex-shrink-0 w-2 h-2 rounded-full" style={{ backgroundColor: n.dot }} />
+                    <div>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: '#111111', marginBottom: 2 }}>{n.title}</p>
+                      <p style={{ fontSize: 12, color: '#6F675C' }}>{n.body}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button onClick={() => { onNavigate('settings'); setNotifOpen(false) }}
+              className="w-full py-3 text-center hover:bg-gray-50 transition-colors"
+              style={{ fontSize: 12, color: GOLD, fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', borderTop: '1px solid #E8E4DE' }}>
+              Notification settings →
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 function Sidebar({ activeNav, setActiveNav }: { activeNav: string; setActiveNav: (id: string) => void }) {
   const pendingHosts   = ALL_HOSTS.filter(h => h.status === 'Pending').length
   const flaggedReviews = ALL_REVIEWS.filter(r => r.status === 'Flagged').length
-
   return (
     <>
       <div className="flex items-center justify-between px-5 pt-6 pb-4">
@@ -1068,15 +1138,6 @@ function Sidebar({ activeNav, setActiveNav }: { activeNav: string; setActiveNav:
           <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: 'white' }}>BALIBLE</span>
           <span style={{ fontSize: 7, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>OWNER DASHBOARD</span>
         </a>
-        <div className="relative cursor-pointer">
-          <Bell size={17} style={{ color: 'rgba(255,255,255,0.7)' }} />
-          {(pendingHosts + flaggedReviews) > 0 && (
-            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: TERRACOTTA, fontSize: 9, color: 'white', fontWeight: 700 }}>
-              {pendingHosts + flaggedReviews}
-            </span>
-          )}
-        </div>
       </div>
 
       <div className="flex items-center gap-3 mx-3 px-3 py-3 rounded-xl mb-3" style={{ backgroundColor: 'rgba(255,255,255,0.06)' }}>
@@ -1175,7 +1236,7 @@ export default function AdminPage() {
           <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL }}>
             {NAV_ITEMS.find(n => n.id === activeNav)?.label ?? 'Dashboard'}
           </span>
-          <div style={{ width: 22 }} />
+          <AdminNotifBell onNavigate={setActiveNav} align="right" dark />
         </div>
 
         {renderPanel()}

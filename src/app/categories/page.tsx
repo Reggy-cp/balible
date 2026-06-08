@@ -1,5 +1,6 @@
 import { ArrowRight } from 'lucide-react'
 import Navbar from '@/components/Navbar'
+import MobileNav from '@/components/MobileNav'
 
 export const metadata = {
   title: 'Browse by Category — Balible',
@@ -392,8 +393,10 @@ export default function CategoriesPage() {
         </div>
       </div>
 
+      <MobileNav />
+
       {/* ── FOOTER ── */}
-      <footer style={{ backgroundColor: '#111111', padding: '40px 24px 28px' }}>
+      <footer className="pt-10 px-6 pb-20 md:pb-7" style={{ backgroundColor: '#111111' }}>
         <div className="max-w-[1200px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <a href="/" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: 'white', textDecoration: 'none' }}>BALIBLE</a>
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>© 2024 Balible. All rights reserved.</p>

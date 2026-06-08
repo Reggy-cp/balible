@@ -111,7 +111,7 @@ function PriceRange({ value, onChange }: { value: [number, number]; onChange: (v
 
 type Filters = {
   category: string; location: string; duration: string
-  priceRange: [number, number]; date: string
+  priceRange: [number, number]; date: string; guests: number
 }
 
 function FilterLabel({ children }: { children: React.ReactNode }) {
@@ -131,7 +131,7 @@ function FilterSelect({ value, onChange, options }: { value: string; onChange: (
 }
 
 function FilterPanel({ filters, onChange, mobile = false, onClose }: { filters: Filters; onChange: (f: Partial<Filters>) => void; mobile?: boolean; onClose?: () => void }) {
-  const hasActive = filters.category !== 'All Categories' || filters.location !== 'All Locations' || filters.duration !== 'Any duration' || filters.priceRange[0] > 0 || filters.priceRange[1] < 700000
+  const hasActive = filters.category !== 'All Categories' || filters.location !== 'All Locations' || filters.duration !== 'Any duration' || filters.priceRange[0] > 0 || filters.priceRange[1] < 700000 || filters.guests > 1
   return (
     <div className={mobile ? 'p-5' : 'p-0'}>
       {mobile && (
@@ -144,7 +144,7 @@ function FilterPanel({ filters, onChange, mobile = false, onClose }: { filters: 
         <div className="flex items-center justify-between mb-5">
           <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111' }}>Filters</h3>
           {hasActive && (
-            <button onClick={() => onChange({ category: 'All Categories', location: 'All Locations', duration: 'Any duration', priceRange: [0, 700000], date: '' })} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter)', fontSize: 12, color: '#B66A45' }}>
+            <button onClick={() => onChange({ category: 'All Categories', location: 'All Locations', duration: 'Any duration', priceRange: [0, 700000], date: '', guests: 1 })} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter)', fontSize: 12, color: '#B66A45' }}>
               Clear all
             </button>
           )}
@@ -175,7 +175,7 @@ function FilterPanel({ filters, onChange, mobile = false, onClose }: { filters: 
       {mobile && (
         <div className="mt-6 flex gap-3">
           {hasActive && (
-            <button className="flex-1 py-3 rounded-lg" style={{ border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500, color: '#111111', backgroundColor: 'white', cursor: 'pointer' }} onClick={() => onChange({ category: 'All Categories', location: 'All Locations', duration: 'Any duration', priceRange: [0, 700000], date: '' })}>
+            <button className="flex-1 py-3 rounded-lg" style={{ border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500, color: '#111111', backgroundColor: 'white', cursor: 'pointer' }} onClick={() => onChange({ category: 'All Categories', location: 'All Locations', duration: 'Any duration', priceRange: [0, 700000], date: '', guests: 1 })}>
               Clear
             </button>
           )}
@@ -190,15 +190,17 @@ function FilterPanel({ filters, onChange, mobile = false, onClose }: { filters: 
 
 // ── Result Card ───────────────────────────────────────────────────────────────
 
-function ResultCard({ r }: { r: Result }) {
+function ResultCard({ r, date, guests }: { r: Result; date: string; guests: number }) {
   const durationLabel = r.durationMins < 60
     ? `${r.durationMins} min`
     : r.durationMins % 60 === 0
       ? `${r.durationMins / 60} hr`
       : `${Math.floor(r.durationMins / 60)}.${(r.durationMins % 60) / 6} hr`
+  const qs = [date && `date=${date}`, guests > 1 && `guests=${guests}`].filter(Boolean).join('&')
+  const href = `/experiences/${r.slug}${qs ? `?${qs}` : ''}`
 
   return (
-    <a href={`/experiences/${r.slug}`} className="flex gap-4 p-4 bg-white rounded-xl hover:shadow-md transition-shadow" style={{ border: '1px solid #E8E4DE', textDecoration: 'none' }}>
+    <a href={href} className="flex gap-4 p-4 bg-white rounded-xl hover:shadow-md transition-shadow" style={{ border: '1px solid #E8E4DE', textDecoration: 'none' }}>
       <div className="relative flex-shrink-0 overflow-hidden rounded-lg" style={{ width: 110, height: 110 }}>
         <img src={r.photo} alt={r.title} className="w-full h-full object-cover" />
         <div className="absolute top-1.5 right-1.5">
@@ -243,7 +245,7 @@ function ResultCard({ r }: { r: Result }) {
 
 const DEFAULT_FILTERS: Filters = {
   category: 'All Categories', location: 'All Locations',
-  duration: 'Any duration', priceRange: [0, 700000], date: '',
+  duration: 'Any duration', priceRange: [0, 700000], date: '', guests: 1,
 }
 
 export default function SearchPage() {
@@ -280,6 +282,7 @@ export default function SearchPage() {
     filters.duration !== 'Any duration',
     filters.priceRange[0] > 0 || filters.priceRange[1] < 700000,
     !!filters.date,
+    filters.guests > 1,
   ].filter(Boolean).length
 
   return (
@@ -290,23 +293,122 @@ export default function SearchPage() {
       {/* ── SEARCH BAR ── */}
       <div className="bg-white sticky top-16 z-40" style={{ borderBottom: '1px solid #E8E4DE' }}>
         <div className="px-4 py-3 max-w-[1440px] mx-auto">
-          <div className="flex items-center bg-white rounded-xl gap-2" style={{ border: '1px solid #E8E4DE', height: 46 }}>
-            <Search size={14} className="ml-3 flex-shrink-0" style={{ color: '#6F675C' }} />
-            <input
-              type="text" placeholder="Search experiences, locations…"
-              value={search} onChange={e => setSearch(e.target.value)}
-              className="flex-1 outline-none bg-transparent"
-              style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111' }}
-            />
-            {search && (
-              <button onClick={() => setSearch('')} className="mr-2">
-                <X size={13} style={{ color: '#6F675C' }} />
-              </button>
-            )}
-            <div className="w-px h-5 flex-shrink-0" style={{ backgroundColor: '#E8E4DE' }} />
-            <CalendarDays size={14} className="mx-2 flex-shrink-0" style={{ color: '#6F675C' }} />
-            <span className="mr-3 flex-shrink-0 hidden sm:block" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', whiteSpace: 'nowrap' }}>Add date</span>
+
+          {/* Desktop: single pill with 4 sections */}
+          <div className="hidden sm:flex items-center bg-white rounded-xl overflow-hidden" style={{ border: '1px solid #E8E4DE', height: 52 }}>
+            {/* What */}
+            <div className="flex items-center gap-2 px-4 h-full flex-1 min-w-0">
+              <Search size={14} style={{ color: '#6F675C', flexShrink: 0 }} />
+              <input
+                type="text" placeholder="Search experiences…"
+                value={search} onChange={e => setSearch(e.target.value)}
+                className="flex-1 outline-none bg-transparent min-w-0"
+                style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111' }}
+              />
+              {search && <button onClick={() => setSearch('')}><X size={12} style={{ color: '#6F675C' }} /></button>}
+            </div>
+
+            <div style={{ width: 1, height: 28, backgroundColor: '#E8E4DE', flexShrink: 0 }} />
+
+            {/* Place */}
+            <div className="flex items-center gap-2 px-4 h-full" style={{ minWidth: 148 }}>
+              <MapPin size={13} style={{ color: '#6F675C', flexShrink: 0 }} />
+              <select
+                value={filters.location}
+                onChange={e => updateFilters({ location: e.target.value })}
+                className="outline-none appearance-none cursor-pointer bg-transparent flex-1"
+                style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: filters.location === 'All Locations' ? '#9E9A94' : '#111111' }}
+              >
+                <option value="All Locations">Anywhere</option>
+                {LOCATIONS.filter(l => l !== 'All Locations').map(l => <option key={l}>{l}</option>)}
+              </select>
+            </div>
+
+            <div style={{ width: 1, height: 28, backgroundColor: '#E8E4DE', flexShrink: 0 }} />
+
+            {/* Date */}
+            <div className="flex items-center gap-2 px-4 h-full" style={{ minWidth: 160 }}>
+              <CalendarDays size={13} style={{ color: '#6F675C', flexShrink: 0 }} />
+              <input
+                type="date" value={filters.date}
+                onChange={e => updateFilters({ date: e.target.value })}
+                className="outline-none bg-transparent flex-1"
+                style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: filters.date ? '#111111' : '#9E9A94' }}
+              />
+            </div>
+
+            <div style={{ width: 1, height: 28, backgroundColor: '#E8E4DE', flexShrink: 0 }} />
+
+            {/* Guests */}
+            <div className="flex items-center gap-2 px-4 h-full" style={{ minWidth: 140 }}>
+              <User size={13} style={{ color: '#6F675C', flexShrink: 0 }} />
+              <select
+                value={filters.guests}
+                onChange={e => updateFilters({ guests: Number(e.target.value) })}
+                className="outline-none appearance-none cursor-pointer bg-transparent"
+                style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}
+              >
+                {[1,2,3,4,5,6,7,8].map(n => <option key={n} value={n}>{n} {n === 1 ? 'guest' : 'guests'}</option>)}
+              </select>
+            </div>
+
+            {/* Search button */}
+            <div className="pr-2 pl-2 h-full flex items-center flex-shrink-0">
+              <div className="flex items-center gap-1.5 rounded-lg px-4 h-9" style={{ backgroundColor: '#111111', color: 'white', fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 500 }}>
+                <Search size={13} />
+                Search
+              </div>
+            </div>
           </div>
+
+          {/* Mobile: stacked rows */}
+          <div className="sm:hidden space-y-2">
+            <div className="flex items-center bg-white rounded-xl gap-2" style={{ border: '1px solid #E8E4DE', height: 44 }}>
+              <Search size={14} className="ml-3 flex-shrink-0" style={{ color: '#6F675C' }} />
+              <input
+                type="text" placeholder="Search experiences…"
+                value={search} onChange={e => setSearch(e.target.value)}
+                className="flex-1 outline-none bg-transparent"
+                style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111' }}
+              />
+              {search && <button onClick={() => setSearch('')} className="mr-2"><X size={13} style={{ color: '#6F675C' }} /></button>}
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="flex items-center gap-1.5 bg-white rounded-lg px-2.5" style={{ border: '1px solid #E8E4DE', height: 40 }}>
+                <MapPin size={12} style={{ color: '#6F675C', flexShrink: 0 }} />
+                <select
+                  value={filters.location}
+                  onChange={e => updateFilters({ location: e.target.value })}
+                  className="outline-none appearance-none cursor-pointer bg-transparent flex-1 min-w-0"
+                  style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: filters.location === 'All Locations' ? '#9E9A94' : '#111111' }}
+                >
+                  <option value="All Locations">Place</option>
+                  {LOCATIONS.filter(l => l !== 'All Locations').map(l => <option key={l}>{l}</option>)}
+                </select>
+              </div>
+              <div className="flex items-center gap-1.5 bg-white rounded-lg px-2.5" style={{ border: '1px solid #E8E4DE', height: 40 }}>
+                <CalendarDays size={12} style={{ color: '#6F675C', flexShrink: 0 }} />
+                <input
+                  type="date" value={filters.date}
+                  onChange={e => updateFilters({ date: e.target.value })}
+                  className="outline-none bg-transparent flex-1 min-w-0"
+                  style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: filters.date ? '#111111' : '#9E9A94' }}
+                />
+              </div>
+              <div className="flex items-center gap-1.5 bg-white rounded-lg px-2.5" style={{ border: '1px solid #E8E4DE', height: 40 }}>
+                <User size={12} style={{ color: '#6F675C', flexShrink: 0 }} />
+                <select
+                  value={filters.guests}
+                  onChange={e => updateFilters({ guests: Number(e.target.value) })}
+                  className="outline-none appearance-none cursor-pointer bg-transparent flex-1 min-w-0"
+                  style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#111111' }}
+                >
+                  {[1,2,3,4,5,6,7,8].map(n => <option key={n} value={n}>{n === 1 ? '1 guest' : `${n} guests`}</option>)}
+                </select>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -395,7 +497,7 @@ export default function SearchPage() {
             </div>
           ) : (
             <div className="space-y-3 pb-24">
-              {results.map(r => <ResultCard key={r.id} r={r} />)}
+              {results.map(r => <ResultCard key={r.id} r={r} date={filters.date} guests={filters.guests} />)}
             </div>
           )}
         </div>

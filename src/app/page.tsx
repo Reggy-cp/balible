@@ -384,8 +384,12 @@ export default function HomePage() {
                 Curated experiences in the island of Bali.
               </p>
               <div className="flex gap-4 mt-4">
-                {[Instagram, Facebook, Twitter].map((Icon, i) => (
-                  <a key={i} href="#" className="hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                {([
+                  [Instagram, 'https://instagram.com/balible'],
+                  [Facebook,  'https://facebook.com/balible'],
+                  [Twitter,   'https://twitter.com/balible'],
+                ] as const).map(([Icon, url]) => (
+                  <a key={url} href={url} target="_blank" rel="noreferrer" className="hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.55)' }}>
                     <Icon size={18} />
                   </a>
                 ))}

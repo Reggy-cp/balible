@@ -7,6 +7,7 @@ import RecommendationsSection from '@/components/RecommendationsSection'
 import ReadMore from '@/components/ReadMore'
 import WishlistHeart from '@/components/WishlistHeart'
 import MobileNav from '@/components/MobileNav'
+import ExperienceGallery from '@/components/ExperienceGallery'
 import { prisma } from '@/lib/prisma'
 
 // ── Static fallback (used when DB is not yet connected) ───────────────────────
@@ -783,10 +784,8 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
           </div>
         </div>
 
-        {/* Mobile: single image */}
-        <div className="lg:hidden mb-6 overflow-hidden" style={{ height: 240, borderRadius: 12 }}>
-          <img src={thumbPhotos[0]} alt={experience.title} className="w-full h-full object-cover" />
-        </div>
+        {/* Mobile: gallery with thumbnail strip */}
+        <ExperienceGallery images={experience.images} title={experience.title} />
 
         {/* ── TWO-COLUMN LAYOUT ── */}
         <div className="flex flex-col lg:flex-row gap-10">
@@ -842,7 +841,7 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
 
           {/* RIGHT — booking widget (client island) */}
           <div className="lg:w-[340px] flex-shrink-0">
-            <BookingWidget price={experience.price} slug={experience.slug} />
+            <BookingWidget price={experience.price} slug={experience.slug} duration={experience.duration} maxGuests={experience.maxGuests} />
           </div>
         </div>
       </div>

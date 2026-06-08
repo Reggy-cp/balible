@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { Heart, Star, Clock, Users, ChevronDown, SlidersHorizontal, X, MapPin, ArrowRight } from 'lucide-react'
 import Navbar from '@/components/Navbar'
+import MobileNav from '@/components/MobileNav'
 
 // ── Category meta ──────────────────────────────────────────────────────────────
 const CATEGORY_META: Record<string, {
@@ -508,8 +509,8 @@ export default function CategoryPage({ params }: { params: { category: string } 
       <Navbar />
 
       {/* ── HERO ── */}
-      <div className="relative" style={{ height: 'clamp(260px, 35vw, 400px)' }}>
-        <img src={meta.image} alt={meta.label} className="w-full h-full object-cover" />
+      <div className="relative" style={{ minHeight: 'clamp(420px, 50vw, 500px)' }}>
+        <img src={meta.image} alt={meta.label} className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.25) 60%, rgba(0,0,0,0.1) 100%)' }} />
 
         {/* Content */}
@@ -702,7 +703,7 @@ export default function CategoryPage({ params }: { params: { category: string } 
       </div>
 
       {/* ── FOOTER ── */}
-      <footer style={{ backgroundColor: '#111111', padding: '40px 24px 28px' }}>
+      <footer className="pt-10 px-6 pb-20 md:pb-7" style={{ backgroundColor: '#111111' }}>
         <div className="max-w-[1200px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <a href="/" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: 'white', textDecoration: 'none' }}>BALIBLE</a>
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>© 2024 Balible. All rights reserved.</p>
@@ -713,6 +714,7 @@ export default function CategoryPage({ params }: { params: { category: string } 
           </div>
         </div>
       </footer>
+      <MobileNav />
     </div>
   )
 }

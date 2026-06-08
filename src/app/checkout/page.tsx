@@ -40,6 +40,14 @@ function formatDate(s: string): string {
   return `${months[m - 1]} ${d}, ${y}`
 }
 
+function formatTime(t: string): string {
+  if (!t) return ''
+  const [h, m] = t.split(':').map(Number)
+  const ampm = h >= 12 ? 'PM' : 'AM'
+  const h12 = h % 12 || 12
+  return `${h12}:${String(m).padStart(2, '0')} ${ampm}`
+}
+
 function genRef(slug: string, date: string) {
   const hash = (slug + date).split('').reduce((a, c) => a + c.charCodeAt(0), 0)
   return `BAL-${date.replace(/-/g, '').slice(2) || '000000'}-${(hash % 9000 + 1000)}`
@@ -49,37 +57,81 @@ function genRef(slug: string, date: string) {
 
 type BookingData = {
   title: string; area: string; image: string
-  date: string; time: string
+  date: string; time: string; rawTime: string
   pricePerPerson: number; serviceFeeRate: number
-  slug: string; rawDate: string
+  slug: string; rawDate: string; maxGuests: number
 }
 
 // ── Step indicator ─────────────────────────────────────────────────────────────
 
+const STEP_SHORT = ['Details', 'Info', 'Pay', 'Done']
+
 function StepIndicator({ current }: { current: Step }) {
   return (
-    <div className="flex items-center mb-8">
+    <div className="flex items-center mb-6">
       {STEPS.map((label, i) => {
         const done = i < current, active = i === current
         return (
           <div key={label} className="flex items-center flex-1 last:flex-none">
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
               <div
-                className="w-7 h-7 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: done ? '#4A7C59' : active ? '#111111' : '#E8E4DE', color: done || active ? 'white' : '#6F675C', fontSize: 12, fontFamily: 'var(--font-inter)' }}
+                className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center flex-shrink-0"
+                style={{ backgroundColor: done ? '#4A7C59' : active ? '#111111' : '#E8E4DE', color: done || active ? 'white' : '#6F675C', fontSize: 11, fontFamily: 'var(--font-inter)' }}
               >
                 {done ? '✓' : i + 1}
               </div>
-              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: active ? 600 : 400, color: active ? '#111111' : done ? '#4A7C59' : '#6F675C', whiteSpace: 'nowrap' }}>
+              {/* short label on mobile, full label on sm+ */}
+              <span className="hidden xs:inline sm:hidden" style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: active ? 600 : 400, color: active ? '#111111' : done ? '#4A7C59' : '#9E9A94', whiteSpace: 'nowrap' }}>
+                {STEP_SHORT[i]}
+              </span>
+              <span className="hidden sm:inline" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: active ? 600 : 400, color: active ? '#111111' : done ? '#4A7C59' : '#6F675C', whiteSpace: 'nowrap' }}>
                 {label}
               </span>
             </div>
             {i < STEPS.length - 1 && (
-              <div className="flex-1 mx-3" style={{ height: 1, backgroundColor: i < current ? '#4A7C59' : '#E8E4DE', minWidth: 16 }} />
+              <div className="flex-1 mx-1.5 sm:mx-3" style={{ height: 1, backgroundColor: i < current ? '#4A7C59' : '#E8E4DE', minWidth: 8 }} />
             )}
           </div>
         )
       })}
+    </div>
+  )
+}
+
+// ── Mobile compact summary ─────────────────────────────────────────────────────
+
+function MobileBookingSummary({ booking, guests, total, onEdit }: { booking: BookingData; guests: number; total: number; onEdit: () => void }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="bg-white rounded-xl overflow-hidden" style={{ border: '1px solid #E8E4DE' }}>
+      {/* Always-visible row */}
+      <button onClick={() => setOpen(o => !o)} className="w-full flex items-center gap-3 p-4" style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
+        <img src={booking.image} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{booking.title}</p>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', margin: 0 }}>{booking.date}{booking.time ? ` · ${booking.time}` : ''}</p>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 700, color: '#111111' }}>IDR {total.toLocaleString('id-ID')}</span>
+          <ChevronUp size={15} style={{ color: '#6F675C', transform: open ? 'rotate(0deg)' : 'rotate(180deg)', transition: 'transform 0.2s' }} />
+        </div>
+      </button>
+      {/* Expandable detail */}
+      {open && (
+        <div style={{ borderTop: '1px solid #E8E4DE', padding: '12px 16px' }}>
+          <div className="flex justify-between items-center mb-2">
+            <span style={{ fontSize: 12, color: '#6F675C' }}>Guests</span>
+            <span style={{ fontSize: 13, fontWeight: 500, color: '#111111' }}>{guests} guest{guests > 1 ? 's' : ''}</span>
+          </div>
+          <div className="flex justify-between items-center mb-3">
+            <span style={{ fontSize: 12, color: '#6F675C' }}>Service fee (10%)</span>
+            <span style={{ fontSize: 13, color: '#111111' }}>IDR {Math.round(booking.pricePerPerson * guests * booking.serviceFeeRate).toLocaleString('id-ID')}</span>
+          </div>
+          <button onClick={onEdit} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#C8A97E', fontSize: 13, fontFamily: 'var(--font-inter)', display: 'flex', alignItems: 'center', gap: 4, padding: 0 }}>
+            <Edit2 size={12} /> Edit booking details
+          </button>
+        </div>
+      )}
     </div>
   )
 }
@@ -283,13 +335,13 @@ function StepPayment({ total, onNext }: { total: number; onNext: () => void }) {
         <ChevronUp size={18} style={{ color: '#6F675C' }} />
       </div>
 
-      <div className="flex gap-2 mb-5">
+      <div className="grid grid-cols-3 gap-2 mb-5">
         {[{ id: 'card', label: 'Credit Card' }, { id: 'transfer', label: 'Bank Transfer' }, { id: 'gopay', label: 'GoPay / OVO' }].map(m => (
           <button
             key={m.id}
             onClick={() => setMethod(m.id as typeof method)}
-            className="flex-1 py-2 rounded-lg transition-all"
-            style={{ fontSize: 13, fontWeight: method === m.id ? 600 : 400, backgroundColor: method === m.id ? '#111111' : 'white', color: method === m.id ? 'white' : '#6F675C', border: `1px solid ${method === m.id ? '#111111' : '#E8E4DE'}`, cursor: 'pointer', fontFamily: 'var(--font-inter)' }}
+            className="py-2 rounded-lg transition-all"
+            style={{ fontSize: 12, fontWeight: method === m.id ? 600 : 400, backgroundColor: method === m.id ? '#111111' : 'white', color: method === m.id ? 'white' : '#6F675C', border: `1px solid ${method === m.id ? '#111111' : '#E8E4DE'}`, cursor: 'pointer', fontFamily: 'var(--font-inter)', lineHeight: 1.3, padding: '8px 4px' }}
           >
             {m.label}
           </button>
@@ -406,17 +458,19 @@ function StepConfirmation({ booking, guests }: { booking: BookingData; guests: n
 
 function CheckoutInner() {
   const params = useSearchParams()
-  const slug     = params.get('slug')   || 'pottery-making-class'
-  const rawDate  = params.get('date')   || ''
-  const initGuests = Math.max(1, Math.min(8, parseInt(params.get('guests') || '1') || 1))
+  const slug      = params.get('slug')      || 'pottery-making-class'
+  const rawDate   = params.get('date')      || ''
+  const rawTime   = params.get('time')      || ''
+  const maxGuests = Math.max(1, parseInt(params.get('maxGuests') || '8') || 8)
+  const initGuests = Math.max(1, Math.min(maxGuests, parseInt(params.get('guests') || '1') || 1))
 
   const exp = EXPERIENCE_DB[slug] || FALLBACK
 
   const booking: BookingData = {
     title: exp.title, area: exp.area, image: exp.image,
-    date: formatDate(rawDate), time: '10:00 AM',
+    date: formatDate(rawDate), time: formatTime(rawTime), rawTime,
     pricePerPerson: exp.price, serviceFeeRate: 0.1,
-    slug, rawDate,
+    slug, rawDate, maxGuests,
   }
 
   const [step, setStep] = useState<Step>(0)
@@ -431,9 +485,16 @@ function CheckoutInner() {
     try {
       const prev = JSON.parse(localStorage.getItem('balible_bookings') ?? '[]')
       localStorage.setItem('balible_bookings', JSON.stringify([
-        { id: ref, title: booking.title, area: booking.area, image: booking.image, date: booking.date, guests, total, status: 'Upcoming', rating: null, slug: booking.slug },
+        { id: ref, title: booking.title, area: booking.area, image: booking.image, date: booking.date, time: booking.time, guests, total, status: 'Upcoming', rating: null, slug: booking.slug },
         ...prev.filter((b: { id: string }) => b.id !== ref),
       ]))
+      // Track booked guests per slot for capacity enforcement
+      if (booking.rawTime) {
+        const slotKey = `balible_booked_${booking.slug}_${booking.rawDate}`
+        const prevSlots: Record<string, number> = JSON.parse(localStorage.getItem(slotKey) ?? '{}')
+        prevSlots[booking.rawTime] = (prevSlots[booking.rawTime] ?? 0) + guests
+        localStorage.setItem(slotKey, JSON.stringify(prevSlots))
+      }
     } catch {}
     setStep(3)
   }
@@ -452,12 +513,19 @@ function CheckoutInner() {
         </div>
       </nav>
 
-      <div className="max-w-[1100px] mx-auto px-4 py-8 pb-24 md:pb-8">
-        <h1 className="mb-6 hidden sm:block" style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 700, color: '#111111' }}>
+      <div className="max-w-[1100px] mx-auto px-4 py-6 pb-24 md:pb-10">
+        <h1 className="mb-5 hidden sm:block" style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 700, color: '#111111' }}>
           Checkout
         </h1>
 
         {step < 3 && <StepIndicator current={step} />}
+
+        {/* Mobile compact booking summary — above form, hidden on desktop */}
+        {step < 3 && (
+          <div className="lg:hidden mb-4">
+            <MobileBookingSummary booking={booking} guests={guests} total={total} onEdit={() => setStep(0)} />
+          </div>
+        )}
 
         <div className="flex flex-col lg:flex-row gap-6">
           <div className="flex-1 min-w-0">
@@ -466,8 +534,9 @@ function CheckoutInner() {
             {step === 2 && <StepPayment total={total} onNext={confirmAndSave} />}
             {step === 3 && <StepConfirmation booking={booking} guests={guests} />}
           </div>
+          {/* Full sidebar — desktop only */}
           {step < 3 && (
-            <div style={{ width: '100%', maxWidth: 340, flexShrink: 0 }}>
+            <div className="hidden lg:block" style={{ width: 340, flexShrink: 0 }}>
               <BookingSummary booking={booking} guests={guests} editing={step === 0} onEdit={() => setStep(0)} />
             </div>
           )}

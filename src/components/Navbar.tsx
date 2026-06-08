@@ -190,8 +190,8 @@ export default function Navbar() {
         {/* Mobile menu */}
         {menuOpen && (
           <div
-            className="lg:hidden absolute left-0 right-0 bg-white shadow-xl"
-            style={{ top: 64, borderBottom: '1px solid #E8E4DE', zIndex: 100 }}
+            className="lg:hidden absolute left-0 right-0 bg-white shadow-xl overflow-y-auto"
+            style={{ top: 64, borderBottom: '1px solid #E8E4DE', zIndex: 100, maxHeight: 'calc(100vh - 128px)' }}
           >
             {/* Links */}
             <div className="px-4 pt-3 pb-2 space-y-1">

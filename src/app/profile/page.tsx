@@ -11,7 +11,7 @@ import MobileNav from '@/components/MobileNav'
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type Booking = {
-  id: string; title: string; area: string; date: string
+  id: string; title: string; area: string; date: string; time?: string
   guests: number; total: number; status: string
   rating: number | null; image: string; slug: string
 }
@@ -145,11 +145,11 @@ function ReviewModal({ booking, onSubmit, onClose }: {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-4 pt-4 pb-20 sm:p-4"
       style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl">
+      <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl overflow-y-auto" style={{ maxHeight: 'calc(100vh - 160px)' }}>
         {done ? (
           <div className="text-center py-8">
             <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#F0F7F2' }}>
@@ -270,7 +270,7 @@ function BookingsTab({ reviews, onReview }: { reviews: SubmittedReview[]; onRevi
                 <StatusBadge status={effectiveStatus} />
               </div>
               <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1.5">
-                <span style={{ fontSize: 12, color: '#6F675C' }}>📅 {b.date}</span>
+                <span style={{ fontSize: 12, color: '#6F675C' }}>📅 {b.date}{b.time ? ` · ${b.time}` : ''}</span>
                 <span style={{ fontSize: 12, color: '#6F675C' }}>👤 {b.guests} guest{b.guests > 1 ? 's' : ''}</span>
                 <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>IDR {b.total.toLocaleString('id-ID')}</span>
               </div>

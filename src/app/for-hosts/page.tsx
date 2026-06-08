@@ -6,6 +6,7 @@ import {
   CheckCircle2, DollarSign, Calendar, Camera, MessageSquare,
   Menu, X, ChevronDown, ChevronUp,
 } from 'lucide-react'
+import MobileNav from '@/components/MobileNav'
 
 const STEPS = [
   {
@@ -401,7 +402,7 @@ export default function ForHostsPage() {
       </section>
 
       {/* FOOTER */}
-      <footer style={{ backgroundColor: '#111111' }} className="px-6 lg:px-16 pt-10 pb-8">
+      <footer className="px-6 lg:px-16 pt-10 pb-20 md:pb-8" style={{ backgroundColor: '#111111' }}>
         <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: 'white' }}>BALIBLE</span>
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>
@@ -414,6 +415,7 @@ export default function ForHostsPage() {
           </div>
         </div>
       </footer>
+      <MobileNav />
     </div>
   )
 }

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
+import MobileNav from '@/components/MobileNav'
 
 export default function SignInPage() {
   const [showPw, setShowPw] = useState(false)
@@ -10,7 +11,7 @@ export default function SignInPage() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center relative"
+      className="min-h-screen flex items-center justify-center relative pb-16 md:pb-0"
       style={{ fontFamily: 'var(--font-inter)' }}
     >
       {/* Background image */}
@@ -131,6 +132,7 @@ export default function SignInPage() {
           </a>
         </p>
       </div>
+      <MobileNav />
     </div>
   )
 }
