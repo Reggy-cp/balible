@@ -190,7 +190,7 @@ export default function DestinationsPage() {
                     </div>
                   </div>
                   <a
-                    href={`/search?location=${area.slug}`}
+                    href={`/destinations/${area.slug}`}
                     className="flex items-center gap-2 hover:opacity-90 transition-opacity"
                     style={{ height: 40, paddingInline: 20, backgroundColor: '#111111', color: 'white', borderRadius: 8, fontSize: 13, fontWeight: 600, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}
                   >
