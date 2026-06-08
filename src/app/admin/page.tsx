@@ -974,7 +974,14 @@ function SettingsPanel() {
             <div>
               <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: COCONUT, marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Platform commission (%)</label>
               <div className="flex items-center gap-2">
-                <input type="number" value={commission} onChange={e => setCommission(e.target.value)} min="0" max="30"
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={commission}
+                  onChange={e => {
+                    const v = e.target.value.replace(/[^0-9]/g, '')
+                    if (v === '' || parseInt(v) <= 100) setCommission(v)
+                  }}
                   style={{ width: 100, height: 42, borderRadius: 10, border: `1px solid ${SAND}`, padding: '0 14px', fontSize: 18, fontFamily: 'var(--font-playfair)', fontWeight: 700, color: CHARCOAL, outline: 'none', textAlign: 'center' }} />
                 <span style={{ fontSize: 18, color: COCONUT, fontWeight: 700 }}>%</span>
               </div>

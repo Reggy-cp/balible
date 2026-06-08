@@ -1,5 +1,6 @@
-import { ArrowRight, Clock, Calendar } from 'lucide-react'
+import { Clock, Calendar } from 'lucide-react'
 import Navbar from '@/components/Navbar'
+import NewsletterSignup from '@/components/NewsletterSignup'
 
 export const metadata = {
   title: 'Journal — Balible',
@@ -228,20 +229,7 @@ export default function BlogPage() {
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: 'rgba(255,255,255,0.6)', marginBottom: 24, maxWidth: 380, margin: '0 auto 24px' }}>
             No spam. Just one good story about Bali every two weeks, written by people who live here.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-            <input
-              type="email"
-              placeholder="your@email.com"
-              className="flex-1 outline-none"
-              style={{ height: 46, borderRadius: 8, padding: '0 16px', fontSize: 14, color: '#111111', border: 'none', fontFamily: 'var(--font-inter)' }}
-            />
-            <button
-              className="flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
-              style={{ height: 46, padding: '0 24px', backgroundColor: '#C8A97E', color: 'white', borderRadius: 8, fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}
-            >
-              Subscribe <ArrowRight size={14} />
-            </button>
-          </div>
+          <NewsletterSignup dark />
         </div>
       </div>
 

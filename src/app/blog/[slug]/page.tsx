@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
-import { ArrowLeft, Clock, Calendar, ArrowRight } from 'lucide-react'
+import { ArrowLeft, Clock, Calendar } from 'lucide-react'
 import Navbar from '@/components/Navbar'
+import NewsletterSignup from '@/components/NewsletterSignup'
 
 type Article = {
   slug: string
@@ -337,10 +338,7 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
             Get one good story about Bali every two weeks, written by people who live here.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-            <input type="email" placeholder="your@email.com" className="flex-1 outline-none" style={{ height: 44, borderRadius: 8, padding: '0 14px', fontSize: 14, color: '#111111', border: 'none', fontFamily: 'var(--font-inter)' }} />
-            <button className="hover:opacity-90 transition-opacity" style={{ height: 44, padding: '0 22px', backgroundColor: '#C8A97E', color: 'white', borderRadius: 8, fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: 'var(--font-inter)' }}>
-              Subscribe
-            </button>
+            <NewsletterSignup dark />
           </div>
         </div>
       </div>

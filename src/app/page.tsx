@@ -39,22 +39,22 @@ const EXPERIENCES = [
 ]
 
 const CAT_STRIP = [
-  { label: 'Wellness',      Icon: Leaf },
-  { label: 'Art & Craft',   Icon: Scissors },
-  { label: 'Culture',       Icon: Landmark },
-  { label: 'Food & Drink',  Icon: Utensils },
-  { label: 'Nature',        Icon: Mountain },
-  { label: 'Architecture',  Icon: Building2 },
-  { label: 'All Categories',Icon: Grid3x3 },
+  { label: 'Wellness',      Icon: Leaf,      href: '/categories/wellness'   },
+  { label: 'Art & Craft',   Icon: Scissors,  href: '/categories/art-craft'  },
+  { label: 'Culture',       Icon: Landmark,  href: '/categories/culture'    },
+  { label: 'Food & Drink',  Icon: Utensils,  href: '/categories/food-drink' },
+  { label: 'Nature',        Icon: Mountain,  href: '/categories/nature'     },
+  { label: 'Architecture',  Icon: Building2, href: '/search'                },
+  { label: 'All Categories',Icon: Grid3x3,   href: '/categories'            },
 ]
 
 const CAT_GRID = [
-  { label: 'Wellness',     Icon: Leaf,       photo: 'https://images.unsplash.com/photo-1600334129128-685c5582fd35?w=400&auto=format&fit=crop&q=80' },
-  { label: 'Art & Craft',  Icon: Scissors,   photo: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&auto=format&fit=crop&q=80' },
-  { label: 'Culture',      Icon: Landmark,   photo: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=400&auto=format&fit=crop&q=80' },
-  { label: 'Food & Drink', Icon: Utensils,   photo: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&auto=format&fit=crop&q=80' },
-  { label: 'Nature',       Icon: Mountain,   photo: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=400&auto=format&fit=crop&q=80' },
-  { label: 'Architecture', Icon: Building2,  photo: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=400&auto=format&fit=crop&q=80' },
+  { label: 'Wellness',     Icon: Leaf,       href: '/categories/wellness',   photo: 'https://images.unsplash.com/photo-1600334129128-685c5582fd35?w=400&auto=format&fit=crop&q=80' },
+  { label: 'Art & Craft',  Icon: Scissors,   href: '/categories/art-craft',  photo: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&auto=format&fit=crop&q=80' },
+  { label: 'Culture',      Icon: Landmark,   href: '/categories/culture',    photo: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=400&auto=format&fit=crop&q=80' },
+  { label: 'Food & Drink', Icon: Utensils,   href: '/categories/food-drink', photo: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&auto=format&fit=crop&q=80' },
+  { label: 'Nature',       Icon: Mountain,   href: '/categories/nature',     photo: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=400&auto=format&fit=crop&q=80' },
+  { label: 'Architecture', Icon: Building2,  href: '/search',                photo: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=400&auto=format&fit=crop&q=80' },
 ]
 
 const WHY_ITEMS = [
@@ -134,7 +134,7 @@ function HostCard({ host }: { host: typeof HOSTS[0] }) {
       <p className="mt-2 line-clamp-2" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.6, fontStyle: 'italic' }}>
         "{host.quote}"
       </p>
-      <a href="#" className="mt-2 inline-block underline hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>
+      <a href="/for-hosts" className="mt-2 inline-block underline hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>
         Read {host.pronoun} story →
       </a>
     </div>
@@ -169,9 +169,17 @@ function MobileBottomNav() {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function HomePage() {
-  const [search, setSearch]   = useState('')
-  const [email, setEmail]     = useState('')
+  const [search, setSearch]       = useState('')
+  const [email, setEmail]         = useState('')
+  const [subscribed, setSubscribed] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
+
+  const handleSubscribe = () => {
+    if (!email.trim()) return
+    setSubscribed(true)
+    setEmail('')
+    setTimeout(() => setSubscribed(false), 4000)
+  }
 
   const scrollCards = (dir: number) => {
     scrollRef.current?.scrollBy({ left: dir * 260, behavior: 'smooth' })
@@ -233,13 +241,13 @@ export default function HomePage() {
       {/* ── CATEGORY STRIP ── */}
       <section className="bg-white py-8 px-6 lg:px-16" style={{ borderBottom: '1px solid #E8E4DE' }}>
         <div className="max-w-[1440px] mx-auto flex items-center justify-between overflow-x-auto scrollbar-none gap-4">
-          {CAT_STRIP.map(({ label, Icon }) => (
-            <button key={label} className="flex flex-col items-center gap-2 flex-shrink-0 group cursor-pointer">
+          {CAT_STRIP.map(({ label, Icon, href }) => (
+            <a key={label} href={href} className="flex flex-col items-center gap-2 flex-shrink-0 group cursor-pointer" style={{ textDecoration: 'none' }}>
               <Icon size={24} strokeWidth={1.5} className="group-hover:text-gold transition-colors" style={{ color: '#111111' }} />
               <span className="group-hover:text-gold transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', whiteSpace: 'nowrap' }}>
                 {label}
               </span>
-            </button>
+            </a>
           ))}
         </div>
       </section>
@@ -265,7 +273,13 @@ export default function HomePage() {
             <div ref={scrollRef} className="flex gap-5 overflow-x-auto pb-2 scrollbar-none">
               {EXPERIENCES.map(exp => <ExperienceCard key={exp.id} exp={exp} />)}
             </div>
-            {/* Right arrow */}
+            <button
+              onClick={() => scrollCards(-1)}
+              className="hidden lg:flex absolute -left-5 top-[90px] -translate-y-1/2 w-10 h-10 bg-white rounded-full items-center justify-center hover:bg-ivory transition-colors shadow-sm"
+              style={{ border: '1px solid #E8E4DE' }}
+            >
+              <ChevronLeft size={18} style={{ color: '#111111' }} />
+            </button>
             <button
               onClick={() => scrollCards(1)}
               className="hidden lg:flex absolute -right-5 top-[90px] -translate-y-1/2 w-10 h-10 bg-white rounded-full items-center justify-center hover:bg-ivory transition-colors shadow-sm"
@@ -284,11 +298,12 @@ export default function HomePage() {
             Explore by Category
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-            {CAT_GRID.map(({ label, Icon, photo }) => (
-              <div
+            {CAT_GRID.map(({ label, Icon, href, photo }) => (
+              <a
                 key={label}
-                className="relative cursor-pointer overflow-hidden group"
-                style={{ height: 180, borderRadius: 12 }}
+                href={href}
+                className="relative cursor-pointer overflow-hidden group block"
+                style={{ height: 180, borderRadius: 12, textDecoration: 'none' }}
               >
                 <img src={photo} alt={label} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                 <div className="absolute inset-0" style={{ backgroundColor: 'rgba(0,0,0,0.35)' }} />
@@ -296,7 +311,7 @@ export default function HomePage() {
                   <Icon size={24} color="white" strokeWidth={1.5} />
                   <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500, color: 'white' }}>{label}</span>
                 </div>
-              </div>
+              </a>
             ))}
           </div>
         </div>
@@ -332,7 +347,7 @@ export default function HomePage() {
                 Meet the people behind the experiences.
               </p>
             </div>
-            <a href="#" className="flex-shrink-0 hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#C8A97E', textDecoration: 'underline' }}>
+            <a href="/for-hosts" className="flex-shrink-0 hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#C8A97E', textDecoration: 'underline' }}>
               View all →
             </a>
           </div>
@@ -352,20 +367,30 @@ export default function HomePage() {
             Join thousands of travelers who get early access to new Bali experiences.
           </p>
           <div className="flex items-center justify-center flex-wrap gap-2 mt-8">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              className="outline-none text-charcoal placeholder:text-coconut px-4"
-              style={{ width: 320, height: 44, borderRadius: 6, fontFamily: 'var(--font-inter)', fontSize: 14, border: 'none' }}
-            />
-            <button
-              className="font-medium hover:opacity-90 transition-opacity px-6"
-              style={{ height: 44, backgroundColor: '#C8A97E', color: '#111111', borderRadius: 6, fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500, border: 'none', cursor: 'pointer' }}
-            >
-              Subscribe
-            </button>
+            {subscribed ? (
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: '#C8A97E', fontWeight: 500 }}>
+                ✓ You&apos;re on the list! We&apos;ll be in touch soon.
+              </p>
+            ) : (
+              <>
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleSubscribe()}
+                  className="outline-none text-charcoal placeholder:text-coconut px-4"
+                  style={{ width: 320, height: 44, borderRadius: 6, fontFamily: 'var(--font-inter)', fontSize: 14, border: 'none' }}
+                />
+                <button
+                  onClick={handleSubscribe}
+                  className="font-medium hover:opacity-90 transition-opacity px-6"
+                  style={{ height: 44, backgroundColor: '#C8A97E', color: '#111111', borderRadius: 6, fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500, border: 'none', cursor: 'pointer' }}
+                >
+                  Subscribe
+                </button>
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -413,9 +438,9 @@ export default function HomePage() {
               © 2024 Balible. All rights reserved.
             </p>
             <div className="flex gap-4 items-center">
-              <a href="#" className="hover:text-white transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>Privacy Policy</a>
+              <a href="/help" className="hover:text-white transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>Privacy Policy</a>
               <span style={{ color: 'rgba(255,255,255,0.3)' }}>·</span>
-              <a href="#" className="hover:text-white transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>Terms</a>
+              <a href="/help" className="hover:text-white transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>Terms</a>
             </div>
           </div>
         </div>

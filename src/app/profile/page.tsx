@@ -84,11 +84,17 @@ function StatusBadge({ status }: { status: string }) {
 // ── Bookings tab ───────────────────────────────────────────────────────────────
 
 function BookingsTab() {
+  const [cancelled, setCancelled] = useState<Set<string>>(new Set())
+  const cancel = (id: string) => setCancelled(s => new Set(s).add(id))
+
   return (
     <div className="space-y-4">
       <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', marginBottom: 16 }}>My Bookings</h2>
-      {BOOKINGS.map(b => (
-        <div key={b.id} className="bg-white rounded-xl p-4" style={{ border: '1px solid #E8E4DE' }}>
+      {BOOKINGS.map(b => {
+        const isCancelled = cancelled.has(b.id)
+        const effectiveStatus = isCancelled ? 'Cancelled' : b.status
+        return (
+        <div key={b.id} className="bg-white rounded-xl p-4" style={{ border: '1px solid #E8E4DE', opacity: isCancelled ? 0.6 : 1, transition: 'opacity 0.2s' }}>
           <div className="flex gap-4">
             <img src={b.image} alt={b.title} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
             <div className="flex-1 min-w-0">
@@ -102,20 +108,20 @@ function BookingsTab() {
                     <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>{b.area}</span>
                   </div>
                 </div>
-                <StatusBadge status={b.status} />
+                <StatusBadge status={effectiveStatus} />
               </div>
               <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1.5">
                 <span style={{ fontSize: 12, color: '#6F675C' }}>📅 {b.date}</span>
                 <span style={{ fontSize: 12, color: '#6F675C' }}>👤 {b.guests} guest{b.guests > 1 ? 's' : ''}</span>
                 <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>IDR {b.total.toLocaleString('id-ID')}</span>
               </div>
-              {b.status === 'Completed' && b.rating && (
+              {effectiveStatus === 'Completed' && b.rating && (
                 <div className="flex items-center gap-1 mt-2">
                   {[1,2,3,4,5].map(i => <Star key={i} size={11} fill={i <= b.rating! ? '#C8A97E' : '#E8E4DE'} color={i <= b.rating! ? '#C8A97E' : '#E8E4DE'} />)}
                   <span style={{ fontSize: 12, color: '#6F675C', marginLeft: 2 }}>You rated this</span>
                 </div>
               )}
-              {b.status === 'Upcoming' && (
+              {effectiveStatus === 'Upcoming' && (
                 <div className="flex gap-2 mt-3">
                   <a
                     href={`/experiences/${b.slug}`}
@@ -124,7 +130,7 @@ function BookingsTab() {
                   >
                     View experience
                   </a>
-                  <button style={{ height: 32, padding: '0 14px', border: '1px solid #FECACA', borderRadius: 6, fontSize: 12, color: '#B66A45', backgroundColor: 'white', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}>
+                  <button onClick={() => cancel(b.id)} style={{ height: 32, padding: '0 14px', border: '1px solid #FECACA', borderRadius: 6, fontSize: 12, color: '#B66A45', backgroundColor: 'white', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}>
                     Cancel
                   </button>
                 </div>
@@ -132,7 +138,8 @@ function BookingsTab() {
             </div>
           </div>
         </div>
-      ))}
+        )
+      })}
     </div>
   )
 }

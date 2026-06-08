@@ -408,8 +408,8 @@ export default function ForHostsPage() {
             © 2024 Balible. All rights reserved.
           </p>
           <div className="flex gap-4">
-            {['Privacy', 'Terms', 'Help'].map(l => (
-              <a key={l} href="#" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.4)', textDecoration: 'none' }} className="hover:text-white transition-colors">{l}</a>
+            {[['Privacy', '/help'], ['Terms', '/help'], ['Help', '/help']].map(([l, href]) => (
+              <a key={l} href={href} style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.4)', textDecoration: 'none' }} className="hover:text-white transition-colors">{l}</a>
             ))}
           </div>
         </div>

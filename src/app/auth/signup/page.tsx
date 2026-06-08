@@ -105,9 +105,9 @@ export default function SignUpPage() {
           />
           <label htmlFor="terms" style={{ fontSize: 13, color: '#6F675C', cursor: 'pointer', lineHeight: 1.5 }}>
             I agree to the{' '}
-            <a href="#" style={{ color: '#111111', textDecoration: 'underline' }}>Terms of Service</a>
+            <a href="/help" style={{ color: '#111111', textDecoration: 'underline' }}>Terms of Service</a>
             {' '}and{' '}
-            <a href="#" style={{ color: '#111111', textDecoration: 'underline' }}>Privacy Policy</a>
+            <a href="/help" style={{ color: '#111111', textDecoration: 'underline' }}>Privacy Policy</a>
           </label>
         </div>
 

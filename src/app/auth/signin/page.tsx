@@ -87,7 +87,7 @@ export default function SignInPage() {
         <div className="mb-2">
           <div className="flex items-center justify-between mb-1.5">
             <label style={{ fontSize: 13, fontWeight: 500, color: '#111111' }}>Password</label>
-            <a href="#" style={{ fontSize: 13, color: '#C8A97E', textDecoration: 'none' }} className="hover:opacity-70 transition-opacity">Forgot password?</a>
+            <a href="/help" style={{ fontSize: 13, color: '#C8A97E', textDecoration: 'none' }} className="hover:opacity-70 transition-opacity">Forgot password?</a>
           </div>
           <div className="relative">
             <input

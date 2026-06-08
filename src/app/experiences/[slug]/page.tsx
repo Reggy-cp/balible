@@ -4,6 +4,7 @@ import Navbar from '@/components/Navbar'
 import BookingWidget from '@/components/BookingWidget'
 import ExperienceTabs from '@/components/ExperienceTabs'
 import RecommendationsSection from '@/components/RecommendationsSection'
+import ReadMore from '@/components/ReadMore'
 import { prisma } from '@/lib/prisma'
 
 // ── Static fallback (used when DB is not yet connected) ───────────────────────
@@ -811,12 +812,9 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
               </div>
             </div>
 
-            <p className="mt-4 line-clamp-2" style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: '#6F675C', lineHeight: 1.7 }}>
-              {experience.description}
-            </p>
-            <button className="mt-1 hover:opacity-70 transition-opacity" style={{ background: 'none', border: 'none', fontFamily: 'var(--font-inter)', fontSize: 14, color: '#C8A97E', cursor: 'pointer', padding: 0 }}>
-              Read more →
-            </button>
+            <div className="mt-4">
+              <ReadMore text={experience.description} />
+            </div>
 
             {/* Info badges */}
             <div className="flex flex-wrap gap-5 mt-5">
