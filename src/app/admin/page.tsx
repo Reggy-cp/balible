@@ -937,10 +937,16 @@ function AnalyticsPanel() {
 // ── Settings Panel ────────────────────────────────────────────────────────────
 
 function SettingsPanel() {
-  const [commission, setCommission] = useState('10')
+  const [commission, setCommission] = useState(() =>
+    typeof window !== 'undefined' ? (localStorage.getItem('balible_commission') ?? '10') : '10'
+  )
   const [saved, setSaved]           = useState(false)
   const [notifs, setNotifs]         = useState({ newHost: true, newBooking: false, flaggedReview: true, weeklyReport: true })
-  const save = () => { setSaved(true); setTimeout(() => setSaved(false), 2000) }
+  const save = () => {
+    localStorage.setItem('balible_commission', commission)
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
+  }
   const toggle = (k: keyof typeof notifs) => setNotifs(n => ({ ...n, [k]: !n[k] }))
 
   return (
