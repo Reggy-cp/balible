@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import {
   LayoutDashboard, Compass, CalendarDays, TrendingUp, Star,
   UserCircle, Settings, LogOut, Bell, Plus, ChevronDown,
@@ -282,6 +282,16 @@ function ExperiencesPanel() {
   const [exps, setExps]       = useState(EXPERIENCES)
   const [showForm, setShowForm] = useState(false)
   const [menuOpen, setMenuOpen] = useState<number | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [imageDragging, setImageDragging] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleImageFile = (file: File) => {
+    if (!file.type.startsWith('image/')) return
+    const reader = new FileReader()
+    reader.onload = e => setImagePreview(e.target?.result as string)
+    reader.readAsDataURL(file)
+  }
 
   const tabs    = ['All', 'Active', 'Draft', 'Paused']
   const visible = filter === 'All' ? exps : exps.filter(e => e.status === filter)
@@ -399,9 +409,51 @@ function ExperiencesPanel() {
           <div className="bg-white rounded-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-5">
               <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111' }}>Create New Experience</h2>
-              <button onClick={() => setShowForm(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={20} style={{ color: '#6F675C' }} /></button>
+              <button onClick={() => { setShowForm(false); setImagePreview(null) }} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={20} style={{ color: '#6F675C' }} /></button>
             </div>
             <div className="space-y-4">
+              {/* Image upload */}
+              <div>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#111111', marginBottom: 6 }}>Cover Photo</label>
+                <input ref={fileInputRef} type="file" accept="image/*" className="hidden"
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handleImageFile(f) }} />
+                {imagePreview ? (
+                  <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', height: 160 }}>
+                    <img src={imagePreview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <button
+                      onClick={() => { setImagePreview(null); if (fileInputRef.current) fileInputRef.current.value = '' }}
+                      style={{ position: 'absolute', top: 8, right: 8, width: 28, height: 28, borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.55)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <X size={14} style={{ color: 'white' }} />
+                    </button>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      style={{ position: 'absolute', bottom: 8, right: 8, height: 28, padding: '0 10px', borderRadius: 8, backgroundColor: 'rgba(0,0,0,0.55)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'white', fontWeight: 500 }}>
+                      <Camera size={12} /> Change
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    onDragOver={e => { e.preventDefault(); setImageDragging(true) }}
+                    onDragLeave={() => setImageDragging(false)}
+                    onDrop={e => { e.preventDefault(); setImageDragging(false); const f = e.dataTransfer.files[0]; if (f) handleImageFile(f) }}
+                    style={{
+                      height: 140, borderRadius: 12, border: `2px dashed ${imageDragging ? '#C8A97E' : '#E8E4DE'}`,
+                      backgroundColor: imageDragging ? '#FFFDF9' : '#F9F9F7',
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                      gap: 8, cursor: 'pointer', transition: 'all 0.2s',
+                    }}>
+                    <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: '#F0EDE8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Camera size={18} style={{ color: '#6F675C' }} />
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: '#111111', margin: 0 }}>Upload a cover photo</p>
+                      <p style={{ fontSize: 12, color: '#6F675C', margin: '2px 0 0' }}>Click or drag & drop · JPG, PNG, WEBP</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {[
                 { label: 'Title',              placeholder: 'e.g. Traditional Batik Dyeing Class', type: 'text' },
                 { label: 'Price per person (IDR)', placeholder: '450000',                          type: 'number' },
@@ -436,9 +488,9 @@ function ExperiencesPanel() {
               </div>
             </div>
             <div className="flex gap-3 mt-6">
-              <button onClick={() => setShowForm(false)}
+              <button onClick={() => { setShowForm(false); setImagePreview(null) }}
                 style={{ flex: 1, height: 44, borderRadius: 10, border: '1px solid #E8E4DE', background: 'none', fontSize: 14, fontWeight: 600, color: '#6F675C', cursor: 'pointer' }}>Cancel</button>
-              <button onClick={() => setShowForm(false)}
+              <button onClick={() => { setShowForm(false); setImagePreview(null) }}
                 style={{ flex: 2, height: 44, borderRadius: 10, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Save as Draft</button>
             </div>
           </div>
@@ -932,11 +984,13 @@ function SidebarInner({ activeNav, setActiveNav }: { activeNav: string; setActiv
           <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: 'white' }}>BALIBLE</span>
           <span style={{ fontSize: 7, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>HOST DASHBOARD</span>
         </a>
-        <div className="relative cursor-pointer">
+        <button onClick={() => setActiveNav('settings')}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          className="relative" title="Notification settings">
           <Bell size={17} style={{ color: 'rgba(255,255,255,0.7)' }} />
           <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center"
             style={{ backgroundColor: '#B66A45', fontSize: 9, color: 'white', fontWeight: 700 }}>2</span>
-        </div>
+        </button>
       </div>
 
       <div className="flex items-center gap-3 mx-3 px-3 py-3 rounded-xl mb-3" style={{ backgroundColor: 'rgba(255,255,255,0.06)' }}>

@@ -374,10 +374,10 @@ function StepConfirmation({ booking, guests }: { booking: BookingData; guests: n
         Booking Confirmed!
       </h2>
       <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: '#6F675C', marginBottom: 6 }}>
-        A confirmation has been sent to your email.
+        Your booking has been saved to your profile.
       </p>
       <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', marginBottom: 32 }}>
-        Booking ref: <span style={{ fontWeight: 600, color: '#111111', letterSpacing: '0.05em' }}>{ref}</span>
+        Ref: <span style={{ fontWeight: 600, color: '#111111', letterSpacing: '0.05em' }}>{ref}</span>
       </p>
 
       <div className="flex items-center gap-3 p-4 rounded-xl text-left mx-auto max-w-sm mb-8" style={{ border: '1px solid #E8E4DE', backgroundColor: '#F5F1EB' }}>
@@ -425,6 +425,18 @@ function CheckoutInner() {
   const fee   = Math.round(sub * booking.serviceFeeRate)
   const total = sub + fee
 
+  const confirmAndSave = () => {
+    const ref = genRef(booking.slug, booking.rawDate)
+    try {
+      const prev = JSON.parse(localStorage.getItem('balible_bookings') ?? '[]')
+      localStorage.setItem('balible_bookings', JSON.stringify([
+        { id: ref, title: booking.title, area: booking.area, image: booking.image, date: booking.date, guests, total, status: 'Upcoming', rating: null, slug: booking.slug },
+        ...prev.filter((b: { id: string }) => b.id !== ref),
+      ]))
+    } catch {}
+    setStep(3)
+  }
+
   return (
     <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
       <nav className="bg-white" style={{ height: 56, borderBottom: '1px solid #E8E4DE' }}>
@@ -450,7 +462,7 @@ function CheckoutInner() {
           <div className="flex-1 min-w-0">
             {step === 0 && <StepExperience booking={booking} guests={guests} setGuests={setGuests} onNext={() => setStep(1)} />}
             {step === 1 && <StepDetails onNext={() => setStep(2)} />}
-            {step === 2 && <StepPayment total={total} onNext={() => setStep(3)} />}
+            {step === 2 && <StepPayment total={total} onNext={confirmAndSave} />}
             {step === 3 && <StepConfirmation booking={booking} guests={guests} />}
           </div>
           {step < 3 && (

@@ -6,6 +6,7 @@ import {
   SlidersHorizontal, X, Home, Map, User, ChevronDown,
 } from 'lucide-react'
 import Navbar from '@/components/Navbar'
+import WishlistHeart from '@/components/WishlistHeart'
 
 // ── All experiences ────────────────────────────────────────────────────────────
 
@@ -189,7 +190,6 @@ function FilterPanel({ filters, onChange, mobile = false, onClose }: { filters: 
 // ── Result Card ───────────────────────────────────────────────────────────────
 
 function ResultCard({ r }: { r: Result }) {
-  const [liked, setLiked] = useState(false)
   const durationLabel = r.durationMins < 60
     ? `${r.durationMins} min`
     : r.durationMins % 60 === 0
@@ -200,12 +200,9 @@ function ResultCard({ r }: { r: Result }) {
     <a href={`/experiences/${r.slug}`} className="flex gap-4 p-4 bg-white rounded-xl hover:shadow-md transition-shadow" style={{ border: '1px solid #E8E4DE', textDecoration: 'none' }}>
       <div className="relative flex-shrink-0 overflow-hidden rounded-lg" style={{ width: 110, height: 110 }}>
         <img src={r.photo} alt={r.title} className="w-full h-full object-cover" />
-        <button
-          className="absolute top-1.5 right-1.5 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow"
-          onClick={e => { e.preventDefault(); setLiked(!liked) }}
-        >
-          <Heart size={11} fill={liked ? '#ef4444' : 'none'} color={liked ? '#ef4444' : '#111111'} />
-        </button>
+        <div className="absolute top-1.5 right-1.5">
+          <WishlistHeart slug={r.slug} size={11} compact />
+        </div>
         <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded" style={{ backgroundColor: 'rgba(0,0,0,0.55)', color: 'white', fontSize: 9, fontWeight: 600 }}>
           {r.category}
         </span>

@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { Search, X, Heart, Star, MapPin, Clock, Filter, ArrowLeft, SlidersHorizontal } from 'lucide-react'
+import { Search, X, Star, MapPin, Clock, ArrowLeft, SlidersHorizontal } from 'lucide-react'
+import WishlistHeart from '@/components/WishlistHeart'
 
 // ── Experience data with coordinates ─────────────────────────────────────────
 
@@ -79,7 +80,6 @@ export default function BaliMapView() {
   const [category, setCategory]   = useState('All')
   const [search, setSearch]       = useState('')
   const [mobileView, setMobileView] = useState<'map' | 'list'>('map')
-  const [liked, setLiked]         = useState<Set<number>>(new Set())
   const [showFilters, setShowFilters] = useState(false)
 
   const visible = MAP_EXPERIENCES.filter(e => {
@@ -277,11 +277,9 @@ export default function BaliMapView() {
                       {exp.category}
                     </span>
                     {/* Like button */}
-                    <button
-                      onClick={e => { e.stopPropagation(); setLiked(s => { const n = new Set(s); n.has(exp.id) ? n.delete(exp.id) : n.add(exp.id); return n }) }}
-                      style={{ position: 'absolute', top: 8, right: 8, width: 28, height: 28, borderRadius: '50%', backgroundColor: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 4px rgba(0,0,0,0.15)' }}>
-                      <Heart size={13} fill={liked.has(exp.id) ? '#ef4444' : 'none'} color={liked.has(exp.id) ? '#ef4444' : '#111111'} />
-                    </button>
+                    <div style={{ position: 'absolute', top: 8, right: 8 }}>
+                      <WishlistHeart slug={exp.slug} size={13} compact />
+                    </div>
                   </div>
                   <div style={{ padding: '10px 12px 12px' }}>
                     <div className="flex items-start justify-between gap-1">

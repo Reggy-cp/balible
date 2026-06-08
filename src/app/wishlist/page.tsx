@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Heart, Star, MapPin, Clock, Trash2, Search, Home, Map, User } from 'lucide-react'
+import { useState, useEffect, useMemo } from 'react'
+import { Heart, Star, MapPin, Clock, Trash2, Search, Home, Map, User, SlidersHorizontal } from 'lucide-react'
 import Navbar from '@/components/Navbar'
+import WishlistHeart from '@/components/WishlistHeart'
 
 // All known experiences — this mirrors the static data in the app
 const ALL_EXPERIENCES = [
@@ -25,13 +26,7 @@ const DEFAULT_WISHLIST = ['pottery-making-class', 'sound-healing-journey', 'uluw
 
 const STORAGE_KEY = 'balible_wishlist'
 
-function WishlistCard({
-  exp,
-  onRemove,
-}: {
-  exp: typeof ALL_EXPERIENCES[0]
-  onRemove: (slug: string) => void
-}) {
+function WishlistCard({ exp }: { exp: typeof ALL_EXPERIENCES[0] }) {
   return (
     <div className="bg-white rounded-xl overflow-hidden hover:shadow-md transition-shadow" style={{ border: '1px solid #E8E4DE' }}>
       <div className="relative" style={{ height: 180 }}>
@@ -44,13 +39,9 @@ function WishlistCard({
         >
           {exp.category}
         </span>
-        <button
-          onClick={() => onRemove(exp.slug)}
-          className="absolute top-3 right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow hover:scale-110 transition-transform"
-          title="Remove from wishlist"
-        >
-          <Heart size={14} fill="#ef4444" color="#ef4444" />
-        </button>
+        <div className="absolute top-3 right-3">
+          <WishlistHeart slug={exp.slug} size={14} />
+        </div>
       </div>
       <div className="p-4">
         <div className="flex items-center gap-1">
@@ -88,9 +79,16 @@ function WishlistCard({
   )
 }
 
+const SORT_OPTIONS = ['Recommended', 'Price: Low to High', 'Price: High to Low', 'Top Rated']
+const ALL_AREAS = ['All areas', ...Array.from(new Set(ALL_EXPERIENCES.map(e => e.area))).sort()]
+const ALL_CATEGORIES = ['All categories', ...Array.from(new Set(ALL_EXPERIENCES.map(e => e.category))).sort()]
+
 export default function WishlistPage() {
-  const [slugs, setSlugs] = useState<string[]>([])
-  const [mounted, setMounted] = useState(false)
+  const [slugs, setSlugs]       = useState<string[]>([])
+  const [mounted, setMounted]   = useState(false)
+  const [sort, setSort]         = useState('Recommended')
+  const [area, setArea]         = useState('All areas')
+  const [category, setCategory] = useState('All categories')
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY)
@@ -102,18 +100,34 @@ export default function WishlistPage() {
     setMounted(true)
   }, [])
 
-  const remove = (slug: string) => {
-    const next = slugs.filter(s => s !== slug)
-    setSlugs(next)
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-  }
+  // Re-sync when WishlistHeart toggles (storage event from same tab isn't fired,
+  // so we listen to the custom storage key update)
+  useEffect(() => {
+    const sync = () => {
+      try { setSlugs(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]')) } catch {}
+    }
+    window.addEventListener('storage', sync)
+    return () => window.removeEventListener('storage', sync)
+  }, [])
 
   const clearAll = () => {
     setSlugs([])
     localStorage.setItem(STORAGE_KEY, JSON.stringify([]))
   }
 
-  const items = ALL_EXPERIENCES.filter(e => slugs.includes(e.slug))
+  const baseItems = ALL_EXPERIENCES.filter(e => slugs.includes(e.slug))
+
+  const items = useMemo(() => {
+    let result = baseItems
+    if (area !== 'All areas') result = result.filter(e => e.area === area)
+    if (category !== 'All categories') result = result.filter(e => e.category === category)
+    if (sort === 'Price: Low to High')  result = [...result].sort((a, b) => a.price - b.price)
+    if (sort === 'Price: High to Low')  result = [...result].sort((a, b) => b.price - a.price)
+    if (sort === 'Top Rated')           result = [...result].sort((a, b) => b.rating - a.rating)
+    return result
+  }, [baseItems, sort, area, category])
+
+  const hasFilters = area !== 'All areas' || category !== 'All categories' || sort !== 'Recommended'
 
   return (
     <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
@@ -128,10 +142,10 @@ export default function WishlistPage() {
               My Wishlist
             </h1>
             <p className="mt-1" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
-              {mounted ? (items.length > 0 ? `${items.length} saved experience${items.length !== 1 ? 's' : ''}` : 'No saved experiences yet') : ''}
+              {mounted ? (baseItems.length > 0 ? `${baseItems.length} saved experience${baseItems.length !== 1 ? 's' : ''}` : 'No saved experiences yet') : ''}
             </p>
           </div>
-          {mounted && items.length > 0 && (
+          {mounted && baseItems.length > 0 && (
             <button
               onClick={clearAll}
               className="flex items-center gap-1.5 hover:opacity-70 transition-opacity"
@@ -144,9 +158,42 @@ export default function WishlistPage() {
         </div>
       </div>
 
+      {/* FILTERS + SORT */}
+      {mounted && baseItems.length > 0 && (
+        <div className="max-w-[1440px] mx-auto px-6 lg:px-16 pb-4">
+          <div className="flex flex-wrap gap-3 items-center">
+            <div className="flex items-center gap-1.5" style={{ color: '#6F675C' }}>
+              <SlidersHorizontal size={13} />
+              <span style={{ fontSize: 13 }}>Filter:</span>
+            </div>
+            {/* Area */}
+            <select value={area} onChange={e => setArea(e.target.value)}
+              style={{ height: 36, borderRadius: 8, border: '1px solid #E8E4DE', padding: '0 10px', fontSize: 13, fontFamily: 'var(--font-inter)', color: '#111111', backgroundColor: 'white', cursor: 'pointer', outline: 'none' }}>
+              {ALL_AREAS.map(a => <option key={a}>{a}</option>)}
+            </select>
+            {/* Category */}
+            <select value={category} onChange={e => setCategory(e.target.value)}
+              style={{ height: 36, borderRadius: 8, border: '1px solid #E8E4DE', padding: '0 10px', fontSize: 13, fontFamily: 'var(--font-inter)', color: '#111111', backgroundColor: 'white', cursor: 'pointer', outline: 'none' }}>
+              {ALL_CATEGORIES.map(c => <option key={c}>{c}</option>)}
+            </select>
+            {/* Sort */}
+            <select value={sort} onChange={e => setSort(e.target.value)}
+              style={{ height: 36, borderRadius: 8, border: '1px solid #E8E4DE', padding: '0 10px', fontSize: 13, fontFamily: 'var(--font-inter)', color: '#111111', backgroundColor: 'white', cursor: 'pointer', outline: 'none', marginLeft: 'auto' }}>
+              {SORT_OPTIONS.map(s => <option key={s}>{s}</option>)}
+            </select>
+            {hasFilters && (
+              <button onClick={() => { setArea('All areas'); setCategory('All categories'); setSort('Recommended') }}
+                style={{ height: 36, paddingInline: 12, borderRadius: 8, border: 'none', backgroundColor: '#F5F1EB', color: '#B66A45', fontSize: 13, cursor: 'pointer' }}>
+                Clear filters
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* CONTENT */}
       <div className="max-w-[1440px] mx-auto px-6 lg:px-16 pb-24">
-        {!mounted ? null : items.length === 0 ? (
+        {!mounted ? null : baseItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6" style={{ backgroundColor: '#F5F1EB' }}>
               <Heart size={32} style={{ color: '#C8A97E' }} strokeWidth={1.5} />
@@ -165,10 +212,18 @@ export default function WishlistPage() {
               Browse experiences →
             </a>
           </div>
+        ) : items.length === 0 ? (
+          <div className="py-16 text-center">
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', marginBottom: 12 }}>No saved experiences match your filters.</p>
+            <button onClick={() => { setArea('All areas'); setCategory('All categories') }}
+              style={{ fontSize: 13, color: '#C8A97E', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
+              Clear filters
+            </button>
+          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 mt-4">
             {items.map(exp => (
-              <WishlistCard key={exp.slug} exp={exp} onRemove={remove} />
+              <WishlistCard key={exp.slug} exp={exp} />
             ))}
           </div>
         )}

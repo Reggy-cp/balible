@@ -5,6 +5,7 @@ import BookingWidget from '@/components/BookingWidget'
 import ExperienceTabs from '@/components/ExperienceTabs'
 import RecommendationsSection from '@/components/RecommendationsSection'
 import ReadMore from '@/components/ReadMore'
+import WishlistHeart from '@/components/WishlistHeart'
 import { prisma } from '@/lib/prisma'
 
 // ── Static fallback (used when DB is not yet connected) ───────────────────────
@@ -796,9 +797,12 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
               <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>{experience.area}</span>
             </div>
 
-            <h1 className="mt-2" style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(24px, 3vw, 32px)', fontWeight: 700, color: '#111111' }}>
-              {experience.title}
-            </h1>
+            <div className="flex items-start justify-between gap-3 mt-2">
+              <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(24px, 3vw, 32px)', fontWeight: 700, color: '#111111' }}>
+                {experience.title}
+              </h1>
+              <WishlistHeart slug={experience.slug} size={18} />
+            </div>
 
             <div className="flex items-center gap-3 mt-2 flex-wrap">
               <div className="flex items-center gap-1">
