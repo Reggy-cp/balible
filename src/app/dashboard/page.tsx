@@ -25,7 +25,7 @@ const EXPERIENCES = [
     title: 'Batik Painting Workshop', category: 'Art & Craft', area: 'Ubud',
     price: 380000, duration: '3 hours', maxGuests: 6,
     rating: 4.7, totalReviews: 64, bookings: 41, status: 'Active',
-    image: 'https://images.unsplash.com/photo-1616627428492-37e14fac6e14?w=200&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=200&auto=format&fit=crop&q=80',
     earnings: 15580000,
   },
   {
@@ -49,10 +49,10 @@ const EXPERIENCES = [
 const BOOKINGS_DATA = [
   { id: 'B001', ref: 'BAL-2024-001', guest: 'Sarah Kim',     email: 'sarah.k@email.com',  experience: 'Pottery Making Class',    expImage: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=60&auto=format&fit=crop&q=80', date: 'Jun 8, 2024',  time: '10:00 AM', guests: 2, total: 900000,  status: 'Confirmed', bookedOn: 'May 28' },
   { id: 'B002', ref: 'BAL-2024-002', guest: 'Thomas Reeves', email: 'treeves@email.com',   experience: 'Pottery Making Class',    expImage: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=60&auto=format&fit=crop&q=80', date: 'Jun 8, 2024',  time: '2:00 PM',  guests: 3, total: 1350000, status: 'Pending',   bookedOn: 'Jun 1'  },
-  { id: 'B003', ref: 'BAL-2024-003', guest: 'Priya Mehta',   email: 'priya.m@email.com',   experience: 'Batik Painting Workshop', expImage: 'https://images.unsplash.com/photo-1616627428492-37e14fac6e14?w=60&auto=format&fit=crop&q=80', date: 'Jun 9, 2024',  time: '09:00 AM', guests: 1, total: 380000,  status: 'Confirmed', bookedOn: 'May 30' },
+  { id: 'B003', ref: 'BAL-2024-003', guest: 'Priya Mehta',   email: 'priya.m@email.com',   experience: 'Batik Painting Workshop', expImage: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=60&auto=format&fit=crop&q=80', date: 'Jun 9, 2024',  time: '09:00 AM', guests: 1, total: 380000,  status: 'Confirmed', bookedOn: 'May 30' },
   { id: 'B004', ref: 'BAL-2024-004', guest: 'Marco Bianchi', email: 'marco.b@email.com',   experience: 'Pottery Making Class',    expImage: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=60&auto=format&fit=crop&q=80', date: 'Jun 10, 2024', time: '11:00 AM', guests: 2, total: 900000,  status: 'Pending',   bookedOn: 'Jun 2'  },
   { id: 'B005', ref: 'BAL-2024-005', guest: 'Yuki Tanaka',   email: 'yuki.t@email.com',    experience: 'Clay Sculpture Session',  expImage: 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=60&auto=format&fit=crop&q=80', date: 'Jun 12, 2024', time: '10:00 AM', guests: 2, total: 1040000, status: 'Confirmed', bookedOn: 'Jun 3'  },
-  { id: 'B006', ref: 'BAL-2024-006', guest: 'Alex Chen',     email: 'alex.c@email.com',    experience: 'Batik Painting Workshop', expImage: 'https://images.unsplash.com/photo-1616627428492-37e14fac6e14?w=60&auto=format&fit=crop&q=80', date: 'Jun 6, 2024',  time: '2:00 PM',  guests: 4, total: 1520000, status: 'Completed', bookedOn: 'May 20' },
+  { id: 'B006', ref: 'BAL-2024-006', guest: 'Alex Chen',     email: 'alex.c@email.com',    experience: 'Batik Painting Workshop', expImage: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=60&auto=format&fit=crop&q=80', date: 'Jun 6, 2024',  time: '2:00 PM',  guests: 4, total: 1520000, status: 'Completed', bookedOn: 'May 20' },
   { id: 'B007', ref: 'BAL-2024-007', guest: 'Lisa Wagner',   email: 'lisa.w@email.com',    experience: 'Pottery Making Class',    expImage: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=60&auto=format&fit=crop&q=80', date: 'Jun 3, 2024',  time: '09:00 AM', guests: 1, total: 450000,  status: 'Completed', bookedOn: 'May 18' },
   { id: 'B008', ref: 'BAL-2024-008', guest: 'James Park',    email: 'james.p@email.com',   experience: 'Pottery Making Class',    expImage: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=60&auto=format&fit=crop&q=80', date: 'Jun 1, 2024',  time: '11:00 AM', guests: 2, total: 900000,  status: 'Cancelled', bookedOn: 'May 15' },
 ]
@@ -70,10 +70,10 @@ const MONTHLY_EARNINGS = [3200000, 2800000, 4100000, 3600000, 4800000, 5200000, 
 const MONTHS_SHORT     = ['Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun']
 
 const PAYOUTS = [
-  { id: 'P1', period: 'May 1–31, 2024', amount: 7400000, status: 'Paid', date: 'Jun 5, 2024'  },
-  { id: 'P2', period: 'Apr 1–30, 2024', amount: 5700000, status: 'Paid', date: 'May 5, 2024'  },
-  { id: 'P3', period: 'Mar 1–31, 2024', amount: 6200000, status: 'Paid', date: 'Apr 5, 2024'  },
-  { id: 'P4', period: 'Feb 1–29, 2024', amount: 5100000, status: 'Paid', date: 'Mar 5, 2024'  },
+  { id: 'P1', period: 'May 1–31, 2024', gross: 7400000, status: 'Paid',    date: 'Jun 5, 2024'  },
+  { id: 'P2', period: 'Apr 1–30, 2024', gross: 5700000, status: 'Paid',    date: 'May 5, 2024'  },
+  { id: 'P3', period: 'Mar 1–31, 2024', gross: 6200000, status: 'Paid',    date: 'Apr 5, 2024'  },
+  { id: 'P4', period: 'Feb 1–29, 2024', gross: 5100000, status: 'Pending', date: 'Mar 5, 2024'  },
 ]
 
 const NAV_ITEMS = [
@@ -170,12 +170,22 @@ const OVERVIEW_STATS = [
 const UPCOMING = [
   { title: 'Pottery Making Class',    date: 'Jun 8, 2024 · 10:00 AM',  guests: 2, status: 'Confirmed', image: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=120&auto=format&fit=crop&q=80' },
   { title: 'Pottery Making Class',    date: 'Jun 8, 2024 · 02:00 PM',  guests: 3, status: 'Confirmed', image: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=120&auto=format&fit=crop&q=80' },
-  { title: 'Batik Painting Workshop', date: 'Jun 9, 2024 · 09:00 AM',  guests: 1, status: 'Pending',   image: 'https://images.unsplash.com/photo-1616627428492-37e14fac6e14?w=120&auto=format&fit=crop&q=80' },
+  { title: 'Batik Painting Workshop', date: 'Jun 9, 2024 · 09:00 AM',  guests: 1, status: 'Pending',   image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=120&auto=format&fit=crop&q=80' },
   { title: 'Clay Sculpture Session',  date: 'Jun 12, 2024 · 10:00 AM', guests: 2, status: 'Confirmed', image: 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=120&auto=format&fit=crop&q=80' },
 ]
 
-function OverviewPanel({ onNav }: { onNav: (id: string) => void }) {
+function OverviewPanel({ onNav, commissionRate }: { onNav: (id: string) => void; commissionRate: number }) {
   const [period, setPeriod] = useState('This Month')
+  const netMult = (100 - commissionRate) / 100
+  const totalNetEarnings = EXPERIENCES.reduce((a, e) => a + e.earnings, 0) * netMult
+  const lastMonthNet = MONTHLY_EARNINGS[MONTHLY_EARNINGS.length - 1] * netMult
+
+  const stats = OVERVIEW_STATS.map(s =>
+    s.label === 'Total Earnings'
+      ? { ...s, value: fmt(totalNetEarnings), change: `After ${commissionRate}% commission` }
+      : s
+  )
+
   const slice  = period === 'This Month' ? MONTHLY_EARNINGS.slice(6)    : MONTHLY_EARNINGS.slice(0, 6)
   const labels = period === 'This Month' ? MONTHS_SHORT.slice(6)        : MONTHS_SHORT.slice(0, 6)
 
@@ -197,7 +207,7 @@ function OverviewPanel({ onNav }: { onNav: (id: string) => void }) {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {OVERVIEW_STATS.map(s => (
+        {stats.map(s => (
           <div key={s.label} className="bg-white rounded-xl p-4 lg:p-5" style={{ border: '1px solid #E8E4DE' }}>
             <p style={{ fontSize: 12, color: '#6F675C' }}>{s.label}</p>
             <p className="mt-1" style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(16px,1.8vw,22px)', fontWeight: 700, color: '#111111', lineHeight: 1.2 }}>{s.value}</p>
@@ -246,7 +256,7 @@ function OverviewPanel({ onNav }: { onNav: (id: string) => void }) {
               </button>
             </div>
             <div className="flex items-baseline gap-2 my-2">
-              <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#111111' }}>IDR 7.4M</span>
+              <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#111111' }}>{fmt(lastMonthNet)}</span>
               <span style={{ fontSize: 12, color: '#4A7C59' }}>↑ 30%</span>
             </div>
             <MiniChart data={slice} color="#C8A97E" />
@@ -264,7 +274,7 @@ function OverviewPanel({ onNav }: { onNav: (id: string) => void }) {
                     <span style={{ fontSize: 12, fontWeight: 700, color: '#6F675C', width: 16 }}>{i + 1}</span>
                     <span style={{ fontSize: 13, color: '#111111', fontWeight: 500 }}>{e.title}</span>
                   </div>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: '#111111' }}>{fmt(e.earnings)}</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#4A7C59' }}>{fmt(Math.round(e.earnings * netMult))}</span>
                 </div>
               ))}
             </div>
@@ -277,7 +287,7 @@ function OverviewPanel({ onNav }: { onNav: (id: string) => void }) {
 
 // ── Experiences Panel ─────────────────────────────────────────────────────────
 
-function ExperiencesPanel() {
+function ExperiencesPanel({ commissionRate }: { commissionRate: number }) {
   const [filter, setFilter]   = useState('All')
   const [exps, setExps]       = useState(EXPERIENCES)
   const [showForm, setShowForm] = useState(false)
@@ -429,7 +439,7 @@ function ExperiencesPanel() {
                 <span style={{ fontSize: 13, fontWeight: 600, color: '#111111' }}>IDR {exp.price.toLocaleString('id-ID')}<span style={{ fontWeight: 400, color: '#6F675C' }}>/person</span></span>
                 <span style={{ fontSize: 13, color: '#6F675C' }}>⭐ {exp.rating} ({exp.totalReviews})</span>
                 <span style={{ fontSize: 13, color: '#6F675C' }}>{exp.bookings} bookings</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#4A7C59' }}>{fmt(exp.earnings)}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#4A7C59' }}>{fmt(Math.round(exp.earnings * (100 - commissionRate) / 100))} <span style={{ fontSize: 10, fontWeight: 400, color: '#9E9A94' }}>net</span></span>
               </div>
             </div>
 
@@ -848,23 +858,33 @@ function BookingsPanel() {
 
 // ── Earnings Panel ────────────────────────────────────────────────────────────
 
-function EarningsPanel() {
-  const total    = MONTHLY_EARNINGS.reduce((a, b) => a + b, 0)
-  const lastMo   = MONTHLY_EARNINGS[MONTHLY_EARNINGS.length - 1]
+function EarningsPanel({ commissionRate }: { commissionRate: number }) {
+  const netMult  = (100 - commissionRate) / 100
+  const totalGross = MONTHLY_EARNINGS.reduce((a, b) => a + b, 0)
+  const lastMoGross = MONTHLY_EARNINGS[MONTHLY_EARNINGS.length - 1]
   const prevMo   = MONTHLY_EARNINGS[MONTHLY_EARNINGS.length - 2]
-  const growth   = (((lastMo - prevMo) / prevMo) * 100).toFixed(1)
+  const growth   = (((lastMoGross - prevMo) / prevMo) * 100).toFixed(1)
   const totalExp = EXPERIENCES.reduce((a, e) => a + e.earnings, 0)
 
   return (
     <div>
       <PageHeader title="Earnings" subtitle="Track your revenue and payout history" />
 
+      {/* Commission info banner */}
+      <div className="mb-5 px-4 py-3 rounded-xl flex items-center gap-3" style={{ backgroundColor: '#FDF8F4', border: '1px solid #E8D4B8' }}>
+        <TrendingUp size={15} style={{ color: '#C8A97E', flexShrink: 0 }} />
+        <p style={{ fontSize: 13, color: '#6F675C', margin: 0 }}>
+          Balible charges a <strong style={{ color: '#111111' }}>{commissionRate}%</strong> platform commission per booking.
+          You receive <strong style={{ color: '#4A7C59' }}>{100 - commissionRate}%</strong> of each booking total as your net payout.
+        </p>
+      </div>
+
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
-          { label: 'Total Earned',    value: fmt(total),  sub: 'All time',                   subColor: '#6F675C' },
-          { label: 'This Month',      value: fmt(lastMo), sub: `↑ ${growth}% vs last month`, subColor: '#4A7C59' },
-          { label: 'Avg per Booking', value: 'IDR 690K',  sub: 'Last 90 days',               subColor: '#6F675C' },
-          { label: 'Pending Payout',  value: fmt(lastMo), sub: 'Releases Jun 5',             subColor: '#C8A97E' },
+          { label: 'Total Earned',    value: fmt(Math.round(totalGross * netMult)),   sub: `After ${commissionRate}% commission`, subColor: '#6F675C' },
+          { label: 'This Month',      value: fmt(Math.round(lastMoGross * netMult)),  sub: `↑ ${growth}% vs last month`,         subColor: '#4A7C59' },
+          { label: 'Avg per Booking', value: fmt(Math.round(690000 * netMult)),       sub: 'Last 90 days',                       subColor: '#6F675C' },
+          { label: 'Pending Payout',  value: fmt(Math.round(lastMoGross * netMult)),  sub: 'Releases Jun 5',                     subColor: '#C8A97E' },
         ].map(s => (
           <div key={s.label} className="bg-white rounded-xl p-4 lg:p-5" style={{ border: '1px solid #E8E4DE' }}>
             <p style={{ fontSize: 12, color: '#6F675C' }}>{s.label}</p>
@@ -900,11 +920,15 @@ function EarningsPanel() {
           <div className="space-y-4">
             {EXPERIENCES.map(e => {
               const pct = (e.earnings / totalExp) * 100
+              const netEarnings = Math.round(e.earnings * netMult)
               return (
                 <div key={e.id}>
                   <div className="flex justify-between items-center mb-1">
                     <span style={{ fontSize: 13, color: '#111111', fontWeight: 500 }}>{e.title}</span>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: '#111111' }}>{fmt(e.earnings)}</span>
+                    <div className="text-right">
+                      <span style={{ fontSize: 13, fontWeight: 600, color: '#4A7C59' }}>{fmt(netEarnings)}</span>
+                      <span style={{ fontSize: 10, color: '#9E9A94', marginLeft: 3 }}>net</span>
+                    </div>
                   </div>
                   <div style={{ height: 6, borderRadius: 3, backgroundColor: '#F5F1EB', overflow: 'hidden' }}>
                     <div style={{ height: '100%', width: `${pct}%`, backgroundColor: '#C8A97E', borderRadius: 3 }} />
@@ -920,22 +944,32 @@ function EarningsPanel() {
         <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
           <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Payout History</h2>
           <div className="space-y-3">
-            {PAYOUTS.map(p => (
-              <div key={p.id} className="flex items-center justify-between p-3.5 rounded-xl" style={{ backgroundColor: '#F5F1EB' }}>
-                <div>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: '#111111' }}>{p.period}</p>
-                  <p style={{ fontSize: 11, color: '#6F675C', marginTop: 1 }}>Paid {p.date}</p>
+            {PAYOUTS.map(p => {
+              const commission = Math.round(p.gross * commissionRate / 100)
+              const net = p.gross - commission
+              return (
+                <div key={p.id} className="p-3.5 rounded-xl" style={{ backgroundColor: '#F5F1EB' }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: '#111111' }}>{p.period}</p>
+                      <p style={{ fontSize: 11, color: '#6F675C', marginTop: 1 }}>{p.status === 'Paid' ? `Paid ${p.date}` : `Expected ${p.date}`}</p>
+                    </div>
+                    <div className="text-right">
+                      <p style={{ fontSize: 14, fontWeight: 700, color: '#4A7C59' }}>{fmt(net)}</p>
+                      <div className="mt-1"><StatusBadge status={p.status} /></div>
+                    </div>
+                  </div>
+                  <div className="flex gap-4 pt-2" style={{ borderTop: '1px solid #E0DDD8' }}>
+                    <span style={{ fontSize: 11, color: '#6F675C' }}>Gross: {fmt(p.gross)}</span>
+                    <span style={{ fontSize: 11, color: '#B66A45' }}>Commission −{commissionRate}%: {fmt(commission)}</span>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p style={{ fontSize: 14, fontWeight: 700, color: '#4A7C59' }}>{fmt(p.amount)}</p>
-                  <div className="mt-1"><StatusBadge status={p.status} /></div>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
           <button
             onClick={() => {
-              const rows = [['Period','Amount','Status','Date'], ...PAYOUTS.map(p => [p.period, p.amount, p.status, p.date])]
+              const rows = [['Period','Gross','Commission','Net','Status','Date'], ...PAYOUTS.map(p => { const c = Math.round(p.gross * commissionRate / 100); return [p.period, p.gross, c, p.gross - c, p.status, p.date] })]
               const csv = rows.map(r => r.join(',')).join('\n')
               const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'payout-statements.csv'; a.click()
             }}
@@ -1362,17 +1396,18 @@ function SidebarInner({ activeNav, setActiveNav }: { activeNav: string; setActiv
 export default function DashboardPage() {
   const [activeNav, setActiveNav]   = useState('overview')
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const commissionRate = Math.max(0, Math.min(100, parseInt(String(lsh('balible_commission', '10')), 10) || 10))
 
   const renderPanel = () => {
     switch (activeNav) {
-      case 'overview':    return <OverviewPanel onNav={setActiveNav} />
-      case 'experiences': return <ExperiencesPanel />
+      case 'overview':    return <OverviewPanel onNav={setActiveNav} commissionRate={commissionRate} />
+      case 'experiences': return <ExperiencesPanel commissionRate={commissionRate} />
       case 'bookings':    return <BookingsPanel />
-      case 'earnings':    return <EarningsPanel />
+      case 'earnings':    return <EarningsPanel commissionRate={commissionRate} />
       case 'reviews':     return <ReviewsPanel />
       case 'profile':     return <ProfilePanel />
       case 'settings':    return <SettingsPanel />
-      default:            return <OverviewPanel onNav={setActiveNav} />
+      default:            return <OverviewPanel onNav={setActiveNav} commissionRate={commissionRate} />
     }
   }
 
