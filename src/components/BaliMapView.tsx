@@ -17,27 +17,28 @@ export const MAP_EXPERIENCES = [
   // Culture
   { id: 6,  slug: 'water-temple-purification',  title: 'Water Temple Purification',      category: 'Culture',      area: 'Gianyar',  lat: -8.5374,  lng: 115.3247, price: 600000, rating: 4.8, reviews: 78,  duration: '4 hrs',   image: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=400&auto=format&fit=crop&q=80' },
   { id: 7,  slug: 'uluwatu-kecak-sunset',       title: 'Uluwatu Sunset & Kecak Dance',   category: 'Culture',      area: 'Uluwatu',  lat: -8.8293,  lng: 115.0849, price: 450000, rating: 4.9, reviews: 312, duration: '3 hrs',   image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=400&auto=format&fit=crop&q=80' },
-  // Food & Drink
-  { id: 8,  slug: 'balinese-cooking-class',     title: 'Balinese Cooking Class',         category: 'Food & Drink', area: 'Seminyak', lat: -8.6906,  lng: 115.1589, price: 480000, rating: 4.8, reviews: 156, duration: '3.5 hrs', image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&auto=format&fit=crop&q=80' },
-  { id: 9,  slug: 'jimbaran-seafood-sunset',    title: 'Jimbaran Seafood & Sunset',      category: 'Food & Drink', area: 'Jimbaran', lat: -8.7898,  lng: 115.1687, price: 350000, rating: 4.6, reviews: 89,  duration: '2 hrs',   image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&auto=format&fit=crop&q=80' },
-  // Surf & Water
-  { id: 10, slug: 'beginner-surf-lesson',       title: 'Beginner Surf Lesson',           category: 'Surf & Water', area: 'Kuta',     lat: -8.7183,  lng: 115.1685, price: 320000, rating: 4.7, reviews: 428, duration: '2 hrs',   image: 'https://images.unsplash.com/photo-1530870110042-98b2cb110834?w=400&auto=format&fit=crop&q=80' },
+  // Culinary
+  { id: 8,  slug: 'balinese-cooking-class',     title: 'Balinese Cooking Class',         category: 'Culinary',         area: 'Seminyak', lat: -8.6906,  lng: 115.1589, price: 480000, rating: 4.8, reviews: 156, duration: '3.5 hrs', image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&auto=format&fit=crop&q=80' },
+  { id: 9,  slug: 'jimbaran-seafood-sunset',    title: 'Jimbaran Seafood & Sunset',      category: 'Culinary',         area: 'Jimbaran', lat: -8.7898,  lng: 115.1687, price: 350000, rating: 4.6, reviews: 89,  duration: '2 hrs',   image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&auto=format&fit=crop&q=80' },
+  // Water Activities
+  { id: 10, slug: 'beginner-surf-lesson',       title: 'Beginner Surf Lesson',           category: 'Water Activities', area: 'Kuta',     lat: -8.7183,  lng: 115.1685, price: 320000, rating: 4.7, reviews: 428, duration: '2 hrs',   image: 'https://images.unsplash.com/photo-1530870110042-98b2cb110834?w=400&auto=format&fit=crop&q=80' },
   // Diving
-  { id: 11, slug: 'snorkeling-amed',            title: 'Snorkeling at Amed Reef',        category: 'Diving',       area: 'Amed',     lat: -8.3428,  lng: 115.6478, price: 420000, rating: 4.8, reviews: 67,  duration: '3 hrs',   image: 'https://images.unsplash.com/photo-1560275619-4662e36fa65c?w=400&auto=format&fit=crop&q=80' },
-  // Nature
-  { id: 12, slug: 'rice-terrace-walk',          title: 'Tegalalang Rice Terrace Walk',   category: 'Nature',       area: 'Ubud',     lat: -8.4316,  lng: 115.2791, price: 280000, rating: 4.8, reviews: 192, duration: '2.5 hrs', image: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=400&auto=format&fit=crop&q=80' },
+  { id: 11, slug: 'snorkeling-amed',            title: 'Snorkeling at Amed Reef',        category: 'Diving',           area: 'Amed',     lat: -8.3428,  lng: 115.6478, price: 420000, rating: 4.8, reviews: 67,  duration: '3 hrs',   image: 'https://images.unsplash.com/photo-1560275619-4662e36fa65c?w=400&auto=format&fit=crop&q=80' },
+  // Nature & Outdoors
+  { id: 12, slug: 'rice-terrace-walk',          title: 'Tegalalang Rice Terrace Walk',   category: 'Nature & Outdoors', area: 'Ubud',    lat: -8.4316,  lng: 115.2791, price: 280000, rating: 4.8, reviews: 192, duration: '2.5 hrs', image: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=400&auto=format&fit=crop&q=80' },
 ]
 
-const CATEGORIES = ['All', 'Art & Craft', 'Wellness', 'Culture', 'Food & Drink', 'Surf & Water', 'Diving', 'Nature']
+const CATEGORIES = ['All', 'Art & Craft', 'Wellness', 'Culture', 'Culinary', 'Spiritual', 'Nature & Outdoors', 'Water Activities', 'Diving']
 
 const CAT_COLORS: Record<string, string> = {
-  'Art & Craft':  '#C8A97E',
-  'Wellness':     '#4A7C59',
-  'Culture':      '#8B6E9E',
-  'Food & Drink': '#B66A45',
-  'Surf & Water': '#3B82C4',
-  'Diving':       '#1A9E9E',
-  'Nature':       '#6B8F3E',
+  'Art & Craft':     '#C8A97E',
+  'Wellness':        '#4A7C59',
+  'Culture':         '#8B6E9E',
+  'Culinary':        '#B66A45',
+  'Spiritual':       '#D4842A',
+  'Nature & Outdoors': '#6B8F3E',
+  'Water Activities': '#3B82C4',
+  'Diving':          '#1A9E9E',
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

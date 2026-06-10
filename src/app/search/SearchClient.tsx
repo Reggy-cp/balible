@@ -2,8 +2,8 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import {
-  Search, CalendarDays, Heart, Star, MapPin,
-  SlidersHorizontal, X, Home, Map, User, ChevronDown,
+  Search, CalendarDays, Star, MapPin,
+  SlidersHorizontal, X, User, ChevronDown,
 } from 'lucide-react'
 import Image from 'next/image'
 import Navbar from '@/components/Navbar'
@@ -23,7 +23,7 @@ export type SearchResult = {
   photo: string
 }
 
-const CATEGORIES  = ['All Categories', 'Art & Craft', 'Wellness', 'Culture', 'Food & Drink', 'Nature', 'Surf & Water']
+const CATEGORIES  = ['All Categories', 'Art & Craft', 'Wellness', 'Culture', 'Culinary', 'Spiritual', 'Nature & Outdoors', 'Water Activities']
 const LOCATIONS   = ['All Locations', 'Ubud', 'Canggu', 'Seminyak', 'Gianyar', 'Jimbaran', 'Kuta', 'Uluwatu', 'Amed', 'Sidemen']
 const DURATIONS   = ['Any duration', 'Under 2 hours', '2–4 hours', '4+ hours']
 const SORT_OPTIONS = ['Recommended', 'Price: Low to High', 'Price: High to Low', 'Top Rated', 'Most Reviews']
@@ -214,9 +214,9 @@ const DEFAULT_FILTERS: Filters = {
   duration: 'Any duration', priceRange: [0, 700000], date: '', guests: 1,
 }
 
-export default function SearchClient({ initialResults }: { initialResults: SearchResult[] }) {
+export default function SearchClient({ initialResults, initialQuery = '' }: { initialResults: SearchResult[]; initialQuery?: string }) {
   const [filterOpen, setFilterOpen] = useState(false)
-  const [search, setSearch]         = useState('')
+  const [search, setSearch]         = useState(initialQuery)
   const [sort, setSort]             = useState('Recommended')
   const [filters, setFilters]       = useState<Filters>(DEFAULT_FILTERS)
   const [mounted, setMounted]       = useState(false)

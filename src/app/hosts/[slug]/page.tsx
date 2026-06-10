@@ -117,8 +117,8 @@ const HOST_DB: Record<string, Host> = {
     languages: ['Indonesian', 'English'],
     events: [],
     experiences: [
-      { slug: 'balinese-cooking-class', title: 'Balinese Cooking Class', area: 'Seminyak', price: 480000, duration: '3.5 hrs', rating: 4.8, reviews: 156, category: 'Food & Drink', image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&auto=format&fit=crop&q=80' },
-      { slug: 'balinese-raw-food-workshop', title: 'Balinese Raw Food Workshop', area: 'Seminyak', price: 380000, duration: '2.5 hrs', rating: 4.7, reviews: 42, category: 'Food & Drink', image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&auto=format&fit=crop&q=80' },
+      { slug: 'balinese-cooking-class', title: 'Balinese Cooking Class', area: 'Seminyak', price: 480000, duration: '3.5 hrs', rating: 4.8, reviews: 156, category: 'Culinary', image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&auto=format&fit=crop&q=80' },
+      { slug: 'balinese-raw-food-workshop', title: 'Balinese Raw Food Workshop', area: 'Seminyak', price: 380000, duration: '2.5 hrs', rating: 4.7, reviews: 42, category: 'Culinary', image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&auto=format&fit=crop&q=80' },
     ],
   },
   'komang-surya': {
@@ -129,9 +129,9 @@ const HOST_DB: Record<string, Host> = {
     languages: ['Indonesian', 'English'],
     events: [],
     experiences: [
-      { slug: 'beginner-surf-lesson', title: 'Beginner Surf Lesson', area: 'Kuta', price: 320000, duration: '2 hrs', rating: 4.7, reviews: 428, category: 'Surf & Water', image: 'https://images.unsplash.com/photo-1530870110042-98b2cb110834?w=600&auto=format&fit=crop&q=80' },
-      { slug: 'intermediate-surf-coaching', title: 'Intermediate Surf Coaching', area: 'Kuta', price: 420000, duration: '2.5 hrs', rating: 4.8, reviews: 89, category: 'Surf & Water', image: 'https://images.unsplash.com/photo-1560275619-4662e36fa65c?w=600&auto=format&fit=crop&q=80' },
-      { slug: 'sunset-surf-session', title: 'Sunset Surf Session', area: 'Kuta', price: 350000, duration: '2 hrs', rating: 4.7, reviews: 63, category: 'Surf & Water', image: 'https://images.unsplash.com/photo-1530870110042-98b2cb110834?w=600&auto=format&fit=crop&q=80' },
+      { slug: 'beginner-surf-lesson', title: 'Beginner Surf Lesson', area: 'Kuta', price: 320000, duration: '2 hrs', rating: 4.7, reviews: 428, category: 'Water Activities', image: 'https://images.unsplash.com/photo-1530870110042-98b2cb110834?w=600&auto=format&fit=crop&q=80' },
+      { slug: 'intermediate-surf-coaching', title: 'Intermediate Surf Coaching', area: 'Kuta', price: 420000, duration: '2.5 hrs', rating: 4.8, reviews: 89, category: 'Water Activities', image: 'https://images.unsplash.com/photo-1560275619-4662e36fa65c?w=600&auto=format&fit=crop&q=80' },
+      { slug: 'sunset-surf-session', title: 'Sunset Surf Session', area: 'Kuta', price: 350000, duration: '2 hrs', rating: 4.7, reviews: 63, category: 'Water Activities', image: 'https://images.unsplash.com/photo-1530870110042-98b2cb110834?w=600&auto=format&fit=crop&q=80' },
     ],
   },
   'gede-arnawa': {
@@ -142,8 +142,8 @@ const HOST_DB: Record<string, Host> = {
     languages: ['Balinese', 'Indonesian', 'English'],
     events: [],
     experiences: [
-      { slug: 'rice-terrace-walk', title: 'Tegalalang Rice Terrace Walk', area: 'Ubud', price: 280000, duration: '2.5 hrs', rating: 4.8, reviews: 192, category: 'Nature', image: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=600&auto=format&fit=crop&q=80' },
-      { slug: 'mount-batur-sunrise-trek', title: 'Mount Batur Sunrise Trek', area: 'Kintamani', price: 650000, duration: '6 hrs', rating: 4.9, reviews: 134, category: 'Nature', image: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=600&auto=format&fit=crop&q=80' },
+      { slug: 'rice-terrace-walk', title: 'Tegalalang Rice Terrace Walk', area: 'Ubud', price: 280000, duration: '2.5 hrs', rating: 4.8, reviews: 192, category: 'Nature & Outdoors', image: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=600&auto=format&fit=crop&q=80' },
+      { slug: 'mount-batur-sunrise-trek', title: 'Mount Batur Sunrise Trek', area: 'Kintamani', price: 650000, duration: '6 hrs', rating: 4.9, reviews: 134, category: 'Nature & Outdoors', image: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=600&auto=format&fit=crop&q=80' },
     ],
   },
   'ni-made-suari': {
@@ -198,7 +198,8 @@ async function getHostFromDB(slug: string): Promise<Host | null> {
   try {
     const CATEGORY_DISPLAY: Record<string, string> = {
       WELLNESS: 'Wellness', ART_CRAFT: 'Art & Craft', CULTURE: 'Culture',
-      FOOD_DRINK: 'Food & Drink', NATURE: 'Nature', SURF_WATER: 'Surf & Water',
+      FOOD_DRINK: 'Culinary', COOKING: 'Culinary', NATURE: 'Nature & Outdoors',
+      SURF_WATER: 'Water Activities', DIVING: 'Diving', SPIRITUAL: 'Spiritual',
     }
     const AREA_DISPLAY: Record<string, string> = {
       UBUD: 'Ubud', CANGGU: 'Canggu', SEMINYAK: 'Seminyak', KUTA: 'Kuta',

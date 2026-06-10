@@ -11,17 +11,17 @@ const STATIC_RESULTS: SearchResult[] = [
   { id: 6,  slug: 'sunrise-yoga-class',          title: 'Sunrise Yoga & Meditation',    area: 'Canggu',   rating: 4.9, reviews: 203, price: 250000, durationMins: 75,  category: 'Wellness',     photo: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=300&auto=format&fit=crop&q=80' },
   { id: 7,  slug: 'water-temple-purification',   title: 'Water Temple Purification',    area: 'Gianyar',  rating: 4.8, reviews: 78,  price: 600000, durationMins: 240, category: 'Culture',      photo: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=300&auto=format&fit=crop&q=80' },
   { id: 8,  slug: 'uluwatu-kecak-sunset',        title: 'Uluwatu Sunset & Kecak Dance', area: 'Uluwatu',  rating: 4.9, reviews: 312, price: 450000, durationMins: 180, category: 'Culture',      photo: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=300&auto=format&fit=crop&q=80' },
-  { id: 9,  slug: 'balinese-cooking-class',      title: 'Balinese Cooking Class',       area: 'Seminyak', rating: 4.8, reviews: 156, price: 480000, durationMins: 210, category: 'Food & Drink', photo: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=300&auto=format&fit=crop&q=80' },
-  { id: 10, slug: 'jimbaran-seafood-sunset',     title: 'Jimbaran Seafood & Sunset',    area: 'Jimbaran', rating: 4.6, reviews: 89,  price: 350000, durationMins: 120, category: 'Food & Drink', photo: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=300&auto=format&fit=crop&q=80' },
-  { id: 11, slug: 'beginner-surf-lesson',        title: 'Beginner Surf Lesson',         area: 'Kuta',     rating: 4.7, reviews: 428, price: 320000, durationMins: 120, category: 'Surf & Water', photo: 'https://images.unsplash.com/photo-1530870110042-98b2cb110834?w=300&auto=format&fit=crop&q=80' },
-  { id: 12, slug: 'snorkeling-amed',             title: 'Snorkeling at Amed Reef',      area: 'Amed',     rating: 4.8, reviews: 67,  price: 420000, durationMins: 180, category: 'Surf & Water', photo: 'https://images.unsplash.com/photo-1560275619-4662e36fa65c?w=300&auto=format&fit=crop&q=80' },
-  { id: 13, slug: 'rice-terrace-walk',           title: 'Tegalalang Rice Terrace Walk', area: 'Ubud',     rating: 4.8, reviews: 192, price: 280000, durationMins: 150, category: 'Nature',       photo: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=300&auto=format&fit=crop&q=80' },
+  { id: 9,  slug: 'balinese-cooking-class',      title: 'Balinese Cooking Class',       area: 'Seminyak', rating: 4.8, reviews: 156, price: 480000, durationMins: 210, category: 'Culinary',         photo: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=300&auto=format&fit=crop&q=80' },
+  { id: 10, slug: 'jimbaran-seafood-sunset',     title: 'Jimbaran Seafood & Sunset',    area: 'Jimbaran', rating: 4.6, reviews: 89,  price: 350000, durationMins: 120, category: 'Culinary',         photo: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=300&auto=format&fit=crop&q=80' },
+  { id: 11, slug: 'beginner-surf-lesson',        title: 'Beginner Surf Lesson',         area: 'Kuta',     rating: 4.7, reviews: 428, price: 320000, durationMins: 120, category: 'Water Activities', photo: 'https://images.unsplash.com/photo-1530870110042-98b2cb110834?w=300&auto=format&fit=crop&q=80' },
+  { id: 12, slug: 'snorkeling-amed',             title: 'Snorkeling at Amed Reef',      area: 'Amed',     rating: 4.8, reviews: 67,  price: 420000, durationMins: 180, category: 'Water Activities', photo: 'https://images.unsplash.com/photo-1560275619-4662e36fa65c?w=300&auto=format&fit=crop&q=80' },
+  { id: 13, slug: 'rice-terrace-walk',           title: 'Tegalalang Rice Terrace Walk', area: 'Ubud',     rating: 4.8, reviews: 192, price: 280000, durationMins: 150, category: 'Nature & Outdoors', photo: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=300&auto=format&fit=crop&q=80' },
   { id: 14, slug: 'natural-dye-workshop',        title: 'Natural Dye Workshop',         area: 'Sidemen',  rating: 4.7, reviews: 48,  price: 380000, durationMins: 180, category: 'Art & Craft',  photo: 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=300&auto=format&fit=crop&q=80' },
   { id: 15, slug: 'wood-carving-workshop',       title: 'Wood Carving Workshop',        area: 'Ubud',     rating: 4.8, reviews: 72,  price: 500000, durationMins: 240, category: 'Art & Craft',  photo: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=300&auto=format&fit=crop&q=80' },
   { id: 16, slug: 'rattan-weaving-class',        title: 'Rattan Weaving Class',         area: 'Sidemen',  rating: 4.7, reviews: 38,  price: 350000, durationMins: 180, category: 'Art & Craft',  photo: 'https://images.unsplash.com/photo-1519735777090-ec97162dc266?w=300&auto=format&fit=crop&q=80' },
 ]
 
-export default async function SearchPage() {
+export default async function SearchPage({ searchParams }: { searchParams: { q?: string } }) {
   const dbCards = await getExperienceCards()
   const dbSlugs = new Set(dbCards.map(c => c.slug))
 
@@ -42,5 +42,5 @@ export default async function SearchPage() {
   const staticOnly = STATIC_RESULTS.filter(r => !dbSlugs.has(r.slug))
   const allResults = [...dbResults, ...staticOnly]
 
-  return <SearchClient initialResults={allResults} />
+  return <SearchClient initialResults={allResults} initialQuery={searchParams.q ?? ''} />
 }
