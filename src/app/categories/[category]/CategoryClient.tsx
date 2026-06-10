@@ -56,14 +56,6 @@ const CATEGORY_META: Record<string, {
     color: '#6F675C',
     subcategories: ['All', 'Temple & Ceremony', 'Dance & Music', 'History Tour', 'Language'],
   },
-  'food-drink': {
-    label: 'Food & Drink',
-    tagline: 'Eat like a Balinese local',
-    description: 'Explore the rich flavours of Balinese cuisine through cooking classes, market tours, and coffee journeys. Go from the farm to your plate with a local who knows every ingredient.',
-    image: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=1200&auto=format&fit=crop&q=80',
-    color: '#C8A97E',
-    subcategories: ['All', 'Market Tour', 'Coffee & Tea', 'Mixology', 'Farm Visit'],
-  },
   nature: {
     label: 'Nature',
     tagline: 'Bali beyond the beach',
@@ -102,11 +94,11 @@ const CATEGORY_META: Record<string, {
     description: "Go beyond eating — learn the spices, the techniques, and the stories behind Balinese food. From market foraging to hands-on cooking in a family compound, led by people who grew up in the kitchen.",
     image: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=1200&auto=format&fit=crop&q=80',
     color: '#C8A97E',
-    subcategories: ['All', 'Cooking Class', 'Spice & Herb', 'Market Tour', 'Fermentation', 'Dessert & Sweets', 'Farm to Table'],
+    subcategories: ['All', 'Cooking Class', 'Spice & Herb', 'Market Tour', 'Coffee & Tea', 'Fermentation', 'Dessert & Sweets', 'Farm to Table'],
   },
 }
 
-const ALL_CATEGORY_SLUGS = ['art-craft', 'wellness', 'culture', 'food-drink', 'nature', 'surf-water', 'diving', 'water-activities', 'culinary'] as const
+const ALL_CATEGORY_SLUGS = ['art-craft', 'wellness', 'culture', 'nature', 'surf-water', 'diving', 'water-activities', 'culinary'] as const
 // These are sub-categories hidden from the "Explore other categories" strip
 const SUB_CATEGORY_SLUGS = new Set(['surf-water', 'diving'])
 const SORT_OPTIONS = ['Most popular', 'Highest rated', 'Price: Low to High', 'Price: High to Low']

@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import {
   Heart, ShoppingBag, User, Search, CalendarDays, ChevronDown,
-  ChevronRight, ChevronLeft, Leaf, Scissors, Landmark, Utensils,
+  ChevronRight, ChevronLeft, Leaf, Scissors, Landmark, ChefHat,
   Mountain, Building2, Grid3x3, Star, ShieldCheck, Users, Sparkles,
   MapPin, Home, Instagram, Facebook, Twitter, Map,
 } from 'lucide-react'
@@ -18,7 +18,7 @@ const CAT_STRIP = [
   { label: 'Wellness',      Icon: Leaf,      href: '/categories/wellness'   },
   { label: 'Art & Craft',   Icon: Scissors,  href: '/categories/art-craft'  },
   { label: 'Culture',       Icon: Landmark,  href: '/categories/culture'    },
-  { label: 'Food & Drink',  Icon: Utensils,  href: '/categories/food-drink' },
+  { label: 'Culinary',      Icon: ChefHat,   href: '/categories/culinary'   },
   { label: 'Nature',        Icon: Mountain,  href: '/categories/nature'     },
   { label: 'Architecture',  Icon: Building2, href: '/search'                },
   { label: 'All Categories',Icon: Grid3x3,   href: '/categories'            },
@@ -28,7 +28,7 @@ const CAT_GRID = [
   { label: 'Wellness',     Icon: Leaf,       href: '/categories/wellness',   photo: 'https://images.unsplash.com/photo-1600334129128-685c5582fd35?w=400&auto=format&fit=crop&q=80' },
   { label: 'Art & Craft',  Icon: Scissors,   href: '/categories/art-craft',  photo: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&auto=format&fit=crop&q=80' },
   { label: 'Culture',      Icon: Landmark,   href: '/categories/culture',    photo: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=400&auto=format&fit=crop&q=80' },
-  { label: 'Food & Drink', Icon: Utensils,   href: '/categories/food-drink', photo: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&auto=format&fit=crop&q=80' },
+  { label: 'Culinary',     Icon: ChefHat,    href: '/categories/culinary',   photo: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=400&auto=format&fit=crop&q=80' },
   { label: 'Nature',       Icon: Mountain,   href: '/categories/nature',     photo: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=400&auto=format&fit=crop&q=80' },
   { label: 'Architecture', Icon: Building2,  href: '/search',                photo: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=400&auto=format&fit=crop&q=80' },
 ]
