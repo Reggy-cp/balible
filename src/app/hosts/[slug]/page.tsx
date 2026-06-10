@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { MapPin, Star, Clock, Users, Award, ChevronRight } from 'lucide-react'
+import { MapPin, Star, Clock, Users, Award, ChevronRight, CalendarDays, Ticket } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
 import WishlistHeart from '@/components/WishlistHeart'
@@ -13,11 +13,17 @@ type Experience = {
   duration: string; rating: number; reviews: number; category: string; image: string
 }
 
+type HostEvent = {
+  slug: string; title: string; date: string; location: string
+  price: number; capacity: number; coverImage: string | null
+}
+
 type Host = {
   slug: string; name: string; businessName: string; area: string
   avatar: string | null; bio: string; rating: number; totalReviews: number
   memberSince: string; responseRate: string; languages: string[]
   experiences: Experience[]
+  events: HostEvent[]
 }
 
 const HOST_DB: Record<string, Host> = {
@@ -27,6 +33,7 @@ const HOST_DB: Record<string, Host> = {
     bio: 'Third-generation Balinese potter and artist based in the heart of Ubud. Made learned the craft from her grandmother and has been teaching visitors the ancient art of hand-building and wheel throwing for over 15 years. Her studio sits in a lush rice terrace compound where clay, creativity, and culture come together.',
     rating: 4.9, totalReviews: 128, memberSince: '2019', responseRate: '98%',
     languages: ['Balinese', 'Indonesian', 'English'],
+    events: [],
     experiences: [
       { slug: 'pottery-making-class', title: 'Pottery Making Class', area: 'Ubud', price: 450000, duration: '2.5 hrs', rating: 4.9, reviews: 128, category: 'Art & Craft', image: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=600&auto=format&fit=crop&q=80' },
     ],
@@ -37,6 +44,7 @@ const HOST_DB: Record<string, Host> = {
     bio: 'Second-generation Balinese silversmith with over 20 years of experience blending traditional craftsmanship with contemporary design. Ketut\'s studio is nestled in a coconut grove in Canggu, where he teaches guests the full arc of silversmithing — from raw metal to polished wearable art.',
     rating: 4.8, totalReviews: 94, memberSince: '2020', responseRate: '95%',
     languages: ['Balinese', 'Indonesian', 'English'],
+    events: [],
     experiences: [
       { slug: 'silver-jewelry-workshop', title: 'Silver Jewelry Workshop', area: 'Canggu', price: 550000, duration: '3 hrs', rating: 4.8, reviews: 94, category: 'Art & Craft', image: 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=600&auto=format&fit=crop&q=80' },
     ],
@@ -47,6 +55,7 @@ const HOST_DB: Record<string, Host> = {
     bio: 'A family-run batik studio in the heart of Ubud sharing the UNESCO-recognised art of traditional Indonesian textile art with visitors from around the world. Wayan comes from a long line of Balinese artisans and brings warmth, patience and deep knowledge to every session.',
     rating: 4.7, totalReviews: 148, memberSince: '2020', responseRate: '92%',
     languages: ['Balinese', 'Indonesian', 'English'],
+    events: [],
     experiences: [
       { slug: 'batik-painting-workshop', title: 'Batik Painting Workshop', area: 'Ubud', price: 380000, duration: '3 hrs', rating: 4.7, reviews: 64, category: 'Art & Craft', image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=600&auto=format&fit=crop&q=80' },
       { slug: 'traditional-batik-workshop', title: 'Traditional Batik Workshop', area: 'Ubud', price: 420000, duration: '3.5 hrs', rating: 4.7, reviews: 84, category: 'Art & Craft', image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=600&auto=format&fit=crop&q=80' },
@@ -58,6 +67,7 @@ const HOST_DB: Record<string, Host> = {
     bio: 'A sanctuary of stillness in the heart of Ubud offering sound healing, breathwork and somatic therapies with Bali\'s most experienced practitioners. Nina trained in traditional Balinese healing arts alongside modern sound therapy, weaving both into transformative experiences for every guest.',
     rating: 4.9, totalReviews: 390, memberSince: '2018', responseRate: '99%',
     languages: ['Balinese', 'Indonesian', 'English'],
+    events: [],
     experiences: [
       { slug: 'sound-healing-journey', title: 'Sound Healing Journey', area: 'Ubud', price: 350000, duration: '90 min', rating: 4.8, reviews: 178, category: 'Wellness', image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600&auto=format&fit=crop&q=80' },
       { slug: 'breathwork-and-meditation', title: 'Breathwork & Meditation', area: 'Ubud', price: 280000, duration: '75 min', rating: 4.9, reviews: 212, category: 'Wellness', image: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=600&auto=format&fit=crop&q=80' },
@@ -69,6 +79,7 @@ const HOST_DB: Record<string, Host> = {
     bio: 'A beloved Canggu yoga studio with rooftop sunrise classes, breathwork sessions and sound healing for the wandering soul. Komang has been teaching yoga for 12 years and brings a deeply personal, grounding approach to every class — whether you\'re a first-timer or a seasoned practitioner.',
     rating: 4.9, totalReviews: 203, memberSince: '2019', responseRate: '97%',
     languages: ['Balinese', 'Indonesian', 'English'],
+    events: [],
     experiences: [
       { slug: 'sunrise-yoga-class', title: 'Sunrise Yoga & Meditation', area: 'Canggu', price: 250000, duration: '75 min', rating: 4.9, reviews: 203, category: 'Wellness', image: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=600&auto=format&fit=crop&q=80' },
       { slug: 'yoga-philosophy-workshop', title: 'Yoga Philosophy Workshop', area: 'Canggu', price: 320000, duration: '2 hrs', rating: 4.8, reviews: 67, category: 'Wellness', image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600&auto=format&fit=crop&q=80' },
@@ -80,6 +91,7 @@ const HOST_DB: Record<string, Host> = {
     bio: 'Third-generation temple guide and Balinese priest offering authentic spiritual experiences at Bali\'s most sacred sites. Wayan holds deep knowledge of Balinese Hindu traditions and shares them with rare openness, helping visitors connect meaningfully with the island\'s living spiritual culture.',
     rating: 4.8, totalReviews: 78, memberSince: '2021', responseRate: '90%',
     languages: ['Balinese', 'Indonesian', 'English'],
+    events: [],
     experiences: [
       { slug: 'water-temple-purification', title: 'Water Temple Purification', area: 'Gianyar', price: 600000, duration: '4 hrs', rating: 4.8, reviews: 78, category: 'Culture', image: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=600&auto=format&fit=crop&q=80' },
       { slug: 'blessing-ceremony-ubud', title: 'Blessing Ceremony in Ubud', area: 'Ubud', price: 480000, duration: '3 hrs', rating: 4.9, reviews: 45, category: 'Culture', image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&auto=format&fit=crop&q=80' },
@@ -91,6 +103,7 @@ const HOST_DB: Record<string, Host> = {
     bio: 'Specialist in Balinese cultural experiences with 18 years guiding guests through temple ceremonies, dance performances and sacred traditions across the island. Nyoman\'s deep network of local artists and priests allows him to offer access to experiences most visitors never see.',
     rating: 4.9, totalReviews: 312, memberSince: '2018', responseRate: '94%',
     languages: ['Balinese', 'Indonesian', 'English', 'Japanese'],
+    events: [],
     experiences: [
       { slug: 'uluwatu-kecak-sunset', title: 'Uluwatu Sunset & Kecak Dance', area: 'Uluwatu', price: 450000, duration: '3 hrs', rating: 4.9, reviews: 312, category: 'Culture', image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&auto=format&fit=crop&q=80' },
       { slug: 'kecak-sunset-performance', title: 'Kecak Sunset Performance', area: 'Uluwatu', price: 380000, duration: '2 hrs', rating: 4.8, reviews: 156, category: 'Culture', image: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=600&auto=format&fit=crop&q=80' },
@@ -102,6 +115,7 @@ const HOST_DB: Record<string, Host> = {
     bio: 'Family-run Balinese cooking school in Seminyak teaching the art of traditional island cuisine to food-loving travellers for over a decade. Putu begins every class at the local market at dawn, letting guests hand-pick their ingredients before cooking a full feast in a beautiful open kitchen.',
     rating: 4.8, totalReviews: 156, memberSince: '2019', responseRate: '96%',
     languages: ['Indonesian', 'English'],
+    events: [],
     experiences: [
       { slug: 'balinese-cooking-class', title: 'Balinese Cooking Class', area: 'Seminyak', price: 480000, duration: '3.5 hrs', rating: 4.8, reviews: 156, category: 'Food & Drink', image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&auto=format&fit=crop&q=80' },
       { slug: 'balinese-raw-food-workshop', title: 'Balinese Raw Food Workshop', area: 'Seminyak', price: 380000, duration: '2.5 hrs', rating: 4.7, reviews: 42, category: 'Food & Drink', image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&auto=format&fit=crop&q=80' },
@@ -113,6 +127,7 @@ const HOST_DB: Record<string, Host> = {
     bio: 'Bali\'s most-reviewed surf school with certified ISA instructors, softboard lessons and surf coaching for all levels on Kuta and Legian Beach. Komang has been surfing since childhood and brings infectious enthusiasm and patience to every lesson, from total beginners to intermediate surfers.',
     rating: 4.7, totalReviews: 428, memberSince: '2017', responseRate: '93%',
     languages: ['Indonesian', 'English'],
+    events: [],
     experiences: [
       { slug: 'beginner-surf-lesson', title: 'Beginner Surf Lesson', area: 'Kuta', price: 320000, duration: '2 hrs', rating: 4.7, reviews: 428, category: 'Surf & Water', image: 'https://images.unsplash.com/photo-1530870110042-98b2cb110834?w=600&auto=format&fit=crop&q=80' },
       { slug: 'intermediate-surf-coaching', title: 'Intermediate Surf Coaching', area: 'Kuta', price: 420000, duration: '2.5 hrs', rating: 4.8, reviews: 89, category: 'Surf & Water', image: 'https://images.unsplash.com/photo-1560275619-4662e36fa65c?w=600&auto=format&fit=crop&q=80' },
@@ -125,6 +140,7 @@ const HOST_DB: Record<string, Host> = {
     bio: 'Local farmer-guide sharing the living landscape of Tegalalang\'s famous rice terraces and the ancient subak irrigation system with curious travellers. Gede\'s family has farmed these terraces for generations, giving his tours an authenticity no guidebook can replicate.',
     rating: 4.8, totalReviews: 192, memberSince: '2020', responseRate: '91%',
     languages: ['Balinese', 'Indonesian', 'English'],
+    events: [],
     experiences: [
       { slug: 'rice-terrace-walk', title: 'Tegalalang Rice Terrace Walk', area: 'Ubud', price: 280000, duration: '2.5 hrs', rating: 4.8, reviews: 192, category: 'Nature', image: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=600&auto=format&fit=crop&q=80' },
       { slug: 'mount-batur-sunrise-trek', title: 'Mount Batur Sunrise Trek', area: 'Kintamani', price: 650000, duration: '6 hrs', rating: 4.9, reviews: 134, category: 'Nature', image: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=600&auto=format&fit=crop&q=80' },
@@ -136,6 +152,7 @@ const HOST_DB: Record<string, Host> = {
     bio: 'A family compound in Sidemen preserving the ancient art of natural dyeing and traditional weaving, welcoming visitors to learn and participate. Made draws pigments from plants grown in her own garden, creating vibrant colours the way her ancestors did for centuries.',
     rating: 4.7, totalReviews: 31, memberSince: '2022', responseRate: '88%',
     languages: ['Balinese', 'Indonesian'],
+    events: [],
     experiences: [
       { slug: 'natural-dye-workshop', title: 'Natural Dye Workshop', area: 'Sidemen', price: 380000, duration: '3 hrs', rating: 4.7, reviews: 31, category: 'Art & Craft', image: 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=600&auto=format&fit=crop&q=80' },
     ],
@@ -146,6 +163,7 @@ const HOST_DB: Record<string, Host> = {
     bio: 'Third-generation wood carving family in Mas Village, Ubud, teaching traditional Balinese carving to visitors in their family studio. Nyoman works primarily with hibiscus and albesia wood, creating pieces that range from small decorative totems to full temple ornaments.',
     rating: 4.6, totalReviews: 47, memberSince: '2021', responseRate: '89%',
     languages: ['Balinese', 'Indonesian', 'English'],
+    events: [],
     experiences: [
       { slug: 'wood-carving-workshop', title: 'Wood Carving Workshop', area: 'Ubud', price: 500000, duration: '4 hrs', rating: 4.8, reviews: 72, category: 'Art & Craft', image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&auto=format&fit=crop&q=80' },
     ],
@@ -156,6 +174,7 @@ const HOST_DB: Record<string, Host> = {
     bio: 'A women\'s weaving collective in Sidemen, East Bali, preserving traditional rattan craft and welcoming visitors to learn and support their community. Ayu and her collective have been weaving since childhood, and their hospitality is as warm as their craft is precise.',
     rating: 4.8, totalReviews: 29, memberSince: '2022', responseRate: '87%',
     languages: ['Balinese', 'Indonesian'],
+    events: [],
     experiences: [
       { slug: 'rattan-weaving-class', title: 'Rattan Weaving Class', area: 'Sidemen', price: 350000, duration: '3 hrs', rating: 4.7, reviews: 38, category: 'Art & Craft', image: 'https://images.unsplash.com/photo-1519735777090-ec97162dc266?w=600&auto=format&fit=crop&q=80' },
     ],
@@ -193,6 +212,11 @@ async function getHostFromDB(slug: string): Promise<Host | null> {
           where: { status: 'ACTIVE' },
           select: { slug: true, title: true, area: true, price: true, duration: true, rating: true, totalReviews: true, category: true, images: true },
         },
+        events: {
+          where: { status: 'PUBLISHED' },
+          select: { slug: true, title: true, date: true, location: true, price: true, capacity: true, coverImage: true },
+          orderBy: { date: 'asc' },
+        },
       },
     })
     const op = operators.find(o => {
@@ -227,6 +251,15 @@ async function getHostFromDB(slug: string): Promise<Host | null> {
         reviews: e.totalReviews,
         category: CATEGORY_DISPLAY[String(e.category)] ?? String(e.category),
         image: (e.images as string[])[0] ?? '',
+      })),
+      events: op.events.map(ev => ({
+        slug: ev.slug,
+        title: ev.title,
+        date: ev.date.toISOString(),
+        location: ev.location,
+        price: ev.price,
+        capacity: ev.capacity,
+        coverImage: ev.coverImage,
       })),
     }
   } catch {
@@ -281,6 +314,60 @@ function ExpCard({ exp }: { exp: Experience }) {
           </p>
           <span className="flex items-center gap-1" style={{ fontSize: 12, fontWeight: 600, color: '#C8A97E' }}>
             Book <ChevronRight size={13} />
+          </span>
+        </div>
+      </div>
+    </a>
+  )
+}
+
+// ── Event card ────────────────────────────────────────────────────────────────
+
+function EventCard({ ev }: { ev: HostEvent }) {
+  const d = new Date(ev.date)
+  const dateStr = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+  const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+  const isPast = d < new Date()
+
+  return (
+    <a href={`/events/${ev.slug}`} className="group block bg-white rounded-2xl overflow-hidden hover:shadow-lg transition-shadow"
+      style={{ border: '1px solid #E8E4DE', textDecoration: 'none' }}>
+      <div className="relative overflow-hidden" style={{ height: 180 }}>
+        {ev.coverImage ? (
+          <img src={ev.coverImage} alt={ev.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: '#F0EDE8' }}>
+            <Ticket size={32} style={{ color: '#C8A97E' }} />
+          </div>
+        )}
+        <div className="absolute top-3 left-3">
+          <span style={{ backgroundColor: 'rgba(17,17,17,0.65)', color: 'white', fontSize: 10, fontWeight: 600, padding: '3px 8px', borderRadius: 20 }}>
+            {isPast ? 'Past event' : 'Upcoming'}
+          </span>
+        </div>
+      </div>
+      <div style={{ padding: '14px 16px 16px' }}>
+        <p style={{ fontSize: 11, fontWeight: 600, color: '#C8A97E', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>{dateStr}</p>
+        <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: '#111111', lineHeight: 1.3, marginBottom: 8 }}>
+          {ev.title}
+        </h3>
+        <div className="flex items-center gap-3 flex-wrap" style={{ marginBottom: 10 }}>
+          <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#6F675C' }}>
+            <CalendarDays size={11} style={{ color: '#C8A97E' }} />{timeStr}
+          </span>
+          <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#6F675C' }}>
+            <MapPin size={11} />{ev.location.split(',')[0]}
+          </span>
+          <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#6F675C' }}>
+            <Users size={11} />Up to {ev.capacity}
+          </span>
+        </div>
+        <div className="flex items-center justify-between">
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111' }}>
+            {ev.price === 0 ? 'Free' : <><span style={{ color: '#C8A97E', fontWeight: 700 }}>IDR</span>{' '}<span style={{ fontWeight: 700 }}>{ev.price.toLocaleString('id-ID')}</span></>}
+          </p>
+          <span className="flex items-center gap-1" style={{ fontSize: 12, fontWeight: 600, color: '#C8A97E' }}>
+            View <ChevronRight size={13} />
           </span>
         </div>
       </div>
@@ -387,6 +474,21 @@ export default async function HostPage({ params }: { params: { slug: string } })
             <div className={`grid gap-5 ${host.experiences.length === 1 ? 'grid-cols-1 max-w-sm' : 'sm:grid-cols-2'}`}>
               {host.experiences.map(exp => <ExpCard key={exp.slug} exp={exp} />)}
             </div>
+
+            {/* Events */}
+            {host.events.length > 0 && (
+              <div className="mt-10">
+                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', marginBottom: 16 }}>
+                  Events by {host.name.split(' ')[0]}
+                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 400, color: '#6F675C', marginLeft: 10 }}>
+                    {host.events.length} event{host.events.length !== 1 ? 's' : ''}
+                  </span>
+                </h2>
+                <div className={`grid gap-5 ${host.events.length === 1 ? 'grid-cols-1 max-w-sm' : 'sm:grid-cols-2'}`}>
+                  {host.events.map(ev => <EventCard key={ev.slug} ev={ev} />)}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* RIGHT — stats card */}
@@ -399,6 +501,7 @@ export default async function HostPage({ params }: { params: { slug: string } })
                 { label: 'Rating',        value: `${host.rating} ★` },
                 { label: 'Total reviews', value: totalReviews.toLocaleString() },
                 { label: 'Experiences',   value: host.experiences.length.toString() },
+                ...(host.events.length > 0 ? [{ label: 'Events', value: host.events.length.toString() }] : []),
                 { label: 'Response rate', value: host.responseRate },
                 { label: 'Member since',  value: host.memberSince },
                 { label: 'Languages',     value: host.languages.join(', ') },
