@@ -6,6 +6,7 @@ import ExperienceTabs from '@/components/ExperienceTabs'
 import RecommendationsSection from '@/components/RecommendationsSection'
 import ReadMore from '@/components/ReadMore'
 import WishlistHeart from '@/components/WishlistHeart'
+import ShareButton from '@/components/ShareButton'
 import MobileNav from '@/components/MobileNav'
 import ExperienceGallery from '@/components/ExperienceGallery'
 import { prisma } from '@/lib/prisma'
@@ -801,7 +802,10 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
               <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(24px, 3vw, 32px)', fontWeight: 700, color: '#111111' }}>
                 {experience.title}
               </h1>
-              <WishlistHeart slug={experience.slug} size={18} />
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <ShareButton slug={experience.slug} title={experience.title} />
+                <WishlistHeart slug={experience.slug} size={18} />
+              </div>
             </div>
 
             <div className="flex items-center gap-3 mt-2 flex-wrap">
