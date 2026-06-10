@@ -6,6 +6,7 @@ import { useUser } from '@clerk/nextjs'
 import Navbar from '@/components/Navbar'
 import WishlistHeart from '@/components/WishlistHeart'
 import MobileNav from '@/components/MobileNav'
+import Footer from '@/components/Footer'
 import { getUserWishlist } from '@/lib/actions'
 
 // All known experiences — this mirrors the static data in the app
@@ -246,6 +247,7 @@ export default function WishlistPage() {
         )}
       </div>
 
+      <Footer />
       {/* MOBILE BOTTOM NAV */}
       <MobileNav />
     </div>

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { MapPin, Star, Award } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
+import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
   title: 'Meet Our Hosts | Balible',
@@ -128,11 +129,12 @@ export default function HostsPage() {
             href="/for-hosts"
             style={{ display: 'inline-block', backgroundColor: '#C8A97E', color: 'white', fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, padding: '12px 28px', borderRadius: 10, textDecoration: 'none' }}
           >
-            Become a Host
+            Become A Host
           </a>
         </div>
       </div>
 
+      <Footer />
       <MobileNav />
     </div>
   )

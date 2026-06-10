@@ -50,7 +50,7 @@ const HOSTS = [
 
 const FOOTER_COLS = [
   { title: 'Explore',   links: [{ label: 'All Experiences', href: '/search' }, { label: 'Events', href: '/events' }, { label: 'By Destination', href: '/destinations' }, { label: 'How It Works', href: '/how-it-works' }, { label: 'Map View', href: '/map' }] },
-  { title: 'For Hosts', links: [{ label: 'Become a Host', href: '/for-hosts' }, { label: 'Host Dashboard', href: '/dashboard' }, { label: 'How It Works', href: '/for-hosts#how-it-works' }, { label: 'Earnings Calculator', href: '/for-hosts#calculator' }, { label: 'Host Stories', href: '/for-hosts#stories' }] },
+  { title: 'For Hosts', links: [{ label: 'Become A Host', href: '/for-hosts' }, { label: 'Host Dashboard', href: '/dashboard' }, { label: 'How It Works', href: '/for-hosts#how-it-works' }, { label: 'Earnings Calculator', href: '/for-hosts#calculator' }, { label: 'Host Stories', href: '/for-hosts#stories' }] },
   { title: 'About',     links: [{ label: 'Our Story', href: '/about' }, { label: 'Destinations', href: '/destinations' }, { label: 'Sign In', href: '/auth/signin' }, { label: 'Sign Up', href: '/auth/signup' }] },
   { title: 'Support',   links: [{ label: 'Help Centre', href: '/help' }, { label: 'How It Works', href: '/how-it-works' }, { label: 'Wishlist', href: '/wishlist' }, { label: 'My Profile', href: '/profile' }, { label: 'My Bookings', href: '/profile' }] },
 ]
@@ -187,6 +187,31 @@ export default function HomeClient({ featuredExperiences, upcomingEvents }: { fe
               Search
             </a>
           </div>
+        </div>
+      </section>
+
+      {/* ── SOCIAL PROOF ── */}
+      <section style={{ backgroundColor: '#111111' }}>
+        <div className="max-w-[1440px] mx-auto px-6 lg:px-16 py-8 grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-0">
+          {[
+            { value: '4.9',    label: 'Average Rating',  suffix: '★' },
+            { value: '1,200+', label: 'Happy Travelers', suffix: '' },
+            { value: '150+',   label: 'Local Hosts',     suffix: '' },
+            { value: '25',     label: 'Villages',        suffix: '' },
+          ].map(({ value, label, suffix }, i) => (
+            <div
+              key={label}
+              className="flex flex-col items-center text-center lg:py-2"
+              style={i > 0 ? { borderLeft: '1px solid rgba(255,255,255,0.08)' } : {}}
+            >
+              <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px, 4vw, 40px)', fontWeight: 700, color: 'white', lineHeight: 1 }}>
+                {value}{suffix && <span style={{ color: '#C8A97E', marginLeft: 3 }}>{suffix}</span>}
+              </span>
+              <span className="mt-1.5" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.03em' }}>
+                {label}
+              </span>
+            </div>
+          ))}
         </div>
       </section>
 

@@ -77,7 +77,7 @@ export default function NotFound() {
               { label: 'Surf Lessons',       href: '/experiences/beginner-surf-lesson' },
               { label: 'Kecak Sunset',       href: '/experiences/uluwatu-kecak-sunset' },
               { label: 'Destinations',       href: '/destinations' },
-              { label: 'Become a Host',      href: '/for-hosts' },
+              { label: 'Become A Host',      href: '/for-hosts' },
             ].map(({ label, href }) => (
               <a
                 key={label}

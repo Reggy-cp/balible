@@ -120,7 +120,30 @@ export default function ChatWidget() {
 
   return (
     <>
-      {/* Chat window */}
+      {/* ── DESKTOP FLOATING BUTTON ── */}
+      {!open && (
+        <button
+          onClick={() => setOpen(true)}
+          className="hidden lg:flex fixed items-center gap-3 hover:scale-105 active:scale-95 transition-transform"
+          style={{
+            bottom: 28, right: 28, zIndex: 901,
+            height: 54, padding: '0 22px 0 10px',
+            backgroundColor: '#111111', borderRadius: 999,
+            border: 'none', cursor: 'pointer',
+            boxShadow: '0 6px 24px rgba(0,0,0,0.22)',
+          }}
+        >
+          <div style={{ width: 34, height: 34, borderRadius: '50%', backgroundColor: '#C8A97E', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <span style={{ fontSize: 15, fontWeight: 700, color: 'white' }}>K</span>
+          </div>
+          <div style={{ textAlign: 'left' }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: 'white', margin: 0, lineHeight: 1.3 }}>Chat with Kala</p>
+            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', margin: 0, lineHeight: 1.2 }}>AI experience guide</p>
+          </div>
+        </button>
+      )}
+
+      {/* ── CHAT WINDOW ── */}
       {open && (
         <div
           style={{
@@ -133,7 +156,7 @@ export default function ChatWidget() {
             display: 'flex', flexDirection: 'column', overflow: 'hidden',
             fontFamily: 'var(--font-inter)',
           }}
-          className="lg:bottom-24"
+          className="lg:bottom-[100px] lg:right-7"
         >
           {/* Header */}
           <div style={{ padding: '14px 16px', borderBottom: '1px solid #E8E4DE', backgroundColor: '#111111', flexShrink: 0 }}>

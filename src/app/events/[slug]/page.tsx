@@ -3,13 +3,21 @@ import { notFound } from 'next/navigation'
 import { MapPin, Clock, Users, CalendarDays, Ticket } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
-import { getEventBySlug } from '@/lib/event-actions'
+import Footer from '@/components/Footer'
+import { getEventBySlug, getPublishedEvents } from '@/lib/event-actions'
 
 export const dynamic = 'force-dynamic'
 
 export default async function EventDetailPage({ params }: { params: { slug: string } }) {
-  const event = await getEventBySlug(params.slug)
+  const [event, allEvents] = await Promise.all([
+    getEventBySlug(params.slug),
+    getPublishedEvents(),
+  ])
   if (!event || event.status !== 'PUBLISHED') notFound()
+
+  const otherEvents = allEvents
+    .filter(e => e.slug !== params.slug && new Date(e.date) >= new Date())
+    .slice(0, 3)
 
   const d = new Date(event.date)
   const dateStr = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
@@ -168,6 +176,64 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
         </div>
       </div>
 
+      {/* ── YOU MIGHT ALSO LOVE ── */}
+      {otherEvents.length > 0 && (
+        <section className="py-12 px-6 lg:px-16" style={{ backgroundColor: '#F5F1EB' }}>
+          <div className="max-w-[1440px] mx-auto">
+            <h2 className="mb-8" style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: '#111111' }}>
+              You might also love
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {otherEvents.map(ev => {
+                const d = new Date(ev.date)
+                const dateStr = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+                const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+                return (
+                  <Link key={ev.id} href={`/events/${ev.slug}`} style={{ textDecoration: 'none' }}>
+                    <div className="bg-white rounded-2xl overflow-hidden hover:shadow-md transition-shadow" style={{ border: '1px solid #E8E4DE' }}>
+                      <div className="relative" style={{ height: 200 }}>
+                        {ev.coverImage ? (
+                          <img src={ev.coverImage} alt={ev.title} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: '#F0EDE8' }}>
+                            <span style={{ fontSize: 40 }}>🎟</span>
+                          </div>
+                        )}
+                        <div className="absolute top-3 left-3" style={{ backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 8, padding: '4px 10px' }}>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: 'white' }}>{dateStr}</span>
+                        </div>
+                      </div>
+                      <div className="p-5">
+                        <h3 className="line-clamp-2 mb-3" style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111', lineHeight: 1.3 }}>
+                          {ev.title}
+                        </h3>
+                        <div className="flex flex-col gap-1.5 mb-4">
+                          <div className="flex items-center gap-1.5">
+                            <Clock size={13} style={{ color: '#6F675C', flexShrink: 0 }} />
+                            <span style={{ fontSize: 13, color: '#6F675C' }}>{timeStr}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <MapPin size={13} style={{ color: '#6F675C', flexShrink: 0 }} />
+                            <span className="line-clamp-1" style={{ fontSize: 13, color: '#6F675C' }}>{ev.location}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span style={{ fontSize: 16, fontWeight: 700, color: '#111111' }}>
+                            {ev.price === 0 ? 'Free' : `IDR ${ev.price.toLocaleString('id-ID')}`}
+                          </span>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: '#C8A97E' }}>View event →</span>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <Footer />
       <MobileNav />
     </div>
   )

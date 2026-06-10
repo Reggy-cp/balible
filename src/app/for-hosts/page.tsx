@@ -4,9 +4,11 @@ import { useState } from 'react'
 import {
   Star, Shield, TrendingUp, Users, Heart, Globe, ArrowRight,
   CheckCircle2, DollarSign, Calendar, Camera, MessageSquare,
-  Menu, X, ChevronDown, ChevronUp,
+  ChevronDown, ChevronUp,
 } from 'lucide-react'
+import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
+import Footer from '@/components/Footer'
 
 const STEPS = [
   {
@@ -129,46 +131,12 @@ function EarningsCalculator() {
 }
 
 export default function ForHostsPage() {
-  const [menuOpen, setMenuOpen]   = useState(false)
   const [openFaq, setOpenFaq]     = useState<number | null>(null)
 
   return (
     <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: 'white' }}>
 
-      {/* NAVBAR */}
-      <nav className="sticky top-0 z-50 bg-white" style={{ height: 64, borderBottom: '1px solid #E8E4DE' }}>
-        <div className="flex items-center justify-between h-full px-6 lg:px-16 max-w-[1440px] mx-auto">
-          <a href="/" className="flex flex-col leading-none flex-shrink-0" style={{ textDecoration: 'none' }}>
-            <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111' }}>BALIBLE</span>
-            <span className="hidden sm:block" style={{ fontSize: 8, letterSpacing: '0.2em', color: '#6F675C', textTransform: 'uppercase' }}>CURATED EXPERIENCES IN BALI</span>
-          </a>
-          <div className="hidden lg:flex items-center gap-8">
-            <a href="/search" style={{ fontSize: 14, color: '#111111', textDecoration: 'none' }} className="hover:opacity-70 transition-opacity">Browse Experiences</a>
-            <a href="/map" style={{ fontSize: 14, color: '#111111', textDecoration: 'none' }} className="hover:opacity-70 transition-opacity">Map</a>
-            <a href="/for-hosts" style={{ fontSize: 14, color: '#C8A97E', fontWeight: 600, textDecoration: 'none' }}>For Hosts</a>
-          </div>
-          <div className="flex items-center gap-3">
-            <a href="/auth/signin" className="hidden sm:flex items-center hover:opacity-70 transition-opacity" style={{ fontSize: 14, color: '#111111', textDecoration: 'none' }}>Sign in</a>
-            <a
-              href="/auth/signup"
-              className="hidden sm:flex items-center hover:opacity-90 transition-opacity"
-              style={{ height: 38, padding: '0 18px', backgroundColor: '#C8A97E', color: '#111111', borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}
-            >
-              Become a host
-            </a>
-            <button className="lg:hidden" onClick={() => setMenuOpen(!menuOpen)}>
-              {menuOpen ? <X size={22} style={{ color: '#111111' }} /> : <Menu size={22} style={{ color: '#111111' }} />}
-            </button>
-          </div>
-        </div>
-        {menuOpen && (
-          <div className="lg:hidden absolute top-16 left-0 right-0 bg-white border-b shadow-lg z-50" style={{ borderColor: '#E8E4DE' }}>
-            {['Browse Experiences', 'Map', 'Sign in', 'Become a host'].map(l => (
-              <a key={l} href={l === 'Browse Experiences' ? '/search' : l === 'Map' ? '/map' : l === 'Sign in' ? '/auth/signin' : '/auth/signup'} className="block px-6 py-3 text-sm border-b hover:bg-ivory transition-colors" style={{ color: '#111111', borderColor: '#E8E4DE' }}>{l}</a>
-            ))}
-          </div>
-        )}
-      </nav>
+      <Navbar />
 
       {/* HERO */}
       <section className="relative" style={{ minHeight: 560, display: 'flex', alignItems: 'center' }}>
@@ -196,7 +164,7 @@ export default function ForHostsPage() {
               className="flex items-center gap-2 hover:opacity-90 transition-opacity"
               style={{ height: 52, padding: '0 28px', backgroundColor: '#C8A97E', color: '#111111', borderRadius: 10, fontSize: 15, fontWeight: 700, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}
             >
-              Become a host <ArrowRight size={16} />
+              Become A Host <ArrowRight size={16} />
             </a>
             <a
               href="#how-it-works"
@@ -393,7 +361,7 @@ export default function ForHostsPage() {
             className="inline-flex items-center gap-2 hover:opacity-90 transition-opacity"
             style={{ height: 52, padding: '0 36px', backgroundColor: '#111111', color: 'white', borderRadius: 10, fontSize: 15, fontWeight: 700, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}
           >
-            Apply to become a host <ArrowRight size={16} />
+            Become A Host <ArrowRight size={16} />
           </a>
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(0,0,0,0.55)', marginTop: 14 }}>
             No upfront cost. Approval within 48 hours.
@@ -401,20 +369,7 @@ export default function ForHostsPage() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="px-6 lg:px-16 pt-10 pb-20 md:pb-8" style={{ backgroundColor: '#111111' }}>
-        <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: 'white' }}>BALIBLE</span>
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>
-            © 2024 Balible. All rights reserved.
-          </p>
-          <div className="flex gap-4">
-            {[['Privacy', '/help'], ['Terms', '/help'], ['Help', '/help']].map(([l, href]) => (
-              <a key={l} href={href} style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.4)', textDecoration: 'none' }} className="hover:text-white transition-colors">{l}</a>
-            ))}
-          </div>
-        </div>
-      </footer>
+      <Footer />
       <MobileNav />
     </div>
   )

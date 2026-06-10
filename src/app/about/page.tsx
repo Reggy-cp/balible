@@ -1,6 +1,7 @@
 import { Heart, Star, Users, MapPin } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
+import Footer from '@/components/Footer'
 
 export const metadata = {
   title: 'About Balible — Curated Experiences in Bali',
@@ -224,25 +225,14 @@ export default function AboutPage() {
             Browse experiences
           </a>
           <a href="/for-hosts" style={{ height: 48, display: 'inline-flex', alignItems: 'center', padding: '0 32px', border: '1px solid #E8E4DE', color: '#111111', borderRadius: 10, fontSize: 14, fontWeight: 500, textDecoration: 'none', fontFamily: 'var(--font-inter)' }} className="hover:opacity-70 transition-opacity">
-            Become a host →
+            Become A Host →
           </a>
         </div>
       </div>
 
       <MobileNav />
 
-      {/* FOOTER */}
-      <footer className="pt-12 px-6 pb-20 md:pb-8" style={{ backgroundColor: '#111111' }}>
-        <div className="max-w-[1200px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <a href="/" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: 'white', textDecoration: 'none' }}>BALIBLE</a>
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.45)' }}>© 2024 Balible. All rights reserved.</p>
-          <div className="flex gap-6">
-            {[{ label: 'Experiences', href: '/search' }, { label: 'Destinations', href: '/destinations' }, { label: 'For Hosts', href: '/for-hosts' }].map(({ label, href }) => (
-              <a key={label} href={href} style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.55)', textDecoration: 'none' }} className="hover:text-white transition-colors">{label}</a>
-            ))}
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }

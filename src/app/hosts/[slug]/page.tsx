@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { MapPin, Star, Clock, Users, Award, ChevronRight, CalendarDays, Ticket } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
+import Footer from '@/components/Footer'
 import WishlistHeart from '@/components/WishlistHeart'
 import { prisma } from '@/lib/prisma'
 
@@ -524,6 +525,7 @@ export default async function HostPage({ params }: { params: { slug: string } })
         </div>
       </div>
 
+      <Footer />
       <MobileNav />
     </div>
   )

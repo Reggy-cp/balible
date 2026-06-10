@@ -8,6 +8,7 @@ import {
 import { useUser } from '@clerk/nextjs'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
+import Footer from '@/components/Footer'
 import { getUserData, type UserData } from '@/lib/actions'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -670,7 +671,7 @@ export default function ProfilePage() {
                   className="flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
                   style={{ height: 40, borderRadius: 8, backgroundColor: '#F5F1EB', color: '#111111', fontSize: 13, fontWeight: 600, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}
                 >
-                  Become a host <ArrowRight size={13} />
+                  Become A Host <ArrowRight size={13} />
                 </a>
               </div>
             </div>
@@ -702,6 +703,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      <Footer />
       {/* MOBILE BOTTOM NAV */}
       <MobileNav />
     </div>

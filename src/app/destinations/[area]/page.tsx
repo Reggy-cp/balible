@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { MapPin, Star, Clock, ArrowRight, Users, ChevronRight } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
+import Footer from '@/components/Footer'
 import { getExperienceCards } from '@/lib/experiences'
 
 type Experience = {
@@ -405,18 +406,7 @@ export default async function DestinationAreaPage({ params }: { params: Promise<
         </div>
       </div>
 
-      {/* FOOTER */}
-      <footer className="pt-12 px-6 pb-20 md:pb-8" style={{ backgroundColor: '#111111' }}>
-        <div className="max-w-[1200px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <a href="/" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: 'white', textDecoration: 'none' }}>BALIBLE</a>
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.45)' }}>© 2024 Balible. All rights reserved.</p>
-          <div className="flex gap-6">
-            {[{ label: 'Destinations', href: '/destinations' }, { label: 'Experiences', href: '/search' }, { label: 'Map', href: '/map' }].map(({ label, href }) => (
-              <a key={label} href={href} style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.55)', textDecoration: 'none' }} className="hover:text-white transition-colors">{label}</a>
-            ))}
-          </div>
-        </div>
-      </footer>
+      <Footer />
       <MobileNav />
     </div>
   )

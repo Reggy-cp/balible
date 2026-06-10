@@ -1,6 +1,7 @@
 import { getPublishedEvents } from '@/lib/event-actions'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
+import Footer from '@/components/Footer'
 import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
@@ -87,6 +88,7 @@ export default async function EventsPage() {
         )}
       </div>
 
+      <Footer />
       <MobileNav />
     </div>
   )

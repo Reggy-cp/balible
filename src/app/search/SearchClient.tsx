@@ -9,6 +9,7 @@ import Image from 'next/image'
 import Navbar from '@/components/Navbar'
 import WishlistHeart from '@/components/WishlistHeart'
 import MobileNav from '@/components/MobileNav'
+import Footer from '@/components/Footer'
 
 export type SearchResult = {
   id: number | string
@@ -486,6 +487,7 @@ export default function SearchClient({ initialResults, initialQuery = '' }: { in
         </>
       )}
 
+      <Footer />
       <MobileNav />
     </div>
   )
