@@ -10,7 +10,7 @@ export const MAP_EXPERIENCES = [
   // Art & Craft
   { id: 1,  slug: 'pottery-making-class',       title: 'Pottery Making Class',          category: 'Art & Craft',  area: 'Ubud',     lat: -8.5069,  lng: 115.2625, price: 450000, rating: 4.9, reviews: 128, duration: '2.5 hrs', image: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&auto=format&fit=crop&q=80' },
   { id: 2,  slug: 'silver-jewelry-workshop',    title: 'Silver Jewelry Workshop',        category: 'Art & Craft',  area: 'Canggu',   lat: -8.6478,  lng: 115.1383, price: 550000, rating: 4.8, reviews: 94,  duration: '3 hrs',   image: 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=400&auto=format&fit=crop&q=80' },
-  { id: 3,  slug: 'batik-painting-workshop',    title: 'Batik Painting Workshop',        category: 'Art & Craft',  area: 'Ubud',     lat: -8.5200,  lng: 115.2750, price: 380000, rating: 4.7, reviews: 64,  duration: '3 hrs',   image: 'https://images.unsplash.com/photo-1616627428492-37e14fac6e14?w=400&auto=format&fit=crop&q=80' },
+  { id: 3,  slug: 'batik-painting-workshop',    title: 'Batik Painting Workshop',        category: 'Art & Craft',  area: 'Ubud',     lat: -8.5200,  lng: 115.2750, price: 380000, rating: 4.7, reviews: 64,  duration: '3 hrs',   image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400&auto=format&fit=crop&q=80' },
   // Wellness
   { id: 4,  slug: 'sound-healing-journey',      title: 'Sound Healing Journey',          category: 'Wellness',     area: 'Ubud',     lat: -8.5150,  lng: 115.2580, price: 350000, rating: 4.8, reviews: 178, duration: '90 min',  image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&auto=format&fit=crop&q=80' },
   { id: 5,  slug: 'sunrise-yoga-class',         title: 'Sunrise Yoga & Meditation',      category: 'Wellness',     area: 'Canggu',   lat: -8.6550,  lng: 115.1420, price: 250000, rating: 4.9, reviews: 203, duration: '75 min',  image: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=400&auto=format&fit=crop&q=80' },
@@ -82,8 +82,19 @@ export default function BaliMapView() {
   const [mobileView, setMobileView] = useState<'map' | 'list'>('map')
   const [showFilters, setShowFilters] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [mapLocked, setMapLocked] = useState(true)
+  const [hostExps, setHostExps]   = useState<typeof MAP_EXPERIENCES>([])
 
-  const visible = MAP_EXPERIENCES.filter(e => {
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('balible_host_new_experiences') ?? '[]')
+      setHostExps(stored)
+    } catch {}
+  }, [])
+
+  const allExperiences = [...MAP_EXPERIENCES, ...hostExps]
+
+  const visible = allExperiences.filter(e => {
     const matchCat = category === 'All' || e.category === category
     const q = search.toLowerCase()
     const matchSearch = !q || e.title.toLowerCase().includes(q) || e.area.toLowerCase().includes(q) || e.category.toLowerCase().includes(q)
@@ -156,7 +167,7 @@ export default function BaliMapView() {
 
   useEffect(() => {
     if (!selected || !mapRef.current) return
-    const exp = MAP_EXPERIENCES.find(e => e.id === selected)
+    const exp = allExperiences.find(e => e.id === selected)
     if (!exp) return
     mapRef.current.flyTo([exp.lat, exp.lng], 13, { duration: 0.8, easeLinearity: 0.5 })
 
@@ -171,7 +182,7 @@ export default function BaliMapView() {
 
   // ── Derived selected experience ─────────────────────────────────────────────
 
-  const selectedExp = selected ? MAP_EXPERIENCES.find(e => e.id === selected) : null
+  const selectedExp = selected ? allExperiences.find(e => e.id === selected) : null
 
   // ── Render ──────────────────────────────────────────────────────────────────
 
@@ -342,7 +353,7 @@ export default function BaliMapView() {
               </button>
               <div className="flex rounded-lg overflow-hidden" style={{ border: '1px solid #E8E4DE' }}>
                 {(['map', 'list'] as const).map(v => (
-                  <button key={v} onClick={() => setMobileView(v)}
+                  <button key={v} onClick={() => { setMobileView(v); if (v === 'map') setMapLocked(true) }}
                     style={{ padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', border: 'none', backgroundColor: mobileView === v ? '#111111' : 'white', color: mobileView === v ? 'white' : '#6F675C', transition: 'all 0.15s', textTransform: 'capitalize' }}>
                     {v}
                   </button>
@@ -371,14 +382,36 @@ export default function BaliMapView() {
           )}
 
           {/* Map */}
-          <div
-            ref={mapElRef}
-            style={{
-              flex: 1,
-              display: mobileView === 'list' ? 'none' : 'block',
-            }}
-            className="lg:block"
-          />
+          <div style={{ flex: 1, position: 'relative', display: mobileView === 'list' ? 'none' : 'flex', flexDirection: 'column' }}>
+            <div
+              ref={mapElRef}
+              style={{ flex: 1 }}
+              className="lg:block"
+            />
+            {/* Mobile tap-to-interact overlay */}
+            {mapLocked && mobileView === 'map' && (
+              <div
+                className="lg:hidden"
+                onClick={() => setMapLocked(false)}
+                style={{
+                  position: 'absolute', inset: 0, zIndex: 500,
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  backgroundColor: 'rgba(17,17,17,0.35)',
+                  cursor: 'pointer',
+                }}
+              >
+                <div style={{
+                  backgroundColor: 'white', borderRadius: 14, padding: '12px 20px',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
+                }}>
+                  <span style={{ fontSize: 22 }}>👆</span>
+                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111' }}>Tap to interact with map</span>
+                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>Scroll page normally until tapped</span>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Mobile: list view */}
           {mobileView === 'list' && (

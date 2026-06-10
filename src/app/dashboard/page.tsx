@@ -66,6 +66,20 @@ const REVIEWS_DATA = [
   { id: 'R6', guest: 'Lisa W.',   experience: 'Pottery Making Class',    rating: 4, comment: 'Great experience overall. The pottery wheel is harder than it looks but Made was very patient with me. Left with a beautiful if slightly lopsided bowl!', date: 'Jun 3, 2024' },
 ]
 
+// Area → approximate map coordinates (used when syncing new experiences to the map)
+const AREA_COORDS: Record<string, [number, number]> = {
+  'Ubud':      [-8.5069, 115.2625],
+  'Canggu':    [-8.6478, 115.1383],
+  'Gianyar':   [-8.5374, 115.3247],
+  'Uluwatu':   [-8.8293, 115.0849],
+  'Seminyak':  [-8.6906, 115.1589],
+  'Jimbaran':  [-8.7898, 115.1687],
+  'Kuta':      [-8.7183, 115.1685],
+  'Amed':      [-8.3428, 115.6478],
+  'Sanur':     [-8.7059, 115.2619],
+  'Nusa Dua':  [-8.7900, 115.2300],
+}
+
 const MONTHLY_EARNINGS = [3200000, 2800000, 4100000, 3600000, 4800000, 5200000, 4400000, 5800000, 5100000, 6200000, 5700000, 7400000]
 const MONTHS_SHORT     = ['Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun']
 
@@ -371,8 +385,32 @@ function ExperiencesPanel({ commissionRate }: { commissionRate: number }) {
     } catch {}
     if (editingExp) {
       setExps(prev => prev.map(e => e.id === editingExp.id ? { ...e, ...expData } : e))
+      // Update map entry if it exists
+      try {
+        const prev = JSON.parse(localStorage.getItem('balible_host_new_experiences') ?? '[]')
+        const idx = prev.findIndex((e: any) => e.slug === slug)
+        if (idx !== -1) {
+          prev[idx] = { ...prev[idx], ...expData }
+          localStorage.setItem('balible_host_new_experiences', JSON.stringify(prev))
+        }
+      } catch {}
     } else {
-      setExps(prev => [...prev, { id: Date.now(), slug, ...expData, rating: 0, totalReviews: 0, bookings: 0, status: 'Draft', image: imagePreview ?? '', earnings: 0 }])
+      const newId = Date.now()
+      setExps(prev => [...prev, { id: newId, slug, ...expData, rating: 0, totalReviews: 0, bookings: 0, status: 'Draft', image: imagePreview ?? '', earnings: 0 }])
+      // Sync to map
+      try {
+        const [baseLat, baseLng] = AREA_COORDS[expData.area] ?? [-8.5069, 115.2625]
+        const mapEntry = {
+          id: newId, slug, title: expData.title, category: expData.category, area: expData.area,
+          lat: baseLat + (Math.random() - 0.5) * 0.012,
+          lng: baseLng + (Math.random() - 0.5) * 0.012,
+          price: expData.price, rating: 0, reviews: 0,
+          duration: expData.duration || '2 hrs',
+          image: imagePreview ?? 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&auto=format&fit=crop&q=80',
+        }
+        const prev = JSON.parse(localStorage.getItem('balible_host_new_experiences') ?? '[]')
+        localStorage.setItem('balible_host_new_experiences', JSON.stringify([...prev, mapEntry]))
+      } catch {}
     }
     closeForm()
   }
@@ -478,7 +516,14 @@ function ExperiencesPanel({ commissionRate }: { commissionRate: number }) {
                           <Pause size={12} /> Pause
                         </button>
                       )}
-                      <button onClick={() => { setExps(prev => prev.filter(e => e.id !== exp.id)); setMenuOpen(null) }}
+                      <button onClick={() => {
+                          setExps(prev => prev.filter(e => e.id !== exp.id))
+                          try {
+                            const prev = JSON.parse(localStorage.getItem('balible_host_new_experiences') ?? '[]')
+                            localStorage.setItem('balible_host_new_experiences', JSON.stringify(prev.filter((e: any) => e.slug !== exp.slug)))
+                          } catch {}
+                          setMenuOpen(null)
+                        }}
                         className="w-full flex items-center gap-2.5 px-4 py-2.5 hover:bg-ivory transition-colors"
                         style={{ fontSize: 13, color: '#B66A45', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
                         <Trash2 size={12} /> Delete
