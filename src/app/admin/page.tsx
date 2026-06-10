@@ -964,14 +964,16 @@ function ls<T>(key: string, fallback: T): T {
 
 function SettingsPanel() {
   const [commission, setCommission] = useState(() => ls('balible_commission', '10'))
+  const [serviceFee, setServiceFee] = useState(() => ls('balible_service_fee', '5'))
   const [platform, setPlatform]     = useState(() => ls('balible_platform', PLATFORM_DEFAULTS))
   const [notifs, setNotifs]         = useState(() => ls('balible_notifs', NOTIF_DEFAULTS))
   const [saved, setSaved]           = useState(false)
 
   const save = () => {
-    localStorage.setItem('balible_commission', JSON.stringify(commission))
-    localStorage.setItem('balible_platform',   JSON.stringify(platform))
-    localStorage.setItem('balible_notifs',     JSON.stringify(notifs))
+    localStorage.setItem('balible_commission',  JSON.stringify(commission))
+    localStorage.setItem('balible_service_fee', JSON.stringify(serviceFee))
+    localStorage.setItem('balible_platform',    JSON.stringify(platform))
+    localStorage.setItem('balible_notifs',      JSON.stringify(notifs))
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
@@ -1005,29 +1007,39 @@ function SettingsPanel() {
           </div>
         </div>
 
-        {/* Commission */}
+        {/* Fees */}
         <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
-          <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: CHARCOAL }}>Commission Rate</h2>
-          <div className="flex items-end gap-4">
+          <h2 className="mb-1" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: CHARCOAL }}>Fees</h2>
+          <p style={{ fontSize: 13, color: COCONUT, marginBottom: 16 }}>Commission is deducted from host payouts. Service fee is added on top of the price for customers at checkout.</p>
+          <div className="grid sm:grid-cols-2 gap-6">
+            {/* Commission */}
             <div>
-              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: COCONUT, marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Platform commission (%)</label>
-              <div className="flex items-center gap-2">
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: COCONUT, marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Host commission (%)</label>
+              <div className="flex items-center gap-2 mb-2">
                 <input
-                  type="text"
-                  inputMode="numeric"
-                  value={commission}
-                  onChange={e => {
-                    const v = e.target.value.replace(/[^0-9]/g, '')
-                    if (v === '' || parseInt(v) <= 100) setCommission(v)
-                  }}
+                  type="text" inputMode="numeric" value={commission}
+                  onChange={e => { const v = e.target.value.replace(/[^0-9]/g, ''); if (v === '' || parseInt(v) <= 100) setCommission(v) }}
                   style={{ width: 100, height: 42, borderRadius: 10, border: `1px solid ${SAND}`, padding: '0 14px', fontSize: 18, fontFamily: 'var(--font-playfair)', fontWeight: 700, color: CHARCOAL, outline: 'none', textAlign: 'center' }} />
                 <span style={{ fontSize: 18, color: COCONUT, fontWeight: 700 }}>%</span>
               </div>
+              <p style={{ fontSize: 12, color: COCONUT }}>
+                Hosts receive <strong>{100 - parseInt(commission || '0')}%</strong> of each booking total.
+              </p>
             </div>
-            <p style={{ fontSize: 13, color: COCONUT, paddingBottom: 10, maxWidth: 320 }}>
-              Balible takes {commission}% of each booking. Hosts receive {100 - parseInt(commission || '0')}%.
-              Applied to all new bookings from the moment you save.
-            </p>
+            {/* Service fee */}
+            <div>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: COCONUT, marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Guest service fee (%)</label>
+              <div className="flex items-center gap-2 mb-2">
+                <input
+                  type="text" inputMode="numeric" value={serviceFee}
+                  onChange={e => { const v = e.target.value.replace(/[^0-9]/g, ''); if (v === '' || parseInt(v) <= 100) setServiceFee(v) }}
+                  style={{ width: 100, height: 42, borderRadius: 10, border: `1px solid ${SAND}`, padding: '0 14px', fontSize: 18, fontFamily: 'var(--font-playfair)', fontWeight: 700, color: CHARCOAL, outline: 'none', textAlign: 'center' }} />
+                <span style={{ fontSize: 18, color: COCONUT, fontWeight: 700 }}>%</span>
+              </div>
+              <p style={{ fontSize: 12, color: COCONUT }}>
+                Added to guest's checkout total. Shown as "Service fee ({serviceFee}%)".
+              </p>
+            </div>
           </div>
         </div>
 

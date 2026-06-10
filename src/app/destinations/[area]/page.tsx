@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { MapPin, Star, Clock, ArrowRight, Users, ChevronRight } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
+import { getExperienceCards } from '@/lib/experiences'
 
 type Experience = {
   slug: string; title: string; area: string; rating: number; reviews: number
@@ -155,8 +156,8 @@ const AREAS: Record<string, AreaData> = {
 const ALL_EXPERIENCES: Experience[] = [
   { slug: 'pottery-making-class', title: 'Pottery Making Class', area: 'Ubud', rating: 4.9, reviews: 128, price: 450000, durationMins: 150, category: 'Art & Craft', photo: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&auto=format&fit=crop&q=80' },
   { slug: 'silver-jewelry-workshop', title: 'Silver Jewelry Workshop', area: 'Canggu', rating: 4.8, reviews: 94, price: 550000, durationMins: 180, category: 'Art & Craft', photo: 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=400&auto=format&fit=crop&q=80' },
-  { slug: 'batik-painting-workshop', title: 'Batik Painting Workshop', area: 'Ubud', rating: 4.7, reviews: 64, price: 380000, durationMins: 180, category: 'Art & Craft', photo: 'https://images.unsplash.com/photo-1616627428492-37e14fac6e14?w=400&auto=format&fit=crop&q=80' },
-  { slug: 'traditional-batik-workshop', title: 'Traditional Batik Workshop', area: 'Ubud', rating: 4.7, reviews: 52, price: 420000, durationMins: 210, category: 'Art & Craft', photo: 'https://images.unsplash.com/photo-1616627428492-37e14fac6e14?w=400&auto=format&fit=crop&q=80' },
+  { slug: 'batik-painting-workshop', title: 'Batik Painting Workshop', area: 'Ubud', rating: 4.7, reviews: 64, price: 380000, durationMins: 180, category: 'Art & Craft', photo: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400&auto=format&fit=crop&q=80' },
+  { slug: 'traditional-batik-workshop', title: 'Traditional Batik Workshop', area: 'Ubud', rating: 4.7, reviews: 52, price: 420000, durationMins: 210, category: 'Art & Craft', photo: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400&auto=format&fit=crop&q=80' },
   { slug: 'sound-healing-journey', title: 'Sound Healing Journey', area: 'Ubud', rating: 4.8, reviews: 178, price: 350000, durationMins: 90, category: 'Wellness', photo: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&auto=format&fit=crop&q=80' },
   { slug: 'sunrise-yoga-class', title: 'Sunrise Yoga & Meditation', area: 'Canggu', rating: 4.9, reviews: 203, price: 250000, durationMins: 75, category: 'Wellness', photo: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=400&auto=format&fit=crop&q=80' },
   { slug: 'water-temple-purification', title: 'Water Temple Purification', area: 'Gianyar', rating: 4.8, reviews: 78, price: 600000, durationMins: 240, category: 'Culture', photo: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=400&auto=format&fit=crop&q=80' },
@@ -190,7 +191,17 @@ export default async function DestinationAreaPage({ params }: { params: Promise<
   const data = AREAS[area]
   if (!data) notFound()
 
-  const experiences = ALL_EXPERIENCES.filter(e => data.experienceAreas.includes(e.area))
+  const dbCards = await getExperienceCards()
+  const dbSlugs = new Set(dbCards.map(c => c.slug))
+  const dbMapped: Experience[] = dbCards.map(c => ({
+    slug: c.slug, title: c.title, area: c.area, rating: c.rating,
+    reviews: c.reviews, price: c.price, durationMins: c.durationMins,
+    category: c.category, photo: c.photo,
+  }))
+  const staticOnly = ALL_EXPERIENCES.filter(e => !dbSlugs.has(e.slug))
+  const allExperiences = [...dbMapped, ...staticOnly]
+
+  const experiences = allExperiences.filter(e => data.experienceAreas.includes(e.area))
 
   const formatDuration = (mins: number) => {
     if (mins < 60) return `${mins} min`

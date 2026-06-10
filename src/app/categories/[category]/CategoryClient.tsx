@@ -1,0 +1,418 @@
+'use client'
+
+import { useState, useMemo } from 'react'
+import { Heart, Star, Clock, Users, ChevronDown, SlidersHorizontal, X, MapPin, ArrowRight } from 'lucide-react'
+import Navbar from '@/components/Navbar'
+import MobileNav from '@/components/MobileNav'
+
+// ── Types ──────────────────────────────────────────────────────────────────────
+
+export type CategoryExp = {
+  slug: string
+  title: string
+  area: string
+  price: number
+  rating: number
+  reviews: number
+  duration: string
+  maxGuests: number
+  image: string
+  badge: string | null
+  category: string    // slug: "art-craft"
+  subcategory: string | null
+}
+
+// ── Category meta ──────────────────────────────────────────────────────────────
+
+const CATEGORY_META: Record<string, {
+  label: string
+  tagline: string
+  description: string
+  image: string
+  color: string
+  subcategories: string[]
+}> = {
+  'art-craft': {
+    label: 'Art & Craft',
+    tagline: 'Make something with your hands',
+    description: "Discover Bali's artistic soul through hands-on workshops led by master craftspeople. From ancient pottery traditions to intricate silver work — every piece you make, you take home.",
+    image: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=1200&auto=format&fit=crop&q=80',
+    color: '#B66A45',
+    subcategories: ['All', 'Pottery', 'Jewelry', 'Painting', 'Wood Carving', 'Textile', 'Weaving'],
+  },
+  wellness: {
+    label: 'Wellness',
+    tagline: 'Restore mind, body and spirit',
+    description: 'Restore your mind, body and soul with authentic Balinese healing practices — from sound healing bowls to traditional jamu rituals, guided by healers with decades of experience.',
+    image: 'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=1200&auto=format&fit=crop&q=80',
+    color: '#4A7C59',
+    subcategories: ['All', 'Yoga', 'Meditation', 'Sound Healing', 'Spa & Ritual', 'Breathwork'],
+  },
+  culture: {
+    label: 'Culture',
+    tagline: 'Live the living tradition',
+    description: 'Immerse yourself in ancient Balinese traditions, ceremonies, and spiritual heritage. Join a real temple ceremony, learn sacred dances, or walk ancient history with a local guide.',
+    image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1200&auto=format&fit=crop&q=80',
+    color: '#6F675C',
+    subcategories: ['All', 'Temple & Ceremony', 'Dance & Music', 'History Tour', 'Language'],
+  },
+  'food-drink': {
+    label: 'Food & Drink',
+    tagline: 'Eat like a Balinese local',
+    description: 'Explore the rich flavours of Balinese cuisine through cooking classes, market tours, and coffee journeys. Go from the farm to your plate with a local who knows every ingredient.',
+    image: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=1200&auto=format&fit=crop&q=80',
+    color: '#C8A97E',
+    subcategories: ['All', 'Cooking Class', 'Market Tour', 'Coffee & Tea', 'Mixology', 'Farm Visit'],
+  },
+  nature: {
+    label: 'Nature',
+    tagline: 'Bali beyond the beach',
+    description: "Trek through volcanic landscapes, swim beneath hidden waterfalls, and watch the sunrise paint Mount Batur gold. The island's natural wonders, experienced with a local guide.",
+    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&auto=format&fit=crop&q=80',
+    color: '#4A7C59',
+    subcategories: ['All', 'Trekking', 'Waterfall', 'Sunrise', 'Rice Terrace', 'Wildlife'],
+  },
+  'surf-water': {
+    label: 'Surf & Water',
+    tagline: "Ride the island's waves",
+    description: "From your first wave at Canggu to snorkelling the technicolour reefs of Amed — Bali's water experiences are world-class. Get in the water with instructors who grew up in it.",
+    image: 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=1200&auto=format&fit=crop&q=80',
+    color: '#3B82F6',
+    subcategories: ['All', 'Surfing', 'Snorkelling', 'Freediving', 'Stand-Up Paddle', 'River Rafting'],
+  },
+}
+
+const ALL_CATEGORY_SLUGS = ['art-craft', 'wellness', 'culture', 'food-drink', 'nature', 'surf-water'] as const
+const SORT_OPTIONS = ['Most popular', 'Highest rated', 'Price: Low to High', 'Price: High to Low']
+
+// ── Experience card ────────────────────────────────────────────────────────────
+
+function ExperienceCard({
+  exp,
+  wishlisted,
+  onWishlist,
+}: {
+  exp: CategoryExp
+  wishlisted: boolean
+  onWishlist: () => void
+}) {
+  return (
+    <a
+      href={`/experiences/${exp.slug}`}
+      className="group block bg-white rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-200"
+      style={{ border: '1px solid #E8E4DE', textDecoration: 'none' }}
+    >
+      <div className="relative overflow-hidden" style={{ height: 210 }}>
+        <img
+          src={exp.image}
+          alt={exp.title}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        />
+        {exp.badge && (
+          <span
+            className="absolute top-3 left-3 px-2.5 py-1 rounded-full"
+            style={{ backgroundColor: '#C8A97E', color: 'white', fontSize: 11, fontWeight: 600, fontFamily: 'var(--font-inter)', letterSpacing: '0.02em' }}
+          >
+            {exp.badge}
+          </span>
+        )}
+        <button
+          onClick={e => { e.preventDefault(); onWishlist() }}
+          className="absolute top-3 right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm hover:scale-110 transition-transform"
+          aria-label="Add to wishlist"
+        >
+          <Heart size={14} fill={wishlisted ? '#ef4444' : 'none'} color={wishlisted ? '#ef4444' : '#111111'} />
+        </button>
+        <div className="absolute bottom-3 left-3 flex items-center gap-1">
+          <MapPin size={11} style={{ color: 'white' }} />
+          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: 'white', textShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>{exp.area}</span>
+        </div>
+      </div>
+      <div className="p-4">
+        <h3 className="leading-snug mb-2" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 600, color: '#111111' }}>
+          {exp.title}
+        </h3>
+        <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-1">
+            <Star size={11} fill="#C8A97E" color="#C8A97E" />
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 700, color: '#111111' }}>{exp.rating.toFixed(1)}</span>
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>({exp.reviews})</span>
+          </div>
+          <span style={{ color: '#E8E4DE' }}>·</span>
+          <div className="flex items-center gap-1">
+            <Clock size={11} style={{ color: '#6F675C' }} />
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>{exp.duration}</span>
+          </div>
+          <span style={{ color: '#E8E4DE' }}>·</span>
+          <div className="flex items-center gap-1">
+            <Users size={11} style={{ color: '#6F675C' }} />
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>Max {exp.maxGuests}</span>
+          </div>
+        </div>
+        <div className="flex items-center justify-between">
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111' }}>
+            <span style={{ color: '#6F675C', fontSize: 11 }}>From </span>
+            <span style={{ color: '#C8A97E', fontWeight: 600, fontSize: 13 }}>IDR</span>{' '}
+            <span style={{ fontWeight: 700 }}>{exp.price.toLocaleString('id-ID')}</span>
+          </p>
+          {exp.subcategory && (
+            <span
+              className="text-xs px-2.5 py-1 rounded-full"
+              style={{ backgroundColor: '#F5F1EB', color: '#6F675C', fontFamily: 'var(--font-inter)', fontSize: 11 }}
+            >
+              {exp.subcategory}
+            </span>
+          )}
+        </div>
+      </div>
+    </a>
+  )
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
+export default function CategoryClient({
+  categorySlug,
+  initialExperiences,
+}: {
+  categorySlug: string
+  initialExperiences: CategoryExp[]
+}) {
+  const slug = ALL_CATEGORY_SLUGS.includes(categorySlug as typeof ALL_CATEGORY_SLUGS[number])
+    ? categorySlug
+    : 'art-craft'
+
+  const meta = CATEGORY_META[slug]
+  const [activeSub, setActiveSub] = useState('All')
+  const [sort, setSort] = useState('Most popular')
+  const [sortOpen, setSortOpen] = useState(false)
+  const [wishlist, setWishlist] = useState<Record<string, boolean>>({})
+
+  const toggleWishlist = (s: string) => setWishlist(w => ({ ...w, [s]: !w[s] }))
+
+  const results = useMemo(() => {
+    let list = initialExperiences
+    if (activeSub !== 'All') list = list.filter(e => e.subcategory === activeSub)
+    switch (sort) {
+      case 'Highest rated':       return [...list].sort((a, b) => b.rating - a.rating)
+      case 'Price: Low to High':  return [...list].sort((a, b) => a.price - b.price)
+      case 'Price: High to Low':  return [...list].sort((a, b) => b.price - a.price)
+      default:                    return [...list].sort((a, b) => b.reviews - a.reviews)
+    }
+  }, [activeSub, sort, initialExperiences])
+
+  const otherCategories = ALL_CATEGORY_SLUGS.filter(s => s !== slug)
+
+  const totalRating = initialExperiences.reduce((s, e) => s + e.rating, 0)
+  const avgRating = (totalRating / Math.max(1, initialExperiences.length)).toFixed(1)
+  const totalReviews = initialExperiences.reduce((s, e) => s + e.reviews, 0)
+
+  return (
+    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
+
+      <Navbar />
+
+      {/* ── HERO ── */}
+      <div className="relative" style={{ minHeight: 'clamp(420px, 50vw, 500px)' }}>
+        <img src={meta.image} alt={meta.label} className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.25) 60%, rgba(0,0,0,0.1) 100%)' }} />
+
+        <div className="absolute inset-0 flex flex-col justify-end px-6 lg:px-16 pb-10 max-w-[1440px] mx-auto" style={{ left: '50%', transform: 'translateX(-50%)', width: '100%' }}>
+          <nav className="flex items-center gap-1.5 mb-4" aria-label="Breadcrumb">
+            <a href="/" style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)', textDecoration: 'none' }}>Home</a>
+            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>/</span>
+            <span style={{ fontSize: 12, color: 'white' }}>{meta.label}</span>
+          </nav>
+
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.2em', color: meta.color === '#3B82F6' ? '#93C5FD' : '#C8A97E', textTransform: 'uppercase', marginBottom: 8 }}>
+            {meta.tagline}
+          </p>
+          <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 700, color: 'white', lineHeight: 1.1, marginBottom: 12, maxWidth: 600 }}>
+            {meta.label} <br className="hidden sm:block" />Experiences in Bali
+          </h1>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: 'rgba(255,255,255,0.82)', lineHeight: 1.75, maxWidth: 520 }}>
+            {meta.description}
+          </p>
+
+          <div className="flex items-center gap-6 mt-6">
+            <div>
+              <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: 'white', lineHeight: 1 }}>
+                {initialExperiences.length}
+              </p>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>experiences</p>
+            </div>
+            <div style={{ width: 1, height: 28, backgroundColor: 'rgba(255,255,255,0.2)' }} />
+            <div>
+              <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: 'white', lineHeight: 1 }}>
+                {avgRating}
+              </p>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>avg. rating</p>
+            </div>
+            <div style={{ width: 1, height: 28, backgroundColor: 'rgba(255,255,255,0.2)' }} />
+            <div>
+              <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: 'white', lineHeight: 1 }}>
+                {totalReviews.toLocaleString()}
+              </p>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>total reviews</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── SUBCATEGORY PILLS ── */}
+      <div className="bg-white" style={{ borderBottom: '1px solid #E8E4DE' }}>
+        <div className="max-w-[1440px] mx-auto px-6 lg:px-16">
+          <div className="flex items-center gap-2 py-3 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+            {meta.subcategories.map(sub => (
+              <button
+                key={sub}
+                onClick={() => setActiveSub(sub)}
+                className="flex-shrink-0 transition-all"
+                style={{
+                  height: 34,
+                  padding: '0 16px',
+                  borderRadius: 20,
+                  fontSize: 13,
+                  fontWeight: activeSub === sub ? 600 : 400,
+                  backgroundColor: activeSub === sub ? '#111111' : 'transparent',
+                  color: activeSub === sub ? 'white' : '#6F675C',
+                  border: `1px solid ${activeSub === sub ? '#111111' : '#E8E4DE'}`,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  fontFamily: 'var(--font-inter)',
+                }}
+              >
+                {sub}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── RESULTS ── */}
+      <div className="max-w-[1440px] mx-auto px-6 lg:px-16 py-8">
+
+        <div className="flex items-center justify-between mb-6">
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
+            <span style={{ fontWeight: 700, color: '#111111' }}>{results.length}</span> experience{results.length !== 1 ? 's' : ''} found
+            {activeSub !== 'All' && (
+              <button
+                onClick={() => setActiveSub('All')}
+                className="inline-flex items-center gap-1 ml-3 px-2.5 py-1 rounded-full"
+                style={{ backgroundColor: '#F5F1EB', border: '1px solid #E8E4DE', fontSize: 12, color: '#6F675C', cursor: 'pointer' }}
+              >
+                {activeSub} <X size={11} />
+              </button>
+            )}
+          </p>
+
+          <div className="relative">
+            <button
+              onClick={() => setSortOpen(o => !o)}
+              className="flex items-center gap-2"
+              style={{
+                height: 38, border: '1px solid #E8E4DE', borderRadius: 8,
+                padding: '0 14px', fontSize: 13, color: '#111111',
+                backgroundColor: 'white', cursor: 'pointer', fontFamily: 'var(--font-inter)',
+              }}
+            >
+              Sort: <span style={{ fontWeight: 600 }}>{sort}</span>
+              <ChevronDown size={13} style={{ color: '#6F675C', transform: sortOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
+            </button>
+            {sortOpen && (
+              <div
+                className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg z-20 overflow-hidden"
+                style={{ minWidth: 200, border: '1px solid #E8E4DE' }}
+              >
+                {SORT_OPTIONS.map(opt => (
+                  <button
+                    key={opt}
+                    onClick={() => { setSort(opt); setSortOpen(false) }}
+                    className="w-full text-left px-4 py-3 transition-colors hover:bg-stone-50"
+                    style={{
+                      fontSize: 13, fontFamily: 'var(--font-inter)',
+                      color: sort === opt ? '#111111' : '#6F675C',
+                      fontWeight: sort === opt ? 600 : 400,
+                      backgroundColor: 'transparent', border: 'none', cursor: 'pointer',
+                    }}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {results.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {results.map(exp => (
+              <ExperienceCard
+                key={exp.slug}
+                exp={exp}
+                wishlisted={!!wishlist[exp.slug]}
+                onWishlist={() => toggleWishlist(exp.slug)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-20 bg-white rounded-2xl" style={{ border: '1px solid #E8E4DE' }}>
+            <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, color: '#111111', marginBottom: 8 }}>No experiences found</p>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', marginBottom: 20 }}>
+              Try selecting a different subcategory.
+            </p>
+            <button
+              onClick={() => setActiveSub('All')}
+              style={{ height: 40, padding: '0 24px', backgroundColor: '#111111', color: 'white', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer', border: 'none', fontFamily: 'var(--font-inter)' }}
+            >
+              Show all {meta.label}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* ── OTHER CATEGORIES ── */}
+      <div className="max-w-[1440px] mx-auto px-6 lg:px-16 pb-16">
+        <div style={{ borderTop: '1px solid #E8E4DE', paddingTop: 40 }}>
+          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: '#111111', marginBottom: 20 }}>
+            Explore other categories
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            {otherCategories.map(catSlug => {
+              const cat = CATEGORY_META[catSlug]
+              return (
+                <a
+                  key={catSlug}
+                  href={`/categories/${catSlug}`}
+                  className="group relative rounded-xl overflow-hidden"
+                  style={{ height: 110, textDecoration: 'none' }}
+                >
+                  <img src={cat.image} alt={cat.label} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-400" />
+                  <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.1) 100%)' }} />
+                  <div className="absolute bottom-0 left-0 right-0 p-3 flex items-end justify-between">
+                    <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 600, color: 'white' }}>{cat.label}</span>
+                    <ArrowRight size={13} style={{ color: 'rgba(255,255,255,0.7)' }} />
+                  </div>
+                </a>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* ── FOOTER ── */}
+      <footer className="pt-10 px-6 pb-20 md:pb-7" style={{ backgroundColor: '#111111' }}>
+        <div className="max-w-[1200px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <a href="/" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: 'white', textDecoration: 'none' }}>BALIBLE</a>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>© 2024 Balible. All rights reserved.</p>
+          <div className="flex gap-6">
+            {[{ label: 'Help Centre', href: '/help' }, { label: 'About', href: '/about' }, { label: 'For Hosts', href: '/for-hosts' }].map(({ label, href }) => (
+              <a key={label} href={href} style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', textDecoration: 'none' }} className="hover:text-white transition-colors">{label}</a>
+            ))}
+          </div>
+        </div>
+      </footer>
+      <MobileNav />
+    </div>
+  )
+}

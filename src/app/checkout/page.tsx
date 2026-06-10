@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { ChevronUp, Shield, Award, Clock, Edit2, Lock } from 'lucide-react'
 import MobileNav from '@/components/MobileNav'
@@ -15,8 +15,8 @@ type ExpMeta = { title: string; area: string; image: string; price: number }
 const EXPERIENCE_DB: Record<string, ExpMeta> = {
   'pottery-making-class':      { title: 'Pottery Making Class',         area: 'Ubud',     price: 450000, image: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=200&auto=format&fit=crop&q=80' },
   'silver-jewelry-workshop':   { title: 'Silver Jewelry Workshop',      area: 'Canggu',   price: 550000, image: 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=200&auto=format&fit=crop&q=80' },
-  'batik-painting-workshop':   { title: 'Batik Painting Workshop',      area: 'Ubud',     price: 380000, image: 'https://images.unsplash.com/photo-1616627428492-37e14fac6e14?w=200&auto=format&fit=crop&q=80' },
-  'traditional-batik-workshop':{ title: 'Traditional Batik Workshop',   area: 'Ubud',     price: 420000, image: 'https://images.unsplash.com/photo-1616627428492-37e14fac6e14?w=200&auto=format&fit=crop&q=80' },
+  'batik-painting-workshop':   { title: 'Batik Painting Workshop',      area: 'Ubud',     price: 380000, image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=200&auto=format&fit=crop&q=80' },
+  'traditional-batik-workshop':{ title: 'Traditional Batik Workshop',   area: 'Ubud',     price: 420000, image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=200&auto=format&fit=crop&q=80' },
   'sound-healing-journey':     { title: 'Sound Healing Journey',        area: 'Ubud',     price: 350000, image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=200&auto=format&fit=crop&q=80' },
   'sunrise-yoga-class':        { title: 'Sunrise Yoga & Meditation',    area: 'Canggu',   price: 250000, image: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=200&auto=format&fit=crop&q=80' },
   'water-temple-purification': { title: 'Water Temple Purification',    area: 'Gianyar',  price: 600000, image: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=200&auto=format&fit=crop&q=80' },
@@ -51,6 +51,25 @@ function formatTime(t: string): string {
 function genRef(slug: string, date: string) {
   const hash = (slug + date).split('').reduce((a, c) => a + c.charCodeAt(0), 0)
   return `BAL-${date.replace(/-/g, '').slice(2) || '000000'}-${(hash % 9000 + 1000)}`
+}
+
+// ── Time-slot helpers ─────────────────────────────────────────────────────────
+
+type ScheduleDay = { day: string; enabled: boolean; open: string; close: string }
+
+function parseTimeMins(t: string): number {
+  const [h, m] = t.split(':').map(Number)
+  return h * 60 + (m || 0)
+}
+
+function generateSlots(open: string, close: string, bookedGuests: Record<string, number>, maxGuests: number): string[] {
+  const start = parseTimeMins(open), end = parseTimeMins(close)
+  const slots: string[] = []
+  for (let t = start; t < end; t += 30) {
+    const key = `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`
+    if ((bookedGuests[key] ?? 0) < maxGuests) slots.push(key)
+  }
+  return slots
 }
 
 // ── Shared types ───────────────────────────────────────────────────────────────
@@ -100,7 +119,7 @@ function StepIndicator({ current }: { current: Step }) {
 
 // ── Mobile compact summary ─────────────────────────────────────────────────────
 
-function MobileBookingSummary({ booking, guests, total, onEdit }: { booking: BookingData; guests: number; total: number; onEdit: () => void }) {
+function MobileBookingSummary({ booking, guests, total, editing, onEdit }: { booking: BookingData; guests: number; total: number; editing?: boolean; onEdit: () => void }) {
   const [open, setOpen] = useState(false)
   return (
     <div className="bg-white rounded-xl overflow-hidden" style={{ border: '1px solid #E8E4DE' }}>
@@ -124,12 +143,14 @@ function MobileBookingSummary({ booking, guests, total, onEdit }: { booking: Boo
             <span style={{ fontSize: 13, fontWeight: 500, color: '#111111' }}>{guests} guest{guests > 1 ? 's' : ''}</span>
           </div>
           <div className="flex justify-between items-center mb-3">
-            <span style={{ fontSize: 12, color: '#6F675C' }}>Service fee (10%)</span>
+            <span style={{ fontSize: 12, color: '#6F675C' }}>Service fee ({Math.round(booking.serviceFeeRate * 100)}%)</span>
             <span style={{ fontSize: 13, color: '#111111' }}>IDR {Math.round(booking.pricePerPerson * guests * booking.serviceFeeRate).toLocaleString('id-ID')}</span>
           </div>
-          <button onClick={onEdit} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#C8A97E', fontSize: 13, fontFamily: 'var(--font-inter)', display: 'flex', alignItems: 'center', gap: 4, padding: 0 }}>
-            <Edit2 size={12} /> Edit booking details
-          </button>
+          {!editing && (
+            <button onClick={onEdit} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#C8A97E', fontSize: 13, fontFamily: 'var(--font-inter)', display: 'flex', alignItems: 'center', gap: 4, padding: 0 }}>
+              <Edit2 size={12} /> Edit booking details
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -138,7 +159,7 @@ function MobileBookingSummary({ booking, guests, total, onEdit }: { booking: Boo
 
 // ── Booking summary sidebar ────────────────────────────────────────────────────
 
-function BookingSummary({ booking, guests, onEdit }: { booking: BookingData; guests: number; editing?: boolean; onEdit: () => void }) {
+function BookingSummary({ booking, guests, editing, onEdit }: { booking: BookingData; guests: number; editing?: boolean; onEdit: () => void }) {
   const sub = booking.pricePerPerson * guests
   const fee = Math.round(sub * booking.serviceFeeRate)
   const total = sub + fee
@@ -169,13 +190,15 @@ function BookingSummary({ booking, guests, onEdit }: { booking: BookingData; gue
               </div>
             ))}
           </div>
-          <button
-            onClick={onEdit}
-            className="flex items-center gap-1 hover:opacity-70 transition-opacity"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#C8A97E', fontSize: 13, fontFamily: 'var(--font-inter)' }}
-          >
-            <Edit2 size={12} /> Edit
-          </button>
+          {!editing && (
+            <button
+              onClick={onEdit}
+              className="flex items-center gap-1 hover:opacity-70 transition-opacity"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#C8A97E', fontSize: 13, fontFamily: 'var(--font-inter)' }}
+            >
+              <Edit2 size={12} /> Edit
+            </button>
+          )}
         </div>
       </div>
 
@@ -187,7 +210,7 @@ function BookingSummary({ booking, guests, onEdit }: { booking: BookingData; gue
           <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>IDR {sub.toLocaleString('id-ID')}</span>
         </div>
         <div className="flex justify-between">
-          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>Service fee (10%)</span>
+          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>Service fee ({Math.round(booking.serviceFeeRate * 100)}%)</span>
           <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>IDR {fee.toLocaleString('id-ID')}</span>
         </div>
         <div className="flex justify-between pt-3" style={{ borderTop: '1px solid #E8E4DE', marginTop: 4 }}>
@@ -213,7 +236,10 @@ function BookingSummary({ booking, guests, onEdit }: { booking: BookingData; gue
 
 // ── Step 1: Experience & Date ──────────────────────────────────────────────────
 
-function StepExperience({ booking, guests, setGuests, onNext }: { booking: BookingData; guests: number; setGuests: (n: number) => void; onNext: () => void }) {
+function StepExperience({ booking, guests, setGuests, onNext, slots, selectedRawTime, setSelectedRawTime }: {
+  booking: BookingData; guests: number; setGuests: (n: number) => void; onNext: () => void
+  slots: string[]; selectedRawTime: string; setSelectedRawTime: (t: string) => void
+}) {
   return (
     <div className="bg-white rounded-xl p-6" style={{ border: '1px solid #E8E4DE' }}>
       <div className="flex justify-between items-start mb-5">
@@ -233,12 +259,43 @@ function StepExperience({ booking, guests, setGuests, onNext }: { booking: Booki
           </div>
         </div>
         <div>
-          <label style={{ fontSize: 13, fontWeight: 500, color: '#111111', display: 'block', marginBottom: 6 }}>Date &amp; Time</label>
+          <label style={{ fontSize: 13, fontWeight: 500, color: '#111111', display: 'block', marginBottom: 6 }}>Date</label>
           <div className="p-3 rounded-lg" style={{ border: '1px solid #E8E4DE', backgroundColor: '#F5F1EB' }}>
             <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111' }}>{booking.date}</p>
-            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>{booking.time}</p>
           </div>
         </div>
+      </div>
+
+      <div className="mb-4">
+        <label style={{ fontSize: 13, fontWeight: 500, color: '#111111', display: 'block', marginBottom: 8 }}>Time</label>
+        {slots.length > 0 ? (
+          <div className="flex flex-wrap gap-2 overflow-y-auto" style={{ maxHeight: 140 }}>
+            {slots.map(slot => {
+              const isSel = slot === selectedRawTime
+              return (
+                <button
+                  key={slot}
+                  onClick={() => setSelectedRawTime(isSel ? '' : slot)}
+                  style={{
+                    padding: '7px 14px', borderRadius: 8, fontSize: 13, fontWeight: isSel ? 600 : 400,
+                    backgroundColor: isSel ? '#111111' : 'white',
+                    color: isSel ? 'white' : '#111111',
+                    border: `1px solid ${isSel ? '#111111' : '#E8E4DE'}`,
+                    cursor: 'pointer', fontFamily: 'var(--font-inter)', transition: 'all 0.15s',
+                  }}
+                >
+                  {formatTime(slot)}
+                </button>
+              )
+            })}
+          </div>
+        ) : (
+          <div className="p-3 rounded-lg" style={{ border: '1px solid #E8E4DE', backgroundColor: '#F5F1EB' }}>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111' }}>
+              {booking.time || 'No time available'}
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="mb-5">
@@ -266,10 +323,18 @@ function StepExperience({ booking, guests, setGuests, onNext }: { booking: Booki
 
       <button
         onClick={onNext}
+        disabled={slots.length > 0 && !selectedRawTime}
         className="w-full flex items-center justify-center hover:opacity-90 transition-opacity"
-        style={{ height: 48, backgroundColor: '#111111', color: 'white', borderRadius: 10, fontSize: 15, fontWeight: 600, border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}
+        style={{
+          height: 48,
+          backgroundColor: slots.length > 0 && !selectedRawTime ? '#E8E4DE' : '#111111',
+          color: slots.length > 0 && !selectedRawTime ? '#9E9A94' : 'white',
+          borderRadius: 10, fontSize: 15, fontWeight: 600, border: 'none',
+          cursor: slots.length > 0 && !selectedRawTime ? 'not-allowed' : 'pointer',
+          fontFamily: 'var(--font-inter)',
+        }}
       >
-        Continue to Details →
+        {slots.length > 0 && !selectedRawTime ? 'Select a time to continue' : 'Continue to Details →'}
       </button>
     </div>
   )
@@ -277,13 +342,11 @@ function StepExperience({ booking, guests, setGuests, onNext }: { booking: Booki
 
 // ── Step 2: Your Details ───────────────────────────────────────────────────────
 
-function StepDetails({ onNext }: { onNext: () => void }) {
-  const fields = [
-    { id: 'fullName', label: 'Full name',                        placeholder: 'Sarah Kim',                                    type: 'text' },
-    { id: 'email',    label: 'Email address',                    placeholder: 'sarah@example.com',                            type: 'email' },
-    { id: 'phone',    label: 'Phone number (optional)',          placeholder: '+62 812 3456 7890',                            type: 'tel' },
-    { id: 'requests', label: 'Special requests (optional)',      placeholder: 'Any dietary requirements, accessibility needs…',type: 'textarea' },
-  ]
+type ContactFields = { fullName: string; email: string; phone: string; requests: string }
+
+function StepDetails({ contact, setContact, onNext }: { contact: ContactFields; setContact: (c: ContactFields) => void; onNext: () => void }) {
+  const set = (k: keyof ContactFields) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setContact({ ...contact, [k]: e.target.value })
 
   return (
     <div className="bg-white rounded-xl p-6" style={{ border: '1px solid #E8E4DE' }}>
@@ -292,11 +355,17 @@ function StepDetails({ onNext }: { onNext: () => void }) {
         <ChevronUp size={18} style={{ color: '#6F675C' }} />
       </div>
       <div className="space-y-4">
-        {fields.map(f => (
+        {([
+          { id: 'fullName', label: 'Full name',                   placeholder: 'Sarah Kim',                                     type: 'text' },
+          { id: 'email',    label: 'Email address',               placeholder: 'sarah@example.com',                             type: 'email' },
+          { id: 'phone',    label: 'Phone number (optional)',     placeholder: '+62 812 3456 7890',                             type: 'tel' },
+          { id: 'requests', label: 'Special requests (optional)', placeholder: 'Any dietary requirements, accessibility needs…', type: 'textarea' },
+        ] as { id: keyof ContactFields; label: string; placeholder: string; type: string }[]).map(f => (
           <div key={f.id}>
             <label style={{ fontSize: 13, fontWeight: 500, color: '#111111', display: 'block', marginBottom: 6 }}>{f.label}</label>
             {f.type === 'textarea' ? (
               <textarea
+                value={contact[f.id]} onChange={set(f.id)}
                 placeholder={f.placeholder} rows={3} className="w-full outline-none resize-none"
                 style={{ border: '1px solid #E8E4DE', borderRadius: 8, padding: '10px 14px', fontSize: 14, color: '#111111', backgroundColor: 'white', fontFamily: 'var(--font-inter)' }}
                 onFocus={e => (e.target.style.borderColor = '#C8A97E')}
@@ -304,7 +373,8 @@ function StepDetails({ onNext }: { onNext: () => void }) {
               />
             ) : (
               <input
-                type={f.type} placeholder={f.placeholder} className="w-full outline-none"
+                type={f.type} value={contact[f.id]} onChange={set(f.id)}
+                placeholder={f.placeholder} className="w-full outline-none"
                 style={{ height: 44, border: '1px solid #E8E4DE', borderRadius: 8, padding: '0 14px', fontSize: 14, color: '#111111', backgroundColor: 'white' }}
                 onFocus={e => (e.target.style.borderColor = '#C8A97E')}
                 onBlur={e => (e.target.style.borderColor = '#E8E4DE')}
@@ -356,7 +426,7 @@ function StepPayment({ total, onNext }: { total: number; onNext: () => void }) {
             { label: 'CVV',             placeholder: '123',                  colSpan: 'half' },
             { label: 'Cardholder name', placeholder: 'Sarah Kim',           colSpan: 'full' },
           ].map((f, i, arr) => {
-            if (f.colSpan === 'half' && arr[i - 1]?.colSpan === 'full' && arr[i + 1]?.colSpan === 'half') {
+            if (f.colSpan === 'half' && arr[i - 1]?.colSpan === 'half') {
               return null
             }
             if (f.colSpan === 'half') {
@@ -464,17 +534,69 @@ function CheckoutInner() {
   const maxGuests = Math.max(1, parseInt(params.get('maxGuests') || '8') || 8)
   const initGuests = Math.max(1, Math.min(maxGuests, parseInt(params.get('guests') || '1') || 1))
 
-  const exp = EXPERIENCE_DB[slug] || FALLBACK
-
-  const booking: BookingData = {
-    title: exp.title, area: exp.area, image: exp.image,
-    date: formatDate(rawDate), time: formatTime(rawTime), rawTime,
-    pricePerPerson: exp.price, serviceFeeRate: 0.1,
-    slug, rawDate, maxGuests,
-  }
+  const baseExp = EXPERIENCE_DB[slug] || FALLBACK
 
   const [step, setStep] = useState<Step>(0)
   const [guests, setGuests] = useState(initGuests)
+  const [contact, setContact] = useState<ContactFields>({ fullName: '', email: '', phone: '', requests: '' })
+  const [selectedRawTime, setSelectedRawTime] = useState(rawTime)
+  const [schedule, setSchedule] = useState<ScheduleDay[] | null>(null)
+  const [bookedGuests, setBookedGuests] = useState<Record<string, number>>({})
+  const [serviceFeeRate, setServiceFeeRate] = useState(0.1)
+  const [expPrice, setExpPrice] = useState(baseExp.price)
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('balible_service_fee')
+      if (stored) setServiceFeeRate(parseFloat(JSON.parse(stored)) / 100)
+    } catch {}
+  }, [])
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(`balible_exp_data_${slug}`)
+      if (stored) {
+        const data = JSON.parse(stored)
+        if (data.price) setExpPrice(Number(data.price))
+      }
+    } catch {}
+  }, [slug])
+
+  useEffect(() => {
+    const raw = localStorage.getItem(`balible_schedule_${slug}`)
+    if (raw) setSchedule(JSON.parse(raw))
+  }, [slug])
+
+  useEffect(() => {
+    if (!rawDate) return
+    const raw = localStorage.getItem(`balible_booked_${slug}_${rawDate}`)
+    setBookedGuests(raw ? JSON.parse(raw) : {})
+  }, [slug, rawDate])
+
+  // Build available time slots for the booked date
+  const slots = (() => {
+    if (!rawDate) return []
+    let open = '08:00', close = '20:00'
+    if (schedule) {
+      const dow = new Date(rawDate).getDay()
+      const idx = dow === 0 ? 6 : dow - 1
+      const day = schedule[idx]
+      if (!day?.enabled) return []
+      open = day.open; close = day.close
+    }
+    const now = new Date()
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`
+    const nowMins = now.getHours() * 60 + now.getMinutes()
+    return generateSlots(open, close, bookedGuests, maxGuests)
+      .filter(slot => rawDate !== todayStr || parseTimeMins(slot) > nowMins)
+  })()
+
+  const booking: BookingData = {
+    title: baseExp.title, area: baseExp.area, image: baseExp.image,
+    date: formatDate(rawDate), time: formatTime(selectedRawTime), rawTime: selectedRawTime,
+    pricePerPerson: expPrice, serviceFeeRate,
+    slug, rawDate, maxGuests,
+  }
 
   const sub   = booking.pricePerPerson * guests
   const fee   = Math.round(sub * booking.serviceFeeRate)
@@ -523,21 +645,21 @@ function CheckoutInner() {
         {/* Mobile compact booking summary — above form, hidden on desktop */}
         {step < 3 && (
           <div className="lg:hidden mb-4">
-            <MobileBookingSummary booking={booking} guests={guests} total={total} onEdit={() => setStep(0)} />
+            <MobileBookingSummary booking={booking} guests={guests} total={total} editing={step === 0} onEdit={() => { setStep(0); window.scrollTo({ top: 0, behavior: 'smooth' }) }} />
           </div>
         )}
 
         <div className="flex flex-col lg:flex-row gap-6">
           <div className="flex-1 min-w-0">
-            {step === 0 && <StepExperience booking={booking} guests={guests} setGuests={setGuests} onNext={() => setStep(1)} />}
-            {step === 1 && <StepDetails onNext={() => setStep(2)} />}
+            {step === 0 && <StepExperience booking={booking} guests={guests} setGuests={setGuests} onNext={() => setStep(1)} slots={slots} selectedRawTime={selectedRawTime} setSelectedRawTime={setSelectedRawTime} />}
+            {step === 1 && <StepDetails contact={contact} setContact={setContact} onNext={() => setStep(2)} />}
             {step === 2 && <StepPayment total={total} onNext={confirmAndSave} />}
             {step === 3 && <StepConfirmation booking={booking} guests={guests} />}
           </div>
           {/* Full sidebar — desktop only */}
           {step < 3 && (
             <div className="hidden lg:block" style={{ width: 340, flexShrink: 0 }}>
-              <BookingSummary booking={booking} guests={guests} editing={step === 0} onEdit={() => setStep(0)} />
+              <BookingSummary booking={booking} guests={guests} editing={step === 0} onEdit={() => { setStep(0); window.scrollTo({ top: 0, behavior: 'smooth' }) }} />
             </div>
           )}
         </div>

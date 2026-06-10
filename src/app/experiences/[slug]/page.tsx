@@ -34,7 +34,7 @@ const STATIC: Record<string, ExpData> = {
     images: [
       'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=800&auto=format&fit=crop&q=85',
       'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&h=300&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1616627428492-37e14fac6e14?w=400&h=300&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400&h=300&auto=format&fit=crop&q=80',
       'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=400&h=300&auto=format&fit=crop&q=80',
     ],
     operator: { businessName: 'Made Sari Pottery Studio', description: 'Third-generation Balinese potter offering authentic clay experiences in the heart of Ubud.', avatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=200&auto=format&fit=crop&q=80', rating: 4.9, totalReviews: 128, user: { name: 'Made Sari', image: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=200&auto=format&fit=crop&q=80' } },
@@ -76,7 +76,7 @@ const STATIC: Record<string, ExpData> = {
     excludes: ['Transport to studio', 'Additional fabric', 'Gratuities'],
     meetingPoint: 'Ubud Batik Studio, Jl. Hanoman, Ubud',
     images: [
-      'https://images.unsplash.com/photo-1616627428492-37e14fac6e14?w=800&auto=format&fit=crop&q=85',
+      'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=800&auto=format&fit=crop&q=85',
       'https://images.unsplash.com/photo-1617791160505-6f00504e3519?w=400&h=300&auto=format&fit=crop&q=80',
       'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&auto=format&fit=crop&q=80',
       'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&h=300&auto=format&fit=crop&q=80',
@@ -98,7 +98,7 @@ const STATIC: Record<string, ExpData> = {
     meetingPoint: 'Jl. Monkey Forest, Ubud',
     images: [
       'https://images.unsplash.com/photo-1617791160505-6f00504e3519?w=800&auto=format&fit=crop&q=85',
-      'https://images.unsplash.com/photo-1616627428492-37e14fac6e14?w=400&h=300&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400&h=300&auto=format&fit=crop&q=80',
       'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&auto=format&fit=crop&q=80',
       'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&h=300&auto=format&fit=crop&q=80',
     ],
@@ -312,7 +312,7 @@ const STATIC: Record<string, ExpData> = {
     meetingPoint: 'Sidemen Weaving Village, Jl. Raya Sidemen, Karangasem',
     images: [
       'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&auto=format&fit=crop&q=85',
-      'https://images.unsplash.com/photo-1616627428492-37e14fac6e14?w=400&h=300&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400&h=300&auto=format&fit=crop&q=80',
       'https://images.unsplash.com/photo-1617791160505-6f00504e3519?w=400&h=300&auto=format&fit=crop&q=80',
       'https://images.unsplash.com/photo-1573790387438-4da905039392?w=400&h=300&auto=format&fit=crop&q=80',
     ],
@@ -334,7 +334,7 @@ const STATIC: Record<string, ExpData> = {
     images: [
       'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&auto=format&fit=crop&q=85',
       'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&h=300&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1616627428492-37e14fac6e14?w=400&h=300&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400&h=300&auto=format&fit=crop&q=80',
       'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=400&h=300&auto=format&fit=crop&q=80',
     ],
     operator: { businessName: 'Karsa Wood Studio', description: 'Third-generation wood carving family in Mas Village, Ubud, teaching traditional Balinese carving to visitors in their family studio.', avatar: null, rating: 4.6, totalReviews: 47, user: { name: 'I Nyoman Karsa', image: null } },
