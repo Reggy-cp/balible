@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Star, CheckCircle2, XCircle, X, MapPin, ExternalLink } from 'lucide-react'
+import { createReviewAction } from '@/lib/actions'
 
 function hostSlug(name: string) {
   return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
@@ -146,6 +147,8 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
     localStorage.setItem('balible_user_reviews', JSON.stringify(updated))
     setUserReview(newReview)
     setShowForm(false)
+    // Persist to DB (best-effort)
+    createReviewAction({ slug: exp.slug, rating, comment }).catch(() => {})
   }
 
   return (

@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { ChevronUp, Shield, Award, Clock, Edit2, Lock } from 'lucide-react'
 import MobileNav from '@/components/MobileNav'
+import { createBookingAction } from '@/lib/actions'
 
 const STEPS = ['Experience & Date', 'Your Details', 'Payment', 'Confirmation']
 type Step = 0 | 1 | 2 | 3
@@ -602,7 +603,7 @@ function CheckoutInner() {
   const fee   = Math.round(sub * booking.serviceFeeRate)
   const total = sub + fee
 
-  const confirmAndSave = () => {
+  const confirmAndSave = async () => {
     const ref = genRef(booking.slug, booking.rawDate)
     try {
       const prev = JSON.parse(localStorage.getItem('balible_bookings') ?? '[]')
@@ -618,6 +619,16 @@ function CheckoutInner() {
         localStorage.setItem(slotKey, JSON.stringify(prevSlots))
       }
     } catch {}
+    // Persist to DB (best-effort — works when experience is in DB and user is signed in)
+    createBookingAction({
+      slug: booking.slug,
+      rawDate: booking.rawDate,
+      guests,
+      totalPrice: total,
+      guestName: contact.fullName || 'Guest',
+      guestEmail: contact.email || '',
+      guestPhone: contact.phone || undefined,
+    }).catch(() => {})
     setStep(3)
   }
 

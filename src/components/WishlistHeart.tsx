@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { Heart } from 'lucide-react'
+import { useUser } from '@clerk/nextjs'
+import { toggleWishlistAction } from '@/lib/actions'
 
 const KEY = 'balible_wishlist'
 
@@ -18,19 +20,30 @@ export default function WishlistHeart({
   size?: number
   compact?: boolean
 }) {
+  const { isSignedIn } = useUser()
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
     setSaved(getList().includes(slug))
   }, [slug])
 
-  const toggle = (e: React.MouseEvent) => {
+  const toggle = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
+
+    // Optimistic update
+    const next = !saved
+    setSaved(next)
+
+    // Always update localStorage (works for both signed-in and anonymous)
     const list = getList()
-    const next = list.includes(slug) ? list.filter(s => s !== slug) : [...list, slug]
-    localStorage.setItem(KEY, JSON.stringify(next))
-    setSaved(next.includes(slug))
+    const updated = next ? [...list, slug] : list.filter(s => s !== slug)
+    localStorage.setItem(KEY, JSON.stringify(updated))
+
+    // Persist to DB when signed in
+    if (isSignedIn) {
+      await toggleWishlistAction(slug)
+    }
   }
 
   return (

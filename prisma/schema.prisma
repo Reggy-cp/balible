@@ -8,12 +8,14 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  image     String?
-  role      Role     @default(TOURIST)
-  createdAt DateTime @default(now())
+  id            String   @id @default(cuid())
+  clerkId       String?  @unique
+  name          String
+  email         String   @unique
+  image         String?
+  role          Role     @default(TOURIST)
+  wishlistSlugs String[] @default([])
+  createdAt     DateTime @default(now())
 
   bookings  Booking[]
   reviews   Review[]

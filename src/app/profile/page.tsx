@@ -1,12 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   User, Heart, CalendarDays, Settings, Star, MapPin, Clock,
   Edit2, Camera, Check, ArrowRight, Home, Search, Map, X,
 } from 'lucide-react'
+import { useUser } from '@clerk/nextjs'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
+import { getUserData, type UserData } from '@/lib/actions'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -235,14 +237,20 @@ function ReviewModal({ booking, onSubmit, onClose }: {
 
 // ── Bookings tab ───────────────────────────────────────────────────────────────
 
-function BookingsTab({ reviews, onReview }: { reviews: SubmittedReview[]; onReview: (r: SubmittedReview) => void }) {
+function BookingsTab({ reviews, onReview, dbBookings }: { reviews: SubmittedReview[]; onReview: (r: SubmittedReview) => void; dbBookings?: Booking[] }) {
   const [cancelled, setCancelled] = useState<Set<string>>(new Set())
   const [reviewing, setReviewing] = useState<Booking | null>(null)
   const cancel = (id: string) => setCancelled(s => new Set(s).add(id))
 
   const savedBookings: Booking[] = lsp('balible_bookings', [])
   const savedIds = new Set(savedBookings.map(b => b.id))
-  const allBookings = [...savedBookings, ...BOOKINGS.filter(b => !savedIds.has(b.id))]
+  const localAndMock = [...savedBookings, ...BOOKINGS.filter(b => !savedIds.has(b.id))]
+
+  // DB bookings take priority; merge in local/mock that aren't in DB
+  const dbIds = new Set((dbBookings ?? []).map(b => b.id))
+  const allBookings = dbBookings
+    ? [...dbBookings, ...localAndMock.filter(b => !dbIds.has(b.id))]
+    : localAndMock
 
   return (
     <div className="space-y-4">
@@ -339,8 +347,11 @@ const WISHLIST_LOOKUP = [
 
 const DEFAULT_WISHLIST_SLUGS = ['pottery-making-class', 'sound-healing-journey', 'uluwatu-kecak-sunset']
 
-function WishlistTab() {
-  const slugs = lsp<string[]>('balible_wishlist', DEFAULT_WISHLIST_SLUGS)
+function WishlistTab({ dbSlugs }: { dbSlugs?: string[] }) {
+  const localSlugs = lsp<string[]>('balible_wishlist', DEFAULT_WISHLIST_SLUGS)
+  // Merge DB slugs with local (DB takes precedence when signed in)
+  const slugSet = new Set([...(dbSlugs ?? localSlugs)])
+  const slugs = Array.from(slugSet)
   const items = WISHLIST_LOOKUP.filter(e => slugs.includes(e.slug))
 
   return (
@@ -412,11 +423,17 @@ const STATIC_REVIEWS = [
   },
 ]
 
-function ReviewsTab({ reviews }: { reviews: SubmittedReview[] }) {
+function ReviewsTab({ reviews, dbReviews }: { reviews: SubmittedReview[]; dbReviews?: UserData['reviews'] }) {
   const submittedSlugs = new Set(reviews.map(r => r.slug))
+  const dbSlugs = new Set((dbReviews ?? []).map(r => r.slug))
+
+  // DB reviews first, then local submitted, then static (filtered for no-dupe)
   const merged = [
-    ...reviews.map(r => ({ experience: r.experience, slug: r.slug, date: r.reviewDate, rating: r.rating, comment: r.comment, image: r.image })),
-    ...STATIC_REVIEWS.filter(r => !submittedSlugs.has(r.slug)),
+    ...(dbReviews ?? []),
+    ...reviews
+      .filter(r => !dbSlugs.has(r.slug))
+      .map(r => ({ experience: r.experience, slug: r.slug, date: r.reviewDate, rating: r.rating, comment: r.comment, image: r.image })),
+    ...STATIC_REVIEWS.filter(r => !submittedSlugs.has(r.slug) && !dbSlugs.has(r.slug)),
   ]
 
   return (
@@ -547,8 +564,16 @@ function SettingsTab() {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function ProfilePage() {
+  const { user: clerkUser, isSignedIn, isLoaded } = useUser()
   const [activeTab, setActiveTab] = useState('bookings')
   const [reviews, setReviews] = useState<SubmittedReview[]>(() => lsp('balible_user_reviews', []))
+  const [dbData, setDbData] = useState<UserData | null>(null)
+
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      getUserData().then(data => { if (data) setDbData(data) }).catch(() => {})
+    }
+  }, [isLoaded, isSignedIn])
 
   const addReview = (r: SubmittedReview) => {
     const updated = [r, ...reviews.filter(x => x.bookingId !== r.bookingId)]
@@ -556,13 +581,18 @@ export default function ProfilePage() {
     localStorage.setItem('balible_user_reviews', JSON.stringify(updated))
   }
 
+  // Use real Clerk user info when available, fall back to mock
+  const displayName  = clerkUser?.fullName || clerkUser?.firstName || dbData?.name || PROFILE.name
+  const displayEmail = clerkUser?.primaryEmailAddress?.emailAddress || dbData?.email || PROFILE.email
+  const displayImage = clerkUser?.imageUrl || dbData?.image || null
+
   const renderTab = () => {
     switch (activeTab) {
-      case 'bookings': return <BookingsTab reviews={reviews} onReview={addReview} />
-      case 'wishlist': return <WishlistTab />
-      case 'reviews':  return <ReviewsTab reviews={reviews} />
+      case 'bookings': return <BookingsTab reviews={reviews} onReview={addReview} dbBookings={dbData?.bookings} />
+      case 'wishlist': return <WishlistTab dbSlugs={dbData?.wishlistSlugs} />
+      case 'reviews':  return <ReviewsTab reviews={reviews} dbReviews={dbData?.reviews} />
       case 'settings': return <SettingsTab />
-      default:         return <BookingsTab reviews={reviews} onReview={addReview} />
+      default:         return <BookingsTab reviews={reviews} onReview={addReview} dbBookings={dbData?.bookings} />
     }
   }
 
@@ -579,11 +609,15 @@ export default function ProfilePage() {
             <div className="bg-white rounded-2xl p-6 text-center" style={{ border: '1px solid #E8E4DE' }}>
               {/* Avatar */}
               <div className="relative mx-auto mb-4" style={{ width: 80, height: 80 }}>
-                <div className="w-full h-full rounded-full flex items-center justify-center" style={{ backgroundColor: '#C8A97E', border: '3px solid white', boxShadow: '0 0 0 2px #C8A97E' }}>
-                  <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 32, fontWeight: 700, color: 'white' }}>
-                    {PROFILE.name[0]}
-                  </span>
-                </div>
+                {displayImage ? (
+                  <img src={displayImage} alt={displayName} className="w-full h-full rounded-full object-cover" style={{ border: '3px solid white', boxShadow: '0 0 0 2px #C8A97E' }} />
+                ) : (
+                  <div className="w-full h-full rounded-full flex items-center justify-center" style={{ backgroundColor: '#C8A97E', border: '3px solid white', boxShadow: '0 0 0 2px #C8A97E' }}>
+                    <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 32, fontWeight: 700, color: 'white' }}>
+                      {displayName[0]?.toUpperCase()}
+                    </span>
+                  </div>
+                )}
                 <button
                   className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center"
                   style={{ backgroundColor: '#111111', border: '2px solid white', cursor: 'pointer' }}
@@ -592,8 +626,8 @@ export default function ProfilePage() {
                 </button>
               </div>
 
-              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>{PROFILE.name}</h2>
-              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', marginTop: 3 }}>{PROFILE.email}</p>
+              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>{displayName}</h2>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', marginTop: 3 }}>{displayEmail}</p>
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', marginTop: 2 }}>Member since {PROFILE.joined}</p>
 
               {/* Stats */}

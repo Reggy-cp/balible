@@ -2,9 +2,11 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { Heart, Star, MapPin, Clock, Trash2, Search, Home, Map, User, SlidersHorizontal } from 'lucide-react'
+import { useUser } from '@clerk/nextjs'
 import Navbar from '@/components/Navbar'
 import WishlistHeart from '@/components/WishlistHeart'
 import MobileNav from '@/components/MobileNav'
+import { getUserWishlist } from '@/lib/actions'
 
 // All known experiences — this mirrors the static data in the app
 const ALL_EXPERIENCES = [
@@ -85,6 +87,7 @@ const ALL_AREAS = ['All areas', ...Array.from(new Set(ALL_EXPERIENCES.map(e => e
 const ALL_CATEGORIES = ['All categories', ...Array.from(new Set(ALL_EXPERIENCES.map(e => e.category))).sort()]
 
 export default function WishlistPage() {
+  const { isSignedIn, isLoaded } = useUser()
   const [slugs, setSlugs]       = useState<string[]>([])
   const [mounted, setMounted]   = useState(false)
   const [sort, setSort]         = useState('Recommended')
@@ -100,6 +103,19 @@ export default function WishlistPage() {
     }
     setMounted(true)
   }, [])
+
+  // Sync DB wishlist to state when signed in
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn) return
+    getUserWishlist().then(dbSlugs => {
+      if (dbSlugs.length > 0) {
+        // Merge DB slugs with local (DB is source of truth when signed in)
+        const merged = Array.from(new Set([...dbSlugs]))
+        setSlugs(merged)
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(merged))
+      }
+    }).catch(() => {})
+  }, [isLoaded, isSignedIn])
 
   // Re-sync when WishlistHeart toggles (storage event from same tab isn't fired,
   // so we listen to the custom storage key update)
