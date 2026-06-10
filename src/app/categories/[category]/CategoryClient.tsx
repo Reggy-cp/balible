@@ -62,7 +62,7 @@ const CATEGORY_META: Record<string, {
     description: 'Explore the rich flavours of Balinese cuisine through cooking classes, market tours, and coffee journeys. Go from the farm to your plate with a local who knows every ingredient.',
     image: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=1200&auto=format&fit=crop&q=80',
     color: '#C8A97E',
-    subcategories: ['All', 'Cooking Class', 'Market Tour', 'Coffee & Tea', 'Mixology', 'Farm Visit'],
+    subcategories: ['All', 'Market Tour', 'Coffee & Tea', 'Mixology', 'Farm Visit'],
   },
   nature: {
     label: 'Nature',
