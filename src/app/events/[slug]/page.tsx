@@ -1,5 +1,8 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { MapPin, Clock, Users, CalendarDays, Ticket } from 'lucide-react'
+import Navbar from '@/components/Navbar'
+import MobileNav from '@/components/MobileNav'
 import { getEventBySlug } from '@/lib/event-actions'
 
 export const dynamic = 'force-dynamic'
@@ -14,106 +17,158 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
   const isPast = d < new Date()
 
   return (
-    <main style={{ backgroundColor: '#F5F1EB', minHeight: '100vh', fontFamily: 'var(--font-inter)' }}>
+    <div style={{ fontFamily: 'var(--font-inter)' }}>
+      <Navbar />
 
-      {/* Nav */}
-      <header style={{ backgroundColor: 'white', borderBottom: '1px solid #E8E4DE', position: 'sticky', top: 0, zIndex: 40 }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Link href="/" style={{ textDecoration: 'none' }}>
-            <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>BALIBLE</span>
-          </Link>
-          <span style={{ color: '#C8C4BE', fontSize: 14 }}>/</span>
-          <Link href="/events" style={{ fontSize: 13, color: '#6F675C', textDecoration: 'none' }}>Events</Link>
-          <span style={{ color: '#C8C4BE', fontSize: 14 }}>/</span>
-          <span style={{ fontSize: 13, color: '#111111', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 220 }}>{event.title}</span>
-        </div>
-      </header>
+      <div className="max-w-[1440px] mx-auto px-6 lg:px-16 py-8">
 
-      <div style={{ maxWidth: 800, margin: '0 auto', padding: '40px 24px 80px' }}>
+        {/* Back link */}
+        <Link href="/events"
+          className="inline-flex items-center gap-1 hover:opacity-70 transition-opacity mb-6"
+          style={{ fontSize: 13, color: '#6F675C', textDecoration: 'none' }}>
+          ← Back to all events
+        </Link>
 
         {/* Cover image */}
         {event.coverImage && (
-          <div style={{ borderRadius: 20, overflow: 'hidden', height: 'clamp(220px,40vw,420px)', marginBottom: 36, position: 'relative' }}>
-            <img src={event.coverImage} alt={event.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <div className="relative overflow-hidden mb-8" style={{ borderRadius: 16, height: 'clamp(220px,38vw,460px)' }}>
+            <img src={event.coverImage} alt={event.title} className="w-full h-full object-cover" />
             {isPast && (
-              <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontSize: 16, fontWeight: 700, color: 'white', backgroundColor: 'rgba(0,0,0,0.6)', padding: '8px 20px', borderRadius: 20 }}>This event has passed</span>
+              <div className="absolute inset-0 flex items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}>
+                <span style={{ fontSize: 15, fontWeight: 700, color: 'white', backgroundColor: 'rgba(0,0,0,0.6)', padding: '8px 20px', borderRadius: 20 }}>
+                  This event has passed
+                </span>
               </div>
             )}
           </div>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 40, alignItems: 'start' }}>
-          <div>
+        {/* Two-column layout */}
+        <div className="flex flex-col lg:flex-row gap-10">
+
+          {/* ── LEFT COLUMN ── */}
+          <div className="flex-1 min-w-0">
+
             {/* Date pill */}
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, backgroundColor: '#FDF8F4', border: '1px solid #F0E6D6', borderRadius: 20, padding: '5px 14px', marginBottom: 16 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: '#C8A97E' }}>📅 {dateStr} · {timeStr}</span>
+            <div className="inline-flex items-center gap-2 mb-4"
+              style={{ backgroundColor: '#FDF8F4', border: '1px solid #F0E6D6', borderRadius: 20, padding: '5px 14px' }}>
+              <CalendarDays size={13} style={{ color: '#C8A97E' }} />
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#C8A97E' }}>{dateStr} · {timeStr}</span>
             </div>
 
-            <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(24px,4vw,36px)', fontWeight: 700, color: '#111111', marginBottom: 16, lineHeight: 1.25 }}>
+            <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px,3.5vw,40px)', fontWeight: 700, color: '#111111', lineHeight: 1.2, marginBottom: 16 }}>
               {event.title}
             </h1>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginBottom: 28 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontSize: 16 }}>📍</span>
+            {/* Meta row */}
+            <div className="flex flex-wrap gap-x-5 gap-y-2 mb-8">
+              <div className="flex items-center gap-1.5">
+                <MapPin size={14} style={{ color: '#6F675C', flexShrink: 0 }} />
                 <span style={{ fontSize: 14, color: '#6F675C' }}>{event.location}</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontSize: 16 }}>👥</span>
+              <div className="flex items-center gap-1.5">
+                <Users size={14} style={{ color: '#6F675C', flexShrink: 0 }} />
                 <span style={{ fontSize: 14, color: '#6F675C' }}>Up to {event.capacity} guests</span>
               </div>
-              {event.operatorName && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div className="flex items-center gap-1.5">
+                <Clock size={14} style={{ color: '#6F675C', flexShrink: 0 }} />
+                <span style={{ fontSize: 14, color: '#6F675C' }}>{timeStr}</span>
+              </div>
+            </div>
+
+            {/* About */}
+            <div className="bg-white rounded-2xl p-6 mb-6" style={{ border: '1px solid #E8E4DE' }}>
+              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', marginBottom: 12 }}>
+                About this event
+              </h2>
+              <p style={{ fontSize: 15, color: '#3A3530', lineHeight: 1.75, whiteSpace: 'pre-line' }}>
+                {event.description}
+              </p>
+            </div>
+
+            {/* Hosted by */}
+            {event.operatorName && (
+              <div className="bg-white rounded-2xl p-6" style={{ border: '1px solid #E8E4DE' }}>
+                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', marginBottom: 14 }}>
+                  Hosted by
+                </h2>
+                <div className="flex items-center gap-4">
                   {event.operatorAvatar ? (
-                    <img src={event.operatorAvatar} alt="" style={{ width: 20, height: 20, borderRadius: '50%', objectFit: 'cover' }} />
+                    <img src={event.operatorAvatar} alt={event.operatorName}
+                      className="rounded-full object-cover flex-shrink-0"
+                      style={{ width: 52, height: 52 }} />
                   ) : (
-                    <span style={{ fontSize: 16 }}>🏡</span>
+                    <div className="flex-shrink-0 flex items-center justify-center rounded-full"
+                      style={{ width: 52, height: 52, backgroundColor: '#F0EDE8' }}>
+                      <span style={{ fontSize: 22 }}>🏡</span>
+                    </div>
                   )}
-                  <span style={{ fontSize: 14, color: '#6F675C' }}>Hosted by {event.operatorName}</span>
+                  <div>
+                    <p style={{ fontSize: 16, fontWeight: 700, color: '#111111' }}>{event.operatorName}</p>
+                    <p style={{ fontSize: 13, color: '#6F675C', marginTop: 2 }}>Verified Balible host</p>
+                  </div>
                 </div>
+              </div>
+            )}
+          </div>
+
+          {/* ── RIGHT COLUMN — Booking card ── */}
+          <div className="lg:w-80 flex-shrink-0">
+            <div className="sticky bg-white rounded-2xl p-6" style={{ top: 88, border: '1px solid #E8E4DE', boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
+
+              {/* Price */}
+              <div className="mb-5">
+                <span style={{ fontSize: 26, fontWeight: 800, color: '#111111' }}>
+                  {event.price === 0 ? 'Free' : `IDR ${event.price.toLocaleString('id-ID')}`}
+                </span>
+                {event.price > 0 && (
+                  <span style={{ fontSize: 13, color: '#9E9A94', marginLeft: 6 }}>/ ticket</span>
+                )}
+              </div>
+
+              {/* Event summary */}
+              <div className="rounded-xl p-4 mb-5 space-y-2" style={{ backgroundColor: '#F5F1EB' }}>
+                <div className="flex items-start gap-2">
+                  <CalendarDays size={14} style={{ color: '#6F675C', marginTop: 1, flexShrink: 0 }} />
+                  <span style={{ fontSize: 13, color: '#111111', fontWeight: 600 }}>{dateStr}</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Clock size={14} style={{ color: '#6F675C', marginTop: 1, flexShrink: 0 }} />
+                  <span style={{ fontSize: 13, color: '#6F675C' }}>{timeStr}</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <MapPin size={14} style={{ color: '#6F675C', marginTop: 1, flexShrink: 0 }} />
+                  <span style={{ fontSize: 13, color: '#6F675C' }}>{event.location}</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Users size={14} style={{ color: '#6F675C', marginTop: 1, flexShrink: 0 }} />
+                  <span style={{ fontSize: 13, color: '#6F675C' }}>Up to {event.capacity} guests</span>
+                </div>
+              </div>
+
+              {isPast ? (
+                <div className="text-center py-3">
+                  <p style={{ fontSize: 14, color: '#9E9A94', fontWeight: 500 }}>This event has already taken place</p>
+                </div>
+              ) : (
+                <>
+                  <button
+                    style={{ width: '100%', height: 50, borderRadius: 12, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 15, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                    <Ticket size={16} />
+                    Get tickets
+                  </button>
+                  <p className="text-center mt-3" style={{ fontSize: 11, color: '#C8C4BE' }}>
+                    Free cancellation up to 24h before the event
+                  </p>
+                </>
               )}
             </div>
-
-            <div style={{ backgroundColor: 'white', borderRadius: 16, padding: 24, border: '1px solid #E8E4DE', marginBottom: 24 }}>
-              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111', marginBottom: 12 }}>About this event</h2>
-              <p style={{ fontSize: 15, color: '#3A3530', lineHeight: 1.7, whiteSpace: 'pre-line' }}>{event.description}</p>
-            </div>
           </div>
 
-          {/* Booking card */}
-          <div style={{ position: 'sticky', top: 80, width: 'min(280px, 100%)', backgroundColor: 'white', borderRadius: 20, padding: 24, border: '1px solid #E8E4DE', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
-            <p style={{ fontSize: 22, fontWeight: 800, color: '#111111', marginBottom: 2 }}>
-              {event.price === 0 ? 'Free' : `IDR ${event.price.toLocaleString('id-ID')}`}
-            </p>
-            {event.price > 0 && <p style={{ fontSize: 12, color: '#9E9A94', marginBottom: 20 }}>per ticket</p>}
-
-            <div style={{ backgroundColor: '#F5F1EB', borderRadius: 12, padding: '12px 14px', marginBottom: 20 }}>
-              <p style={{ fontSize: 13, fontWeight: 600, color: '#111111', marginBottom: 2 }}>📅 {dateStr}</p>
-              <p style={{ fontSize: 13, color: '#6F675C' }}>⏰ {timeStr}</p>
-              <p style={{ fontSize: 13, color: '#6F675C', marginTop: 4 }}>📍 {event.location}</p>
-            </div>
-
-            {isPast ? (
-              <div style={{ textAlign: 'center', padding: '12px 0' }}>
-                <p style={{ fontSize: 14, color: '#9E9A94', fontWeight: 500 }}>This event has already taken place</p>
-              </div>
-            ) : (
-              <Link href="/checkout" style={{ textDecoration: 'none', display: 'block' }}>
-                <button style={{ width: '100%', height: 48, borderRadius: 12, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 15, fontWeight: 700, cursor: 'pointer' }}>
-                  Get tickets
-                </button>
-              </Link>
-            )}
-
-            <p style={{ fontSize: 11, color: '#C8C4BE', textAlign: 'center', marginTop: 12 }}>Free cancellation up to 24h before the event</p>
-          </div>
         </div>
-
-        <Link href="/events" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#6F675C', textDecoration: 'none', marginTop: 8 }}>
-          ← Back to all events
-        </Link>
       </div>
-    </main>
+
+      <MobileNav />
+    </div>
   )
 }
