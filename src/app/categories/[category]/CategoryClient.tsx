@@ -80,9 +80,27 @@ const CATEGORY_META: Record<string, {
     color: '#3B82F6',
     subcategories: ['All', 'Surfing', 'Snorkelling', 'Freediving', 'Stand-Up Paddle', 'River Rafting'],
   },
+  diving: {
+    label: 'Diving',
+    tagline: 'Explore the deep',
+    description: "Bali's underwater world is extraordinary — from the USAT Liberty wreck in Amed to the manta rays of Nusa Penida. Dive with PADI-certified instructors who know every reef.",
+    image: 'https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?w=1200&auto=format&fit=crop&q=80',
+    color: '#1D4ED8',
+    subcategories: ['All', 'Freediving', 'Scuba Diving', 'Night Dive', 'Wreck Dive', 'Manta Ray Dive'],
+  },
+  'water-activities': {
+    label: 'Water Activities',
+    tagline: 'Surf, dive, and explore the sea',
+    description: "Bali is surrounded by world-class water — from the surf breaks of Canggu to the technicolour reefs of Amed and the manta rays of Nusa Penida. All water experiences in one place.",
+    image: 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=1200&auto=format&fit=crop&q=80',
+    color: '#3B82F6',
+    subcategories: ['All', 'Surfing', 'Snorkelling', 'Freediving', 'Scuba Diving', 'Stand-Up Paddle'],
+  },
 }
 
-const ALL_CATEGORY_SLUGS = ['art-craft', 'wellness', 'culture', 'food-drink', 'nature', 'surf-water'] as const
+const ALL_CATEGORY_SLUGS = ['art-craft', 'wellness', 'culture', 'food-drink', 'nature', 'surf-water', 'diving', 'water-activities'] as const
+// These are sub-categories hidden from the "Explore other categories" strip
+const SUB_CATEGORY_SLUGS = new Set(['surf-water', 'diving'])
 const SORT_OPTIONS = ['Most popular', 'Highest rated', 'Price: Low to High', 'Price: High to Low']
 
 // ── Experience card ────────────────────────────────────────────────────────────
@@ -201,7 +219,7 @@ export default function CategoryClient({
     }
   }, [activeSub, sort, initialExperiences])
 
-  const otherCategories = ALL_CATEGORY_SLUGS.filter(s => s !== slug)
+  const otherCategories = ALL_CATEGORY_SLUGS.filter(s => s !== slug && !SUB_CATEGORY_SLUGS.has(s))
 
   const totalRating = initialExperiences.reduce((s, e) => s + e.rating, 0)
   const avgRating = (totalRating / Math.max(1, initialExperiences.length)).toFixed(1)

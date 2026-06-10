@@ -14,7 +14,7 @@ const CATEGORIES = [
   { label: 'Culture',      Icon: Landmark,  slug: 'culture' },
   { label: 'Food & Drink', Icon: Utensils,  slug: 'food-drink' },
   { label: 'Nature',       Icon: Mountain,  slug: 'nature' },
-  { label: 'Surf & Water', Icon: Waves,     slug: 'surf-water' },
+  { label: 'Water Activities', Icon: Waves,  slug: 'water-activities' },
 ]
 
 const NAV_LINKS = [

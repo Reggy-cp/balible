@@ -74,13 +74,13 @@ const CATEGORIES = [
     imageHeight: 'h-48',
   },
   {
-    slug: 'surf-water',
-    label: 'Surf & Water',
-    tagline: 'Ride the island\'s waves',
-    description: 'First-time surfing at Canggu, snorkelling a WWII shipwreck in Amed, paddleboarding at sunset.',
+    slug: 'water-activities',
+    label: 'Water Activities',
+    tagline: 'Surf, dive, and explore the sea',
+    description: 'Surfing at Canggu, snorkelling a WWII shipwreck in Amed, freediving and scuba diving — all of Bali\'s water experiences in one place.',
     image: 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=800&auto=format&fit=crop&q=80',
-    count: 3,
-    avgPrice: 433333,
+    count: 4,
+    avgPrice: 462500,
     featured: ['Surfing for Beginners', 'USAT Liberty Snorkel', 'Stand-Up Paddle'],
     accent: '#3B82F6',
     span: 'lg:col-span-2',
@@ -111,7 +111,7 @@ export default function CategoriesPage() {
               Every way to experience Bali
             </h1>
             <p style={{ fontFamily: 'var(--font-inter)', fontSize: 16, color: '#6F675C', marginTop: 16, lineHeight: 1.75, maxWidth: 520 }}>
-              {totalExperiences} handpicked experiences across 6 categories — art, wellness, culture, food, nature, and surf. Each one led by a local who knows their craft.
+              {totalExperiences} handpicked experiences across 6 categories — art, wellness, culture, food, nature, and water activities. Each one led by a local who knows their craft.
             </p>
           </div>
 

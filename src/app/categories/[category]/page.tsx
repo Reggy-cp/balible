@@ -29,18 +29,21 @@ const STATIC_EXPERIENCES: CategoryExp[] = [
 ]
 
 export async function generateStaticParams() {
-  return ['art-craft', 'wellness', 'culture', 'food-drink', 'nature', 'surf-water'].map(category => ({ category }))
+  return ['art-craft', 'wellness', 'culture', 'food-drink', 'nature', 'surf-water', 'diving', 'water-activities'].map(category => ({ category }))
 }
+
+// For water-activities we query both SURF_WATER and DIVING
+const WATER_ACTIVITY_SLUGS = new Set(['surf-water', 'diving'])
 
 export default async function CategoryPage({ params }: { params: { category: string } }) {
   const { category } = params
+  const isWater = category === 'water-activities'
 
   const dbCards = await getExperienceCards()
   const dbSlugs = new Set(dbCards.map(c => c.slug))
 
-  // Convert DB cards to category format, filtering to the current category
   const dbExps: CategoryExp[] = dbCards
-    .filter(c => c.categorySlug === category)
+    .filter(c => isWater ? WATER_ACTIVITY_SLUGS.has(c.categorySlug) : c.categorySlug === category)
     .map(c => ({
       slug: c.slug,
       title: c.title,
@@ -52,14 +55,14 @@ export default async function CategoryPage({ params }: { params: { category: str
       maxGuests: c.maxGuests,
       image: c.photo,
       badge: c.badge,
-      category: c.categorySlug,
+      category: isWater ? 'water-activities' : c.categorySlug,
       subcategory: null,
     }))
 
-  // Static entries for this category that are not yet in the database
-  const staticOnly = STATIC_EXPERIENCES.filter(
-    e => e.category === category && !dbSlugs.has(e.slug)
-  )
+  const staticOnly = STATIC_EXPERIENCES.filter(e => {
+    if (isWater) return WATER_ACTIVITY_SLUGS.has(e.category) && !dbSlugs.has(e.slug)
+    return e.category === category && !dbSlugs.has(e.slug)
+  }).map(e => isWater ? { ...e, category: 'water-activities' } : e)
 
   const initialExperiences = [...dbExps, ...staticOnly]
 
