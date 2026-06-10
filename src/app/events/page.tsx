@@ -1,5 +1,7 @@
-import Link from 'next/link'
 import { getPublishedEvents } from '@/lib/event-actions'
+import Navbar from '@/components/Navbar'
+import MobileNav from '@/components/MobileNav'
+import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
@@ -7,38 +9,30 @@ export default async function EventsPage() {
   const events = await getPublishedEvents()
 
   return (
-    <main style={{ backgroundColor: '#F5F1EB', minHeight: '100vh', fontFamily: 'var(--font-inter)' }}>
+    <div style={{ fontFamily: 'var(--font-inter)' }}>
       <style>{`.event-card:hover { box-shadow: 0 8px 32px rgba(0,0,0,0.10); }`}</style>
 
-      {/* Nav */}
-      <header style={{ backgroundColor: 'white', borderBottom: '1px solid #E8E4DE', position: 'sticky', top: 0, zIndex: 40 }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Link href="/" style={{ textDecoration: 'none' }}>
-            <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>BALIBLE</span>
-          </Link>
-          <Link href="/experiences" style={{ fontSize: 13, color: '#6F675C', textDecoration: 'none' }}>Browse experiences →</Link>
-        </div>
-      </header>
+      <Navbar />
 
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '48px 24px' }}>
+      <div className="max-w-[1440px] mx-auto px-6 lg:px-16 py-10" style={{ backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
 
-        {/* Header */}
-        <div style={{ marginBottom: 40 }}>
-          <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, color: '#111111', marginBottom: 12 }}>
+        {/* Page header */}
+        <div style={{ marginBottom: 36 }}>
+          <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px,4vw,42px)', fontWeight: 700, color: '#111111', marginBottom: 10 }}>
             Upcoming Events in Bali
           </h1>
-          <p style={{ fontSize: 16, color: '#6F675C', maxWidth: 520 }}>
+          <p style={{ fontSize: 15, color: '#6F675C', maxWidth: 520 }}>
             One-time events hosted by local operators — workshops, festivals, and special experiences.
           </p>
         </div>
 
         {events.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '80px 24px' }}>
+          <div className="text-center" style={{ padding: '80px 24px' }}>
             <p style={{ fontSize: 18, fontWeight: 600, color: '#111111', marginBottom: 8 }}>No events scheduled yet</p>
             <p style={{ fontSize: 15, color: '#6F675C' }}>Check back soon — hosts are adding events regularly.</p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 24 }}>
+          <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', display: 'grid' }}>
             {events.map(ev => {
               const d = new Date(ev.date)
               const dateStr = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
@@ -75,9 +69,9 @@ export default async function EventsPage() {
                       <p style={{ fontSize: 13, color: '#6F675C', marginBottom: 14, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                         {ev.description}
                       </p>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                      <div className="flex items-center justify-between flex-wrap gap-2">
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                          <span style={{ fontSize: 12, color: '#6F675C' }}>⏰ {timeStr} · 📍 {ev.location}</span>
+                          <span style={{ fontSize: 12, color: '#6F675C' }}>⏰ {timeStr} · 📍 {ev.location.split(',')[0]}</span>
                           <span style={{ fontSize: 12, color: '#6F675C' }}>👥 Up to {ev.capacity} guests</span>
                         </div>
                         <span style={{ fontSize: 15, fontWeight: 700, color: '#111111' }}>
@@ -92,6 +86,8 @@ export default async function EventsPage() {
           </div>
         )}
       </div>
-    </main>
+
+      <MobileNav />
+    </div>
   )
 }
