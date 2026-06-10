@@ -1,13 +1,18 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import {
   LayoutDashboard, Compass, CalendarDays, TrendingUp, Star,
   UserCircle, Settings, LogOut, Bell, Plus, ChevronDown,
   ArrowUpRight, Menu, X, Search, Download,
   MoreHorizontal, Eye, Edit2, Play, Pause, Trash2,
   CheckCircle, XCircle, MapPin, Clock, Users, Camera, Check,
+  Ticket, Globe, Lock,
 } from 'lucide-react'
+import {
+  getHostEvents, createEvent, updateEvent, deleteEvent,
+  type EventRow, type EventInput,
+} from '@/lib/event-actions'
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
@@ -93,6 +98,7 @@ const PAYOUTS = [
 const NAV_ITEMS = [
   { id: 'overview',    label: 'Overview',    Icon: LayoutDashboard },
   { id: 'experiences', label: 'Experiences', Icon: Compass },
+  { id: 'events',      label: 'Events',      Icon: Ticket },
   { id: 'bookings',    label: 'Bookings',    Icon: CalendarDays },
   { id: 'earnings',    label: 'Earnings',    Icon: TrendingUp },
   { id: 'reviews',     label: 'Reviews',     Icon: Star },
@@ -1330,6 +1336,288 @@ function SettingsPanel() {
   )
 }
 
+// ── Events Panel ─────────────────────────────────────────────────────────────
+
+const EMPTY_EVENT: EventInput = {
+  title: '', description: '', date: '', location: '', price: 0, capacity: 10, coverImage: '', status: 'DRAFT',
+}
+
+function EventsPanel() {
+  const [events, setEvents] = useState<EventRow[]>([])
+  const [loading, setLoading] = useState(true)
+  const [showForm, setShowForm] = useState(false)
+  const [editing, setEditing] = useState<EventRow | null>(null)
+  const [form, setForm] = useState<EventInput>(EMPTY_EVENT)
+  const [saving, setSaving] = useState(false)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    getHostEvents().then(data => { setEvents(data); setLoading(false) })
+  }, [])
+
+  function openCreate() {
+    setEditing(null)
+    setForm(EMPTY_EVENT)
+    setImagePreview(null)
+    setShowForm(true)
+  }
+
+  function openEdit(ev: EventRow) {
+    setEditing(ev)
+    setForm({
+      title: ev.title, description: ev.description,
+      date: ev.date.slice(0, 16),
+      location: ev.location, price: ev.price, capacity: ev.capacity,
+      coverImage: ev.coverImage ?? '', status: ev.status as EventInput['status'],
+    })
+    setImagePreview(ev.coverImage ?? null)
+    setShowForm(true)
+  }
+
+  function handleImageFile(file: File) {
+    const reader = new FileReader()
+    reader.onload = e => {
+      const url = e.target?.result as string
+      setImagePreview(url)
+      setForm(f => ({ ...f, coverImage: url }))
+    }
+    reader.readAsDataURL(file)
+  }
+
+  async function handleSave() {
+    if (!form.title || !form.date || !form.location) return
+    setSaving(true)
+    if (editing) {
+      const res = await updateEvent(editing.id, form)
+      if (res.ok) {
+        setEvents(prev => prev.map(e => e.id === editing.id
+          ? { ...e, ...form, date: new Date(form.date).toISOString() }
+          : e
+        ))
+      }
+    } else {
+      const res = await createEvent(form)
+      if (res.ok && res.event) setEvents(prev => [...prev, res.event!])
+    }
+    setSaving(false)
+    setShowForm(false)
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm('Delete this event?')) return
+    const res = await deleteEvent(id)
+    if (res.ok) setEvents(prev => prev.filter(e => e.id !== id))
+  }
+
+  async function toggleStatus(ev: EventRow) {
+    const next = ev.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED'
+    const res = await updateEvent(ev.id, { status: next as EventInput['status'] })
+    if (res.ok) setEvents(prev => prev.map(e => e.id === ev.id ? { ...e, status: next } : e))
+  }
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%', borderRadius: 10, border: '1px solid #E8E4DE',
+    padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none',
+  }
+  const labelStyle: React.CSSProperties = { display: 'block', fontSize: 13, fontWeight: 600, color: '#111111', marginBottom: 6 }
+
+  return (
+    <div>
+      <PageHeader
+        title="Events"
+        subtitle="One-time events hosted by you"
+        action={
+          <button onClick={openCreate}
+            className="flex items-center gap-2 hover:opacity-90 transition-opacity"
+            style={{ height: 38, padding: '0 16px', borderRadius: 10, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+            <Plus size={14} /> New Event
+          </button>
+        }
+      />
+
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <div style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid #E8E4DE', borderTopColor: '#111111', animation: 'spin 0.7s linear infinite' }} />
+          <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+        </div>
+      ) : events.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl" style={{ border: '1px solid #E8E4DE' }}>
+          <div style={{ width: 56, height: 56, borderRadius: '50%', backgroundColor: '#F5F1EB', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+            <Ticket size={24} style={{ color: '#C8A97E' }} />
+          </div>
+          <p style={{ fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 6 }}>No events yet</p>
+          <p style={{ fontSize: 14, color: '#6F675C', marginBottom: 20 }}>Create your first one-time event for guests to discover</p>
+          <button onClick={openCreate}
+            style={{ height: 38, padding: '0 20px', borderRadius: 10, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+            Create event
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {events.map(ev => {
+            const d = new Date(ev.date)
+            const dateStr = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+            const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+            const isPast = d < new Date()
+            return (
+              <div key={ev.id} className="bg-white rounded-xl overflow-hidden" style={{ border: '1px solid #E8E4DE' }}>
+                <div className="flex gap-0">
+                  {ev.coverImage && (
+                    <img src={ev.coverImage} alt="" className="w-28 h-28 object-cover flex-shrink-0" />
+                  )}
+                  <div className="flex-1 min-w-0 p-4">
+                    <div className="flex items-start justify-between gap-2 flex-wrap">
+                      <div className="min-w-0">
+                        <p style={{ fontSize: 15, fontWeight: 700, color: '#111111', marginBottom: 2 }}>{ev.title}</p>
+                        <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
+                          <span style={{ fontSize: 12, color: '#6F675C' }}>📅 {dateStr} · {timeStr}</span>
+                          <span style={{ fontSize: 12, color: '#6F675C' }}>📍 {ev.location}</span>
+                          <span style={{ fontSize: 12, color: '#6F675C' }}>👥 Max {ev.capacity}</span>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>IDR {ev.price.toLocaleString('id-ID')}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <StatusBadge status={ev.status === 'PUBLISHED' ? 'Active' : ev.status === 'CANCELLED' ? 'Cancelled' : 'Draft'} />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 mt-3 pt-3" style={{ borderTop: '1px solid #F5F1EB' }}>
+                      {!isPast && ev.status !== 'CANCELLED' && (
+                        <button onClick={() => toggleStatus(ev)}
+                          className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+                          style={{ height: 30, padding: '0 12px', borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 12, fontWeight: 600, color: '#111111', cursor: 'pointer' }}>
+                          {ev.status === 'PUBLISHED' ? <><Lock size={11} /> Unpublish</> : <><Globe size={11} /> Publish</>}
+                        </button>
+                      )}
+                      <button onClick={() => openEdit(ev)}
+                        className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+                        style={{ height: 30, padding: '0 12px', borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 12, fontWeight: 600, color: '#111111', cursor: 'pointer' }}>
+                        <Edit2 size={11} /> Edit
+                      </button>
+                      <button onClick={() => handleDelete(ev.id)}
+                        className="flex items-center gap-1.5 hover:bg-red-50 transition-colors"
+                        style={{ height: 30, padding: '0 12px', borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 12, fontWeight: 600, color: '#B66A45', cursor: 'pointer' }}>
+                        <Trash2 size={11} /> Delete
+                      </button>
+                      {ev.status === 'PUBLISHED' && (
+                        <a href={`/events/${ev.slug}`} target="_blank" rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 hover:opacity-80 transition-opacity ml-auto"
+                          style={{ height: 30, padding: '0 12px', borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 12, fontWeight: 600, color: '#6F675C', cursor: 'pointer', textDecoration: 'none' }}>
+                          <Eye size={11} /> View page
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Create / Edit modal */}
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="bg-white rounded-2xl w-full max-w-lg p-6 max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-5">
+              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', margin: 0 }}>
+                {editing ? 'Edit Event' : 'New Event'}
+              </h2>
+              <button onClick={() => setShowForm(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                <X size={20} style={{ color: '#6F675C' }} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label style={labelStyle}>Event title *</label>
+                <input type="text" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                  placeholder="e.g. Full Moon Yoga Festival" style={inputStyle} />
+              </div>
+
+              <div>
+                <label style={labelStyle}>Description *</label>
+                <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                  placeholder="What will guests experience at this event?" rows={3}
+                  style={{ ...inputStyle, resize: 'none' }} />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label style={labelStyle}>Date & time *</label>
+                  <input type="datetime-local" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
+                    style={inputStyle} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Capacity</label>
+                  <input type="number" value={form.capacity} onChange={e => setForm(f => ({ ...f, capacity: Number(e.target.value) }))}
+                    min={1} placeholder="10" style={inputStyle} />
+                </div>
+              </div>
+
+              <div>
+                <label style={labelStyle}>Location / venue *</label>
+                <input type="text" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
+                  placeholder="e.g. Rice Terrace Stage, Jl. Raya Ubud" style={inputStyle} />
+              </div>
+
+              <div>
+                <label style={labelStyle}>Price per ticket (IDR)</label>
+                <input type="number" value={form.price || ''} onChange={e => setForm(f => ({ ...f, price: Number(e.target.value) }))}
+                  min={0} placeholder="250000" style={inputStyle} />
+              </div>
+
+              {/* Cover image */}
+              <div>
+                <label style={labelStyle}>Cover image</label>
+                <input ref={fileRef} type="file" accept="image/*" className="hidden"
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handleImageFile(f) }} />
+                {imagePreview ? (
+                  <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', height: 160 }}>
+                    <img src={imagePreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <button onClick={() => { setImagePreview(null); setForm(f => ({ ...f, coverImage: '' })); if (fileRef.current) fileRef.current.value = '' }}
+                      style={{ position: 'absolute', top: 8, right: 8, width: 28, height: 28, borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.55)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <X size={14} style={{ color: 'white' }} />
+                    </button>
+                  </div>
+                ) : (
+                  <div onClick={() => fileRef.current?.click()}
+                    style={{ height: 120, borderRadius: 12, border: '2px dashed #E8E4DE', backgroundColor: '#F9F9F7', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer' }}>
+                    <Camera size={20} style={{ color: '#6F675C' }} />
+                    <p style={{ fontSize: 13, color: '#6F675C', margin: 0 }}>Click to upload cover image</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Status */}
+              <div>
+                <label style={labelStyle}>Status</label>
+                <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value as EventInput['status'] }))}
+                  style={{ ...inputStyle, backgroundColor: 'white', cursor: 'pointer' }}>
+                  <option value="DRAFT">Draft – not visible to guests</option>
+                  <option value="PUBLISHED">Published – visible on /events</option>
+                  <option value="CANCELLED">Cancelled</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button onClick={() => setShowForm(false)}
+                style={{ flex: 1, height: 44, borderRadius: 10, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 14, fontWeight: 600, color: '#6F675C', cursor: 'pointer' }}>
+                Cancel
+              </button>
+              <button onClick={handleSave} disabled={saving || !form.title || !form.date || !form.location}
+                style={{ flex: 2, height: 44, borderRadius: 10, border: 'none', backgroundColor: saving || !form.title || !form.date || !form.location ? '#ccc' : '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: saving ? 'wait' : 'pointer' }}>
+                {saving ? 'Saving…' : editing ? 'Save changes' : 'Create event'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 
 const HOST_NOTIFICATIONS = [
@@ -1450,6 +1738,7 @@ export default function DashboardPage() {
     switch (activeNav) {
       case 'overview':    return <OverviewPanel onNav={setActiveNav} commissionRate={commissionRate} />
       case 'experiences': return <ExperiencesPanel commissionRate={commissionRate} />
+      case 'events':      return <EventsPanel />
       case 'bookings':    return <BookingsPanel />
       case 'earnings':    return <EarningsPanel commissionRate={commissionRate} />
       case 'reviews':     return <ReviewsPanel />
