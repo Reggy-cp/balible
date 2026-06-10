@@ -22,7 +22,6 @@ const NAV_LINKS = [
   { label: 'Experiences',  href: '/search',       hasDropdown: true },
   { label: 'Destinations', href: '/destinations',  hasDropdown: false },
   { label: 'Events',       href: '/events',        hasDropdown: false },
-  { label: 'Journal',      href: '/blog',          hasDropdown: false },
   { label: 'For Hosts',    href: '/for-hosts',     hasDropdown: false },
 ]
 
@@ -31,7 +30,6 @@ const MOBILE_LINKS = [
   { label: 'Destinations', href: '/destinations' },
   { label: 'Events',       href: '/events' },
   { label: 'Map View',     href: '/map' },
-  { label: 'Journal',      href: '/blog' },
   { label: 'For Hosts',    href: '/for-hosts' },
 ]
 

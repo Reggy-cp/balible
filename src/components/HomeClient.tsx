@@ -49,9 +49,9 @@ const HOSTS = [
 ]
 
 const FOOTER_COLS = [
-  { title: 'Explore',   links: [{ label: 'All Experiences', href: '/search' }, { label: 'Events', href: '/events' }, { label: 'By Destination', href: '/destinations' }, { label: 'How It Works', href: '/how-it-works' }, { label: 'Map View', href: '/map' }, { label: 'Journal', href: '/blog' }] },
+  { title: 'Explore',   links: [{ label: 'All Experiences', href: '/search' }, { label: 'Events', href: '/events' }, { label: 'By Destination', href: '/destinations' }, { label: 'How It Works', href: '/how-it-works' }, { label: 'Map View', href: '/map' }] },
   { title: 'For Hosts', links: [{ label: 'Become a Host', href: '/for-hosts' }, { label: 'Host Dashboard', href: '/dashboard' }, { label: 'How It Works', href: '/for-hosts#how-it-works' }, { label: 'Earnings Calculator', href: '/for-hosts#calculator' }, { label: 'Host Stories', href: '/for-hosts#stories' }] },
-  { title: 'About',     links: [{ label: 'Our Story', href: '/about' }, { label: 'Destinations', href: '/destinations' }, { label: 'Blog', href: '/blog' }, { label: 'Sign In', href: '/auth/signin' }, { label: 'Sign Up', href: '/auth/signup' }] },
+  { title: 'About',     links: [{ label: 'Our Story', href: '/about' }, { label: 'Destinations', href: '/destinations' }, { label: 'Sign In', href: '/auth/signin' }, { label: 'Sign Up', href: '/auth/signup' }] },
   { title: 'Support',   links: [{ label: 'Help Centre', href: '/help' }, { label: 'How It Works', href: '/how-it-works' }, { label: 'Wishlist', href: '/wishlist' }, { label: 'My Profile', href: '/profile' }, { label: 'My Bookings', href: '/profile' }] },
 ]
 
