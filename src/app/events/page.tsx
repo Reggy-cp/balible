@@ -8,6 +8,7 @@ export default async function EventsPage() {
 
   return (
     <main style={{ backgroundColor: '#F5F1EB', minHeight: '100vh', fontFamily: 'var(--font-inter)' }}>
+      <style>{`.event-card:hover { box-shadow: 0 8px 32px rgba(0,0,0,0.10); }`}</style>
 
       {/* Nav */}
       <header style={{ backgroundColor: 'white', borderBottom: '1px solid #E8E4DE', position: 'sticky', top: 0, zIndex: 40 }}>
@@ -45,9 +46,7 @@ export default async function EventsPage() {
               const isPast = d < new Date()
               return (
                 <Link key={ev.id} href={`/events/${ev.slug}`} style={{ textDecoration: 'none' }}>
-                  <article style={{ backgroundColor: 'white', borderRadius: 16, overflow: 'hidden', border: '1px solid #E8E4DE', transition: 'box-shadow 0.2s', cursor: 'pointer' }}
-                    onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.10)')}
-                    onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}>
+                  <article className="event-card" style={{ backgroundColor: 'white', borderRadius: 16, overflow: 'hidden', border: '1px solid #E8E4DE', transition: 'box-shadow 0.2s', cursor: 'pointer' }}>
 
                     {/* Cover */}
                     <div style={{ height: 200, backgroundColor: '#F0EDE8', position: 'relative', overflow: 'hidden' }}>
