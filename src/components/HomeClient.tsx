@@ -10,6 +10,7 @@ import {
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
 import type { FeaturedExp } from '@/lib/experiences'
+import type { EventRow } from '@/lib/event-actions'
 
 // ── Static data ───────────────────────────────────────────────────────────────
 
@@ -118,7 +119,7 @@ function HostCard({ host }: { host: typeof HOSTS[0] }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 
-export default function HomeClient({ featuredExperiences }: { featuredExperiences: FeaturedExp[] }) {
+export default function HomeClient({ featuredExperiences, upcomingEvents }: { featuredExperiences: FeaturedExp[]; upcomingEvents: EventRow[] }) {
   const [search, setSearch]         = useState('')
   const [email, setEmail]           = useState('')
   const [subscribed, setSubscribed] = useState(false)
@@ -306,6 +307,62 @@ export default function HomeClient({ featuredExperiences }: { featuredExperience
           </div>
         </div>
       </section>
+
+      {/* ── UPCOMING EVENTS ── */}
+      {upcomingEvents.length > 0 && (
+        <section className="bg-white py-12 px-6 lg:px-16">
+          <div className="max-w-[1440px] mx-auto">
+            <div className="flex items-start justify-between mb-8">
+              <div>
+                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#111111', fontWeight: 700 }}>
+                  Upcoming Events
+                </h2>
+                <p className="mt-1" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
+                  One-time experiences hosted by local operators.
+                </p>
+              </div>
+              <a href="/events" className="flex-shrink-0 hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#C8A97E', textDecoration: 'underline' }}>
+                View all →
+              </a>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {upcomingEvents.slice(0, 3).map(ev => {
+                const d = new Date(ev.date)
+                const dateStr = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+                const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+                return (
+                  <a key={ev.id} href={`/events/${ev.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
+                    <div className="rounded-xl overflow-hidden hover:shadow-md transition-shadow" style={{ border: '1px solid #E8E4DE' }}>
+                      <div style={{ height: 180, backgroundColor: '#F0EDE8', position: 'relative', overflow: 'hidden' }}>
+                        {ev.coverImage ? (
+                          <img src={ev.coverImage} alt={ev.title} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <span style={{ fontSize: 36 }}>🎟</span>
+                          </div>
+                        )}
+                        <div style={{ position: 'absolute', top: 10, left: 10, backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 8, padding: '4px 10px' }}>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: 'white' }}>{dateStr}</span>
+                        </div>
+                      </div>
+                      <div style={{ padding: '14px 16px' }}>
+                        <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 4 }}>{ev.title}</p>
+                        <p style={{ fontSize: 12, color: '#6F675C', marginBottom: 10 }}>⏰ {timeStr} · 📍 {ev.location.split(',')[0]}</p>
+                        <div className="flex items-center justify-between">
+                          <span style={{ fontSize: 13, color: '#6F675C' }}>👥 Up to {ev.capacity}</span>
+                          <span style={{ fontSize: 14, fontWeight: 700, color: '#111111' }}>
+                            {ev.price === 0 ? 'Free' : `IDR ${ev.price.toLocaleString('id-ID')}`}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </a>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── NEWSLETTER CTA ── */}
       <section className="py-12 px-6 lg:px-16 text-center" style={{ backgroundColor: '#111111' }}>

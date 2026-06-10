@@ -1,6 +1,7 @@
 import HomeClient from '@/components/HomeClient'
 import { getFeaturedExperiences } from '@/lib/experiences'
 import type { FeaturedExp } from '@/lib/experiences'
+import { getPublishedEvents } from '@/lib/event-actions'
 
 // Static fallback for the featured carousel
 const STATIC_FEATURED: FeaturedExp[] = [
@@ -11,7 +12,10 @@ const STATIC_FEATURED: FeaturedExp[] = [
 ]
 
 export default async function HomePage() {
-  const dbFeatured = await getFeaturedExperiences()
+  const [dbFeatured, upcomingEvents] = await Promise.all([
+    getFeaturedExperiences(),
+    getPublishedEvents(),
+  ])
   const featuredExperiences = dbFeatured.length > 0 ? dbFeatured : STATIC_FEATURED
-  return <HomeClient featuredExperiences={featuredExperiences} />
+  return <HomeClient featuredExperiences={featuredExperiences} upcomingEvents={upcomingEvents} />
 }
