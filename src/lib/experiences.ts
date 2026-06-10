@@ -40,7 +40,7 @@ const CATEGORY_DISPLAY: Record<string, string> = {
   SURF_WATER: 'Surf & Water',
   ARCHITECTURE: 'Architecture',
   DIVING: 'Diving',
-  COOKING: 'Cooking',
+  COOKING: 'Culinary',
 }
 
 const CATEGORY_SLUG: Record<string, string> = {
@@ -52,7 +52,7 @@ const CATEGORY_SLUG: Record<string, string> = {
   SURF_WATER: 'surf-water',
   ARCHITECTURE: 'architecture',
   DIVING: 'diving',
-  COOKING: 'food-drink',
+  COOKING: 'culinary',
 }
 
 const AREA_DISPLAY: Record<string, string> = {

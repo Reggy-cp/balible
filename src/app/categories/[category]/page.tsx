@@ -26,10 +26,16 @@ const STATIC_EXPERIENCES: CategoryExp[] = [
   { slug: 'surfing-lesson-canggu',   title: 'Surfing Lesson for Beginners',     area: 'Canggu',     price: 400000, rating: 4.8, reviews: 176, duration: '2 hours',    maxGuests: 6,  image: 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=600&auto=format&fit=crop&q=80',    badge: 'Bestseller', category: 'surf-water', subcategory: 'Surfing'           },
   { slug: 'snorkeling-amed',         title: 'Snorkelling at USAT Liberty Wreck',area: 'Amed',       price: 550000, rating: 4.9, reviews: 138, duration: '4 hours',    maxGuests: 8,  image: 'https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?w=600&auto=format&fit=crop&q=80',    badge: 'Top Rated',  category: 'surf-water', subcategory: 'Snorkelling'       },
   { slug: 'sup-seminyak',            title: 'Stand-Up Paddleboard at Seminyak', area: 'Seminyak',   price: 350000, rating: 4.6, reviews: 52,  duration: '1.5 hours',  maxGuests: 6,  image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&auto=format&fit=crop&q=80',    badge: null,         category: 'surf-water', subcategory: 'Stand-Up Paddle'   },
+  // Culinary
+  { slug: 'balinese-spice-workshop', title: 'Balinese Spice & Herb Workshop',   area: 'Ubud',       price: 360000, rating: 4.9, reviews: 84,  duration: '2.5 hours',  maxGuests: 8,  image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=600&auto=format&fit=crop&q=80',    badge: 'Top Rated',  category: 'culinary',   subcategory: 'Spice & Herb'      },
+  { slug: 'jamu-making-class',       title: 'Traditional Jamu Making Class',    area: 'Ubud',       price: 320000, rating: 4.8, reviews: 61,  duration: '2 hours',    maxGuests: 6,  image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&auto=format&fit=crop&q=80',    badge: null,         category: 'culinary',   subcategory: 'Spice & Herb'      },
+  { slug: 'tempeh-fermentation',     title: 'Tempeh Fermentation Workshop',     area: 'Sidemen',    price: 390000, rating: 4.7, reviews: 38,  duration: '3 hours',    maxGuests: 8,  image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&auto=format&fit=crop&q=80',    badge: null,         category: 'culinary',   subcategory: 'Fermentation'      },
+  { slug: 'balinese-dessert-class',  title: 'Balinese Dessert & Jajan Pasar',   area: 'Ubud',       price: 300000, rating: 4.8, reviews: 47,  duration: '2 hours',    maxGuests: 8,  image: 'https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=600&auto=format&fit=crop&q=80',    badge: null,         category: 'culinary',   subcategory: 'Dessert & Sweets'  },
+  { slug: 'farm-table-ubud',         title: 'Farm to Table Lunch in the Jungle',area: 'Ubud',       price: 520000, rating: 4.9, reviews: 73,  duration: '4 hours',    maxGuests: 10, image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&auto=format&fit=crop&q=80',    badge: 'Bestseller', category: 'culinary',   subcategory: 'Farm to Table'     },
 ]
 
 export async function generateStaticParams() {
-  return ['art-craft', 'wellness', 'culture', 'food-drink', 'nature', 'surf-water', 'diving', 'water-activities'].map(category => ({ category }))
+  return ['art-craft', 'wellness', 'culture', 'food-drink', 'nature', 'surf-water', 'diving', 'water-activities', 'culinary'].map(category => ({ category }))
 }
 
 // For water-activities we query both SURF_WATER and DIVING
