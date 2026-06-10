@@ -2,8 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
+import { useUser, UserButton } from '@clerk/nextjs'
 import {
-  Heart, User, Menu, X, Map, ChevronDown,
+  MessageCircle, User, Menu, X, Map, ChevronDown,
   Leaf, Scissors, Landmark, Utensils, Mountain, Waves,
 } from 'lucide-react'
 
@@ -24,14 +25,11 @@ const NAV_LINKS = [
 ]
 
 const MOBILE_LINKS = [
-  { label: 'All Experiences', href: '/search' },
-  { label: 'Destinations',    href: '/destinations' },
-  { label: 'Map View',        href: '/map' },
-  { label: 'Journal',         href: '/blog' },
-  { label: 'For Hosts',       href: '/for-hosts' },
-  { label: 'About Balible',   href: '/about' },
-  { label: 'How It Works',    href: '/how-it-works' },
-  { label: 'Help Centre',     href: '/help' },
+  { label: 'Experiences',  href: '/search' },
+  { label: 'Destinations', href: '/destinations' },
+  { label: 'Map View',     href: '/map' },
+  { label: 'Journal',      href: '/blog' },
+  { label: 'For Hosts',    href: '/for-hosts' },
 ]
 
 export default function Navbar() {
@@ -39,8 +37,8 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [dropOpen, setDropOpen] = useState(false)
   const dropRef = useRef<HTMLDivElement>(null)
+  const { isSignedIn, isLoaded } = useUser()
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (dropRef.current && !dropRef.current.contains(e.target as Node)) {
@@ -51,7 +49,6 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
-  // Close mobile menu on route change
   useEffect(() => { setMenuOpen(false); setDropOpen(false) }, [pathname])
 
   const isActive = (href: string) =>
@@ -94,7 +91,6 @@ export default function Navbar() {
                     />
                   </button>
 
-                  {/* Dropdown */}
                   {dropOpen && (
                     <div
                       className="absolute top-full left-0 mt-2 bg-white rounded-2xl shadow-xl"
@@ -159,22 +155,36 @@ export default function Navbar() {
 
           {/* Right icons */}
           <div className="flex items-center gap-2">
-            <a
-              href="/wishlist"
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('balible:open-chat'))}
               className="hidden sm:flex w-9 h-9 rounded-full items-center justify-center hover:bg-stone-50 transition-colors"
-              style={{ textDecoration: 'none' }}
-              title="Wishlist"
+              style={{ border: 'none', background: 'none', cursor: 'pointer' }}
+              title="Chat with Kala"
             >
-              <Heart size={19} style={{ color: isActive('/wishlist') ? '#ef4444' : '#111111' }} fill={isActive('/wishlist') ? '#ef4444' : 'none'} />
-            </a>
-            <a
-              href="/profile"
-              className="hidden sm:flex w-9 h-9 rounded-full items-center justify-center hover:bg-stone-50 transition-colors"
-              style={{ border: '1.5px solid #E8E4DE', textDecoration: 'none' }}
-              title="Profile"
-            >
-              <User size={15} style={{ color: '#111111' }} />
-            </a>
+              <MessageCircle size={19} style={{ color: '#111111' }} />
+            </button>
+
+            {/* Auth: UserButton when signed in, profile icon when signed out */}
+            {isLoaded && isSignedIn ? (
+              <div className="hidden sm:flex">
+                <UserButton
+                  appearance={{
+                    variables: { colorPrimary: '#C8A97E' },
+                    elements: { avatarBox: { width: 36, height: 36 } },
+                  }}
+                />
+              </div>
+            ) : (
+              <a
+                href="/profile"
+                className="hidden sm:flex w-9 h-9 rounded-full items-center justify-center hover:bg-stone-50 transition-colors"
+                style={{ border: '1.5px solid #E8E4DE', textDecoration: 'none' }}
+                title="Sign in"
+              >
+                <User size={15} style={{ color: '#111111' }} />
+              </a>
+            )}
+
             {/* Hamburger */}
             <button
               className="lg:hidden flex items-center justify-center w-9 h-9 rounded-lg hover:bg-stone-50 transition-colors"
@@ -193,7 +203,6 @@ export default function Navbar() {
             className="lg:hidden absolute left-0 right-0 bg-white shadow-xl overflow-y-auto"
             style={{ top: 64, borderBottom: '1px solid #E8E4DE', zIndex: 100, maxHeight: 'calc(100vh - 128px)' }}
           >
-            {/* Links */}
             <div className="px-4 pt-3 pb-2 space-y-1">
               {MOBILE_LINKS.map(({ label, href }) => (
                 <a
@@ -212,34 +221,28 @@ export default function Navbar() {
               ))}
             </div>
 
-            {/* Categories */}
-            <div className="px-4 pt-2 pb-3" style={{ borderTop: '1px solid #F5F1EB' }}>
-              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 10, fontWeight: 700, color: '#6F675C', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '8px 16px 6px' }}>
-                Categories
-              </p>
-              <div className="grid grid-cols-3 gap-2">
-                {CATEGORIES.map(({ label: catLabel, Icon, slug }) => (
-                  <a
-                    key={slug}
-                    href={`/categories/${slug}`}
-                    className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-stone-50 transition-colors"
-                    style={{ textDecoration: 'none', backgroundColor: '#F5F1EB' }}
-                  >
-                    <Icon size={16} style={{ color: '#C8A97E' }} />
-                    <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#111111', textAlign: 'center', lineHeight: 1.3 }}>{catLabel}</span>
+            {/* Mobile auth row */}
+            <div className="px-4 pb-5 pt-2" style={{ borderTop: '1px solid #F5F1EB' }}>
+              {isLoaded && isSignedIn ? (
+                <div className="flex items-center gap-3 px-1 py-2">
+                  <UserButton
+                    appearance={{
+                      variables: { colorPrimary: '#C8A97E' },
+                      elements: { avatarBox: { width: 36, height: 36 } },
+                    }}
+                  />
+                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111' }}>My account</span>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <a href="/sign-in" style={{ flex: 1, height: 42, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #E8E4DE', borderRadius: 10, fontSize: 14, fontWeight: 500, color: '#111111', textDecoration: 'none', fontFamily: 'var(--font-inter)' }}>
+                    Sign in
                   </a>
-                ))}
-              </div>
-            </div>
-
-            {/* Auth row */}
-            <div className="flex gap-2 px-4 pb-5 pt-2" style={{ borderTop: '1px solid #F5F1EB' }}>
-              <a href="/auth/signin" style={{ flex: 1, height: 42, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #E8E4DE', borderRadius: 10, fontSize: 14, fontWeight: 500, color: '#111111', textDecoration: 'none', fontFamily: 'var(--font-inter)' }}>
-                Sign in
-              </a>
-              <a href="/auth/signup" style={{ flex: 1, height: 42, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#111111', borderRadius: 10, fontSize: 14, fontWeight: 600, color: 'white', textDecoration: 'none', fontFamily: 'var(--font-inter)' }}>
-                Sign up
-              </a>
+                  <a href="/sign-up" style={{ flex: 1, height: 42, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#111111', borderRadius: 10, fontSize: 14, fontWeight: 600, color: 'white', textDecoration: 'none', fontFamily: 'var(--font-inter)' }}>
+                    Sign up
+                  </a>
+                </div>
+              )}
             </div>
           </div>
         )}
