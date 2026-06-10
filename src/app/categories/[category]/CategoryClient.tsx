@@ -94,7 +94,7 @@ const CATEGORY_META: Record<string, {
     description: "Bali's spiritual life is woven into every sunrise, every temple, every offering. Join real ceremonies, meet healers who have practised for generations, and leave with something that lasts beyond the trip.",
     image: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=1200&auto=format&fit=crop&q=80',
     color: '#9B7DB8',
-    subcategories: ['All', 'Temple & Ceremony', 'Healing Ritual', 'Meditation', 'Holy Water', 'Blessing', 'Energy Work'],
+    subcategories: ['All', 'Temple & Ceremony', 'Healing Ritual', 'Holy Water', 'Blessing', 'Energy Work'],
   },
   culinary: {
     label: 'Culinary',

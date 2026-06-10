@@ -30,8 +30,8 @@ const CAT_GRID = [
   { label: 'Art & Craft',  Icon: Scissors,   href: '/categories/art-craft',  photo: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&auto=format&fit=crop&q=80' },
   { label: 'Culture',      Icon: Landmark,   href: '/categories/culture',    photo: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=400&auto=format&fit=crop&q=80' },
   { label: 'Culinary',     Icon: ChefHat,    href: '/categories/culinary',   photo: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=400&auto=format&fit=crop&q=80' },
-  { label: 'Nature',       Icon: Mountain,   href: '/categories/nature',     photo: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=400&auto=format&fit=crop&q=80' },
-  { label: 'Architecture', Icon: Building2,  href: '/search',                photo: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=400&auto=format&fit=crop&q=80' },
+  { label: 'Nature & Outdoors', Icon: Mountain, href: '/categories/nature',   photo: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=400&auto=format&fit=crop&q=80' },
+  { label: 'Spiritual',    Icon: Sun,        href: '/categories/spiritual',  photo: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=400&auto=format&fit=crop&q=80' },
 ]
 
 const WHY_ITEMS = [
