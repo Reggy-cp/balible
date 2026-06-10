@@ -57,7 +57,7 @@ const CATEGORY_META: Record<string, {
     subcategories: ['All', 'Temple & Ceremony', 'Dance & Music', 'History Tour', 'Language'],
   },
   nature: {
-    label: 'Nature',
+    label: 'Nature & Outdoors',
     tagline: 'Bali beyond the beach',
     description: "Trek through volcanic landscapes, swim beneath hidden waterfalls, and watch the sunrise paint Mount Batur gold. The island's natural wonders, experienced with a local guide.",
     image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&auto=format&fit=crop&q=80',

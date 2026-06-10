@@ -20,7 +20,7 @@ const CAT_STRIP = [
   { label: 'Culture',       Icon: Landmark,  href: '/categories/culture'    },
   { label: 'Culinary',      Icon: ChefHat,   href: '/categories/culinary'   },
   { label: 'Spiritual',     Icon: Sun,       href: '/categories/spiritual'  },
-  { label: 'Nature',        Icon: Mountain,  href: '/categories/nature'     },
+  { label: 'Nature & Outdoors', Icon: Mountain, href: '/categories/nature'  },
   { label: 'Architecture',  Icon: Building2, href: '/search'                },
   { label: 'All Categories',Icon: Grid3x3,   href: '/categories'            },
 ]

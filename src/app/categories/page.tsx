@@ -49,7 +49,7 @@ const CATEGORIES = [
   },
   {
     slug: 'nature',
-    label: 'Nature',
+    label: 'Nature & Outdoors',
     tagline: 'Bali beyond the beach',
     description: 'Trek Mount Batur before dawn, swim in hidden waterfalls, wander emerald rice terraces.',
     image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&auto=format&fit=crop&q=80',

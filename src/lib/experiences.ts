@@ -36,7 +36,7 @@ const CATEGORY_DISPLAY: Record<string, string> = {
   ART_CRAFT: 'Art & Craft',
   CULTURE: 'Culture',
   FOOD_DRINK: 'Culinary',
-  NATURE: 'Nature',
+  NATURE: 'Nature & Outdoors',
   SURF_WATER: 'Surf & Water',
   ARCHITECTURE: 'Architecture',
   DIVING: 'Diving',

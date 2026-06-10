@@ -14,7 +14,7 @@ const CATEGORIES = [
   { label: 'Culture',           Icon: Landmark,  slug: 'culture' },
   { label: 'Culinary',          Icon: ChefHat,   slug: 'culinary' },
   { label: 'Spiritual',         Icon: Sun,       slug: 'spiritual' },
-  { label: 'Nature',            Icon: Mountain,  slug: 'nature' },
+  { label: 'Nature & Outdoors', Icon: Mountain,  slug: 'nature' },
   { label: 'Water Activities',  Icon: Waves,     slug: 'water-activities' },
 ]
 
