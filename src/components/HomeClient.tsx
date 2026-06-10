@@ -40,10 +40,10 @@ const WHY_ITEMS = [
 ]
 
 const HOSTS = [
-  { name: 'Made Sari',       role: 'Potter',          location: 'Ubud',    pronoun: 'her', photo: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&auto=format&fit=crop&q=80', quote: 'Every piece I create is a prayer. I love sharing the magic of clay with visitors from around the world.' },
-  { name: 'Ketut Suardana',  role: 'Silversmith',     location: 'Celuk',   pronoun: 'his', photo: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&auto=format&fit=crop&q=80', quote: "Silver is alive in my hands. I want every student to feel what it's like to make something beautiful." },
-  { name: 'Wayan Gede',      role: 'Temple Guide',    location: 'Gianyar', pronoun: 'his', photo: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=400&auto=format&fit=crop&q=80', quote: 'The water temple is a living, sacred space. I want every guest to leave feeling truly connected to Bali.' },
-  { name: 'Nina Putri',      role: 'Wellness Teacher', location: 'Ubud',   pronoun: 'her', photo: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=400&auto=format&fit=crop&q=80', quote: 'Healing begins when we truly listen. My sessions are a space for presence, stillness, and transformation.' },
+  { slug: 'made-sari',       name: 'Made Sari',       role: 'Potter',          location: 'Ubud',    pronoun: 'her', photo: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&auto=format&fit=crop&q=80', quote: 'Every piece I create is a prayer. I love sharing the magic of clay with visitors from around the world.' },
+  { slug: 'ketut-suardana',  name: 'Ketut Suardana',  role: 'Silversmith',     location: 'Celuk',   pronoun: 'his', photo: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&auto=format&fit=crop&q=80', quote: "Silver is alive in my hands. I want every student to feel what it's like to make something beautiful." },
+  { slug: 'wayan-gede',      name: 'Wayan Gede',      role: 'Temple Guide',    location: 'Gianyar', pronoun: 'his', photo: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=400&auto=format&fit=crop&q=80', quote: 'The water temple is a living, sacred space. I want every guest to leave feeling truly connected to Bali.' },
+  { slug: 'nina-putri',      name: 'Nina Putri',      role: 'Wellness Teacher', location: 'Ubud',   pronoun: 'her', photo: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=400&auto=format&fit=crop&q=80', quote: 'Healing begins when we truly listen. My sessions are a space for presence, stillness, and transformation.' },
 ]
 
 const FOOTER_COLS = [
@@ -109,7 +109,7 @@ function HostCard({ host }: { host: typeof HOSTS[0] }) {
       <p className="mt-2 line-clamp-2" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.6, fontStyle: 'italic' }}>
         &ldquo;{host.quote}&rdquo;
       </p>
-      <a href="/for-hosts" className="mt-2 inline-block underline hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>
+      <a href={`/hosts/${host.slug}`} className="mt-2 inline-block underline hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>
         Read {host.pronoun} story →
       </a>
     </div>
