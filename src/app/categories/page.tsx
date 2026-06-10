@@ -74,6 +74,19 @@ const CATEGORIES = [
     imageHeight: 'h-48',
   },
   {
+    slug: 'spiritual',
+    label: 'Spiritual',
+    tagline: 'Connect with the sacred',
+    description: 'Holy water rituals at Tirta Empul, traditional Balian healer sessions, temple offering ceremonies — Bali\'s spiritual life, open to respectful visitors.',
+    image: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=800&auto=format&fit=crop&q=80',
+    count: 6,
+    avgPrice: 433000,
+    featured: ['Tirta Empul Ritual', 'Balian Healer Session', 'Temple Offering'],
+    accent: '#9B7DB8',
+    span: 'lg:col-span-2',
+    imageHeight: 'h-48',
+  },
+  {
     slug: 'culinary',
     label: 'Culinary',
     tagline: 'Cook, taste, and discover',
@@ -111,7 +124,7 @@ export default function CategoriesPage() {
               Every way to experience Bali
             </h1>
             <p style={{ fontFamily: 'var(--font-inter)', fontSize: 16, color: '#6F675C', marginTop: 16, lineHeight: 1.75, maxWidth: 520 }}>
-              {totalExperiences} handpicked experiences across 6 categories — art, wellness, culture, culinary, nature, and water activities. Each one led by a local who knows their craft.
+              {totalExperiences} handpicked experiences across 7 categories — art, wellness, culture, spiritual, culinary, nature, and water activities. Each one led by a local who knows their craft.
             </p>
           </div>
 
@@ -132,7 +145,7 @@ export default function CategoriesPage() {
         <div className="flex flex-wrap gap-8 mt-10 pt-8" style={{ borderTop: '1px solid #E8E4DE' }}>
           {[
             { value: `${totalExperiences}+`, label: 'curated experiences' },
-            { value: '6',   label: 'categories' },
+            { value: '7',   label: 'categories' },
             { value: '4.8', label: 'average rating' },
             { value: '10+', label: 'areas of Bali' },
           ].map(({ value, label }) => (
@@ -244,8 +257,8 @@ export default function CategoriesPage() {
           </div>
         </div>
 
-        {/* Row 2: Nature + Water Activities + Culinary — three equal cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        {/* Row 2: Nature + Water + Culinary + Spiritual — four equal cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {CATEGORIES.slice(3).map(cat => (
             <a
               key={cat.slug}

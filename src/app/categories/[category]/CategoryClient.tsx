@@ -88,6 +88,14 @@ const CATEGORY_META: Record<string, {
     color: '#3B82F6',
     subcategories: ['All', 'Surfing', 'Snorkelling', 'Freediving', 'Scuba Diving', 'Stand-Up Paddle'],
   },
+  spiritual: {
+    label: 'Spiritual',
+    tagline: 'Connect with the sacred heart of Bali',
+    description: "Bali's spiritual life is woven into every sunrise, every temple, every offering. Join real ceremonies, meet healers who have practised for generations, and leave with something that lasts beyond the trip.",
+    image: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=1200&auto=format&fit=crop&q=80',
+    color: '#9B7DB8',
+    subcategories: ['All', 'Temple & Ceremony', 'Healing Ritual', 'Meditation', 'Holy Water', 'Blessing', 'Energy Work'],
+  },
   culinary: {
     label: 'Culinary',
     tagline: 'Cook, taste, and discover Balinese flavours',
@@ -98,7 +106,7 @@ const CATEGORY_META: Record<string, {
   },
 }
 
-const ALL_CATEGORY_SLUGS = ['art-craft', 'wellness', 'culture', 'nature', 'surf-water', 'diving', 'water-activities', 'culinary'] as const
+const ALL_CATEGORY_SLUGS = ['art-craft', 'wellness', 'culture', 'nature', 'surf-water', 'diving', 'water-activities', 'culinary', 'spiritual'] as const
 // These are sub-categories hidden from the "Explore other categories" strip
 const SUB_CATEGORY_SLUGS = new Set(['surf-water', 'diving'])
 const SORT_OPTIONS = ['Most popular', 'Highest rated', 'Price: Low to High', 'Price: High to Low']

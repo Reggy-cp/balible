@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import {
   Heart, ShoppingBag, User, Search, CalendarDays, ChevronDown,
-  ChevronRight, ChevronLeft, Leaf, Scissors, Landmark, ChefHat,
+  ChevronRight, ChevronLeft, Leaf, Scissors, Landmark, ChefHat, Sun,
   Mountain, Building2, Grid3x3, Star, ShieldCheck, Users, Sparkles,
   MapPin, Home, Instagram, Facebook, Twitter, Map,
 } from 'lucide-react'
@@ -19,6 +19,7 @@ const CAT_STRIP = [
   { label: 'Art & Craft',   Icon: Scissors,  href: '/categories/art-craft'  },
   { label: 'Culture',       Icon: Landmark,  href: '/categories/culture'    },
   { label: 'Culinary',      Icon: ChefHat,   href: '/categories/culinary'   },
+  { label: 'Spiritual',     Icon: Sun,       href: '/categories/spiritual'  },
   { label: 'Nature',        Icon: Mountain,  href: '/categories/nature'     },
   { label: 'Architecture',  Icon: Building2, href: '/search'                },
   { label: 'All Categories',Icon: Grid3x3,   href: '/categories'            },

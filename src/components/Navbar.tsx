@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useUser, UserButton } from '@clerk/nextjs'
 import {
   MessageCircle, User, Menu, X, Map, ChevronDown,
-  Leaf, Scissors, Landmark, Mountain, Waves, ChefHat,
+  Leaf, Scissors, Landmark, Mountain, Waves, ChefHat, Sun,
 } from 'lucide-react'
 
 const CATEGORIES = [
@@ -13,6 +13,7 @@ const CATEGORIES = [
   { label: 'Art & Craft',       Icon: Scissors,  slug: 'art-craft' },
   { label: 'Culture',           Icon: Landmark,  slug: 'culture' },
   { label: 'Culinary',          Icon: ChefHat,   slug: 'culinary' },
+  { label: 'Spiritual',         Icon: Sun,       slug: 'spiritual' },
   { label: 'Nature',            Icon: Mountain,  slug: 'nature' },
   { label: 'Water Activities',  Icon: Waves,     slug: 'water-activities' },
 ]
