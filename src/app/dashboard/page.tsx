@@ -314,7 +314,7 @@ function ExperiencesPanel({ commissionRate }: { commissionRate: number }) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const galleryInputRef = useRef<HTMLInputElement>(null)
 
-  const BLANK_FORM = { title: '', category: 'Art & Craft', area: 'Ubud', price: '', duration: '', maxGuests: '' }
+  const BLANK_FORM = { title: '', category: 'Art & Craft', area: 'Ubud', price: '', duration: '', maxGuests: '', meetingPoint: '' }
   const [formData, setFormData] = useState(BLANK_FORM)
   const setField = (k: keyof typeof BLANK_FORM, v: string) => setFormData(p => ({ ...p, [k]: v }))
 
@@ -362,7 +362,8 @@ function ExperiencesPanel({ commissionRate }: { commissionRate: number }) {
     setEditingExp(exp)
     setImagePreview(exp.image)
     setFormStep(1)
-    setFormData({ title: exp.title, category: exp.category, area: exp.area, price: String(exp.price), duration: exp.duration, maxGuests: String(exp.maxGuests) })
+    const savedData = (() => { try { const v = localStorage.getItem(`balible_exp_data_${exp.slug}`); return v ? JSON.parse(v) : {} } catch { return {} } })()
+    setFormData({ title: exp.title, category: exp.category, area: exp.area, price: String(exp.price), duration: exp.duration, maxGuests: String(exp.maxGuests), meetingPoint: savedData.meetingPoint || '' })
     const saved = localStorage.getItem(`balible_schedule_${exp.slug}`)
     if (saved) setSchedule(JSON.parse(saved))
     else setSchedule(WEEK.map(day => ({ day, enabled: false, open: '09:00', close: '17:00' })))
@@ -378,6 +379,7 @@ function ExperiencesPanel({ commissionRate }: { commissionRate: number }) {
       price: Number(formData.price) || editingExp?.price || 0,
       duration: formData.duration || editingExp?.duration || '',
       maxGuests: Number(formData.maxGuests) || editingExp?.maxGuests || 8,
+      meetingPoint: formData.meetingPoint || '',
     }
     try {
       localStorage.setItem(`balible_exp_data_${slug}`, JSON.stringify(expData))
@@ -406,6 +408,7 @@ function ExperiencesPanel({ commissionRate }: { commissionRate: number }) {
           lng: baseLng + (Math.random() - 0.5) * 0.012,
           price: expData.price, rating: 0, reviews: 0,
           duration: expData.duration || '2 hrs',
+          meetingPoint: expData.meetingPoint,
           image: imagePreview ?? 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&auto=format&fit=crop&q=80',
         }
         const prev = JSON.parse(localStorage.getItem('balible_host_new_experiences') ?? '[]')
@@ -622,7 +625,7 @@ function ExperiencesPanel({ commissionRate }: { commissionRate: number }) {
                   </div>
                   <div>
                     <label style={labelStyle}>Meeting point</label>
-                    <input type="text" placeholder="Studio address or landmark" style={inputStyle} />
+                    <input type="text" value={formData.meetingPoint} onChange={e => setField('meetingPoint', e.target.value)} placeholder="e.g. Jl. Raya Ubud No. 12, Ubud, Bali" style={inputStyle} />
                   </div>
                   <div>
                     <label style={labelStyle}>What&apos;s included</label>
