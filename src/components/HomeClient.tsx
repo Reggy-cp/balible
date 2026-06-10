@@ -2,10 +2,10 @@
 
 import { useState, useRef } from 'react'
 import {
-  Heart, ShoppingBag, User, Search, CalendarDays, ChevronDown,
+  Heart, Search, CalendarDays, ChevronDown,
   ChevronRight, ChevronLeft, Leaf, Scissors, Landmark, ChefHat, Sun,
-  Mountain, Building2, Grid3x3, Star, ShieldCheck, Users, Sparkles,
-  MapPin, Home, Instagram, Facebook, Twitter, Map,
+  Mountain, Waves, Grid3x3, Star, ShieldCheck, Users, Sparkles,
+  MapPin, Instagram, Facebook, Twitter,
 } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
@@ -21,8 +21,8 @@ const CAT_STRIP = [
   { label: 'Culinary',      Icon: ChefHat,   href: '/categories/culinary'   },
   { label: 'Spiritual',     Icon: Sun,       href: '/categories/spiritual'  },
   { label: 'Nature & Outdoors', Icon: Mountain, href: '/categories/nature'  },
-  { label: 'Architecture',  Icon: Building2, href: '/search'                },
-  { label: 'All Categories',Icon: Grid3x3,   href: '/categories'            },
+  { label: 'Water Activities', Icon: Waves,   href: '/categories/water-activities' },
+  { label: 'All Categories',  Icon: Grid3x3, href: '/categories'            },
 ]
 
 const CAT_GRID = [
@@ -31,7 +31,7 @@ const CAT_GRID = [
   { label: 'Culture',      Icon: Landmark,   href: '/categories/culture',    photo: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=400&auto=format&fit=crop&q=80' },
   { label: 'Culinary',     Icon: ChefHat,    href: '/categories/culinary',   photo: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=400&auto=format&fit=crop&q=80' },
   { label: 'Nature & Outdoors', Icon: Mountain, href: '/categories/nature',   photo: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=400&auto=format&fit=crop&q=80' },
-  { label: 'Spiritual',    Icon: Sun,        href: '/categories/spiritual',  photo: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=400&auto=format&fit=crop&q=80' },
+  { label: 'Spiritual',    Icon: Sun,        href: '/categories/spiritual',  photo: 'https://images.unsplash.com/photo-1516690561799-46d8f74f9abf?w=400&auto=format&fit=crop&q=80' },
 ]
 
 const WHY_ITEMS = [
@@ -44,7 +44,7 @@ const WHY_ITEMS = [
 const HOSTS = [
   { slug: 'made-sari',       name: 'Made Sari',       role: 'Potter',          location: 'Ubud',    pronoun: 'her', photo: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&auto=format&fit=crop&q=80', quote: 'Every piece I create is a prayer. I love sharing the magic of clay with visitors from around the world.' },
   { slug: 'ketut-suardana',  name: 'Ketut Suardana',  role: 'Silversmith',     location: 'Celuk',   pronoun: 'his', photo: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&auto=format&fit=crop&q=80', quote: "Silver is alive in my hands. I want every student to feel what it's like to make something beautiful." },
-  { slug: 'wayan-gede',      name: 'Wayan Gede',      role: 'Temple Guide',    location: 'Gianyar', pronoun: 'his', photo: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=400&auto=format&fit=crop&q=80', quote: 'The water temple is a living, sacred space. I want every guest to leave feeling truly connected to Bali.' },
+  { slug: 'wayan-gede',      name: 'Wayan Gede',      role: 'Temple Guide',    location: 'Gianyar', pronoun: 'his', photo: 'https://images.unsplash.com/photo-1504257432389-52343af06ae3?w=400&auto=format&fit=crop&q=80', quote: 'The water temple is a living, sacred space. I want every guest to leave feeling truly connected to Bali.' },
   { slug: 'nina-putri',      name: 'Nina Putri',      role: 'Wellness Teacher', location: 'Ubud',   pronoun: 'her', photo: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=400&auto=format&fit=crop&q=80', quote: 'Healing begins when we truly listen. My sessions are a space for presence, stillness, and transformation.' },
 ]
 
@@ -180,7 +180,7 @@ export default function HomeClient({ featuredExperiences, upcomingEvents }: { fe
               <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', whiteSpace: 'nowrap' }}>Add date</span>
             </div>
             <a
-              href="/search"
+              href={`/search${search.trim() ? `?q=${encodeURIComponent(search.trim())}` : ''}`}
               className="mx-2 flex-shrink-0 text-white rounded-md px-4 lg:px-6 py-2 hover:opacity-90 transition-opacity"
               style={{ backgroundColor: '#111111', fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500, textDecoration: 'none' }}
             >
@@ -445,7 +445,7 @@ export default function HomeClient({ featuredExperiences, upcomingEvents }: { fe
 
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6">
             <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>
-              © 2024 Balible. All rights reserved.
+              © 2026 Balible. All rights reserved.
             </p>
             <div className="flex gap-4 items-center">
               <a href="/help" className="hover:text-white transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>Privacy Policy</a>
