@@ -4,13 +4,13 @@ import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Heart, Search, CalendarDays, ChevronDown,
-  ChevronRight, ChevronLeft, Leaf, Scissors, Landmark, ChefHat, Sun,
+  Leaf, Scissors, Landmark, ChefHat, Sun,
   Mountain, Waves, Grid3x3, Star, ShieldCheck, Users, Sparkles,
   MapPin, Instagram, Facebook, Twitter,
 } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
-import type { FeaturedExp } from '@/lib/experiences'
+import type { ExperienceCard } from '@/lib/experiences'
 import type { EventRow } from '@/lib/event-actions'
 
 // ── Static data ───────────────────────────────────────────────────────────────
@@ -58,16 +58,22 @@ const FOOTER_COLS = [
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function ExperienceCard({ exp }: { exp: FeaturedExp }) {
+function ExperienceCard({ exp }: { exp: ExperienceCard }) {
   const [liked, setLiked] = useState(false)
   return (
     <a
       href={`/experiences/${exp.slug}`}
-      className="flex-shrink-0 rounded-xl overflow-hidden border hover:shadow-md transition-shadow block"
-      style={{ width: 240, borderColor: '#E8E4DE' }}
+      className="rounded-xl overflow-hidden border hover:shadow-md transition-shadow block bg-white"
+      style={{ borderColor: '#E8E4DE' }}
     >
-      <div className="relative" style={{ height: 180 }}>
+      <div className="relative" style={{ height: 200 }}>
         <img src={exp.photo} alt={exp.title} className="w-full h-full object-cover" />
+        {exp.badge && (
+          <span className="absolute top-3 left-3 px-2 py-0.5 rounded-full text-white"
+            style={{ fontSize: 11, fontWeight: 600, backgroundColor: '#C8A97E', fontFamily: 'var(--font-inter)' }}>
+            {exp.badge}
+          </span>
+        )}
         <button
           className="absolute top-3 right-3 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow hover:scale-110 transition-transform"
           onClick={e => { e.preventDefault(); setLiked(!liked) }}
@@ -75,12 +81,14 @@ function ExperienceCard({ exp }: { exp: FeaturedExp }) {
           <Heart size={13} fill={liked ? '#ef4444' : 'none'} color={liked ? '#ef4444' : '#111111'} />
         </button>
       </div>
-      <div className="p-3.5">
-        <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>{exp.area}</p>
-        <h3 className="mt-1 line-clamp-2 leading-snug" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, color: '#111111', fontWeight: 600 }}>
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-1">
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>{exp.area}</p>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#9E9A94' }}>{exp.duration}</p>
+        </div>
+        <h3 className="line-clamp-2 leading-snug" style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, color: '#111111', fontWeight: 600 }}>
           {exp.title}
         </h3>
-        <p className="mt-1" style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>{exp.meta}</p>
         <div className="flex items-center gap-1 mt-2">
           <Star size={11} fill="#C8A97E" color="#C8A97E" />
           <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 700, color: '#111111' }}>{exp.rating}</span>
@@ -121,12 +129,11 @@ function HostCard({ host }: { host: typeof HOSTS[0] }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 
-export default function HomeClient({ featuredExperiences, upcomingEvents }: { featuredExperiences: FeaturedExp[]; upcomingEvents: EventRow[] }) {
+export default function HomeClient({ experiences, upcomingEvents }: { experiences: ExperienceCard[]; upcomingEvents: EventRow[] }) {
   const [search, setSearch]         = useState('')
   const [date, setDate]             = useState('')
   const [email, setEmail]           = useState('')
   const [subscribed, setSubscribed] = useState(false)
-  const scrollRef    = useRef<HTMLDivElement>(null)
   const dateInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
 
@@ -154,9 +161,6 @@ export default function HomeClient({ featuredExperiences, upcomingEvents }: { fe
     setTimeout(() => setSubscribed(false), 4000)
   }
 
-  const scrollCards = (dir: number) => {
-    scrollRef.current?.scrollBy({ left: dir * 260, behavior: 'smooth' })
-  }
 
   return (
     <div style={{ fontFamily: 'var(--font-inter)' }}>
@@ -280,35 +284,19 @@ export default function HomeClient({ featuredExperiences, upcomingEvents }: { fe
           <div className="flex items-start justify-between mb-8">
             <div>
               <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#111111', fontWeight: 700 }}>
-                Handpicked Experiences
+                All Experiences
               </h2>
               <p className="mt-1" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
-                Curated by local experts. Loved by travelers.
+                {experiences.length} curated experiences across Bali
               </p>
             </div>
-            <a href="/search" className="flex-shrink-0 hover:opacity-70 transition-opacity underline" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#C8A97E', textDecoration: 'underline' }}>
-              View all →
+            <a href="/search" className="flex-shrink-0 hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#C8A97E', textDecoration: 'underline' }}>
+              Filter & search →
             </a>
           </div>
 
-          <div className="relative">
-            <div ref={scrollRef} className="flex gap-5 overflow-x-auto pb-2 scrollbar-none">
-              {featuredExperiences.map(exp => <ExperienceCard key={exp.id} exp={exp} />)}
-            </div>
-            <button
-              onClick={() => scrollCards(-1)}
-              className="hidden lg:flex absolute -left-5 top-[90px] -translate-y-1/2 w-10 h-10 bg-white rounded-full items-center justify-center hover:bg-ivory transition-colors shadow-sm"
-              style={{ border: '1px solid #E8E4DE' }}
-            >
-              <ChevronLeft size={18} style={{ color: '#111111' }} />
-            </button>
-            <button
-              onClick={() => scrollCards(1)}
-              className="hidden lg:flex absolute -right-5 top-[90px] -translate-y-1/2 w-10 h-10 bg-white rounded-full items-center justify-center hover:bg-ivory transition-colors shadow-sm"
-              style={{ border: '1px solid #E8E4DE' }}
-            >
-              <ChevronRight size={18} style={{ color: '#111111' }} />
-            </button>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-5">
+            {experiences.map(exp => <ExperienceCard key={exp.slug} exp={exp} />)}
           </div>
         </div>
       </section>
