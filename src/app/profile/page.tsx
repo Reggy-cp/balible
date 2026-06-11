@@ -241,9 +241,13 @@ function ReviewModal({ booking, onSubmit, onClose }: {
 function BookingsTab({ reviews, onReview, dbBookings }: { reviews: SubmittedReview[]; onReview: (r: SubmittedReview) => void; dbBookings?: Booking[] }) {
   const [cancelled, setCancelled] = useState<Set<string>>(new Set())
   const [reviewing, setReviewing] = useState<Booking | null>(null)
+  const [savedBookings, setSavedBookings] = useState<Booking[]>([])
   const cancel = (id: string) => setCancelled(s => new Set(s).add(id))
 
-  const savedBookings: Booking[] = lsp('balible_bookings', [])
+  useEffect(() => {
+    setSavedBookings(lsp('balible_bookings', []))
+  }, [])
+
   const savedIds = new Set(savedBookings.map(b => b.id))
   const localAndMock = [...savedBookings, ...BOOKINGS.filter(b => !savedIds.has(b.id))]
 
@@ -349,7 +353,8 @@ const WISHLIST_LOOKUP = [
 const DEFAULT_WISHLIST_SLUGS = ['pottery-making-class', 'sound-healing-journey', 'uluwatu-kecak-sunset']
 
 function WishlistTab({ dbSlugs }: { dbSlugs?: string[] }) {
-  const localSlugs = lsp<string[]>('balible_wishlist', DEFAULT_WISHLIST_SLUGS)
+  const [localSlugs, setLocalSlugs] = useState<string[]>(DEFAULT_WISHLIST_SLUGS)
+  useEffect(() => { setLocalSlugs(lsp<string[]>('balible_wishlist', DEFAULT_WISHLIST_SLUGS)) }, [])
   // Merge DB slugs with local (DB takes precedence when signed in)
   const slugSet = new Set([...(dbSlugs ?? localSlugs)])
   const slugs = Array.from(slugSet)
@@ -473,7 +478,6 @@ function ReviewsTab({ reviews, dbReviews }: { reviews: SubmittedReview[]; dbRevi
 
 // ── Settings tab ───────────────────────────────────────────────────────────────
 
-const PROFILE_INFO_DEFAULTS = { name: PROFILE.name, email: PROFILE.email, phone: '+1 234 567 8900', nationality: 'Australian' }
 const PROFILE_NOTIF_DEFAULTS = { bookingConfirm: true, reminders: true, offers: false }
 
 function lsp<T>(key: string, fallback: T): T {
@@ -481,39 +485,60 @@ function lsp<T>(key: string, fallback: T): T {
   try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback } catch { return fallback }
 }
 
-function SettingsTab() {
-  const [info, setInfo]   = useState(() => lsp('balible_profile_info', PROFILE_INFO_DEFAULTS))
-  const [notifs, setNotifs] = useState(() => lsp('balible_profile_notifs', PROFILE_NOTIF_DEFAULTS))
+function SettingsTab({ clerkName, clerkEmail }: { clerkName: string; clerkEmail: string }) {
+  const EXTRA_DEFAULTS = { phone: '', nationality: '' }
+  const [extra, setExtra]   = useState(EXTRA_DEFAULTS)
+  const [notifs, setNotifs] = useState(PROFILE_NOTIF_DEFAULTS)
+
+  useEffect(() => {
+    setExtra(lsp('balible_profile_extra', EXTRA_DEFAULTS))
+    setNotifs(lsp('balible_profile_notifs', PROFILE_NOTIF_DEFAULTS))
+  }, [])
   const [saved, setSaved] = useState(false)
 
   const save = () => {
-    localStorage.setItem('balible_profile_info',   JSON.stringify(info))
+    localStorage.setItem('balible_profile_extra',  JSON.stringify(extra))
     localStorage.setItem('balible_profile_notifs', JSON.stringify(notifs))
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
 
-  const INFO_FIELDS: { label: string; key: keyof typeof PROFILE_INFO_DEFAULTS }[] = [
-    { label: 'Full Name',   key: 'name'        },
-    { label: 'Email',       key: 'email'       },
-    { label: 'Phone',       key: 'phone'       },
-    { label: 'Nationality', key: 'nationality' },
-  ]
-
   return (
     <div className="space-y-5">
       <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111' }}>Account Settings</h2>
 
-      {/* Personal info */}
+      {/* Clerk-managed fields — read-only */}
       <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
-        <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111', marginBottom: 16 }}>Personal Information</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111' }}>Account Information</h3>
+          <span style={{ fontSize: 11, color: '#9E9A94', fontFamily: 'var(--font-inter)' }}>Managed via Clerk</span>
+        </div>
         <div className="grid sm:grid-cols-2 gap-4">
-          {INFO_FIELDS.map(f => (
+          {[{ label: 'Full Name', value: clerkName }, { label: 'Email', value: clerkEmail }].map(f => (
+            <div key={f.label}>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{f.label}</label>
+              <div style={{ height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#6F675C', backgroundColor: '#F9F8F6', display: 'flex', alignItems: 'center' }}>
+                {f.value || <span style={{ color: '#C8C4BE' }}>—</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+        <p style={{ fontSize: 12, color: '#9E9A94', marginTop: 12, fontFamily: 'var(--font-inter)' }}>
+          To update your name or email, use the account menu in the top-right corner.
+        </p>
+      </div>
+
+      {/* Extra fields saved locally */}
+      <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
+        <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111', marginBottom: 16 }}>Additional Details</h3>
+        <div className="grid sm:grid-cols-2 gap-4">
+          {([{ label: 'Phone', key: 'phone' as const, placeholder: '+62 812 345 6789' }, { label: 'Nationality', key: 'nationality' as const, placeholder: 'e.g. Australian' }]).map(f => (
             <div key={f.key}>
               <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{f.label}</label>
               <input
-                value={info[f.key]}
-                onChange={e => setInfo(p => ({ ...p, [f.key]: e.target.value }))}
+                value={extra[f.key]}
+                onChange={e => setExtra(p => ({ ...p, [f.key]: e.target.value }))}
+                placeholder={f.placeholder}
                 style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }}
                 onFocus={e => (e.target.style.borderColor = '#C8A97E')}
                 onBlur={e => (e.target.style.borderColor = '#E8E4DE')}
@@ -569,11 +594,15 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState('bookings')
   const [reviews, setReviews] = useState<SubmittedReview[]>(() => lsp('balible_user_reviews', []))
   const [dbData, setDbData] = useState<UserData | null>(null)
+  const [localBookingCount, setLocalBookingCount] = useState(0)
+  const [localWishlistCount, setLocalWishlistCount] = useState(0)
 
   useEffect(() => {
     if (isLoaded && isSignedIn) {
       getUserData().then(data => { if (data) setDbData(data) }).catch(() => {})
     }
+    setLocalBookingCount(lsp<Booking[]>('balible_bookings', []).length)
+    setLocalWishlistCount(lsp<string[]>('balible_wishlist', DEFAULT_WISHLIST_SLUGS).length)
   }, [isLoaded, isSignedIn])
 
   const addReview = (r: SubmittedReview) => {
@@ -582,17 +611,25 @@ export default function ProfilePage() {
     localStorage.setItem('balible_user_reviews', JSON.stringify(updated))
   }
 
-  // Use real Clerk user info when available, fall back to mock
-  const displayName  = clerkUser?.fullName || clerkUser?.firstName || dbData?.name || PROFILE.name
-  const displayEmail = clerkUser?.primaryEmailAddress?.emailAddress || dbData?.email || PROFILE.email
+  // Clerk user info with graceful fallbacks
+  const displayName  = clerkUser?.fullName || clerkUser?.firstName || dbData?.name || 'Traveler'
+  const displayEmail = clerkUser?.primaryEmailAddress?.emailAddress || dbData?.email || ''
   const displayImage = clerkUser?.imageUrl || dbData?.image || null
+  const memberSince  = clerkUser?.createdAt
+    ? new Date(clerkUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    : null
+
+  // Stats derived from real data
+  const tripsCount    = dbData?.bookings?.length ?? (localBookingCount || BOOKINGS.length)
+  const reviewsCount  = (dbData?.reviews?.length ?? 0) + reviews.length || STATIC_REVIEWS.length
+  const wishlistCount = dbData?.wishlistSlugs?.length ?? localWishlistCount
 
   const renderTab = () => {
     switch (activeTab) {
       case 'bookings': return <BookingsTab reviews={reviews} onReview={addReview} dbBookings={dbData?.bookings} />
       case 'wishlist': return <WishlistTab dbSlugs={dbData?.wishlistSlugs} />
       case 'reviews':  return <ReviewsTab reviews={reviews} dbReviews={dbData?.reviews} />
-      case 'settings': return <SettingsTab />
+      case 'settings': return <SettingsTab clerkName={displayName} clerkEmail={displayEmail} />
       default:         return <BookingsTab reviews={reviews} onReview={addReview} dbBookings={dbData?.bookings} />
     }
   }
@@ -629,14 +666,16 @@ export default function ProfilePage() {
 
               <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>{displayName}</h2>
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', marginTop: 3 }}>{displayEmail}</p>
-              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', marginTop: 2 }}>Member since {PROFILE.joined}</p>
+              {memberSince && (
+                <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', marginTop: 2 }}>Member since {memberSince}</p>
+              )}
 
               {/* Stats */}
               <div className="grid grid-cols-3 gap-2 mt-5 pt-5" style={{ borderTop: '1px solid #E8E4DE' }}>
                 {[
-                  { label: 'Trips',    value: PROFILE.tripsCount },
-                  { label: 'Reviews',  value: PROFILE.reviewsCount },
-                  { label: 'Saved',    value: PROFILE.wishlistCount },
+                  { label: 'Trips',    value: tripsCount },
+                  { label: 'Reviews',  value: reviewsCount },
+                  { label: 'Saved',    value: wishlistCount },
                 ].map(s => (
                   <div key={s.label}>
                     <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111' }}>{s.value}</p>

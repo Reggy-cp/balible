@@ -1,7 +1,8 @@
 const LINKS = [
   { label: 'Experiences',  href: '/search' },
   { label: 'Destinations', href: '/destinations' },
-  { label: 'For Hosts',    href: '/for-hosts' },
+  { label: 'Meet Our Hosts', href: '/hosts' },
+  { label: 'For Hosts',      href: '/for-hosts' },
 ]
 
 export default function Footer() {

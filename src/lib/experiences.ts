@@ -37,9 +37,9 @@ const CATEGORY_DISPLAY: Record<string, string> = {
   CULTURE: 'Culture',
   FOOD_DRINK: 'Culinary',
   NATURE: 'Nature & Outdoors',
-  SURF_WATER: 'Surf & Water',
-  ARCHITECTURE: 'Architecture',
-  DIVING: 'Diving',
+  SURF_WATER: 'Water Activities',
+  ARCHITECTURE: 'Nature & Outdoors',
+  DIVING: 'Water Activities',
   COOKING: 'Culinary',
 }
 
@@ -49,9 +49,9 @@ const CATEGORY_SLUG: Record<string, string> = {
   CULTURE: 'culture',
   FOOD_DRINK: 'culinary',
   NATURE: 'nature',
-  SURF_WATER: 'surf-water',
-  ARCHITECTURE: 'architecture',
-  DIVING: 'diving',
+  SURF_WATER: 'water-activities',
+  ARCHITECTURE: 'nature',
+  DIVING: 'water-activities',
   COOKING: 'culinary',
 }
 

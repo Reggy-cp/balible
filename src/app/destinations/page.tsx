@@ -5,7 +5,7 @@ import Footer from '@/components/Footer'
 
 const AREAS = [
   {
-    slug: 'Ubud',
+    slug: 'ubud',
     name: 'Ubud',
     tagline: 'Cultural Heart of Bali',
     description: 'Nestled among rice terraces and jungle, Ubud is Bali\'s artistic and spiritual centre. Expect world-class galleries, traditional dance performances, healing rituals, and an abundance of wellness retreats tucked down lush laneways.',
@@ -19,7 +19,7 @@ const AREAS = [
     bg: '#F0F7F2',
   },
   {
-    slug: 'Canggu',
+    slug: 'canggu',
     name: 'Canggu',
     tagline: 'Surf, Soul & Slow Mornings',
     description: 'Once a sleepy rice paddy village, Canggu has evolved into Bali\'s most vibrant creative district. Black-sand beaches, world-class surf breaks, sunrise yoga on rooftops, and specialty coffee at every turn.',
@@ -33,7 +33,7 @@ const AREAS = [
     bg: '#FDF8F4',
   },
   {
-    slug: 'Uluwatu',
+    slug: 'uluwatu',
     name: 'Uluwatu',
     tagline: 'Clifftops, Kecak & Surf',
     description: 'Perched on dramatic limestone cliffs above the Indian Ocean, Uluwatu is one of Bali\'s most awe-inspiring locations. Famous for the sacred temple, the mesmerising Kecak fire dance at sunset, and serious surf breaks below.',
@@ -47,13 +47,13 @@ const AREAS = [
     bg: '#F5F1EB',
   },
   {
-    slug: 'Seminyak',
+    slug: 'seminyak',
     name: 'Seminyak',
     tagline: 'Sunset Dining & Bali Chic',
     description: 'Seminyak is Bali\'s most sophisticated beach destination — a refined strip of boutique hotels, acclaimed restaurants, rooftop bars, and beautiful shops. The sunsets here are legendary, best watched from a bean bag on the sand.',
     highlights: ['Seminyak Beach', 'Potato Head Beach Club', 'Petitenget Temple', 'Eat Street', 'Sunset cocktails'],
     experienceCount: 1,
-    topCategory: 'Food & Drink',
+    topCategory: 'Culinary',
     rating: 4.78,
     image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&auto=format&fit=crop&q=80',
     thumb: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&auto=format&fit=crop&q=80',
@@ -61,13 +61,13 @@ const AREAS = [
     bg: '#FFFDF9',
   },
   {
-    slug: 'Jimbaran',
+    slug: 'jimbaran',
     name: 'Jimbaran',
     tagline: 'Fresh Catch & Firelit Tables',
     description: 'A traditional fishing village turned seafood paradise, Jimbaran Bay is famed for its candlelit beach warungs serving the day\'s catch grilled over coconut husks. Watch the sun melt into the ocean while fishermen bring in their boats.',
     highlights: ['Jimbaran Fish Market', 'Seafood Beach Warungs', 'Jimbaran Bay Sunset', 'Four Seasons Beach', 'Kedonganan Market'],
     experienceCount: 1,
-    topCategory: 'Food & Drink',
+    topCategory: 'Culinary',
     rating: 4.62,
     image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&auto=format&fit=crop&q=80',
     thumb: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&auto=format&fit=crop&q=80',
@@ -75,7 +75,7 @@ const AREAS = [
     bg: '#F0F7F2',
   },
   {
-    slug: 'Sidemen',
+    slug: 'sidemen',
     name: 'Sidemen & East Bali',
     tagline: 'The Bali Fewer People Find',
     description: 'Away from the tourist trail, East Bali is where the island breathes slowly. Sidemen valley, with Mount Agung as its backdrop, is a patchwork of emerald terraces, weaving villages, and morning mist. Amed\'s black-sand coast hides some of Bali\'s best snorkelling and dive sites.',

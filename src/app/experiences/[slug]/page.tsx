@@ -9,6 +9,7 @@ import WishlistHeart from '@/components/WishlistHeart'
 import ShareButton from '@/components/ShareButton'
 import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
+import MobileBookingModal from '@/components/MobileBookingModal'
 import ExperienceGallery from '@/components/ExperienceGallery'
 import { prisma } from '@/lib/prisma'
 
@@ -845,7 +846,7 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
           </div>
 
           {/* RIGHT — booking widget (client island) */}
-          <div className="lg:w-[340px] flex-shrink-0">
+          <div id="booking" className="hidden lg:block lg:w-[340px] flex-shrink-0">
             <BookingWidget price={experience.price} slug={experience.slug} duration={experience.duration} maxGuests={experience.maxGuests} />
           </div>
         </div>
@@ -854,6 +855,15 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
       {/* ── AI RECOMMENDATIONS ── */}
       <RecommendationsSection current={currentForRec} others={allOthers} />
       <Footer />
+
+      {/* ── MOBILE BOOKING MODAL ── */}
+      <MobileBookingModal
+        price={experience.price}
+        slug={experience.slug}
+        duration={experience.duration}
+        maxGuests={experience.maxGuests}
+      />
+
       <MobileNav />
     </div>
   )

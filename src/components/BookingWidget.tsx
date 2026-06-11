@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ChevronLeft, ChevronRight, Heart } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Heart, AlertCircle } from 'lucide-react'
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December']
 
@@ -130,7 +130,7 @@ function MiniCalendar({
   )
 }
 
-export default function BookingWidget({ price, slug, duration, maxGuests = 8 }: { price: number; slug?: string; duration?: string; maxGuests?: number }) {
+export default function BookingWidget({ price, slug, duration, maxGuests = 8, embedded = false }: { price: number; slug?: string; duration?: string; maxGuests?: number; embedded?: boolean }) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
   const [guests, setGuests] = useState(1)
@@ -193,6 +193,16 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8 }: 
     if (pastCheck || fullCheck) setSelectedTime(null)
   }, [selectedDate, selectedTime, bookedGuests, currentTime, effectiveMaxGuests])
 
+  // When a time slot is picked, clamp guest count to remaining capacity
+  const handleTimeSelect = (slot: string) => {
+    setSelectedTime(prev => {
+      if (prev === slot) return null
+      const remaining = effectiveMaxGuests - (bookedGuests[slot] ?? 0)
+      setGuests(g => Math.min(g, remaining))
+      return slot
+    })
+  }
+
   // Clear time when date changes
   const handleDateSelect = (d: string) => {
     setSelectedDate(d)
@@ -211,15 +221,23 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8 }: 
 
   const durMins = effectiveDuration ? parseDurationMins(effectiveDuration) : 120
   const { todayStr, nowMins } = currentTime
-  const slots = (daySchedule
+
+  const allTimeSlots = (daySchedule
     ? generateSlots(daySchedule.open, daySchedule.close, durMins)
     : selectedDate
       ? generateSlots('08:00', '20:00', durMins)
       : []
-  ).filter(slot =>
-    (selectedDate !== todayStr || parseTimeMins(slot) > nowMins) &&
-    (bookedGuests[slot] ?? 0) < effectiveMaxGuests
+  ).filter(slot => selectedDate !== todayStr || parseTimeMins(slot) > nowMins)
+
+  const slots = allTimeSlots.filter(slot =>
+    (bookedGuests[slot] ?? 0) + guests <= effectiveMaxGuests
   )
+
+  // Max remaining spots across all time slots for the selected date
+  const maxRemaining = allTimeSlots.length > 0
+    ? Math.max(...allTimeSlots.map(slot => effectiveMaxGuests - (bookedGuests[slot] ?? 0)))
+    : 0
+  const noSlotsForGuests = selectedDate && allTimeSlots.length > 0 && slots.length === 0 && maxRemaining > 0
 
   const endTimeLabel = (slot: string) => {
     const end = parseTimeMins(slot) + durMins
@@ -227,7 +245,7 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8 }: 
   }
 
   return (
-    <div className="bg-white rounded-xl p-6 sticky top-24" style={{ border: '1px solid #E8E4DE' }}>
+    <div className={embedded ? '' : 'bg-white rounded-xl p-6 sticky top-24'} style={embedded ? {} : { border: '1px solid #E8E4DE' }}>
       <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>From</span>
       <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: '#111111', marginTop: 2 }}>
         <span style={{ color: '#C8A97E' }}>IDR</span> {formatted}
@@ -261,18 +279,31 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8 }: 
           <div className="flex flex-wrap gap-2">
             {slots.map(slot => {
               const isSel = slot === selectedTime
+              const remaining = effectiveMaxGuests - (bookedGuests[slot] ?? 0)
+              const isAlmostFull = remaining <= 3
               return (
-                <button key={slot} onClick={() => setSelectedTime(isSel ? null : slot)}
+                <button key={slot} onClick={() => handleTimeSelect(slot)}
                   style={{
-                    padding: '7px 12px', borderRadius: 8, fontSize: 12, fontWeight: isSel ? 600 : 400,
+                    padding: '5px 10px', borderRadius: 8, fontSize: 12, fontWeight: isSel ? 600 : 400,
                     backgroundColor: isSel ? '#111111' : 'white',
                     color: isSel ? 'white' : '#111111',
                     border: isSel ? '1px solid #111111' : '1px solid #E8E4DE',
                     cursor: 'pointer', transition: 'all 0.15s',
                     fontFamily: 'var(--font-inter)',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
+                    lineHeight: 1.2,
                   }}>
-                  {minsToLabel(parseTimeMins(slot))}
-                  {isSel && <span style={{ opacity: 0.65, marginLeft: 4 }}>→ {endTimeLabel(slot)}</span>}
+                  <span>
+                    {minsToLabel(parseTimeMins(slot))}
+                    {isSel && <span style={{ opacity: 0.65, marginLeft: 4, fontSize: 11 }}>→ {endTimeLabel(slot)}</span>}
+                  </span>
+                  <span style={{
+                    fontSize: 9,
+                    color: isSel ? 'rgba(255,255,255,0.65)' : isAlmostFull ? '#B66A45' : '#B0AA9E',
+                    fontWeight: 400,
+                  }}>
+                    {remaining} left
+                  </span>
                 </button>
               )
             })}
@@ -280,8 +311,22 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8 }: 
         </div>
       )}
 
-      {selectedDate && slots.length === 0 && (
+      {selectedDate && slots.length === 0 && !noSlotsForGuests && (
         <p style={{ fontSize: 12, color: '#B66A45', marginTop: 12 }}>No available slots for this date.</p>
+      )}
+
+      {noSlotsForGuests && (
+        <div className="flex items-start gap-2 mt-4 p-3 rounded-lg" style={{ backgroundColor: '#FEF3ED', border: '1px solid #F5C9AE' }}>
+          <AlertCircle size={15} style={{ color: '#B66A45', flexShrink: 0, marginTop: 1 }} />
+          <div>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#B66A45', marginBottom: 2 }}>
+              Not enough spots for {guests} guests
+            </p>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#9E5A35' }}>
+              Only {maxRemaining} spot{maxRemaining !== 1 ? 's' : ''} remaining for this date. Please select {maxRemaining === 1 ? '1 guest' : `up to ${maxRemaining} guests`} to see available times.
+            </p>
+          </div>
+        </div>
       )}
 
       {/* Guests */}
@@ -290,7 +335,12 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8 }: 
         <select value={guests} onChange={e => setGuests(Number(e.target.value))}
           className="w-full px-3 py-2.5 rounded-md outline-none appearance-none cursor-pointer"
           style={{ border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', backgroundColor: 'white' }}>
-          {Array.from({ length: effectiveMaxGuests }, (_, i) => i + 1).map(n => (
+          {Array.from(
+            { length: selectedTime
+                ? effectiveMaxGuests - (bookedGuests[selectedTime] ?? 0)
+                : effectiveMaxGuests },
+            (_, i) => i + 1
+          ).map(n => (
             <option key={n} value={n}>{n} {n === 1 ? 'guest' : 'guests'}</option>
           ))}
         </select>

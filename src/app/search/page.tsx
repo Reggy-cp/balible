@@ -21,7 +21,7 @@ const STATIC_RESULTS: SearchResult[] = [
   { id: 16, slug: 'rattan-weaving-class',        title: 'Rattan Weaving Class',         area: 'Sidemen',  rating: 4.7, reviews: 38,  price: 350000, durationMins: 180, category: 'Art & Craft',  photo: 'https://images.unsplash.com/photo-1519735777090-ec97162dc266?w=300&auto=format&fit=crop&q=80' },
 ]
 
-export default async function SearchPage({ searchParams }: { searchParams: { q?: string } }) {
+export default async function SearchPage({ searchParams }: { searchParams: { q?: string; date?: string } }) {
   const dbCards = await getExperienceCards()
   const dbSlugs = new Set(dbCards.map(c => c.slug))
 
@@ -42,5 +42,5 @@ export default async function SearchPage({ searchParams }: { searchParams: { q?:
   const staticOnly = STATIC_RESULTS.filter(r => !dbSlugs.has(r.slug))
   const allResults = [...dbResults, ...staticOnly]
 
-  return <SearchClient initialResults={allResults} initialQuery={searchParams.q ?? ''} />
+  return <SearchClient initialResults={allResults} initialQuery={searchParams.q ?? ''} initialDate={searchParams.date ?? ''} />
 }

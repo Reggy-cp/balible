@@ -20,8 +20,8 @@ type AreaData = {
 }
 
 const AREAS: Record<string, AreaData> = {
-  Ubud: {
-    slug: 'Ubud', name: 'Ubud', tagline: 'Cultural Heart of Bali',
+  ubud: {
+    slug: 'ubud', name: 'Ubud', tagline: 'Cultural Heart of Bali',
     description: 'Nestled among rice terraces and jungle, Ubud is Bali\'s artistic and spiritual centre. Expect world-class galleries, traditional dance performances, healing rituals, and wellness retreats tucked down lush laneways.',
     longDescription: 'Ubud has drawn artists, healers, and seekers for over a century — and for good reason. The town sits at the intersection of Bali\'s artistic and spiritual traditions, surrounded by terraced rice fields, sacred temples, and jungle-draped gorges. It is the home of traditional Balinese painting, wood carving, silver work, and dance forms that are performed nowhere else on earth with the same depth of tradition. Yet Ubud is not a museum. It is a living town where these crafts are still practised daily, still taught in family compounds, still offered to the gods at temple ceremonies that happen every few days somewhere in the surrounding villages.',
     highlights: ['Tegalalang Rice Terraces', 'Monkey Forest', 'Ubud Palace', 'Campuhan Ridge Walk', 'Art Market', 'Sacred Monkey Forest Sanctuary'],
@@ -42,8 +42,8 @@ const AREAS: Record<string, AreaData> = {
     ],
     experienceAreas: ['Ubud', 'Gianyar'],
   },
-  Canggu: {
-    slug: 'Canggu', name: 'Canggu', tagline: 'Surf, Soul & Slow Mornings',
+  canggu: {
+    slug: 'canggu', name: 'Canggu', tagline: 'Surf, Soul & Slow Mornings',
     description: 'Once a sleepy rice paddy village, Canggu has evolved into Bali\'s most vibrant creative district. Black-sand beaches, world-class surf breaks, sunrise yoga on rooftops, and specialty coffee at every turn.',
     longDescription: 'Canggu sits on Bali\'s south-west coast, where the Indian Ocean rolls in from the south and the rice paddies begin immediately beyond the beach roads. A decade ago it was known only to surfers and long-stay expats. Today it is Bali\'s most international neighbourhood — a place where digital nomads work from beachside cafes, yoga teachers offer dawn classes on rooftop platforms, and the food scene moves faster than anywhere else on the island. The rice paddies are still there, though increasingly hemmed in by villas and warungs. The surf breaks — Batu Bolong, Echo Beach, Berawa — are still excellent. Canggu rewards early risers: the light before 8am, when the surfers are out and the cafes just opening, is the Canggu that people come back for.',
     highlights: ['Echo Beach', 'Batu Bolong Temple', 'Berawa Beach', 'Pererenan Rice Fields', 'Sunrise Yoga'],
@@ -64,8 +64,8 @@ const AREAS: Record<string, AreaData> = {
     ],
     experienceAreas: ['Canggu'],
   },
-  Uluwatu: {
-    slug: 'Uluwatu', name: 'Uluwatu', tagline: 'Clifftops, Kecak & Surf',
+  uluwatu: {
+    slug: 'uluwatu', name: 'Uluwatu', tagline: 'Clifftops, Kecak & Surf',
     description: 'Perched on dramatic limestone cliffs above the Indian Ocean, Uluwatu is one of Bali\'s most awe-inspiring locations. Famous for the sacred temple, the mesmerising Kecak fire dance at sunset, and serious surf breaks below.',
     longDescription: 'The Bukit Peninsula is a raised limestone plateau at Bali\'s southern tip, cut by cliff faces that drop seventy metres straight into the Indian Ocean. Uluwatu sits at the western point of this plateau, where the ancient sea temple Pura Luhur Uluwatu clings to the clifftop above the waves. The surf at Uluwatu is among the best in the world — hollow, fast, and demanding — and it draws a global community of serious surfers to the cluster of simple cliff-top warungs and guesthouses that have grown above the break. Each evening, a hundred men perform the Kecak fire dance in the temple complex as the sun sets behind them into the ocean. It is one of the great spectacles available to a traveller in Southeast Asia.',
     highlights: ['Uluwatu Temple', 'Kecak Sunset Dance', 'Padang Padang Beach', 'Bingin Beach', 'Blue Point Bay'],
@@ -86,8 +86,8 @@ const AREAS: Record<string, AreaData> = {
     ],
     experienceAreas: ['Uluwatu'],
   },
-  Seminyak: {
-    slug: 'Seminyak', name: 'Seminyak', tagline: 'Sunset Dining & Bali Chic',
+  seminyak: {
+    slug: 'seminyak', name: 'Seminyak', tagline: 'Sunset Dining & Bali Chic',
     description: 'Seminyak is Bali\'s most sophisticated beach destination — a refined strip of boutique hotels, acclaimed restaurants, rooftop bars, and beautiful shops. The sunsets here are legendary, best watched from a bean bag on the sand.',
     longDescription: 'Seminyak occupies a few kilometres of Bali\'s south-west coast, north of Kuta and south of Canggu. It is the most polished and self-consciously designed part of the island — a place where the accommodation is genuinely beautiful, the food is internationally excellent, and the beach clubs have invested seriously in both aesthetics and experience. The shopping is the best in Bali: independent boutiques selling locally made clothing, jewellery, ceramics, and home goods that you won\'t find anywhere else. Seminyak is not the place for cultural immersion or nature experiences, but as a base for exploring the island it is unmatched, and its own pleasures — a long sunset walk on the beach, dinner at a table in a garden restaurant — are real and considerable.',
     highlights: ['Seminyak Beach', 'Petitenget Temple', 'Eat Street', 'Boutique Shopping', 'Sunset Cocktails'],
@@ -108,8 +108,8 @@ const AREAS: Record<string, AreaData> = {
     ],
     experienceAreas: ['Seminyak'],
   },
-  Jimbaran: {
-    slug: 'Jimbaran', name: 'Jimbaran', tagline: 'Fresh Catch & Firelit Tables',
+  jimbaran: {
+    slug: 'jimbaran', name: 'Jimbaran', tagline: 'Fresh Catch & Firelit Tables',
     description: 'A traditional fishing village turned seafood paradise, Jimbaran Bay is famed for its candlelit beach warungs serving the day\'s catch grilled over coconut husks. Watch the sun melt into the ocean while fishermen bring in their boats.',
     longDescription: 'Jimbaran sits on the western shore of the Bukit Peninsula, where a sheltered bay curves between Kuta to the north and the Bukit cliffs to the south. It has two identities that coexist comfortably. The first is the fishing village: the Kedonganan market at the north end of the bay is one of Bali\'s largest fish markets, active from 5am when the outrigger canoes return with their catch. The second is the resort area: the southern section of the bay hosts several of Bali\'s finest hotels, their grounds sweeping down to a calm, swimmable beach. Between these two poles is the evening ritual that makes Jimbaran famous — the seafood warungs that set tables on the sand at sunset, the grills lit over coconut charcoal, the day\'s catch laid out on ice for you to choose.',
     highlights: ['Jimbaran Fish Market', 'Seafood Beach Warungs', 'Jimbaran Bay Sunset', 'Four Seasons Beach', 'Kedonganan Market'],
@@ -130,8 +130,8 @@ const AREAS: Record<string, AreaData> = {
     ],
     experienceAreas: ['Jimbaran'],
   },
-  Sidemen: {
-    slug: 'Sidemen', name: 'Sidemen & East Bali', tagline: 'The Bali Fewer People Find',
+  sidemen: {
+    slug: 'sidemen', name: 'Sidemen & East Bali', tagline: 'The Bali Fewer People Find',
     description: 'Away from the tourist trail, East Bali is where the island breathes slowly. Sidemen valley, with Mount Agung as its backdrop, is a patchwork of emerald terraces, weaving villages, and morning mist.',
     longDescription: 'East Bali is a different island from the one most visitors experience. There are no beach clubs, no traffic jams on narrow villa streets, no menus in twelve languages. What there is: one of the most beautiful river valleys in Asia, a weaving tradition so labour-intensive that a single cloth takes five years to make, a fishing coast where the volcanic black sand beaches are empty on weekday mornings, and Mount Agung — Bali\'s most sacred and highest volcano — as a constant presence on the horizon. Sidemen valley is the heart of this region: a patchwork of rice terraces, traditional villages, and small family guesthouses that offer genuine peace. Amed, an hour further east on the coast, has some of Bali\'s best snorkelling and diving over a coral garden that has largely recovered from the bleaching events of recent years.',
     highlights: ['Sidemen Valley', 'Mount Agung Views', 'Ikat Weaving Villages', 'Amed Reef Snorkelling', 'Tirta Gangga Water Palace'],
@@ -163,11 +163,11 @@ const ALL_EXPERIENCES: Experience[] = [
   { slug: 'sunrise-yoga-class', title: 'Sunrise Yoga & Meditation', area: 'Canggu', rating: 4.9, reviews: 203, price: 250000, durationMins: 75, category: 'Wellness', photo: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=400&auto=format&fit=crop&q=80' },
   { slug: 'water-temple-purification', title: 'Water Temple Purification', area: 'Gianyar', rating: 4.8, reviews: 78, price: 600000, durationMins: 240, category: 'Culture', photo: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=400&auto=format&fit=crop&q=80' },
   { slug: 'uluwatu-kecak-sunset', title: 'Uluwatu Sunset & Kecak Dance', area: 'Uluwatu', rating: 4.9, reviews: 312, price: 450000, durationMins: 180, category: 'Culture', photo: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=400&auto=format&fit=crop&q=80' },
-  { slug: 'balinese-cooking-class', title: 'Balinese Cooking Class', area: 'Seminyak', rating: 4.8, reviews: 156, price: 480000, durationMins: 210, category: 'Food & Drink', photo: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&auto=format&fit=crop&q=80' },
-  { slug: 'jimbaran-seafood-sunset', title: 'Jimbaran Seafood & Sunset', area: 'Jimbaran', rating: 4.6, reviews: 89, price: 350000, durationMins: 120, category: 'Food & Drink', photo: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&auto=format&fit=crop&q=80' },
-  { slug: 'beginner-surf-lesson', title: 'Beginner Surf Lesson', area: 'Kuta', rating: 4.7, reviews: 428, price: 320000, durationMins: 120, category: 'Surf & Water', photo: 'https://images.unsplash.com/photo-1530870110042-98b2cb110834?w=400&auto=format&fit=crop&q=80' },
-  { slug: 'snorkeling-amed', title: 'Snorkeling at Amed Reef', area: 'Amed', rating: 4.8, reviews: 67, price: 420000, durationMins: 180, category: 'Surf & Water', photo: 'https://images.unsplash.com/photo-1560275619-4662e36fa65c?w=400&auto=format&fit=crop&q=80' },
-  { slug: 'rice-terrace-walk', title: 'Tegalalang Rice Terrace Walk', area: 'Ubud', rating: 4.8, reviews: 192, price: 280000, durationMins: 150, category: 'Nature', photo: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=400&auto=format&fit=crop&q=80' },
+  { slug: 'balinese-cooking-class', title: 'Balinese Cooking Class', area: 'Seminyak', rating: 4.8, reviews: 156, price: 480000, durationMins: 210, category: 'Culinary', photo: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&auto=format&fit=crop&q=80' },
+  { slug: 'jimbaran-seafood-sunset', title: 'Jimbaran Seafood & Sunset', area: 'Jimbaran', rating: 4.6, reviews: 89, price: 350000, durationMins: 120, category: 'Culinary', photo: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&auto=format&fit=crop&q=80' },
+  { slug: 'beginner-surf-lesson', title: 'Beginner Surf Lesson', area: 'Kuta', rating: 4.7, reviews: 428, price: 320000, durationMins: 120, category: 'Water Activities', photo: 'https://images.unsplash.com/photo-1530870110042-98b2cb110834?w=400&auto=format&fit=crop&q=80' },
+  { slug: 'snorkeling-amed', title: 'Snorkeling at Amed Reef', area: 'Amed', rating: 4.8, reviews: 67, price: 420000, durationMins: 180, category: 'Water Activities', photo: 'https://images.unsplash.com/photo-1560275619-4662e36fa65c?w=400&auto=format&fit=crop&q=80' },
+  { slug: 'rice-terrace-walk', title: 'Tegalalang Rice Terrace Walk', area: 'Ubud', rating: 4.8, reviews: 192, price: 280000, durationMins: 150, category: 'Nature & Outdoors', photo: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=400&auto=format&fit=crop&q=80' },
   { slug: 'natural-dye-workshop', title: 'Natural Dye Workshop', area: 'Sidemen', rating: 4.7, reviews: 48, price: 380000, durationMins: 180, category: 'Art & Craft', photo: 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=400&auto=format&fit=crop&q=80' },
   { slug: 'wood-carving-workshop', title: 'Wood Carving Workshop', area: 'Ubud', rating: 4.8, reviews: 72, price: 500000, durationMins: 240, category: 'Art & Craft', photo: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&auto=format&fit=crop&q=80' },
   { slug: 'rattan-weaving-class', title: 'Rattan Weaving Class', area: 'Sidemen', rating: 4.7, reviews: 38, price: 350000, durationMins: 180, category: 'Art & Craft', photo: 'https://images.unsplash.com/photo-1519735777090-ec97162dc266?w=400&auto=format&fit=crop&q=80' },

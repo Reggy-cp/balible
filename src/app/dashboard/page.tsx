@@ -13,6 +13,7 @@ import {
   getHostEvents, createEvent, updateEvent, deleteEvent,
   type EventRow, type EventInput,
 } from '@/lib/event-actions'
+import { saveHostListingAction, submitHostListingAction, type HostListingInput } from '@/lib/actions'
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
@@ -120,9 +121,10 @@ function StatusBadge({ status }: { status: string }) {
     Completed: { bg: '#EEF2FF', color: '#4B6CB7' },
     Pending:   { bg: '#FDF8F4', color: '#C8A97E' },
     Draft:     { bg: '#F5F1EB', color: '#6F675C' },
-    Paused:    { bg: '#FEF9F4', color: '#C8A97E' },
-    Cancelled: { bg: '#FEF2F2', color: '#B66A45' },
-    Paid:      { bg: '#F0F7F2', color: '#4A7C59' },
+    Paused:          { bg: '#FEF9F4', color: '#C8A97E' },
+    'Pending Review': { bg: '#FDF8F4', color: '#C8A97E' },
+    Cancelled:       { bg: '#FEF2F2', color: '#B66A45' },
+    Paid:            { bg: '#F0F7F2', color: '#4A7C59' },
   }
   const s = map[status] ?? { bg: '#F5F1EB', color: '#6F675C' }
   return (
@@ -317,10 +319,11 @@ function ExperiencesPanel({ commissionRate }: { commissionRate: number }) {
   const [imageDragging, setImageDragging] = useState(false)
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([])
   const [galleryDragging, setGalleryDragging] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const galleryInputRef = useRef<HTMLInputElement>(null)
 
-  const BLANK_FORM = { title: '', category: 'Art & Craft', area: 'Ubud', price: '', duration: '', maxGuests: '', meetingPoint: '' }
+  const BLANK_FORM = { title: '', category: 'Art & Craft', area: 'Ubud', price: '', duration: '', maxGuests: '', minGuests: '', meetingPoint: '', description: '', includes: '', excludes: '' }
   const [formData, setFormData] = useState(BLANK_FORM)
   const setField = (k: keyof typeof BLANK_FORM, v: string) => setFormData(p => ({ ...p, [k]: v }))
 
@@ -369,15 +372,18 @@ function ExperiencesPanel({ commissionRate }: { commissionRate: number }) {
     setImagePreview(exp.image)
     setFormStep(1)
     const savedData = (() => { try { const v = localStorage.getItem(`balible_exp_data_${exp.slug}`); return v ? JSON.parse(v) : {} } catch { return {} } })()
-    setFormData({ title: exp.title, category: exp.category, area: exp.area, price: String(exp.price), duration: exp.duration, maxGuests: String(exp.maxGuests), meetingPoint: savedData.meetingPoint || '' })
+    setFormData({ title: exp.title, category: exp.category, area: exp.area, price: String(exp.price), duration: exp.duration, maxGuests: String(exp.maxGuests), minGuests: String(savedData.minGuests || 1), meetingPoint: savedData.meetingPoint || '', description: savedData.description || '', includes: (savedData.includes ?? []).join('\n'), excludes: (savedData.excludes ?? []).join('\n') })
     const saved = localStorage.getItem(`balible_schedule_${exp.slug}`)
     if (saved) setSchedule(JSON.parse(saved))
     else setSchedule(WEEK.map(day => ({ day, enabled: false, open: '09:00', close: '17:00' })))
     setShowForm(true)
   }
 
-  const saveAndClose = () => {
+  const saveAndClose = async (action: 'draft' | 'submit' = 'draft') => {
+    if (submitting) return
+    setSubmitting(true)
     const slug = editingExp?.slug ?? (formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'new-experience')
+    const toLines = (s: string) => s.split('\n').map(l => l.trim()).filter(Boolean)
     const expData = {
       title: formData.title || editingExp?.title || '',
       category: formData.category,
@@ -385,14 +391,19 @@ function ExperiencesPanel({ commissionRate }: { commissionRate: number }) {
       price: Number(formData.price) || editingExp?.price || 0,
       duration: formData.duration || editingExp?.duration || '',
       maxGuests: Number(formData.maxGuests) || editingExp?.maxGuests || 8,
+      minGuests: Number(formData.minGuests) || 1,
       meetingPoint: formData.meetingPoint || '',
+      description: formData.description || '',
+      includes: toLines(formData.includes),
+      excludes: toLines(formData.excludes),
     }
     try {
       localStorage.setItem(`balible_exp_data_${slug}`, JSON.stringify(expData))
       localStorage.setItem(`balible_schedule_${slug}`, JSON.stringify(schedule))
     } catch {}
+    const newStatus = action === 'submit' ? 'Pending Review' : 'Draft'
     if (editingExp) {
-      setExps(prev => prev.map(e => e.id === editingExp.id ? { ...e, ...expData } : e))
+      setExps(prev => prev.map(e => e.id === editingExp.id ? { ...e, ...expData, status: newStatus } : e))
       // Update map entry if it exists
       try {
         const prev = JSON.parse(localStorage.getItem('balible_host_new_experiences') ?? '[]')
@@ -404,7 +415,7 @@ function ExperiencesPanel({ commissionRate }: { commissionRate: number }) {
       } catch {}
     } else {
       const newId = Date.now()
-      setExps(prev => [...prev, { id: newId, slug, ...expData, rating: 0, totalReviews: 0, bookings: 0, status: 'Draft', image: imagePreview ?? '', earnings: 0 }])
+      setExps(prev => [...prev, { id: newId, slug, ...expData, rating: 0, totalReviews: 0, bookings: 0, status: newStatus, image: imagePreview ?? '', earnings: 0 }])
       // Sync to map
       try {
         const [baseLat, baseLng] = AREA_COORDS[expData.area] ?? [-8.5069, 115.2625]
@@ -421,6 +432,21 @@ function ExperiencesPanel({ commissionRate }: { commissionRate: number }) {
         localStorage.setItem('balible_host_new_experiences', JSON.stringify([...prev, mapEntry]))
       } catch {}
     }
+    // Persist to DB (best-effort)
+    const listingInput: HostListingInput = {
+      slug, title: expData.title, description: expData.description,
+      category: expData.category, area: expData.area,
+      price: expData.price, duration: expData.duration,
+      maxGuests: expData.maxGuests, meetingPoint: expData.meetingPoint,
+      includes: expData.includes, excludes: expData.excludes,
+      imageUrl: imagePreview ?? undefined,
+    }
+    if (action === 'submit') {
+      submitHostListingAction(listingInput).catch(() => {})
+    } else {
+      saveHostListingAction(listingInput).catch(() => {})
+    }
+    setSubmitting(false)
     closeForm()
   }
 
@@ -435,7 +461,7 @@ function ExperiencesPanel({ commissionRate }: { commissionRate: number }) {
     setFormData(BLANK_FORM)
   }
 
-  const tabs    = ['All', 'Active', 'Draft', 'Paused']
+  const tabs    = ['All', 'Active', 'Pending Review', 'Draft', 'Paused']
   const visible = filter === 'All' ? exps : exps.filter(e => e.status === filter)
 
   const setStatus = (id: number, s: string) => { setExps(prev => prev.map(e => e.id === id ? { ...e, status: s } : e)); setMenuOpen(null) }
@@ -455,92 +481,83 @@ function ExperiencesPanel({ commissionRate }: { commissionRate: number }) {
       />
 
       {/* Filter tabs */}
-      <div className="inline-flex gap-1 mb-5 bg-white rounded-xl p-1" style={{ border: '1px solid #E8E4DE' }}>
-        {tabs.map(t => (
-          <button key={t} onClick={() => setFilter(t)}
-            style={{ padding: '6px 16px', borderRadius: 10, fontSize: 13, fontWeight: filter === t ? 600 : 400, backgroundColor: filter === t ? '#111111' : 'transparent', color: filter === t ? 'white' : '#6F675C', border: 'none', cursor: 'pointer', transition: 'all 0.15s' }}>
-            {t}
-            <span className="ml-1.5" style={{ fontSize: 11, color: filter === t ? 'rgba(255,255,255,0.5)' : '#C8C4BE' }}>
-              {t === 'All' ? exps.length : exps.filter(e => e.status === t).length}
-            </span>
-          </button>
-        ))}
+      <div className="overflow-x-auto mb-5 scrollbar-none">
+        <div className="inline-flex gap-1 bg-white rounded-xl p-1" style={{ border: '1px solid #E8E4DE' }}>
+          {tabs.map(t => (
+            <button key={t} onClick={() => setFilter(t)}
+              style={{ padding: '6px 16px', borderRadius: 10, fontSize: 13, fontWeight: filter === t ? 600 : 400, flexShrink: 0, backgroundColor: filter === t ? '#111111' : 'transparent', color: filter === t ? 'white' : '#6F675C', border: 'none', cursor: 'pointer', transition: 'all 0.15s' }}>
+              {t}
+              <span className="ml-1.5" style={{ fontSize: 11, color: filter === t ? 'rgba(255,255,255,0.5)' : '#C8C4BE' }}>
+                {t === 'All' ? exps.length : exps.filter(e => e.status === t).length}
+              </span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Experience rows */}
       <div className="space-y-3">
         {visible.map(exp => (
-          <div key={exp.id} className="bg-white rounded-xl p-4 flex items-start gap-4" style={{ border: '1px solid #E8E4DE' }}>
-            <img src={exp.image} alt={exp.title} className="w-20 h-20 rounded-xl object-cover flex-shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111' }}>{exp.title}</h3>
-                <StatusBadge status={exp.status} />
-              </div>
-              <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5">
-                <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#6F675C' }}><MapPin size={11} />{exp.area}</span>
-                <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#6F675C' }}><Clock size={11} />{exp.duration}</span>
-                <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#6F675C' }}><Users size={11} />Up to {exp.maxGuests}</span>
-              </div>
-              <div className="flex flex-wrap gap-x-5 gap-y-1 mt-2">
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#111111' }}>IDR {exp.price.toLocaleString('id-ID')}<span style={{ fontWeight: 400, color: '#6F675C' }}>/person</span></span>
-                <span style={{ fontSize: 13, color: '#6F675C' }}>⭐ {exp.rating} ({exp.totalReviews})</span>
-                <span style={{ fontSize: 13, color: '#6F675C' }}>{exp.bookings} bookings</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#4A7C59' }}>{fmt(Math.round(exp.earnings * (100 - commissionRate) / 100))} <span style={{ fontSize: 10, fontWeight: 400, color: '#9E9A94' }}>net</span></span>
+          <div key={exp.id} className="bg-white rounded-xl p-4" style={{ border: '1px solid #E8E4DE' }}>
+            {/* Info */}
+            <div className="flex items-start gap-3">
+              <img src={exp.image} alt={exp.title} className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: '#111111' }}>{exp.title}</h3>
+                  <StatusBadge status={exp.status} />
+                </div>
+                <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+                  <span className="flex items-center gap-1" style={{ fontSize: 11, color: '#6F675C' }}><MapPin size={10} />{exp.area}</span>
+                  <span className="flex items-center gap-1" style={{ fontSize: 11, color: '#6F675C' }}><Clock size={10} />{exp.duration}</span>
+                  <span className="flex items-center gap-1" style={{ fontSize: 11, color: '#6F675C' }}><Users size={10} />Up to {exp.maxGuests}</span>
+                </div>
+                <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1.5">
+                  <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>IDR {exp.price.toLocaleString('id-ID')}<span style={{ fontWeight: 400, color: '#6F675C' }}>/person</span></span>
+                  <span style={{ fontSize: 12, color: '#6F675C' }}>⭐ {exp.rating} ({exp.totalReviews})</span>
+                  <span style={{ fontSize: 12, color: '#6F675C' }}>{exp.bookings} bookings</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: '#4A7C59' }}>{fmt(Math.round(exp.earnings * (100 - commissionRate) / 100))} <span style={{ fontSize: 10, fontWeight: 400, color: '#9E9A94' }}>net</span></span>
+                </div>
               </div>
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex flex-wrap items-center gap-2 mt-3 pt-3" style={{ borderTop: '1px solid #F5F1EB' }}>
               <a href={`/experiences/${exp.slug}`} target="_blank" rel="noreferrer"
-                className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-ivory transition-colors"
-                style={{ border: '1px solid #E8E4DE', color: '#6F675C' }}>
-                <Eye size={14} />
+                className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+                style={{ height: 30, padding: '0 10px', borderRadius: 8, border: '1px solid #E8E4DE', color: '#6F675C', fontSize: 12, textDecoration: 'none' }}>
+                <Eye size={11} /> View
               </a>
-              <button onClick={() => openEdit(exp)} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-ivory transition-colors"
-                style={{ border: '1px solid #E8E4DE', background: 'none', cursor: 'pointer', color: '#6F675C' }}>
-                <Edit2 size={14} />
+              <button onClick={() => openEdit(exp)}
+                className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+                style={{ height: 30, padding: '0 10px', borderRadius: 8, border: '1px solid #E8E4DE', background: 'none', cursor: 'pointer', color: '#6F675C', fontSize: 12 }}>
+                <Edit2 size={11} /> Edit
               </button>
-              <div className="relative">
-                <button onClick={() => setMenuOpen(menuOpen === exp.id ? null : exp.id)}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-ivory transition-colors"
-                  style={{ border: '1px solid #E8E4DE', background: 'none', cursor: 'pointer', color: '#6F675C' }}>
-                  <MoreHorizontal size={14} />
+              {exp.status !== 'Active' && (
+                <button onClick={() => setStatus(exp.id, 'Active')}
+                  className="flex items-center gap-1.5 hover:opacity-90 transition-opacity"
+                  style={{ height: 30, padding: '0 10px', borderRadius: 8, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                  <Play size={11} /> {exp.status === 'Draft' ? 'Publish' : 'Activate'}
                 </button>
-                {menuOpen === exp.id && (
-                  <>
-                    <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(null)} />
-                    <div className="absolute right-0 top-10 bg-white rounded-xl shadow-lg z-20 py-1 w-36" style={{ border: '1px solid #E8E4DE' }}>
-                      {exp.status !== 'Active' && (
-                        <button onClick={() => setStatus(exp.id, 'Active')}
-                          className="w-full flex items-center gap-2.5 px-4 py-2.5 hover:bg-ivory transition-colors"
-                          style={{ fontSize: 13, color: '#4A7C59', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
-                          <Play size={12} /> {exp.status === 'Draft' ? 'Publish' : 'Activate'}
-                        </button>
-                      )}
-                      {exp.status === 'Active' && (
-                        <button onClick={() => setStatus(exp.id, 'Paused')}
-                          className="w-full flex items-center gap-2.5 px-4 py-2.5 hover:bg-ivory transition-colors"
-                          style={{ fontSize: 13, color: '#C8A97E', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
-                          <Pause size={12} /> Pause
-                        </button>
-                      )}
-                      <button onClick={() => {
-                          setExps(prev => prev.filter(e => e.id !== exp.id))
-                          try {
-                            const prev = JSON.parse(localStorage.getItem('balible_host_new_experiences') ?? '[]')
-                            localStorage.setItem('balible_host_new_experiences', JSON.stringify(prev.filter((e: any) => e.slug !== exp.slug)))
-                          } catch {}
-                          setMenuOpen(null)
-                        }}
-                        className="w-full flex items-center gap-2.5 px-4 py-2.5 hover:bg-ivory transition-colors"
-                        style={{ fontSize: 13, color: '#B66A45', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
-                        <Trash2 size={12} /> Delete
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
+              )}
+              {exp.status === 'Active' && (
+                <button onClick={() => setStatus(exp.id, 'Paused')}
+                  className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+                  style={{ height: 30, padding: '0 10px', borderRadius: 8, border: '1px solid #E8E4DE', background: 'white', color: '#C8A97E', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                  <Pause size={11} /> Pause
+                </button>
+              )}
+              <button onClick={() => {
+                  setExps(prev => prev.filter(e => e.id !== exp.id))
+                  try {
+                    const prev = JSON.parse(localStorage.getItem('balible_host_new_experiences') ?? '[]')
+                    localStorage.setItem('balible_host_new_experiences', JSON.stringify(prev.filter((e: any) => e.slug !== exp.slug)))
+                  } catch {}
+                }}
+                className="flex items-center gap-1.5 hover:bg-red-50 transition-colors"
+                style={{ height: 30, padding: '0 10px', borderRadius: 8, border: '1px solid #E8E4DE', background: 'white', color: '#B66A45', fontSize: 12, cursor: 'pointer' }}>
+                <Trash2 size={11} /> Delete
+              </button>
             </div>
           </div>
         ))}
@@ -560,11 +577,16 @@ function ExperiencesPanel({ commissionRate }: { commissionRate: number }) {
         const labelStyle: React.CSSProperties = { display: 'block', fontSize: 13, fontWeight: 600, color: '#111111', marginBottom: 6 }
 
         return (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-            <div className="bg-white rounded-2xl w-full max-w-lg p-6 max-h-[92vh] overflow-y-auto">
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center sm:p-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+            <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92vh] overflow-y-auto">
+
+              {/* Drag handle — mobile only */}
+              <div className="flex justify-center pt-3 pb-1 sm:hidden">
+                <div style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: '#D1CDC7' }} />
+              </div>
 
               {/* Header */}
-              <div className="flex items-start justify-between mb-5">
+              <div className="flex items-start justify-between px-5 sm:px-6 pt-3 sm:pt-6 mb-5">
                 <div>
                   <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', margin: 0 }}>{editingExp ? 'Edit Experience' : 'New Experience'}</h2>
                   <p style={{ fontSize: 12, color: '#9E9A94', margin: '3px 0 0' }}>Step {formStep} of {STEPS.length} · {STEPS[formStep - 1]}</p>
@@ -573,13 +595,13 @@ function ExperiencesPanel({ commissionRate }: { commissionRate: number }) {
               </div>
 
               {/* Progress bar */}
-              <div style={{ height: 4, borderRadius: 99, backgroundColor: '#F0EDE8', marginBottom: 24 }}>
+              <div style={{ height: 4, borderRadius: 99, backgroundColor: '#F0EDE8', marginBottom: 24, marginInline: 20 }}>
                 <div style={{ height: '100%', borderRadius: 99, backgroundColor: '#111111', width: `${(formStep / STEPS.length) * 100}%`, transition: 'width 0.3s ease' }} />
               </div>
 
               {/* Step 1 — Basics */}
               {formStep === 1 && (
-                <div key={`basics-${editingExp?.id ?? 'new'}`} className="space-y-4">
+                <div key={`basics-${editingExp?.id ?? 'new'}`} className="space-y-4 px-5 sm:px-6">
                   <div>
                     <label style={labelStyle}>Experience title</label>
                     <input type="text" value={formData.title} onChange={e => setField('title', e.target.value)} placeholder="e.g. Traditional Batik Dyeing Class" style={inputStyle} />
@@ -588,7 +610,7 @@ function ExperiencesPanel({ commissionRate }: { commissionRate: number }) {
                     <div>
                       <label style={labelStyle}>Category</label>
                       <select value={formData.category} onChange={e => setField('category', e.target.value)} style={{ ...inputStyle, backgroundColor: 'white', cursor: 'pointer' }}>
-                        {['Art & Craft','Wellness','Culture','Food & Drink','Nature','Architecture','Surf & Water','Diving','Cooking'].map(c => <option key={c}>{c}</option>)}
+                        {['Art & Craft','Wellness','Culture','Culinary','Spiritual','Nature & Outdoors','Water Activities'].map(c => <option key={c}>{c}</option>)}
                       </select>
                     </div>
                     <div>
@@ -600,7 +622,7 @@ function ExperiencesPanel({ commissionRate }: { commissionRate: number }) {
                   </div>
                   <div>
                     <label style={labelStyle}>Description</label>
-                    <textarea placeholder="Describe what guests will experience..." rows={4}
+                    <textarea value={formData.description} onChange={e => setField('description', e.target.value)} placeholder="Describe what guests will experience..." rows={4}
                       style={{ ...inputStyle, resize: 'none' }} />
                   </div>
                 </div>
@@ -608,7 +630,7 @@ function ExperiencesPanel({ commissionRate }: { commissionRate: number }) {
 
               {/* Step 2 — Details */}
               {formStep === 2 && (
-                <div key={`details-${editingExp?.id ?? 'new'}`} className="space-y-4">
+                <div key={`details-${editingExp?.id ?? 'new'}`} className="space-y-4 px-5 sm:px-6">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label style={labelStyle}>Price per person (IDR)</label>
@@ -626,7 +648,7 @@ function ExperiencesPanel({ commissionRate }: { commissionRate: number }) {
                     </div>
                     <div>
                       <label style={labelStyle}>Min guests</label>
-                      <input type="number" placeholder="1" style={inputStyle} />
+                      <input type="number" value={formData.minGuests} onChange={e => setField('minGuests', e.target.value)} placeholder="1" style={inputStyle} />
                     </div>
                   </div>
                   <div>
@@ -635,15 +657,30 @@ function ExperiencesPanel({ commissionRate }: { commissionRate: number }) {
                   </div>
                   <div>
                     <label style={labelStyle}>What&apos;s included</label>
-                    <textarea placeholder="e.g. Materials, refreshments, transport..." rows={3}
-                      style={{ ...inputStyle, resize: 'none' }} />
+                    <textarea
+                      value={formData.includes}
+                      onChange={e => setField('includes', e.target.value)}
+                      placeholder="One item per line&#10;e.g. All materials&#10;Welcome drink&#10;Take-home piece"
+                      rows={4}
+                      style={{ ...inputStyle, resize: 'none' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>What&apos;s not included</label>
+                    <textarea
+                      value={formData.excludes}
+                      onChange={e => setField('excludes', e.target.value)}
+                      placeholder="One item per line&#10;e.g. Transport to venue&#10;Gratuities&#10;Personal expenses"
+                      rows={4}
+                      style={{ ...inputStyle, resize: 'none' }}
+                    />
                   </div>
                 </div>
               )}
 
               {/* Step 3 — Photos */}
               {formStep === 3 && (
-                <div className="space-y-4">
+                <div className="space-y-4 px-5 sm:px-6">
                   {/* Cover photo */}
                   <div>
                     <label style={labelStyle}>Cover Photo</label>
@@ -716,7 +753,7 @@ function ExperiencesPanel({ commissionRate }: { commissionRate: number }) {
 
               {/* Step 4 — Itinerary */}
               {formStep === 4 && (
-                <div>
+                <div className="px-5 sm:px-6">
                   <p style={{ fontSize: 13, color: '#6F675C', marginBottom: 12, marginTop: 0 }}>Walk guests through the schedule, step by step.</p>
                   <div className="space-y-2">
                     {itinerary.map((step, i) => (
@@ -742,7 +779,7 @@ function ExperiencesPanel({ commissionRate }: { commissionRate: number }) {
 
               {/* Step 5 — Schedule */}
               {formStep === 5 && (
-                <div>
+                <div className="px-5 sm:px-6">
                   <p style={{ fontSize: 13, color: '#6F675C', marginBottom: 14, marginTop: 0 }}>
                     Set which days your experience is available and the operating hours.
                   </p>
@@ -787,20 +824,28 @@ function ExperiencesPanel({ commissionRate }: { commissionRate: number }) {
               )}
 
               {/* Footer nav */}
-              <div className="flex gap-3 mt-6">
+              <div className="flex gap-2 mt-6 px-5 sm:px-6 pb-8 sm:pb-6">
                 {formStep > 1 ? (
                   <button onClick={() => setFormStep(s => s - 1)}
-                    style={{ flex: 1, height: 44, borderRadius: 10, border: '1px solid #E8E4DE', background: 'none', fontSize: 14, fontWeight: 600, color: '#6F675C', cursor: 'pointer' }}>Back</button>
+                    style={{ flex: 1, height: 44, borderRadius: 10, border: '1px solid #E8E4DE', background: 'none', fontSize: 13, fontWeight: 600, color: '#6F675C', cursor: 'pointer' }}>Back</button>
                 ) : (
                   <button onClick={closeForm}
-                    style={{ flex: 1, height: 44, borderRadius: 10, border: '1px solid #E8E4DE', background: 'none', fontSize: 14, fontWeight: 600, color: '#6F675C', cursor: 'pointer' }}>Cancel</button>
+                    style={{ flex: 1, height: 44, borderRadius: 10, border: '1px solid #E8E4DE', background: 'none', fontSize: 13, fontWeight: 600, color: '#6F675C', cursor: 'pointer' }}>Cancel</button>
                 )}
                 {formStep < STEPS.length ? (
                   <button onClick={() => setFormStep(s => s + 1)}
                     style={{ flex: 2, height: 44, borderRadius: 10, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Next →</button>
                 ) : (
-                  <button onClick={saveAndClose}
-                    style={{ flex: 2, height: 44, borderRadius: 10, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>{editingExp ? 'Save Changes' : 'Save as Draft'}</button>
+                  <>
+                    <button onClick={() => saveAndClose('draft')} disabled={submitting}
+                      style={{ flex: 1.4, height: 44, borderRadius: 10, border: '1px solid #E8E4DE', background: 'white', fontSize: 13, fontWeight: 600, color: '#6F675C', cursor: 'pointer', opacity: submitting ? 0.6 : 1 }}>
+                      Save Draft
+                    </button>
+                    <button onClick={() => saveAndClose('submit')} disabled={submitting}
+                      style={{ flex: 2, height: 44, borderRadius: 10, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: submitting ? 0.6 : 1 }}>
+                      {submitting ? 'Submitting…' : 'Submit for Review'}
+                    </button>
+                  </>
                 )}
               </div>
 
@@ -1342,78 +1387,128 @@ const EMPTY_EVENT: EventInput = {
   title: '', description: '', date: '', location: '', price: 0, capacity: 10, coverImage: '', status: 'DRAFT',
 }
 
+const LS_EVENTS_KEY = 'balible_host_events'
+
+function lsEvents(): EventRow[] {
+  try { const v = localStorage.getItem(LS_EVENTS_KEY); return v ? JSON.parse(v) : [] } catch { return [] }
+}
+function saveEvents(evs: EventRow[]) {
+  try { localStorage.setItem(LS_EVENTS_KEY, JSON.stringify(evs)) } catch {}
+}
+
 function EventsPanel() {
   const [events, setEvents] = useState<EventRow[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<EventRow | null>(null)
   const [form, setForm] = useState<EventInput>(EMPTY_EVENT)
+  const [galleryUrls, setGalleryUrls] = useState<string[]>(['', '', '', '', ''])
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
+  const [imageMode, setImageMode] = useState<'upload' | 'url'>('url')
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
+  // Load from DB, fall back to localStorage
   useEffect(() => {
-    getHostEvents().then(data => { setEvents(data); setLoading(false) })
+    getHostEvents().then(dbEvents => {
+      const local = lsEvents()
+      const merged = [...dbEvents]
+      local.forEach(lev => { if (!merged.find(e => e.id === lev.id)) merged.push(lev) })
+      merged.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      setEvents(merged)
+      setLoading(false)
+    })
   }, [])
 
+  const setAndSave = (next: EventRow[]) => { setEvents(next); saveEvents(next) }
+
   function openCreate() {
-    setEditing(null)
-    setForm(EMPTY_EVENT)
-    setImagePreview(null)
-    setShowForm(true)
+    setEditing(null); setForm(EMPTY_EVENT); setGalleryUrls(['', '', '', '', ''])
+    setImagePreview(null); setImageMode('url'); setSaveError(''); setShowForm(true)
   }
 
   function openEdit(ev: EventRow) {
     setEditing(ev)
     setForm({
-      title: ev.title, description: ev.description,
-      date: ev.date.slice(0, 16),
+      title: ev.title, description: ev.description, date: ev.date.slice(0, 16),
       location: ev.location, price: ev.price, capacity: ev.capacity,
       coverImage: ev.coverImage ?? '', status: ev.status as EventInput['status'],
     })
+    const savedGallery: string[] = (() => { try { const v = localStorage.getItem(`balible_event_gallery_${ev.slug}`); return v ? JSON.parse(v) : [] } catch { return [] } })()
+    setGalleryUrls([...savedGallery, '', '', '', '', ''].slice(0, 5))
     setImagePreview(ev.coverImage ?? null)
-    setShowForm(true)
+    setImageMode(ev.coverImage?.startsWith('http') ? 'url' : 'upload')
+    setSaveError(''); setShowForm(true)
   }
 
   function handleImageFile(file: File) {
     const reader = new FileReader()
     reader.onload = e => {
       const url = e.target?.result as string
-      setImagePreview(url)
-      setForm(f => ({ ...f, coverImage: url }))
+      setImagePreview(url); setForm(f => ({ ...f, coverImage: url }))
     }
     reader.readAsDataURL(file)
   }
 
+  function makeLocalRow(input: EventInput, slug: string): EventRow {
+    return {
+      id: `local_${Date.now()}`, slug,
+      title: input.title, description: input.description,
+      date: new Date(input.date).toISOString(),
+      location: input.location, price: input.price, capacity: input.capacity,
+      coverImage: input.coverImage ?? null, status: input.status ?? 'DRAFT',
+      createdAt: new Date().toISOString(),
+    }
+  }
+
   async function handleSave() {
-    if (!form.title || !form.date || !form.location) return
+    setSaveError('')
+    if (!form.title.trim()) { setSaveError('Event title is required.'); return }
+    if (!form.date) { setSaveError('Date & time is required.'); return }
+    if (!form.location.trim()) { setSaveError('Location is required.'); return }
+
     setSaving(true)
+    const slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + Math.random().toString(36).slice(2, 5)
+    const finalSlug = editing?.slug ?? slug
+    const validGallery = galleryUrls.filter(u => u.trim())
+    if (validGallery.length > 0) {
+      try { localStorage.setItem(`balible_event_gallery_${finalSlug}`, JSON.stringify(validGallery)) } catch {}
+    }
+
     if (editing) {
       const res = await updateEvent(editing.id, form)
+      const updated = { ...editing, ...form, date: new Date(form.date).toISOString() }
       if (res.ok) {
-        setEvents(prev => prev.map(e => e.id === editing.id
-          ? { ...e, ...form, date: new Date(form.date).toISOString() }
-          : e
-        ))
+        setAndSave(events.map(e => e.id === editing.id ? updated : e))
+      } else {
+        // DB failed — update locally
+        setAndSave(events.map(e => e.id === editing.id ? updated : e))
       }
     } else {
       const res = await createEvent(form)
-      if (res.ok && res.event) setEvents(prev => [...prev, res.event!])
+      if (res.ok && res.event) {
+        setAndSave([...events, res.event])
+      } else {
+        // DB failed — persist locally
+        const local = makeLocalRow(form, slug)
+        setAndSave([...events, local])
+      }
     }
     setSaving(false)
     setShowForm(false)
   }
 
-  async function handleDelete(id: string) {
+  function handleDelete(id: string) {
     if (!confirm('Delete this event?')) return
-    const res = await deleteEvent(id)
-    if (res.ok) setEvents(prev => prev.filter(e => e.id !== id))
+    deleteEvent(id).catch(() => {})
+    setAndSave(events.filter(e => e.id !== id))
   }
 
-  async function toggleStatus(ev: EventRow) {
+  function toggleStatus(ev: EventRow) {
     const next = ev.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED'
-    const res = await updateEvent(ev.id, { status: next as EventInput['status'] })
-    if (res.ok) setEvents(prev => prev.map(e => e.id === ev.id ? { ...e, status: next } : e))
+    updateEvent(ev.id, { status: next as EventInput['status'] }).catch(() => {})
+    setAndSave(events.map(e => e.id === ev.id ? { ...e, status: next } : e))
   }
 
   const inputStyle: React.CSSProperties = {
@@ -1462,50 +1557,48 @@ function EventsPanel() {
             const isPast = d < new Date()
             return (
               <div key={ev.id} className="bg-white rounded-xl overflow-hidden" style={{ border: '1px solid #E8E4DE' }}>
-                <div className="flex gap-0">
+                <div className="flex">
                   {ev.coverImage && (
-                    <img src={ev.coverImage} alt="" className="w-28 h-28 object-cover flex-shrink-0" />
+                    <img src={ev.coverImage} alt="" className="w-20 sm:w-28 object-cover flex-shrink-0 self-stretch" />
                   )}
-                  <div className="flex-1 min-w-0 p-4">
-                    <div className="flex items-start justify-between gap-2 flex-wrap">
-                      <div className="min-w-0">
-                        <p style={{ fontSize: 15, fontWeight: 700, color: '#111111', marginBottom: 2 }}>{ev.title}</p>
+                  <div className="flex-1 min-w-0 p-3 sm:p-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <p style={{ fontSize: 14, fontWeight: 700, color: '#111111', marginBottom: 2 }}>{ev.title}</p>
                         <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
-                          <span style={{ fontSize: 12, color: '#6F675C' }}>📅 {dateStr} · {timeStr}</span>
-                          <span style={{ fontSize: 12, color: '#6F675C' }}>📍 {ev.location}</span>
-                          <span style={{ fontSize: 12, color: '#6F675C' }}>👥 Max {ev.capacity}</span>
-                          <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>IDR {ev.price.toLocaleString('id-ID')}</span>
+                          <span style={{ fontSize: 11, color: '#6F675C' }}>📅 {dateStr} · {timeStr}</span>
+                          <span style={{ fontSize: 11, color: '#6F675C' }}>📍 {ev.location}</span>
+                          <span style={{ fontSize: 11, color: '#6F675C' }}>👥 Max {ev.capacity}</span>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: '#111111' }}>
+                            {ev.price === 0 ? 'Free' : `IDR ${ev.price.toLocaleString('id-ID')}`}
+                          </span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <StatusBadge status={ev.status === 'PUBLISHED' ? 'Active' : ev.status === 'CANCELLED' ? 'Cancelled' : 'Draft'} />
-                      </div>
+                      <StatusBadge status={ev.status === 'PUBLISHED' ? 'Active' : ev.status === 'CANCELLED' ? 'Cancelled' : 'Draft'} />
                     </div>
-                    <div className="flex items-center gap-2 mt-3 pt-3" style={{ borderTop: '1px solid #F5F1EB' }}>
+                    <div className="flex flex-wrap items-center gap-1.5 mt-3 pt-3" style={{ borderTop: '1px solid #F5F1EB' }}>
                       {!isPast && ev.status !== 'CANCELLED' && (
                         <button onClick={() => toggleStatus(ev)}
-                          className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
-                          style={{ height: 30, padding: '0 12px', borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 12, fontWeight: 600, color: '#111111', cursor: 'pointer' }}>
-                          {ev.status === 'PUBLISHED' ? <><Lock size={11} /> Unpublish</> : <><Globe size={11} /> Publish</>}
+                          className="flex items-center gap-1 hover:opacity-80 transition-opacity"
+                          style={{ height: 28, padding: '0 10px', borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 11, fontWeight: 600, color: '#111111', cursor: 'pointer' }}>
+                          {ev.status === 'PUBLISHED' ? <><Lock size={10} /> Unpublish</> : <><Globe size={10} /> Publish</>}
                         </button>
                       )}
                       <button onClick={() => openEdit(ev)}
-                        className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
-                        style={{ height: 30, padding: '0 12px', borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 12, fontWeight: 600, color: '#111111', cursor: 'pointer' }}>
-                        <Edit2 size={11} /> Edit
+                        className="flex items-center gap-1 hover:opacity-80 transition-opacity"
+                        style={{ height: 28, padding: '0 10px', borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 11, fontWeight: 600, color: '#111111', cursor: 'pointer' }}>
+                        <Edit2 size={10} /> Edit
                       </button>
                       <button onClick={() => handleDelete(ev.id)}
-                        className="flex items-center gap-1.5 hover:bg-red-50 transition-colors"
-                        style={{ height: 30, padding: '0 12px', borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 12, fontWeight: 600, color: '#B66A45', cursor: 'pointer' }}>
-                        <Trash2 size={11} /> Delete
+                        className="flex items-center gap-1 hover:bg-red-50 transition-colors"
+                        style={{ height: 28, padding: '0 10px', borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 11, fontWeight: 600, color: '#B66A45', cursor: 'pointer' }}>
+                        <Trash2 size={10} /> Delete
                       </button>
-                      {ev.status === 'PUBLISHED' && (
-                        <a href={`/events/${ev.slug}`} target="_blank" rel="noopener noreferrer"
-                          className="flex items-center gap-1.5 hover:opacity-80 transition-opacity ml-auto"
-                          style={{ height: 30, padding: '0 12px', borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 12, fontWeight: 600, color: '#6F675C', cursor: 'pointer', textDecoration: 'none' }}>
-                          <Eye size={11} /> View page
-                        </a>
-                      )}
+                      <a href={`/events/${ev.slug}`} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-1 hover:opacity-80 transition-opacity"
+                        style={{ height: 28, padding: '0 10px', borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 11, fontWeight: 600, color: '#6F675C', cursor: 'pointer', textDecoration: 'none' }}>
+                        <Eye size={10} /> View
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -1517,76 +1610,129 @@ function EventsPanel() {
 
       {/* Create / Edit modal */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div className="bg-white rounded-2xl w-full max-w-lg p-6 max-h-[92vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-5">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center sm:p-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92vh] overflow-y-auto">
+            {/* drag handle – mobile only */}
+            <div className="flex justify-center pt-3 pb-1 sm:hidden">
+              <div style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: '#D1CDC7' }} />
+            </div>
+            <div className="px-5 pt-4 sm:pt-5 pb-3 flex items-center justify-between" style={{ borderBottom: '1px solid #F5F1EB' }}>
               <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', margin: 0 }}>
                 {editing ? 'Edit Event' : 'New Event'}
               </h2>
-              <button onClick={() => setShowForm(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+              <button onClick={() => setShowForm(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
                 <X size={20} style={{ color: '#6F675C' }} />
               </button>
             </div>
 
-            <div className="space-y-4">
+            <div className="px-5 pt-4 pb-2 space-y-4">
+
+              {/* Title */}
               <div>
-                <label style={labelStyle}>Event title *</label>
+                <label style={labelStyle}>Event title <span style={{ color: '#B66A45' }}>*</span></label>
                 <input type="text" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                  placeholder="e.g. Full Moon Yoga Festival" style={inputStyle} />
+                  placeholder="e.g. Full Moon Yoga & Sound Bath" style={inputStyle} />
               </div>
 
+              {/* Description */}
               <div>
-                <label style={labelStyle}>Description *</label>
+                <label style={labelStyle}>Description</label>
                 <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                  placeholder="What will guests experience at this event?" rows={3}
-                  style={{ ...inputStyle, resize: 'none' }} />
+                  placeholder="What will guests experience at this event?" rows={4}
+                  style={{ ...inputStyle, resize: 'none', lineHeight: 1.6 }} />
               </div>
 
+              {/* Date & time */}
+              <div>
+                <label style={labelStyle}>Date & time <span style={{ color: '#B66A45' }}>*</span></label>
+                <input type="datetime-local" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
+                  style={inputStyle} />
+              </div>
+
+              {/* Location */}
+              <div>
+                <label style={labelStyle}>Location / venue <span style={{ color: '#B66A45' }}>*</span></label>
+                <input type="text" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
+                  placeholder="e.g. Rice Terrace Stage, Jl. Raya Ubud" style={inputStyle} />
+              </div>
+
+              {/* Capacity + Price */}
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label style={labelStyle}>Date & time *</label>
-                  <input type="datetime-local" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
-                    style={inputStyle} />
-                </div>
                 <div>
                   <label style={labelStyle}>Capacity</label>
                   <input type="number" value={form.capacity} onChange={e => setForm(f => ({ ...f, capacity: Number(e.target.value) }))}
                     min={1} placeholder="10" style={inputStyle} />
                 </div>
-              </div>
-
-              <div>
-                <label style={labelStyle}>Location / venue *</label>
-                <input type="text" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
-                  placeholder="e.g. Rice Terrace Stage, Jl. Raya Ubud" style={inputStyle} />
-              </div>
-
-              <div>
-                <label style={labelStyle}>Price per ticket (IDR)</label>
-                <input type="number" value={form.price || ''} onChange={e => setForm(f => ({ ...f, price: Number(e.target.value) }))}
-                  min={0} placeholder="250000" style={inputStyle} />
+                <div>
+                  <label style={labelStyle}>Ticket price (IDR)</label>
+                  <input type="number" value={form.price === 0 ? '' : form.price} onChange={e => setForm(f => ({ ...f, price: Number(e.target.value) || 0 }))}
+                    min={0} placeholder="0 = Free" style={inputStyle} />
+                </div>
               </div>
 
               {/* Cover image */}
               <div>
-                <label style={labelStyle}>Cover image</label>
-                <input ref={fileRef} type="file" accept="image/*" className="hidden"
-                  onChange={e => { const f = e.target.files?.[0]; if (f) handleImageFile(f) }} />
-                {imagePreview ? (
-                  <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', height: 160 }}>
-                    <img src={imagePreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    <button onClick={() => { setImagePreview(null); setForm(f => ({ ...f, coverImage: '' })); if (fileRef.current) fileRef.current.value = '' }}
-                      style={{ position: 'absolute', top: 8, right: 8, width: 28, height: 28, borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.55)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <X size={14} style={{ color: 'white' }} />
-                    </button>
+                <div className="flex items-center justify-between mb-2">
+                  <label style={{ ...labelStyle, marginBottom: 0 }}>Cover image</label>
+                  <div className="flex gap-1 p-0.5 rounded-lg" style={{ backgroundColor: '#F5F1EB' }}>
+                    {(['url', 'upload'] as const).map(m => (
+                      <button key={m} onClick={() => setImageMode(m)}
+                        style={{ height: 26, padding: '0 10px', borderRadius: 8, border: 'none', fontSize: 11, fontWeight: 600, cursor: 'pointer', backgroundColor: imageMode === m ? 'white' : 'transparent', color: imageMode === m ? '#111111' : '#6F675C', transition: 'all 0.15s' }}>
+                        {m === 'url' ? 'URL' : 'Upload'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {imageMode === 'url' ? (
+                  <div>
+                    <input type="url" value={form.coverImage ?? ''} onChange={e => { setForm(f => ({ ...f, coverImage: e.target.value })); setImagePreview(e.target.value || null) }}
+                      placeholder="https://images.unsplash.com/…" style={inputStyle} />
+                    {imagePreview && (
+                      <div className="relative mt-2 overflow-hidden" style={{ height: 140, borderRadius: 10 }}>
+                        <img src={imagePreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={() => setImagePreview(null)} />
+                        <button onClick={() => { setImagePreview(null); setForm(f => ({ ...f, coverImage: '' })) }}
+                          style={{ position: 'absolute', top: 8, right: 8, width: 26, height: 26, borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.55)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <X size={13} style={{ color: 'white' }} />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ) : (
-                  <div onClick={() => fileRef.current?.click()}
-                    style={{ height: 120, borderRadius: 12, border: '2px dashed #E8E4DE', backgroundColor: '#F9F9F7', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer' }}>
-                    <Camera size={20} style={{ color: '#6F675C' }} />
-                    <p style={{ fontSize: 13, color: '#6F675C', margin: 0 }}>Click to upload cover image</p>
-                  </div>
+                  <>
+                    <input ref={fileRef} type="file" accept="image/*" className="hidden"
+                      onChange={e => { const f = e.target.files?.[0]; if (f) handleImageFile(f) }} />
+                    {imagePreview ? (
+                      <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', height: 140 }}>
+                        <img src={imagePreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <button onClick={() => { setImagePreview(null); setForm(f => ({ ...f, coverImage: '' })); if (fileRef.current) fileRef.current.value = '' }}
+                          style={{ position: 'absolute', top: 8, right: 8, width: 26, height: 26, borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.55)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <X size={13} style={{ color: 'white' }} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div onClick={() => fileRef.current?.click()}
+                        style={{ height: 110, borderRadius: 12, border: '2px dashed #E8E4DE', backgroundColor: '#F9F9F7', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 7, cursor: 'pointer' }}>
+                        <Camera size={18} style={{ color: '#6F675C' }} />
+                        <p style={{ fontSize: 13, color: '#6F675C', margin: 0 }}>Click to upload</p>
+                      </div>
+                    )}
+                  </>
                 )}
+              </div>
+
+              {/* Gallery images */}
+              <div>
+                <label style={labelStyle}>Gallery photos <span style={{ fontSize: 11, fontWeight: 400, color: '#9E9A94' }}>(up to 5 image URLs)</span></label>
+                <div className="space-y-2">
+                  {galleryUrls.map((url, i) => (
+                    <input key={i} type="url" value={url}
+                      onChange={e => setGalleryUrls(prev => prev.map((u, j) => j === i ? e.target.value : u))}
+                      placeholder={`Photo ${i + 1} URL`}
+                      style={{ ...inputStyle, fontSize: 12 }} />
+                  ))}
+                </div>
+                <p style={{ fontSize: 11, color: '#9E9A94', marginTop: 5 }}>These appear in the gallery on your event page.</p>
               </div>
 
               {/* Status */}
@@ -1599,15 +1745,22 @@ function EventsPanel() {
                   <option value="CANCELLED">Cancelled</option>
                 </select>
               </div>
+
+              {/* Error */}
+              {saveError && (
+                <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg" style={{ backgroundColor: '#FEF3ED', border: '1px solid #F5C9AE' }}>
+                  <span style={{ fontSize: 13, color: '#B66A45' }}>{saveError}</span>
+                </div>
+              )}
             </div>
 
-            <div className="flex gap-3 mt-6">
+            <div className="flex gap-3 px-5 pt-3 pb-8 sm:pb-6">
               <button onClick={() => setShowForm(false)}
                 style={{ flex: 1, height: 44, borderRadius: 10, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 14, fontWeight: 600, color: '#6F675C', cursor: 'pointer' }}>
                 Cancel
               </button>
-              <button onClick={handleSave} disabled={saving || !form.title || !form.date || !form.location}
-                style={{ flex: 2, height: 44, borderRadius: 10, border: 'none', backgroundColor: saving || !form.title || !form.date || !form.location ? '#ccc' : '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: saving ? 'wait' : 'pointer' }}>
+              <button onClick={handleSave} disabled={saving}
+                style={{ flex: 2, height: 44, borderRadius: 10, border: 'none', backgroundColor: saving ? '#9E9A94' : '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: saving ? 'wait' : 'pointer', transition: 'background 0.15s' }}>
                 {saving ? 'Saving…' : editing ? 'Save changes' : 'Create event'}
               </button>
             </div>

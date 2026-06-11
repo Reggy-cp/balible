@@ -163,6 +163,7 @@ enum Status {
   ACTIVE
   DRAFT
   PAUSED
+  PENDING_REVIEW
 }
 
 enum BookingStatus {

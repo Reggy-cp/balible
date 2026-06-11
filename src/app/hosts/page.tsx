@@ -17,21 +17,22 @@ const HOSTS = [
   { slug: 'komang-dewi',     name: 'Komang Dewi',     businessName: 'Jiwa Yoga Canggu',            area: 'Canggu',   category: 'Wellness',      rating: 4.9, reviews: 203, avatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&auto=format&fit=crop&q=80', tagline: 'Rooftop sunrise yoga and breathwork for the wandering soul in Canggu.' },
   { slug: 'wayan-gede',      name: 'Wayan Gede',      businessName: 'Sacred Bali Ceremonies',      area: 'Ubud',     category: 'Culture',       rating: 4.8, reviews: 78,  avatar: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=400&auto=format&fit=crop&q=80', tagline: 'Third-generation temple guide opening the sacred world of Balinese ceremony.' },
   { slug: 'i-nyoman-arta',   name: 'I Nyoman Arta',   businessName: 'Bali Culture Tours',          area: 'Uluwatu', category: 'Culture',       rating: 4.9, reviews: 312, avatar: null, tagline: 'Specialist in Balinese cultural experiences with 18 years guiding guests.' },
-  { slug: 'putu-sari',       name: 'Putu Sari',       businessName: 'Warung Dapur Bali',           area: 'Seminyak', category: 'Food & Drink',  rating: 4.8, reviews: 156, avatar: null, tagline: 'Family-run cooking school teaching traditional Balinese cuisine for a decade.' },
-  { slug: 'komang-surya',    name: 'Komang Surya',    businessName: 'Kuta Surf Academy',           area: 'Kuta',     category: 'Surf & Water',  rating: 4.7, reviews: 428, avatar: null, tagline: 'Bali\'s most-reviewed surf school with certified ISA instructors.' },
-  { slug: 'gede-arnawa',     name: 'Gede Arnawa',     businessName: 'Tegalalang Walking Tours',    area: 'Ubud',     category: 'Nature',        rating: 4.8, reviews: 192, avatar: null, tagline: 'Local farmer-guide sharing the living landscape of Tegalalang rice terraces.' },
+  { slug: 'putu-sari',       name: 'Putu Sari',       businessName: 'Warung Dapur Bali',           area: 'Seminyak', category: 'Culinary',          rating: 4.8, reviews: 156, avatar: null, tagline: 'Family-run cooking school teaching traditional Balinese cuisine for a decade.' },
+  { slug: 'komang-surya',    name: 'Komang Surya',    businessName: 'Kuta Surf Academy',           area: 'Kuta',     category: 'Water Activities',  rating: 4.7, reviews: 428, avatar: null, tagline: 'Bali\'s most-reviewed surf school with certified ISA instructors.' },
+  { slug: 'gede-arnawa',     name: 'Gede Arnawa',     businessName: 'Tegalalang Walking Tours',    area: 'Ubud',     category: 'Nature & Outdoors', rating: 4.8, reviews: 192, avatar: null, tagline: 'Local farmer-guide sharing the living landscape of Tegalalang rice terraces.' },
   { slug: 'ni-made-suari',   name: 'Ni Made Suari',   businessName: 'Sidemen Weave & Dye',        area: 'Sidemen',  category: 'Art & Craft',   rating: 4.7, reviews: 31,  avatar: null, tagline: 'Preserving ancient natural dyeing and traditional weaving in East Bali.' },
   { slug: 'i-nyoman-karsa',  name: 'I Nyoman Karsa',  businessName: 'Karsa Wood Studio',           area: 'Ubud',     category: 'Art & Craft',   rating: 4.6, reviews: 47,  avatar: null, tagline: 'Third-generation wood carving family from Mas Village, Ubud.' },
   { slug: 'ni-komang-ayu',   name: 'Ni Komang Ayu',   businessName: 'Sidemen Village Crafts',      area: 'Sidemen',  category: 'Art & Craft',   rating: 4.8, reviews: 29,  avatar: null, tagline: 'Women\'s weaving collective preserving traditional rattan craft in East Bali.' },
 ]
 
 const CATEGORY_COLORS: Record<string, string> = {
-  'Art & Craft':  '#C8A97E',
-  'Wellness':     '#7EB5A6',
-  'Culture':      '#A97EB5',
-  'Food & Drink': '#B5A07E',
-  'Nature':       '#7EA67E',
-  'Surf & Water': '#7E9EB5',
+  'Art & Craft':       '#C8A97E',
+  'Wellness':          '#7EB5A6',
+  'Culture':           '#A97EB5',
+  'Culinary':          '#B5A07E',
+  'Spiritual':         '#C8A97E',
+  'Nature & Outdoors': '#7EA67E',
+  'Water Activities':  '#7E9EB5',
 }
 
 export default function HostsPage() {

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   Heart, Search, CalendarDays, ChevronDown,
   ChevronRight, ChevronLeft, Leaf, Scissors, Landmark, ChefHat, Sun,
@@ -49,9 +50,9 @@ const HOSTS = [
 ]
 
 const FOOTER_COLS = [
-  { title: 'Explore',   links: [{ label: 'All Experiences', href: '/search' }, { label: 'Events', href: '/events' }, { label: 'By Destination', href: '/destinations' }, { label: 'How It Works', href: '/how-it-works' }, { label: 'Map View', href: '/map' }] },
+  { title: 'Explore',   links: [{ label: 'All Experiences', href: '/search' }, { label: 'Events', href: '/events' }, { label: 'By Destination', href: '/destinations' }, { label: 'How It Works', href: '/how-it-works' }] },
   { title: 'For Hosts', links: [{ label: 'Become A Host', href: '/for-hosts' }, { label: 'Host Dashboard', href: '/dashboard' }, { label: 'How It Works', href: '/for-hosts#how-it-works' }, { label: 'Earnings Calculator', href: '/for-hosts#calculator' }, { label: 'Host Stories', href: '/for-hosts#stories' }] },
-  { title: 'About',     links: [{ label: 'Our Story', href: '/about' }, { label: 'Destinations', href: '/destinations' }, { label: 'Sign In', href: '/auth/signin' }, { label: 'Sign Up', href: '/auth/signup' }] },
+  { title: 'About',     links: [{ label: 'Our Story', href: '/about' }, { label: 'Destinations', href: '/destinations' }, { label: 'Sign In', href: '/sign-in' }, { label: 'Sign Up', href: '/sign-up' }] },
   { title: 'Support',   links: [{ label: 'Help Centre', href: '/help' }, { label: 'How It Works', href: '/how-it-works' }, { label: 'Wishlist', href: '/wishlist' }, { label: 'My Profile', href: '/profile' }, { label: 'My Bookings', href: '/profile' }] },
 ]
 
@@ -122,9 +123,29 @@ function HostCard({ host }: { host: typeof HOSTS[0] }) {
 
 export default function HomeClient({ featuredExperiences, upcomingEvents }: { featuredExperiences: FeaturedExp[]; upcomingEvents: EventRow[] }) {
   const [search, setSearch]         = useState('')
+  const [date, setDate]             = useState('')
   const [email, setEmail]           = useState('')
   const [subscribed, setSubscribed] = useState(false)
-  const scrollRef = useRef<HTMLDivElement>(null)
+  const scrollRef    = useRef<HTMLDivElement>(null)
+  const dateInputRef = useRef<HTMLInputElement>(null)
+  const router = useRouter()
+
+  const openDatePicker = (e: React.MouseEvent) => {
+    e.preventDefault()
+    try {
+      (dateInputRef.current as any)?.showPicker?.()
+    } catch {
+      dateInputRef.current?.click()
+    }
+  }
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    const params = new URLSearchParams()
+    if (search.trim()) params.set('q', encodeURIComponent(search.trim()))
+    if (date) params.set('date', date)
+    router.push(`/search${params.toString() ? `?${params.toString()}` : ''}`)
+  }
 
   const handleSubscribe = () => {
     if (!email.trim()) return
@@ -162,31 +183,55 @@ export default function HomeClient({ featuredExperiences, upcomingEvents }: { fe
           </p>
 
           {/* Search bar */}
-          <div className="flex items-center bg-white shadow-xl mt-6 lg:mt-8" style={{ maxWidth: 500, height: 52, borderRadius: 8 }}>
+          <form onSubmit={handleSearch} className="flex items-center bg-white shadow-xl mt-6 lg:mt-8" style={{ maxWidth: 500, height: 52, borderRadius: 8 }}>
             <div className="flex items-center gap-2 px-3 lg:px-4 flex-1 min-w-0">
               <Search size={15} style={{ color: '#6F675C', flexShrink: 0 }} />
               <input
                 type="text"
-                placeholder="Search experiences, places, activities..."
+                placeholder="Search experiences…"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="outline-none w-full bg-transparent placeholder:text-coconut text-charcoal truncate"
+                className="outline-none w-full bg-transparent placeholder:text-coconut text-charcoal"
                 style={{ fontFamily: 'var(--font-inter)', fontSize: 13 }}
               />
             </div>
             <div className="w-px h-7 flex-shrink-0" style={{ backgroundColor: '#E8E4DE' }} />
-            <div className="hidden sm:flex items-center gap-1.5 px-3 flex-shrink-0">
-              <CalendarDays size={14} style={{ color: '#6F675C' }} />
-              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', whiteSpace: 'nowrap' }}>Add date</span>
+            <div
+              className="hidden sm:flex items-center gap-1.5 px-3 flex-shrink-0"
+              style={{ cursor: 'pointer', position: 'relative' }}
+              onClick={openDatePicker}
+            >
+              <CalendarDays size={14} style={{ color: date ? '#111111' : '#6F675C', flexShrink: 0 }} />
+              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: date ? '#111111' : '#6F675C', whiteSpace: 'nowrap' }}>
+                {date ? new Date(date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Add date'}
+              </span>
+              <input
+                ref={dateInputRef}
+                type="date"
+                value={date}
+                onChange={e => setDate(e.target.value)}
+                min={new Date().toISOString().split('T')[0]}
+                tabIndex={-1}
+                style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none', top: 0, left: 0 }}
+              />
             </div>
-            <a
-              href={`/search${search.trim() ? `?q=${encodeURIComponent(search.trim())}` : ''}`}
-              className="mx-2 flex-shrink-0 text-white rounded-md px-4 lg:px-6 py-2 hover:opacity-90 transition-opacity"
-              style={{ backgroundColor: '#111111', fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500, textDecoration: 'none' }}
+            {/* Mobile: icon only; desktop: label */}
+            <button
+              type="submit"
+              className="mx-2 flex-shrink-0 text-white rounded-md hover:opacity-90 transition-opacity flex items-center justify-center sm:hidden"
+              style={{ backgroundColor: '#111111', border: 'none', cursor: 'pointer', width: 36, height: 36 }}
+              aria-label="Search"
+            >
+              <Search size={15} color="white" />
+            </button>
+            <button
+              type="submit"
+              className="mx-2 flex-shrink-0 text-white rounded-md px-6 py-2 hover:opacity-90 transition-opacity hidden sm:flex items-center"
+              style={{ backgroundColor: '#111111', fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500, border: 'none', cursor: 'pointer' }}
             >
               Search
-            </a>
-          </div>
+            </button>
+          </form>
         </div>
       </section>
 
@@ -201,8 +246,8 @@ export default function HomeClient({ featuredExperiences, upcomingEvents }: { fe
           ].map(({ value, label, suffix }, i) => (
             <div
               key={label}
-              className="flex flex-col items-center text-center lg:py-2"
-              style={i > 0 ? { borderLeft: '1px solid rgba(255,255,255,0.08)' } : {}}
+              className={`flex flex-col items-center text-center lg:py-2${i > 0 ? ' lg:border-l' : ''}`}
+              style={i > 0 ? { borderLeftColor: 'rgba(255,255,255,0.08)' } : {}}
             >
               <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px, 4vw, 40px)', fontWeight: 700, color: 'white', lineHeight: 1 }}>
                 {value}{suffix && <span style={{ color: '#C8A97E', marginLeft: 3 }}>{suffix}</span>}
@@ -324,7 +369,7 @@ export default function HomeClient({ featuredExperiences, upcomingEvents }: { fe
                 Meet the people behind the experiences.
               </p>
             </div>
-            <a href="/for-hosts" className="flex-shrink-0 hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#C8A97E', textDecoration: 'underline' }}>
+            <a href="/hosts" className="flex-shrink-0 hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#C8A97E', textDecoration: 'underline' }}>
               View all →
             </a>
           </div>
@@ -429,7 +474,7 @@ export default function HomeClient({ featuredExperiences, upcomingEvents }: { fe
       </section>
 
       {/* ── FOOTER ── */}
-      <footer style={{ backgroundColor: '#111111' }} className="px-6 lg:px-16 pt-12 pb-8 md:pb-8 pb-24">
+      <footer style={{ backgroundColor: '#111111' }} className="px-6 lg:px-16 pt-12 pb-24 md:pb-8">
         <div className="max-w-[1440px] mx-auto">
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-10 pb-8" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
             <div className="col-span-2 lg:col-span-1">

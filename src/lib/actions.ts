@@ -128,6 +128,197 @@ export async function createReviewAction(input: {
   }
 }
 
+// ── Host listing management ───────────────────────────────────────────────────
+
+const CATEGORY_TO_ENUM: Record<string, string> = {
+  'Art & Craft': 'ART_CRAFT',
+  'Wellness': 'WELLNESS',
+  'Culture': 'CULTURE',
+  'Culinary': 'FOOD_DRINK',
+  'Cooking': 'COOKING',
+  'Nature & Outdoors': 'NATURE',
+  'Water Activities': 'SURF_WATER',
+  'Spiritual': 'CULTURE',
+}
+
+const AREA_TO_ENUM: Record<string, string> = {
+  'Ubud': 'UBUD', 'Canggu': 'CANGGU', 'Kuta': 'KUTA', 'Seminyak': 'SEMINYAK',
+  'Uluwatu': 'ULUWATU', 'Gianyar': 'GIANYAR', 'Sanur': 'SANUR',
+  'Nusa Dua': 'NUSA_DUA', 'Amed': 'AMED', 'Jimbaran': 'JIMBARAN',
+  'Kintamani': 'KINTAMANI', 'Sidemen': 'AMED',
+}
+
+export type HostListingInput = {
+  slug: string
+  title: string
+  description: string
+  category: string
+  area: string
+  price: number
+  duration: string
+  maxGuests: number
+  meetingPoint: string
+  includes: string[]
+  excludes: string[]
+  imageUrl?: string
+}
+
+async function getOrCreateOperator(businessName: string) {
+  const user = await getOrCreateNeonUser()
+  if (!user) return null
+  const existing = await prisma.operator.findUnique({ where: { userId: user.id } })
+  if (existing) return existing
+  return prisma.operator.create({
+    data: {
+      userId: user.id,
+      businessName: businessName || user.name,
+      description: '',
+    },
+  })
+}
+
+export async function saveHostListingAction(
+  input: HostListingInput,
+): Promise<{ ok: boolean; id?: string }> {
+  try {
+    const operator = await getOrCreateOperator(input.title)
+    if (!operator) return { ok: false }
+
+    const categoryEnum = CATEGORY_TO_ENUM[input.category] ?? 'ART_CRAFT'
+    const areaEnum = AREA_TO_ENUM[input.area] ?? 'UBUD'
+
+    const data = {
+      operatorId: operator.id,
+      title: input.title,
+      description: input.description || '',
+      category: categoryEnum as any,
+      area: areaEnum as any,
+      price: input.price || 0,
+      duration: input.duration || '',
+      level: 'All levels',
+      maxGuests: input.maxGuests || 8,
+      images: input.imageUrl ? [input.imageUrl] : [],
+      highlights: [],
+      includes: input.includes,
+      excludes: input.excludes,
+      meetingPoint: input.meetingPoint || '',
+      latitude: 0,
+      longitude: 0,
+      status: 'DRAFT' as any,
+    }
+
+    const existing = await prisma.experience.findUnique({ where: { slug: input.slug } })
+    if (existing && existing.operatorId === operator.id) {
+      const updated = await prisma.experience.update({
+        where: { slug: input.slug },
+        data: { ...data, status: existing.status === 'PENDING_REVIEW' ? 'PENDING_REVIEW' : 'DRAFT' as any },
+      })
+      return { ok: true, id: updated.id }
+    }
+    const created = await prisma.experience.create({ data: { slug: input.slug, ...data } })
+    return { ok: true, id: created.id }
+  } catch {
+    return { ok: false }
+  }
+}
+
+export async function submitHostListingAction(
+  input: HostListingInput,
+): Promise<{ ok: boolean; id?: string }> {
+  try {
+    const operator = await getOrCreateOperator(input.title)
+    if (!operator) return { ok: false }
+
+    const categoryEnum = CATEGORY_TO_ENUM[input.category] ?? 'ART_CRAFT'
+    const areaEnum = AREA_TO_ENUM[input.area] ?? 'UBUD'
+
+    const data = {
+      operatorId: operator.id,
+      title: input.title,
+      description: input.description || '',
+      category: categoryEnum as any,
+      area: areaEnum as any,
+      price: input.price || 0,
+      duration: input.duration || '',
+      level: 'All levels',
+      maxGuests: input.maxGuests || 8,
+      images: input.imageUrl ? [input.imageUrl] : [],
+      highlights: [],
+      includes: input.includes,
+      excludes: input.excludes,
+      meetingPoint: input.meetingPoint || '',
+      latitude: 0,
+      longitude: 0,
+      status: 'PENDING_REVIEW' as any,
+    }
+
+    const existing = await prisma.experience.findUnique({ where: { slug: input.slug } })
+    if (existing && existing.operatorId === operator.id) {
+      const updated = await prisma.experience.update({ where: { slug: input.slug }, data })
+      return { ok: true, id: updated.id }
+    }
+    const created = await prisma.experience.create({ data: { slug: input.slug, ...data } })
+    return { ok: true, id: created.id }
+  } catch {
+    return { ok: false }
+  }
+}
+
+export type PendingListing = {
+  id: string
+  slug: string
+  title: string
+  area: string
+  category: string
+  price: number
+  duration: string
+  hostName: string
+  submittedAt: string
+  image: string
+}
+
+export async function getPendingListingsAction(): Promise<PendingListing[]> {
+  try {
+    const rows = await prisma.experience.findMany({
+      where: { status: 'PENDING_REVIEW' as any },
+      include: { operator: { include: { user: { select: { name: true } } } } },
+      orderBy: { createdAt: 'asc' },
+    })
+    return rows.map(r => ({
+      id: r.id,
+      slug: r.slug,
+      title: r.title,
+      area: AREA_DISPLAY[String(r.area)] ?? String(r.area),
+      category: String(r.category).replace('_', ' & ').replace('FOOD_DRINK', 'Culinary'),
+      price: r.price,
+      duration: r.duration,
+      hostName: r.operator.user.name,
+      submittedAt: r.createdAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      image: (r.images as string[])[0] ?? '',
+    }))
+  } catch {
+    return []
+  }
+}
+
+export async function approveListingAction(id: string): Promise<{ ok: boolean }> {
+  try {
+    await prisma.experience.update({ where: { id }, data: { status: 'ACTIVE' as any } })
+    return { ok: true }
+  } catch {
+    return { ok: false }
+  }
+}
+
+export async function rejectListingAction(id: string): Promise<{ ok: boolean }> {
+  try {
+    await prisma.experience.update({ where: { id }, data: { status: 'DRAFT' as any } })
+    return { ok: true }
+  } catch {
+    return { ok: false }
+  }
+}
+
 // ── User data (profile + wishlist pages) ─────────────────────────────────────
 
 export type UserData = {

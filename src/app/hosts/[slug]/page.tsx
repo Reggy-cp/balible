@@ -200,7 +200,7 @@ async function getHostFromDB(slug: string): Promise<Host | null> {
     const CATEGORY_DISPLAY: Record<string, string> = {
       WELLNESS: 'Wellness', ART_CRAFT: 'Art & Craft', CULTURE: 'Culture',
       FOOD_DRINK: 'Culinary', COOKING: 'Culinary', NATURE: 'Nature & Outdoors',
-      SURF_WATER: 'Water Activities', DIVING: 'Diving', SPIRITUAL: 'Spiritual',
+      SURF_WATER: 'Water Activities', DIVING: 'Water Activities', SPIRITUAL: 'Spiritual',
     }
     const AREA_DISPLAY: Record<string, string> = {
       UBUD: 'Ubud', CANGGU: 'Canggu', SEMINYAK: 'Seminyak', KUTA: 'Kuta',

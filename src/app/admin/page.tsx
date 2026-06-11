@@ -1,14 +1,15 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import {
   LayoutDashboard, Compass, Users, CalendarDays, Star,
   CreditCard, BarChart2, Settings, Menu, X,
   ArrowUpRight, ArrowDownRight, ChevronDown, Search, Download,
   Eye, Edit2, Trash2, Play, Pause, CheckCircle, XCircle,
   MoreHorizontal, Bell, LogOut, TrendingUp, Globe, Shield,
-  Check, AlertTriangle, Plus, RefreshCw, Flag,
+  Check, AlertTriangle, Plus, RefreshCw, Flag, Ticket, MapPin, Clock,
 } from 'lucide-react'
+import { getPendingListingsAction, approveListingAction, rejectListingAction, type PendingListing } from '@/lib/actions'
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 
@@ -34,12 +35,12 @@ const REVENUE_CHART = [3200000, 2800000, 4100000, 3600000, 4800000, 5200000, 440
 const MONTHS = ['Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun']
 
 const CATEGORY_DIST = [
-  { name: 'Wellness',     pct: 32, color: FOREST },
-  { name: 'Art & Craft',  pct: 28, color: GOLD   },
-  { name: 'Culture',      pct: 16, color: TERRACOTTA },
-  { name: 'Nature',       pct: 11, color: COCONUT },
-  { name: 'Food & Drink', pct: 7,  color: CHARCOAL },
-  { name: 'Surf & Water', pct: 6,  color: '#3B82F6' },
+  { name: 'Wellness',          pct: 32, color: FOREST },
+  { name: 'Art & Craft',       pct: 28, color: GOLD   },
+  { name: 'Culture',           pct: 16, color: TERRACOTTA },
+  { name: 'Nature & Outdoors', pct: 11, color: COCONUT },
+  { name: 'Culinary',          pct: 7,  color: CHARCOAL },
+  { name: 'Water Activities',  pct: 6,  color: '#3B82F6' },
 ]
 
 const ALL_EXPERIENCES = [
@@ -47,11 +48,11 @@ const ALL_EXPERIENCES = [
   { id: 2,  slug: 'silver-jewelry-workshop',   title: 'Silver Jewelry Workshop',      host: 'Ketut Suardana',  area: 'Canggu',   category: 'Art & Craft',  price: 550000, rating: 4.8, reviews: 94,  bookings: 61,  status: 'Active',  image: 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=60&auto=format&fit=crop&q=80' },
   { id: 3,  slug: 'sound-healing-journey',     title: 'Sound Healing Journey',        host: 'Nina Putri',      area: 'Ubud',     category: 'Wellness',     price: 350000, rating: 4.8, reviews: 178, bookings: 143, status: 'Active',  image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=60&auto=format&fit=crop&q=80' },
   { id: 4,  slug: 'uluwatu-kecak-sunset',      title: 'Uluwatu Sunset & Kecak Dance', host: 'I Nyoman Arta',   area: 'Uluwatu',  category: 'Culture',      price: 450000, rating: 4.9, reviews: 312, bookings: 198, status: 'Active',  image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=60&auto=format&fit=crop&q=80' },
-  { id: 5,  slug: 'balinese-cooking-class',    title: 'Balinese Cooking Class',       host: 'Putu Sari',       area: 'Seminyak', category: 'Food & Drink', price: 480000, rating: 4.8, reviews: 156, bookings: 112, status: 'Active',  image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=60&auto=format&fit=crop&q=80' },
-  { id: 6,  slug: 'mount-batur-sunrise',       title: 'Mount Batur Sunrise Trek',     host: 'Wayan Surya',     area: 'Kintamani',category: 'Nature',       price: 650000, rating: 4.8, reviews: 241, bookings: 167, status: 'Active',  image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=60&auto=format&fit=crop&q=80' },
-  { id: 7,  slug: 'beginner-surf-lesson',      title: 'Beginner Surf Lesson',         host: 'Komang Surya',    area: 'Kuta',     category: 'Surf & Water', price: 320000, rating: 4.7, reviews: 428, bookings: 312, status: 'Active',  image: 'https://images.unsplash.com/photo-1530870110042-98b2cb110834?w=60&auto=format&fit=crop&q=80' },
-  { id: 8,  slug: 'rice-terrace-walk',         title: 'Tegalalang Rice Terrace Walk', host: 'Gede Arnawa',     area: 'Ubud',     category: 'Nature',       price: 280000, rating: 4.8, reviews: 192, bookings: 134, status: 'Active',  image: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=60&auto=format&fit=crop&q=80' },
-  { id: 9,  slug: 'waterfall-hidden-canyon',   title: 'Hidden Waterfall Canyon Hike', host: 'Putu Wirawan',    area: 'Aling-Aling', category: 'Nature',   price: 450000, rating: 4.9, reviews: 89,  bookings: 54,  status: 'Active',  image: 'https://images.unsplash.com/photo-1552083375-1447ce886485?w=60&auto=format&fit=crop&q=80' },
+  { id: 5,  slug: 'balinese-cooking-class',    title: 'Balinese Cooking Class',       host: 'Putu Sari',       area: 'Seminyak', category: 'Culinary',          price: 480000, rating: 4.8, reviews: 156, bookings: 112, status: 'Active',  image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=60&auto=format&fit=crop&q=80' },
+  { id: 6,  slug: 'mount-batur-sunrise',       title: 'Mount Batur Sunrise Trek',     host: 'Wayan Surya',     area: 'Kintamani',category: 'Nature & Outdoors', price: 650000, rating: 4.8, reviews: 241, bookings: 167, status: 'Active',  image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=60&auto=format&fit=crop&q=80' },
+  { id: 7,  slug: 'beginner-surf-lesson',      title: 'Beginner Surf Lesson',         host: 'Komang Surya',    area: 'Kuta',     category: 'Water Activities',  price: 320000, rating: 4.7, reviews: 428, bookings: 312, status: 'Active',  image: 'https://images.unsplash.com/photo-1530870110042-98b2cb110834?w=60&auto=format&fit=crop&q=80' },
+  { id: 8,  slug: 'rice-terrace-walk',         title: 'Tegalalang Rice Terrace Walk', host: 'Gede Arnawa',     area: 'Ubud',     category: 'Nature & Outdoors', price: 280000, rating: 4.8, reviews: 192, bookings: 134, status: 'Active',  image: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=60&auto=format&fit=crop&q=80' },
+  { id: 9,  slug: 'waterfall-hidden-canyon',   title: 'Hidden Waterfall Canyon Hike', host: 'Putu Wirawan',    area: 'Aling-Aling', category: 'Nature & Outdoors', price: 450000, rating: 4.9, reviews: 89,  bookings: 54,  status: 'Active',  image: 'https://images.unsplash.com/photo-1552083375-1447ce886485?w=60&auto=format&fit=crop&q=80' },
   { id: 10, slug: 'natural-dye-workshop',      title: 'Natural Dye Workshop',         host: 'Ni Made Suari',   area: 'Sidemen',  category: 'Art & Craft',  price: 380000, rating: 4.7, reviews: 48,  bookings: 29,  status: 'Draft',   image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=60&auto=format&fit=crop&q=80' },
 ]
 
@@ -110,6 +111,7 @@ const PAYOUTS = [
 const NAV_ITEMS = [
   { id: 'overview',    label: 'Overview',    Icon: LayoutDashboard },
   { id: 'experiences', label: 'Experiences', Icon: Compass },
+  { id: 'events',      label: 'Events',      Icon: Ticket },
   { id: 'hosts',       label: 'Hosts',       Icon: Users },
   { id: 'bookings',    label: 'Bookings',    Icon: CalendarDays },
   { id: 'users',       label: 'Users',       Icon: Globe },
@@ -117,6 +119,14 @@ const NAV_ITEMS = [
   { id: 'payments',    label: 'Payments',    Icon: CreditCard },
   { id: 'analytics',   label: 'Analytics',   Icon: BarChart2 },
   { id: 'settings',    label: 'Settings',    Icon: Settings },
+]
+
+const ALL_EVENTS = [
+  { id: 'E1', title: 'Full Moon Sound Bath',       host: 'Nina Putri',    date: '2026-07-06T19:00', location: 'Sukha Healing Space, Ubud',        price: 250000, capacity: 30, status: 'Published', slug: 'full-moon-sound-bath' },
+  { id: 'E2', title: 'Ubud Sacred Sites Walk',     host: 'I Nyoman Arta', date: '2026-07-20T08:00', location: 'Meeting point: Ubud Palace',        price: 350000, capacity: 15, status: 'Published', slug: 'ubud-sacred-sites-walk' },
+  { id: 'E3', title: 'Batik Design Workshop',      host: 'Ni Made Suari', date: '2026-08-04T09:00', location: 'Sidemen Art Village',               price: 450000, capacity: 12, status: 'Draft',     slug: 'batik-design-workshop' },
+  { id: 'E4', title: 'Sunset Cooking Demo',        host: 'Putu Sari',     date: '2026-07-25T17:00', location: 'Warung Dapur Bali, Seminyak',       price: 300000, capacity: 20, status: 'Published', slug: 'sunset-cooking-demo' },
+  { id: 'E5', title: 'Volcano Sunrise Expedition', host: 'Wayan Surya',   date: '2026-05-10T03:30', location: 'Mount Batur Trailhead, Kintamani',  price: 600000, capacity: 8,  status: 'Published', slug: 'volcano-sunrise-expedition' },
 ]
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -137,7 +147,8 @@ function StatusBadge({ status }: { status: string }) {
     Published: { bg: '#F0F7F2', color: FOREST },
     Pending:   { bg: '#FDF8F4', color: GOLD },
     Draft:     { bg: IVORY,     color: COCONUT },
-    Paused:    { bg: '#FEF9F4', color: GOLD },
+    Paused:          { bg: '#FEF9F4', color: GOLD },
+    'Pending Review': { bg: '#FDF8F4', color: GOLD },
     Inactive:  { bg: IVORY,     color: COCONUT },
     Suspended: { bg: '#FEF2F2', color: TERRACOTTA },
     Cancelled: { bg: '#FEF2F2', color: TERRACOTTA },
@@ -348,22 +359,43 @@ function OverviewPanel({ onNav }: { onNav: (id: string) => void }) {
 // ── Experiences Panel ─────────────────────────────────────────────────────────
 
 function ExperiencesPanel() {
-  const [filter, setFilter]   = useState('All')
-  const [search, setSearch]   = useState('')
-  const [exps, setExps]       = useState(ALL_EXPERIENCES)
+  const [filter, setFilter]     = useState('All')
+  const [search, setSearch]     = useState('')
+  const [exps, setExps]         = useState(ALL_EXPERIENCES)
   const [menuOpen, setMenuOpen] = useState<number | null>(null)
+  const [pending, setPending]   = useState<PendingListing[]>([])
+  const [pendingLoaded, setPendingLoaded] = useState(false)
+
+  useEffect(() => {
+    if (filter === 'Pending Review' && !pendingLoaded) {
+      getPendingListingsAction().then(rows => { setPending(rows); setPendingLoaded(true) })
+    }
+  }, [filter, pendingLoaded])
+
+  const handleApprove = async (id: string) => {
+    await approveListingAction(id)
+    setPending(p => p.filter(x => x.id !== id))
+  }
+
+  const handleReject = async (id: string) => {
+    await rejectListingAction(id)
+    setPending(p => p.filter(x => x.id !== id))
+  }
 
   const setStatus = (id: number, s: string) => { setExps(p => p.map(e => e.id === id ? { ...e, status: s } : e)); setMenuOpen(null) }
 
   const visible = useMemo(() => {
+    if (filter === 'Pending Review') return []
     let list = filter === 'All' ? exps : exps.filter(e => e.status === filter)
     if (search) list = list.filter(e => e.title.toLowerCase().includes(search.toLowerCase()) || e.host.toLowerCase().includes(search.toLowerCase()))
     return list
   }, [exps, filter, search])
 
+  const tabs = ['All', 'Pending Review', 'Active', 'Draft', 'Paused']
+
   return (
     <div>
-      <PageHeader title="All Experiences" sub={`${exps.length} total listings across all hosts`} />
+      <PageHeader title="All Experiences" sub={`${exps.length} curated listings · ${pending.length || '?'} pending review`} />
 
       <div className="flex gap-3 mb-4">
         <SearchBar value={search} onChange={setSearch} placeholder="Search title or host…" />
@@ -379,64 +411,146 @@ function ExperiencesPanel() {
         </button>
       </div>
 
-      <div className="inline-flex gap-1 mb-5 bg-white rounded-xl p-1" style={{ border: `1px solid ${SAND}` }}>
-        {['All', 'Active', 'Draft', 'Paused'].map(t => (
-          <button key={t} onClick={() => setFilter(t)}
-            style={{ padding: '6px 14px', borderRadius: 10, fontSize: 13, fontWeight: filter === t ? 600 : 400, backgroundColor: filter === t ? CHARCOAL : 'transparent', color: filter === t ? 'white' : COCONUT, border: 'none', cursor: 'pointer' }}>
-            {t} <span style={{ opacity: 0.5, fontSize: 11 }}>{t === 'All' ? exps.length : exps.filter(e => e.status === t).length}</span>
-          </button>
-        ))}
+      <div className="overflow-x-auto mb-5 scrollbar-none">
+        <div className="inline-flex gap-1 bg-white rounded-xl p-1" style={{ border: `1px solid ${SAND}` }}>
+          {tabs.map(t => (
+            <button key={t} onClick={() => setFilter(t)}
+              style={{ padding: '6px 14px', borderRadius: 10, fontSize: 13, fontWeight: filter === t ? 600 : 400, backgroundColor: filter === t ? (t === 'Pending Review' ? GOLD : CHARCOAL) : 'transparent', color: filter === t ? 'white' : COCONUT, border: 'none', cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap' }}>
+              {t} <span style={{ opacity: 0.6, fontSize: 11 }}>
+                {t === 'All' ? exps.length : t === 'Pending Review' ? (pendingLoaded ? pending.length : '•') : exps.filter(e => e.status === t).length}
+              </span>
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="space-y-3">
-        {visible.map(exp => (
-          <div key={exp.id} className="bg-white rounded-xl p-4 flex items-center gap-4" style={{ border: `1px solid ${SAND}` }}>
-            <img src={exp.image} alt={exp.title} className="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: CHARCOAL }}>{exp.title}</span>
-                <StatusBadge status={exp.status} />
-              </div>
-              <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
-                <span style={{ fontSize: 12, color: COCONUT }}>🧑 {exp.host}</span>
-                <span style={{ fontSize: 12, color: COCONUT }}>📍 {exp.area}</span>
-                <span style={{ fontSize: 12, color: COCONUT }}>{exp.category}</span>
-                <span style={{ fontSize: 12, color: COCONUT }}>⭐ {exp.rating} ({exp.reviews})</span>
-                <span style={{ fontSize: 12, color: COCONUT }}>{exp.bookings} bookings</span>
-              </div>
+      {/* Pending Review tab — real DB data */}
+      {filter === 'Pending Review' && (
+        <div className="space-y-3">
+          {!pendingLoaded && (
+            <p style={{ fontSize: 13, color: COCONUT, padding: '24px 0', textAlign: 'center' }}>Loading pending listings…</p>
+          )}
+          {pendingLoaded && pending.length === 0 && (
+            <div className="bg-white rounded-xl p-8 text-center" style={{ border: `1px solid ${SAND}` }}>
+              <CheckCircle size={28} style={{ color: FOREST, margin: '0 auto 10px' }} />
+              <p style={{ fontSize: 14, fontWeight: 600, color: CHARCOAL, marginBottom: 4 }}>All caught up!</p>
+              <p style={{ fontSize: 13, color: COCONUT }}>No listings awaiting approval.</p>
             </div>
-            <div className="flex-shrink-0 text-right mr-4">
-              <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL }}>IDR {exp.price.toLocaleString('id-ID')}</p>
-              <p style={{ fontSize: 11, color: COCONUT }}>per person</p>
-            </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <a href={`/experiences/${exp.slug}`} target="_blank" rel="noreferrer"
-                className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-stone-50 transition-colors"
-                style={{ border: `1px solid ${SAND}`, color: COCONUT }}>
-                <Eye size={14} />
-              </a>
-              <div className="relative">
-                <button onClick={() => setMenuOpen(menuOpen === exp.id ? null : exp.id)}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-stone-50"
-                  style={{ border: `1px solid ${SAND}`, background: 'none', cursor: 'pointer', color: COCONUT }}>
-                  <MoreHorizontal size={14} />
-                </button>
-                {menuOpen === exp.id && (
-                  <>
-                    <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(null)} />
-                    <div className="absolute right-0 top-10 bg-white rounded-xl shadow-lg z-20 py-1 w-36" style={{ border: `1px solid ${SAND}` }}>
-                      {exp.status !== 'Active' && <button onClick={() => setStatus(exp.id, 'Active')} className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-stone-50" style={{ fontSize: 13, color: FOREST, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}><Play size={12} />Activate</button>}
-                      {exp.status === 'Active' && <button onClick={() => setStatus(exp.id, 'Paused')} className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-stone-50" style={{ fontSize: 13, color: GOLD, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}><Pause size={12} />Pause</button>}
-                      <button onClick={() => setStatus(exp.id, 'Draft')} className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-stone-50" style={{ fontSize: 13, color: COCONUT, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}><Edit2 size={12} />Set Draft</button>
-                      <button onClick={() => { setExps(p => p.filter(e => e.id !== exp.id)); setMenuOpen(null) }} className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-stone-50" style={{ fontSize: 13, color: TERRACOTTA, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}><Trash2 size={12} />Remove</button>
-                    </div>
-                  </>
+          )}
+          {pending.map(exp => (
+            <div key={exp.id} className="bg-white rounded-xl p-4" style={{ border: `2px solid ${GOLD}` }}>
+              <div className="flex items-start gap-3">
+                {exp.image ? (
+                  <img src={exp.image} alt={exp.title} className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
+                ) : (
+                  <div className="w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: IVORY }}>
+                    <Compass size={18} style={{ color: COCONUT }} />
+                  </div>
                 )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2 flex-wrap">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 14, fontWeight: 700, color: CHARCOAL }}>{exp.title}</span>
+                        <StatusBadge status="Pending Review" />
+                      </div>
+                      <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+                        <span style={{ fontSize: 11, color: COCONUT }}>🧑 {exp.hostName}</span>
+                        <span style={{ fontSize: 11, color: COCONUT }}>📍 {exp.area}</span>
+                        <span style={{ fontSize: 11, color: COCONUT }}>{exp.category}</span>
+                        <span style={{ fontSize: 11, color: COCONUT }}>{exp.duration}</span>
+                        <span style={{ fontSize: 11, color: COCONUT }}>Submitted {exp.submittedAt}</span>
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 14, fontWeight: 700, color: CHARCOAL }}>IDR {exp.price.toLocaleString('id-ID')}</p>
+                      <p style={{ fontSize: 10, color: COCONUT }}>per person</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 mt-3 pt-3" style={{ borderTop: `1px solid ${SAND}` }}>
+                    <a href={`/experiences/${exp.slug}`} target="_blank" rel="noreferrer"
+                      className="flex items-center gap-1.5 hover:opacity-80"
+                      style={{ height: 32, padding: '0 12px', borderRadius: 8, border: `1px solid ${SAND}`, color: COCONUT, fontSize: 12, textDecoration: 'none' }}>
+                      <Eye size={11} /> Preview
+                    </a>
+                    <button onClick={() => handleReject(exp.id)}
+                      className="flex items-center gap-1.5 hover:opacity-80"
+                      style={{ height: 32, padding: '0 12px', borderRadius: 8, border: `1px solid ${SAND}`, background: 'white', color: TERRACOTTA, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                      <XCircle size={11} /> Reject
+                    </button>
+                    <button onClick={() => handleApprove(exp.id)}
+                      className="flex items-center gap-1.5 hover:opacity-90"
+                      style={{ height: 32, padding: '0 14px', borderRadius: 8, border: 'none', backgroundColor: FOREST, color: 'white', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                      <CheckCircle size={11} /> Approve
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
+
+      {/* Other tabs — mock data */}
+      {filter !== 'Pending Review' && (
+        <div className="space-y-3">
+          {visible.map(exp => (
+            <div key={exp.id} className="bg-white rounded-xl p-4" style={{ border: `1px solid ${SAND}` }}>
+              <div className="flex items-start gap-3">
+                <img src={exp.image} alt={exp.title} className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 14, fontWeight: 700, color: CHARCOAL }}>{exp.title}</span>
+                        <StatusBadge status={exp.status} />
+                      </div>
+                      <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+                        <span style={{ fontSize: 11, color: COCONUT }}>🧑 {exp.host}</span>
+                        <span style={{ fontSize: 11, color: COCONUT }}>📍 {exp.area}</span>
+                        <span style={{ fontSize: 11, color: COCONUT }}>{exp.category}</span>
+                        <span style={{ fontSize: 11, color: COCONUT }}>⭐ {exp.rating} ({exp.reviews})</span>
+                        <span style={{ fontSize: 11, color: COCONUT }}>{exp.bookings} bookings</span>
+                      </div>
+                    </div>
+                    <div className="flex-shrink-0 flex flex-col items-end gap-2">
+                      <div className="text-right">
+                        <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 14, fontWeight: 700, color: CHARCOAL, whiteSpace: 'nowrap' }}>IDR {exp.price.toLocaleString('id-ID')}</p>
+                        <p style={{ fontSize: 10, color: COCONUT }}>per person</p>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <a href={`/experiences/${exp.slug}`} target="_blank" rel="noreferrer"
+                          className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-stone-50 transition-colors"
+                          style={{ border: `1px solid ${SAND}`, color: COCONUT }}>
+                          <Eye size={13} />
+                        </a>
+                        <div className="relative">
+                          <button onClick={() => setMenuOpen(menuOpen === exp.id ? null : exp.id)}
+                            className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-stone-50"
+                            style={{ border: `1px solid ${SAND}`, background: 'none', cursor: 'pointer', color: COCONUT }}>
+                            <MoreHorizontal size={13} />
+                          </button>
+                          {menuOpen === exp.id && (
+                            <>
+                              <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(null)} />
+                              <div className="absolute right-0 top-9 bg-white rounded-xl shadow-lg z-20 py-1 w-36" style={{ border: `1px solid ${SAND}` }}>
+                                {exp.status !== 'Active' && <button onClick={() => setStatus(exp.id, 'Active')} className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-stone-50" style={{ fontSize: 13, color: FOREST, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}><Play size={12} />Activate</button>}
+                                {exp.status === 'Active' && <button onClick={() => setStatus(exp.id, 'Paused')} className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-stone-50" style={{ fontSize: 13, color: GOLD, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}><Pause size={12} />Pause</button>}
+                                <button onClick={() => setStatus(exp.id, 'Draft')} className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-stone-50" style={{ fontSize: 13, color: COCONUT, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}><Edit2 size={12} />Set Draft</button>
+                                <button onClick={() => { setExps(p => p.filter(e => e.id !== exp.id)); setMenuOpen(null) }} className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-stone-50" style={{ fontSize: 13, color: TERRACOTTA, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}><Trash2 size={12} />Remove</button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -477,18 +591,21 @@ function HostsPanel() {
         <SearchBar value={search} onChange={setSearch} placeholder="Search host or business name…" />
       </div>
 
-      <div className="inline-flex gap-1 mb-5 bg-white rounded-xl p-1" style={{ border: `1px solid ${SAND}` }}>
-        {['All', 'Verified', 'Pending', 'Suspended'].map(t => (
-          <button key={t} onClick={() => setFilter(t)}
-            style={{ padding: '6px 14px', borderRadius: 10, fontSize: 13, fontWeight: filter === t ? 600 : 400, backgroundColor: filter === t ? CHARCOAL : 'transparent', color: filter === t ? 'white' : COCONUT, border: 'none', cursor: 'pointer' }}>
-            {t} <span style={{ opacity: 0.5, fontSize: 11 }}>{t === 'All' ? hosts.length : hosts.filter(h => h.status === t).length}</span>
-          </button>
-        ))}
+      <div className="overflow-x-auto mb-5 scrollbar-none">
+        <div className="inline-flex gap-1 bg-white rounded-xl p-1" style={{ border: `1px solid ${SAND}` }}>
+          {['All', 'Verified', 'Pending', 'Suspended'].map(t => (
+            <button key={t} onClick={() => setFilter(t)}
+              style={{ padding: '6px 14px', borderRadius: 10, fontSize: 13, fontWeight: filter === t ? 600 : 400, backgroundColor: filter === t ? CHARCOAL : 'transparent', color: filter === t ? 'white' : COCONUT, border: 'none', cursor: 'pointer', flexShrink: 0 }}>
+              {t} <span style={{ opacity: 0.5, fontSize: 11 }}>{t === 'All' ? hosts.length : hosts.filter(h => h.status === t).length}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="space-y-3">
         {visible.map(host => (
           <div key={host.id} className="bg-white rounded-xl p-4" style={{ border: `1px solid ${SAND}` }}>
+            {/* Info row */}
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: GOLD }}>
                 <span style={{ fontSize: 14, fontWeight: 700, color: 'white' }}>{host.name[0]}</span>
@@ -498,41 +615,43 @@ function HostsPanel() {
                   <span style={{ fontSize: 14, fontWeight: 700, color: CHARCOAL }}>{host.name}</span>
                   <StatusBadge status={host.status} />
                 </div>
-                <p style={{ fontSize: 13, color: COCONUT, marginTop: 1 }}>{host.business} · {host.area}</p>
-                <div className="flex flex-wrap gap-x-5 gap-y-0.5 mt-2">
-                  <span style={{ fontSize: 12, color: COCONUT }}>{host.experiences} listings</span>
-                  <span style={{ fontSize: 12, color: COCONUT }}>{host.totalBookings} bookings</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: FOREST }}>{fmt(host.totalEarnings)} earned</span>
-                  <span style={{ fontSize: 12, color: COCONUT }}>⭐ {host.rating}</span>
-                  <span style={{ fontSize: 12, color: COCONUT }}>Joined {host.joined}</span>
+                <p style={{ fontSize: 12, color: COCONUT, marginTop: 1 }}>{host.business} · {host.area}</p>
+                <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1.5">
+                  <span style={{ fontSize: 11, color: COCONUT }}>{host.experiences} listings</span>
+                  <span style={{ fontSize: 11, color: COCONUT }}>{host.totalBookings} bookings</span>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: FOREST }}>{fmt(host.totalEarnings)} earned</span>
+                  <span style={{ fontSize: 11, color: COCONUT }}>⭐ {host.rating}</span>
+                  <span style={{ fontSize: 11, color: COCONUT }}>Joined {host.joined}</span>
                 </div>
               </div>
-              <div className="flex gap-2 flex-shrink-0">
+            </div>
+
+            {/* Actions row */}
+            <div className="flex flex-wrap gap-2 mt-3 pt-3" style={{ borderTop: `1px solid ${IVORY}` }}>
                 {host.status === 'Pending' && (
                   <>
-                    <button onClick={() => approve(host.id)} className="flex items-center gap-1 hover:opacity-90"
-                      style={{ height: 34, padding: '0 14px', borderRadius: 8, border: 'none', backgroundColor: CHARCOAL, color: 'white', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                    <button onClick={() => approve(host.id)} className="flex items-center gap-1.5 hover:opacity-90"
+                      style={{ height: 32, padding: '0 14px', borderRadius: 8, border: 'none', backgroundColor: CHARCOAL, color: 'white', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
                       <CheckCircle size={12} /> Approve
                     </button>
-                    <button onClick={() => suspend(host.id)} className="flex items-center gap-1 hover:opacity-80"
-                      style={{ height: 34, padding: '0 14px', borderRadius: 8, border: `1px solid ${SAND}`, backgroundColor: 'white', color: TERRACOTTA, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                    <button onClick={() => suspend(host.id)} className="flex items-center gap-1.5 hover:opacity-80"
+                      style={{ height: 32, padding: '0 14px', borderRadius: 8, border: `1px solid ${SAND}`, backgroundColor: 'white', color: TERRACOTTA, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
                       <XCircle size={12} /> Decline
                     </button>
                   </>
                 )}
                 {host.status === 'Verified' && (
-                  <button onClick={() => suspend(host.id)} className="hover:opacity-80"
-                    style={{ height: 34, padding: '0 14px', borderRadius: 8, border: `1px solid ${SAND}`, backgroundColor: 'white', color: COCONUT, fontSize: 12, cursor: 'pointer' }}>
+                  <button onClick={() => suspend(host.id)} className="flex items-center gap-1.5 hover:opacity-80"
+                    style={{ height: 32, padding: '0 14px', borderRadius: 8, border: `1px solid ${SAND}`, backgroundColor: 'white', color: COCONUT, fontSize: 12, cursor: 'pointer' }}>
                     Suspend
                   </button>
                 )}
                 {host.status === 'Suspended' && (
-                  <button onClick={() => approve(host.id)} className="hover:opacity-90"
-                    style={{ height: 34, padding: '0 14px', borderRadius: 8, border: 'none', backgroundColor: FOREST, color: 'white', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                  <button onClick={() => approve(host.id)} className="flex items-center gap-1.5 hover:opacity-90"
+                    style={{ height: 32, padding: '0 14px', borderRadius: 8, border: 'none', backgroundColor: FOREST, color: 'white', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
                     Reinstate
                   </button>
                 )}
-              </div>
             </div>
           </div>
         ))}
@@ -567,7 +686,7 @@ function BookingsPanel() {
     <div>
       <PageHeader title="All Bookings" sub={`${bookings.length} total bookings on the platform`} />
 
-      <div className="grid grid-cols-3 gap-4 mb-5">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
         {[
           { label: 'Gross Revenue', value: fmt(totalRevenue), color: CHARCOAL },
           { label: 'Platform Commission (10%)', value: fmt(totalCommission), color: FOREST },
@@ -658,7 +777,7 @@ function UsersPanel() {
     <div>
       <PageHeader title="Guests" sub={`${ALL_USERS.length} registered users`} />
 
-      <div className="grid grid-cols-3 gap-4 mb-5">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
         {[
           { label: 'Total Users', value: ALL_USERS.length.toString() },
           { label: 'Active (booked)', value: ALL_USERS.filter(u => u.bookings > 0).length.toString() },
@@ -946,6 +1065,145 @@ function AnalyticsPanel() {
   )
 }
 
+// ── Events Panel ─────────────────────────────────────────────────────────────
+
+function EventsPanel() {
+  const [filter, setFilter]   = useState('All')
+  const [search, setSearch]   = useState('')
+  const [events, setEvents]   = useState(ALL_EVENTS)
+
+  const setStatus = (id: string, s: string) => setEvents(p => p.map(e => e.id === id ? { ...e, status: s } : e))
+  const remove    = (id: string) => setEvents(p => p.filter(e => e.id !== id))
+
+  const visible = useMemo(() => {
+    let list = filter === 'All' ? events : events.filter(e => e.status === filter)
+    if (search) {
+      const q = search.toLowerCase()
+      list = list.filter(e => e.title.toLowerCase().includes(q) || e.host.toLowerCase().includes(q))
+    }
+    return list
+  }, [events, filter, search])
+
+  const published = events.filter(e => e.status === 'Published').length
+  const upcoming  = events.filter(e => e.status === 'Published' && new Date(e.date) >= new Date()).length
+
+  return (
+    <div>
+      <PageHeader title="Events" sub={`${events.length} total · ${published} published · ${upcoming} upcoming`} />
+
+      <div className="grid grid-cols-3 gap-4 mb-5">
+        {[
+          { label: 'Total Events',      value: events.length.toString(),                                            color: CHARCOAL },
+          { label: 'Published',         value: published.toString(),                                                color: FOREST   },
+          { label: 'Upcoming',          value: upcoming.toString(),                                                 color: GOLD     },
+        ].map(s => (
+          <div key={s.label} className="bg-white rounded-xl p-4" style={{ border: `1px solid ${SAND}` }}>
+            <p style={{ fontSize: 11, color: COCONUT }}>{s.label}</p>
+            <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: s.color, marginTop: 4 }}>{s.value}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex gap-3 mb-4">
+        <SearchBar value={search} onChange={setSearch} placeholder="Search title or host…" />
+      </div>
+
+      <div className="overflow-x-auto mb-5 scrollbar-none">
+        <div className="inline-flex gap-1 bg-white rounded-xl p-1" style={{ border: `1px solid ${SAND}` }}>
+          {['All', 'Published', 'Draft', 'Cancelled'].map(t => (
+            <button key={t} onClick={() => setFilter(t)}
+              style={{ padding: '6px 14px', borderRadius: 10, fontSize: 13, fontWeight: filter === t ? 600 : 400, backgroundColor: filter === t ? CHARCOAL : 'transparent', color: filter === t ? 'white' : COCONUT, border: 'none', cursor: 'pointer', flexShrink: 0 }}>
+              {t} <span style={{ opacity: 0.5, fontSize: 11 }}>{t === 'All' ? events.length : events.filter(e => e.status === t).length}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        {visible.map(ev => {
+          const d = new Date(ev.date)
+          const dateStr = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+          const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+          const isPast  = d < new Date()
+          return (
+            <div key={ev.id} className="bg-white rounded-xl p-4" style={{ border: `1px solid ${ev.status === 'Cancelled' ? '#FECACA' : SAND}` }}>
+              <div className="flex items-start justify-between gap-3 flex-wrap mb-2">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span style={{ fontSize: 15, fontWeight: 700, color: CHARCOAL }}>{ev.title}</span>
+                    <StatusBadge status={isPast && ev.status === 'Published' ? 'Completed' : ev.status} />
+                    {isPast && <span style={{ fontSize: 11, color: COCONUT }}>· Past event</span>}
+                  </div>
+                  <p style={{ fontSize: 12, color: COCONUT }}>by {ev.host}</p>
+                </div>
+                <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL, flexShrink: 0 }}>
+                  IDR {ev.price.toLocaleString('id-ID')}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-x-4 gap-y-1 mb-3">
+                <span className="flex items-center gap-1" style={{ fontSize: 12, color: COCONUT }}>
+                  <CalendarDays size={11} /> {dateStr} · {timeStr}
+                </span>
+                <span className="flex items-center gap-1" style={{ fontSize: 12, color: COCONUT }}>
+                  <MapPin size={11} /> {ev.location}
+                </span>
+                <span className="flex items-center gap-1" style={{ fontSize: 12, color: COCONUT }}>
+                  <Users size={11} /> Max {ev.capacity}
+                </span>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 pt-3" style={{ borderTop: `1px solid ${IVORY}` }}>
+                {ev.status === 'Draft' && (
+                  <button onClick={() => setStatus(ev.id, 'Published')}
+                    className="flex items-center gap-1 hover:opacity-90"
+                    style={{ height: 30, padding: '0 12px', borderRadius: 8, border: 'none', backgroundColor: CHARCOAL, color: 'white', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                    <Globe size={11} /> Publish
+                  </button>
+                )}
+                {ev.status === 'Published' && !isPast && (
+                  <button onClick={() => setStatus(ev.id, 'Cancelled')}
+                    className="flex items-center gap-1 hover:opacity-80"
+                    style={{ height: 30, padding: '0 12px', borderRadius: 8, border: `1px solid ${SAND}`, backgroundColor: 'white', fontSize: 12, fontWeight: 600, color: TERRACOTTA, cursor: 'pointer' }}>
+                    <XCircle size={11} /> Cancel
+                  </button>
+                )}
+                {ev.status === 'Cancelled' && (
+                  <button onClick={() => setStatus(ev.id, 'Draft')}
+                    className="flex items-center gap-1 hover:opacity-90"
+                    style={{ height: 30, padding: '0 12px', borderRadius: 8, border: `1px solid ${SAND}`, backgroundColor: 'white', fontSize: 12, fontWeight: 600, color: COCONUT, cursor: 'pointer' }}>
+                    <RefreshCw size={11} /> Restore to Draft
+                  </button>
+                )}
+                <button onClick={() => remove(ev.id)}
+                  className="flex items-center gap-1 hover:bg-red-50 transition-colors"
+                  style={{ height: 30, padding: '0 12px', borderRadius: 8, border: `1px solid ${SAND}`, backgroundColor: 'white', fontSize: 12, fontWeight: 600, color: TERRACOTTA, cursor: 'pointer' }}>
+                  <Trash2 size={11} /> Remove
+                </button>
+                {ev.status === 'Published' && (
+                  <a href={`/events/${ev.slug}`} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-1 hover:opacity-80 transition-opacity ml-auto"
+                    style={{ height: 30, padding: '0 12px', borderRadius: 8, border: `1px solid ${SAND}`, backgroundColor: 'white', fontSize: 12, fontWeight: 600, color: COCONUT, cursor: 'pointer', textDecoration: 'none' }}>
+                    <Eye size={11} /> View page
+                  </a>
+                )}
+              </div>
+            </div>
+          )
+        })}
+
+        {visible.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl" style={{ border: `1px solid ${SAND}` }}>
+            <Ticket size={28} style={{ color: GOLD, marginBottom: 12 }} />
+            <p style={{ fontSize: 15, fontWeight: 600, color: CHARCOAL }}>No events found</p>
+            <p style={{ fontSize: 13, color: COCONUT, marginTop: 4 }}>Try adjusting your filters.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ── Settings Panel ────────────────────────────────────────────────────────────
 
 const PLATFORM_DEFAULTS = {
@@ -1204,6 +1462,7 @@ export default function AdminPage() {
     switch (activeNav) {
       case 'overview':    return <OverviewPanel onNav={setActiveNav} />
       case 'experiences': return <ExperiencesPanel />
+      case 'events':      return <EventsPanel />
       case 'hosts':       return <HostsPanel />
       case 'bookings':    return <BookingsPanel />
       case 'users':       return <UsersPanel />
@@ -1212,6 +1471,7 @@ export default function AdminPage() {
       case 'analytics':   return <AnalyticsPanel />
       case 'settings':    return <SettingsPanel />
       default:            return <OverviewPanel onNav={setActiveNav} />
+
     }
   }
 

@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import { useUser, UserButton } from '@clerk/nextjs'
 import {
-  MessageCircle, User, Menu, X, Map, ChevronDown,
+  Menu, X, ChevronDown, LayoutDashboard,
   Leaf, Scissors, Landmark, Mountain, Waves, ChefHat, Sun,
 } from 'lucide-react'
 
@@ -29,7 +29,6 @@ const MOBILE_LINKS = [
   { label: 'Experiences',  href: '/search' },
   { label: 'Destinations', href: '/destinations' },
   { label: 'Events',       href: '/events' },
-  { label: 'Map View',     href: '/map' },
   { label: 'For Hosts',    href: '/for-hosts' },
 ]
 
@@ -38,7 +37,10 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [dropOpen, setDropOpen] = useState(false)
   const dropRef = useRef<HTMLDivElement>(null)
-  const { isSignedIn, isLoaded } = useUser()
+  const { isSignedIn, isLoaded, user } = useUser()
+
+  const role = user?.publicMetadata?.role as string | undefined
+  const isHost = role === 'host' || role === 'admin'
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -145,29 +147,31 @@ export default function Navbar() {
                 </a>
               )
             )}
-            <a
-              href="/map"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg transition-colors hover:bg-stone-50"
-              style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: isActive('/map') ? '#C8A97E' : '#6F675C', fontWeight: 500, textDecoration: 'none' }}
-            >
-              <Map size={14} /> Map
-            </a>
           </div>
 
-          {/* Right icons */}
+          {/* Right side */}
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => window.dispatchEvent(new CustomEvent('balible:open-chat'))}
-              className="hidden sm:flex w-9 h-9 rounded-full items-center justify-center hover:bg-stone-50 transition-colors"
-              style={{ border: 'none', background: 'none', cursor: 'pointer' }}
-              title="Chat with Kala"
-            >
-              <MessageCircle size={19} style={{ color: '#111111' }} />
-            </button>
-
-            {/* Auth: UserButton when signed in, profile icon when signed out */}
-            {isLoaded && isSignedIn ? (
-              <div className="hidden sm:flex">
+            {!isLoaded ? (
+              /* Skeleton while Clerk loads — prevents layout shift */
+              <div className="hidden sm:flex items-center gap-2">
+                <div style={{ width: 64, height: 34, borderRadius: 10, backgroundColor: '#F5F1EB' }} />
+                <div style={{ width: 76, height: 34, borderRadius: 10, backgroundColor: '#E8E4DE' }} />
+              </div>
+            ) : isSignedIn ? (
+              <div className="hidden sm:flex items-center gap-3">
+                {isHost && (
+                  <a
+                    href="/dashboard"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors hover:bg-stone-50"
+                    style={{
+                      fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 500,
+                      color: isActive('/dashboard') ? '#C8A97E' : '#6F675C', textDecoration: 'none',
+                    }}
+                  >
+                    <LayoutDashboard size={14} />
+                    Dashboard
+                  </a>
+                )}
                 <UserButton
                   appearance={{
                     variables: { colorPrimary: '#C8A97E' },
@@ -176,14 +180,28 @@ export default function Navbar() {
                 />
               </div>
             ) : (
-              <a
-                href="/profile"
-                className="hidden sm:flex w-9 h-9 rounded-full items-center justify-center hover:bg-stone-50 transition-colors"
-                style={{ border: '1.5px solid #E8E4DE', textDecoration: 'none' }}
-                title="Sign in"
-              >
-                <User size={15} style={{ color: '#111111' }} />
-              </a>
+              <div className="hidden sm:flex items-center gap-2">
+                <a
+                  href="/sign-in"
+                  className="px-4 py-2 rounded-lg transition-colors hover:bg-stone-50"
+                  style={{
+                    fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500,
+                    color: '#111111', textDecoration: 'none', border: '1px solid #E8E4DE',
+                  }}
+                >
+                  Sign in
+                </a>
+                <a
+                  href="/sign-up"
+                  className="px-4 py-2 rounded-lg transition-colors"
+                  style={{
+                    fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600,
+                    color: 'white', textDecoration: 'none', backgroundColor: '#111111',
+                  }}
+                >
+                  Sign up
+                </a>
+              </div>
             )}
 
             {/* Hamburger */}
@@ -222,24 +240,46 @@ export default function Navbar() {
               ))}
             </div>
 
-            {/* Mobile auth row */}
-            <div className="px-4 pb-5 pt-2" style={{ borderTop: '1px solid #F5F1EB' }}>
+            {/* Mobile auth section */}
+            <div className="px-4 pb-5 pt-3" style={{ borderTop: '1px solid #F5F1EB' }}>
               {isLoaded && isSignedIn ? (
-                <div className="flex items-center gap-3 px-1 py-2">
-                  <UserButton
-                    appearance={{
-                      variables: { colorPrimary: '#C8A97E' },
-                      elements: { avatarBox: { width: 36, height: 36 } },
-                    }}
-                  />
-                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111' }}>My account</span>
+                <div className="space-y-1">
+                  {isHost && (
+                    <a
+                      href="/dashboard"
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors"
+                      style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', textDecoration: 'none', fontWeight: 500 }}
+                    >
+                      <LayoutDashboard size={16} style={{ color: '#6F675C' }} />
+                      Dashboard
+                    </a>
+                  )}
+                  <a
+                    href="/wishlist"
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors"
+                    style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', textDecoration: 'none' }}
+                  >
+                    <span style={{ fontSize: 16 }}>🤍</span>
+                    Wishlist
+                  </a>
+                  <div className="flex items-center gap-3 px-4 py-3">
+                    <UserButton
+                          appearance={{
+                        variables: { colorPrimary: '#C8A97E' },
+                        elements: { avatarBox: { width: 32, height: 32 } },
+                      }}
+                    />
+                    <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
+                      {user?.firstName ?? 'My account'}
+                    </span>
+                  </div>
                 </div>
               ) : (
                 <div className="flex gap-2">
-                  <a href="/sign-in" style={{ flex: 1, height: 42, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #E8E4DE', borderRadius: 10, fontSize: 14, fontWeight: 500, color: '#111111', textDecoration: 'none', fontFamily: 'var(--font-inter)' }}>
+                  <a href="/sign-in" style={{ flex: 1, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #E8E4DE', borderRadius: 10, fontSize: 14, fontWeight: 500, color: '#111111', textDecoration: 'none', fontFamily: 'var(--font-inter)' }}>
                     Sign in
                   </a>
-                  <a href="/sign-up" style={{ flex: 1, height: 42, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#111111', borderRadius: 10, fontSize: 14, fontWeight: 600, color: 'white', textDecoration: 'none', fontFamily: 'var(--font-inter)' }}>
+                  <a href="/sign-up" style={{ flex: 1, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#111111', borderRadius: 10, fontSize: 14, fontWeight: 600, color: 'white', textDecoration: 'none', fontFamily: 'var(--font-inter)' }}>
                     Sign up
                   </a>
                 </div>

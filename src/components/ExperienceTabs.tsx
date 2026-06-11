@@ -124,12 +124,17 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
   const [userReview, setUserReview] = useState<UserReview | null>(null)
   const [hasBooking, setHasBooking] = useState(false)
   const [showForm, setShowForm] = useState(false)
+  const [includes, setIncludes] = useState<string[]>(exp.includes)
+  const [excludes, setExcludes] = useState<string[]>(exp.excludes)
 
   useEffect(() => {
     const all: UserReview[] = lsp('balible_user_reviews', [])
     setUserReview(all.find(r => r.slug === exp.slug) ?? null)
     const bookings: Array<{ slug: string }> = lsp('balible_bookings', [])
     setHasBooking(bookings.some(b => b.slug === exp.slug))
+    const saved = lsp<{ includes?: string[]; excludes?: string[] }>(`balible_exp_data_${exp.slug}`, {})
+    if (saved.includes?.length) setIncludes(saved.includes)
+    if (saved.excludes?.length) setExcludes(saved.excludes)
   }, [exp.slug])
 
   const submitReview = (rating: number, comment: string) => {
@@ -251,7 +256,7 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
             <div>
               <h4 className="mb-3" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111' }}>Included</h4>
               <ul className="space-y-2">
-                {exp.includes.map((item, i) => (
+                {includes.map((item, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <CheckCircle2 size={15} style={{ color: '#4A7C59', marginTop: 2, flexShrink: 0 }} />
                     <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>{item}</span>
@@ -262,7 +267,7 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
             <div>
               <h4 className="mb-3" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111' }}>Not included</h4>
               <ul className="space-y-2">
-                {exp.excludes.map((item, i) => (
+                {excludes.map((item, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <XCircle size={15} style={{ color: '#B66A45', marginTop: 2, flexShrink: 0 }} />
                     <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>{item}</span>

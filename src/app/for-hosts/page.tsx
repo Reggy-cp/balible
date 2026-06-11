@@ -160,7 +160,7 @@ export default function ForHostsPage() {
           </p>
           <div className="flex flex-wrap gap-3">
             <a
-              href="/auth/signup"
+              href="/sign-up/host"
               className="flex items-center gap-2 hover:opacity-90 transition-opacity"
               style={{ height: 52, padding: '0 28px', backgroundColor: '#C8A97E', color: '#111111', borderRadius: 10, fontSize: 15, fontWeight: 700, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}
             >
@@ -217,7 +217,7 @@ export default function ForHostsPage() {
           </div>
           <div className="mt-10 text-center">
             <a
-              href="/auth/signup"
+              href="/sign-up/host"
               className="inline-flex items-center gap-2 hover:opacity-90 transition-opacity"
               style={{ height: 50, padding: '0 32px', backgroundColor: '#111111', color: 'white', borderRadius: 10, fontSize: 15, fontWeight: 600, textDecoration: 'none' }}
             >
@@ -357,7 +357,7 @@ export default function ForHostsPage() {
             Join 320 hosts already earning from their passion. Your first listing is free.
           </p>
           <a
-            href="/auth/signup"
+            href="/sign-up/host"
             className="inline-flex items-center gap-2 hover:opacity-90 transition-opacity"
             style={{ height: 52, padding: '0 36px', backgroundColor: '#111111', color: 'white', borderRadius: 10, fontSize: 15, fontWeight: 700, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}
           >

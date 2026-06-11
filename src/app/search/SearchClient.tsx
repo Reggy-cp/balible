@@ -215,11 +215,11 @@ const DEFAULT_FILTERS: Filters = {
   duration: 'Any duration', priceRange: [0, 700000], date: '', guests: 1,
 }
 
-export default function SearchClient({ initialResults, initialQuery = '' }: { initialResults: SearchResult[]; initialQuery?: string }) {
+export default function SearchClient({ initialResults, initialQuery = '', initialDate = '' }: { initialResults: SearchResult[]; initialQuery?: string; initialDate?: string }) {
   const [filterOpen, setFilterOpen] = useState(false)
   const [search, setSearch]         = useState(initialQuery)
   const [sort, setSort]             = useState('Recommended')
-  const [filters, setFilters]       = useState<Filters>(DEFAULT_FILTERS)
+  const [filters, setFilters]       = useState<Filters>({ ...DEFAULT_FILTERS, date: initialDate })
   const [mounted, setMounted]       = useState(false)
   useEffect(() => setMounted(true), [])
 
@@ -397,7 +397,9 @@ export default function SearchClient({ initialResults, initialQuery = '' }: { in
                 {search ? `Results for "${search}"` : 'All Experiences'}
               </h1>
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', marginTop: 2 }}>
-                {results.length} experience{results.length !== 1 ? 's' : ''} found
+                {search
+                  ? `${results.length} experience${results.length !== 1 ? 's' : ''} found`
+                  : `${results.length} curated experiences across the island`}
               </p>
             </div>
             <div className="flex items-center gap-2">

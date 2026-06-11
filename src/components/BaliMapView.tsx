@@ -22,13 +22,13 @@ export const MAP_EXPERIENCES = [
   { id: 9,  slug: 'jimbaran-seafood-sunset',    title: 'Jimbaran Seafood & Sunset',      category: 'Culinary',         area: 'Jimbaran', lat: -8.7898,  lng: 115.1687, price: 350000, rating: 4.6, reviews: 89,  duration: '2 hrs',   image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&auto=format&fit=crop&q=80' },
   // Water Activities
   { id: 10, slug: 'beginner-surf-lesson',       title: 'Beginner Surf Lesson',           category: 'Water Activities', area: 'Kuta',     lat: -8.7183,  lng: 115.1685, price: 320000, rating: 4.7, reviews: 428, duration: '2 hrs',   image: 'https://images.unsplash.com/photo-1530870110042-98b2cb110834?w=400&auto=format&fit=crop&q=80' },
-  // Diving
-  { id: 11, slug: 'snorkeling-amed',            title: 'Snorkeling at Amed Reef',        category: 'Diving',           area: 'Amed',     lat: -8.3428,  lng: 115.6478, price: 420000, rating: 4.8, reviews: 67,  duration: '3 hrs',   image: 'https://images.unsplash.com/photo-1560275619-4662e36fa65c?w=400&auto=format&fit=crop&q=80' },
+  // Water Activities
+  { id: 11, slug: 'snorkeling-amed',            title: 'Snorkeling at Amed Reef',        category: 'Water Activities', area: 'Amed',     lat: -8.3428,  lng: 115.6478, price: 420000, rating: 4.8, reviews: 67,  duration: '3 hrs',   image: 'https://images.unsplash.com/photo-1560275619-4662e36fa65c?w=400&auto=format&fit=crop&q=80' },
   // Nature & Outdoors
   { id: 12, slug: 'rice-terrace-walk',          title: 'Tegalalang Rice Terrace Walk',   category: 'Nature & Outdoors', area: 'Ubud',    lat: -8.4316,  lng: 115.2791, price: 280000, rating: 4.8, reviews: 192, duration: '2.5 hrs', image: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=400&auto=format&fit=crop&q=80' },
 ]
 
-const CATEGORIES = ['All', 'Art & Craft', 'Wellness', 'Culture', 'Culinary', 'Spiritual', 'Nature & Outdoors', 'Water Activities', 'Diving']
+const CATEGORIES = ['All', 'Art & Craft', 'Wellness', 'Culture', 'Culinary', 'Spiritual', 'Nature & Outdoors', 'Water Activities']
 
 const CAT_COLORS: Record<string, string> = {
   'Art & Craft':     '#C8A97E',
@@ -38,7 +38,6 @@ const CAT_COLORS: Record<string, string> = {
   'Spiritual':       '#D4842A',
   'Nature & Outdoors': '#6B8F3E',
   'Water Activities': '#3B82C4',
-  'Diving':          '#1A9E9E',
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
