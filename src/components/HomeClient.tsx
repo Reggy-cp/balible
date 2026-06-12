@@ -184,7 +184,7 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     const params = new URLSearchParams()
-    if (search.trim()) params.set('q', encodeURIComponent(search.trim()))
+    if (search.trim()) params.set('q', search.trim())
     if (date) params.set('date', date)
     router.push(`/search${params.toString() ? `?${params.toString()}` : ''}`)
   }
@@ -436,8 +436,8 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {upcomingEvents.slice(0, 3).map(ev => {
                 const d = new Date(ev.date)
-                const dateStr = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-                const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+                const dateStr = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'Asia/Makassar' })
+                const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Makassar' })
                 return (
                   <a key={ev.id} href={`/events/${ev.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
                     <div className="rounded-xl overflow-hidden hover:shadow-md transition-shadow" style={{ border: '1px solid #E8E4DE' }}>
@@ -686,9 +686,9 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
               © 2026 Balible. All rights reserved.
             </p>
             <div className="flex gap-4 items-center">
-              <a href="/help" className="hover:text-white transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>Privacy Policy</a>
+              <a href="/privacy" className="hover:text-white transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>Privacy Policy</a>
               <span style={{ color: 'rgba(255,255,255,0.3)' }}>·</span>
-              <a href="/help" className="hover:text-white transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>Terms</a>
+              <a href="/terms" className="hover:text-white transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>Terms</a>
             </div>
           </div>
         </div>
