@@ -376,8 +376,7 @@ function StepDetails({ contact, setContact, onNext }: { contact: ContactFields; 
 
 // ── Step 3: Payment ────────────────────────────────────────────────────────────
 
-function StepPayment({ total, onNext }: { total: number; onNext: () => void }) {
-  const [method, setMethod] = useState<'card' | 'transfer' | 'gopay'>('card')
+function StepPayment({ total, onPay, paying, error }: { total: number; onPay: () => void; paying: boolean; error: string | null }) {
   return (
     <div className="bg-white rounded-xl p-6" style={{ border: '1px solid #E8E4DE' }}>
       <div className="flex justify-between items-start mb-5">
@@ -385,76 +384,30 @@ function StepPayment({ total, onNext }: { total: number; onNext: () => void }) {
         <ChevronUp size={18} style={{ color: '#6F675C' }} />
       </div>
 
-      <div className="grid grid-cols-3 gap-2 mb-5">
-        {[{ id: 'card', label: 'Credit Card' }, { id: 'transfer', label: 'Bank Transfer' }, { id: 'gopay', label: 'GoPay / OVO' }].map(m => (
-          <button
-            key={m.id}
-            onClick={() => setMethod(m.id as typeof method)}
-            className="py-2 rounded-lg transition-all"
-            style={{ fontSize: 12, fontWeight: method === m.id ? 600 : 400, backgroundColor: method === m.id ? '#111111' : 'white', color: method === m.id ? 'white' : '#6F675C', border: `1px solid ${method === m.id ? '#111111' : '#E8E4DE'}`, cursor: 'pointer', fontFamily: 'var(--font-inter)', lineHeight: 1.3, padding: '8px 4px' }}
-          >
-            {m.label}
-          </button>
-        ))}
+      <div className="p-4 rounded-lg mb-5" style={{ backgroundColor: '#F5F1EB' }}>
+        <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.6 }}>
+          You&apos;ll complete payment in a secure window powered by Midtrans —
+          choose from credit card, bank transfer, GoPay, OVO, QRIS and more.
+        </p>
       </div>
 
-      {method === 'card' && (
-        <div className="space-y-4">
-          {[
-            { label: 'Card number',     placeholder: '1234 5678 9012 3456', colSpan: 'full' },
-            { label: 'Expiry date',     placeholder: 'MM / YY',             colSpan: 'half' },
-            { label: 'CVV',             placeholder: '123',                  colSpan: 'half' },
-            { label: 'Cardholder name', placeholder: 'Sarah Kim',           colSpan: 'full' },
-          ].map((f, i, arr) => {
-            if (f.colSpan === 'half' && arr[i - 1]?.colSpan === 'half') {
-              return null
-            }
-            if (f.colSpan === 'half') {
-              return (
-                <div className="grid grid-cols-2 gap-4" key={f.label}>
-                  {[arr[i], arr[i + 1]].map(ff => ff && (
-                    <div key={ff.label}>
-                      <label style={{ fontSize: 13, fontWeight: 500, color: '#111111', display: 'block', marginBottom: 6 }}>{ff.label}</label>
-                      <input placeholder={ff.placeholder} className="w-full outline-none" style={{ height: 44, border: '1px solid #E8E4DE', borderRadius: 8, padding: '0 14px', fontSize: 14, color: '#111111', backgroundColor: 'white' }} onFocus={e => (e.target.style.borderColor = '#C8A97E')} onBlur={e => (e.target.style.borderColor = '#E8E4DE')} />
-                    </div>
-                  ))}
-                </div>
-              )
-            }
-            return (
-              <div key={f.label}>
-                <label style={{ fontSize: 13, fontWeight: 500, color: '#111111', display: 'block', marginBottom: 6 }}>{f.label}</label>
-                <input placeholder={f.placeholder} className="w-full outline-none" style={{ height: 44, border: '1px solid #E8E4DE', borderRadius: 8, padding: '0 14px', fontSize: 14, color: '#111111', backgroundColor: 'white' }} onFocus={e => (e.target.style.borderColor = '#C8A97E')} onBlur={e => (e.target.style.borderColor = '#E8E4DE')} />
-              </div>
-            )
-          })}
-        </div>
-      )}
-      {method === 'transfer' && (
-        <div className="p-4 rounded-lg" style={{ backgroundColor: '#F5F1EB' }}>
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.6 }}>
-            You'll receive bank transfer details via email. Please transfer within 24 hours to secure your spot.
-          </p>
-        </div>
-      )}
-      {method === 'gopay' && (
-        <div className="p-4 rounded-lg text-center" style={{ backgroundColor: '#F5F1EB' }}>
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
-            You'll be redirected to GoPay / OVO to complete payment securely.
-          </p>
+      {error && (
+        <div className="p-3 rounded-lg mb-5" style={{ backgroundColor: '#FBEFEF', border: '1px solid #E8C4C4' }}>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#C0504D' }}>{error}</p>
         </div>
       )}
 
       <button
-        onClick={onNext}
-        className="w-full flex items-center justify-center gap-2 hover:opacity-90 transition-opacity mt-6"
-        style={{ height: 52, backgroundColor: '#111111', color: 'white', borderRadius: 10, fontSize: 15, fontWeight: 600, border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}
+        onClick={onPay}
+        disabled={paying}
+        className="w-full flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+        style={{ height: 52, backgroundColor: '#111111', color: 'white', borderRadius: 10, fontSize: 15, fontWeight: 600, border: 'none', cursor: paying ? 'wait' : 'pointer', opacity: paying ? 0.7 : 1, fontFamily: 'var(--font-inter)' }}
       >
         <Lock size={15} />
-        Pay IDR {total.toLocaleString('id-ID')}
+        {paying ? 'Opening secure payment…' : `Pay IDR ${total.toLocaleString('id-ID')}`}
       </button>
       <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', textAlign: 'center', marginTop: 10 }}>
-        Protected by 256-bit SSL encryption
+        Payments processed securely by Midtrans
       </p>
     </div>
   )
@@ -462,11 +415,12 @@ function StepPayment({ total, onNext }: { total: number; onNext: () => void }) {
 
 // ── Step 4: Confirmation ───────────────────────────────────────────────────────
 
-function StepConfirmation({ booking, guests }: { booking: BookingData; guests: number }) {
+function StepConfirmation({ booking, guests, bookingRef, payStatus = 'paid' }: { booking: BookingData; guests: number; bookingRef?: string | null; payStatus?: 'paid' | 'pending' }) {
   const sub = booking.pricePerPerson * guests
   const fee = Math.round(sub * booking.serviceFeeRate)
   const total = sub + fee
-  const ref = genRef(booking.slug, booking.rawDate)
+  const ref = bookingRef ?? genRef(booking.slug, booking.rawDate)
+  const pending = payStatus === 'pending'
 
   return (
     <div className="bg-white rounded-xl p-8 text-center" style={{ border: '1px solid #E8E4DE' }}>
@@ -474,10 +428,12 @@ function StepConfirmation({ booking, guests }: { booking: BookingData; guests: n
         <span style={{ fontSize: 28, color: '#4A7C59' }}>✓</span>
       </div>
       <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: '#111111', marginBottom: 8 }}>
-        Booking Confirmed!
+        {pending ? 'Almost there!' : 'Booking Confirmed!'}
       </h2>
       <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: '#6F675C', marginBottom: 6 }}>
-        Your booking has been saved to your profile.
+        {pending
+          ? 'Complete your payment using the instructions from Midtrans — your spot is held and we’ll email your confirmation as soon as payment arrives.'
+          : 'Your booking has been saved to your profile. A confirmation email is on its way.'}
       </p>
       <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', marginBottom: 32 }}>
         Ref: <span style={{ fontWeight: 600, color: '#111111', letterSpacing: '0.05em' }}>{ref}</span>
@@ -592,8 +548,25 @@ function CheckoutInner() {
   const fee   = Math.round(sub * booking.serviceFeeRate)
   const total = sub + fee
 
-  const confirmAndSave = async () => {
-    const ref = genRef(booking.slug, booking.rawDate)
+  const [paying, setPaying]           = useState(false)
+  const [payError, setPayError]       = useState<string | null>(null)
+  const [paidRef, setPaidRef]         = useState<string | null>(null)
+  const [payStatus, setPayStatus]     = useState<'paid' | 'pending'>('paid')
+
+  // Load Midtrans Snap script (sandbox vs production derived from the key prefix)
+  useEffect(() => {
+    const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY
+    if (!clientKey || document.getElementById('midtrans-snap')) return
+    const s = document.createElement('script')
+    s.id = 'midtrans-snap'
+    s.src = clientKey.startsWith('SB-')
+      ? 'https://app.sandbox.midtrans.com/snap/snap.js'
+      : 'https://app.midtrans.com/snap/snap.js'
+    s.setAttribute('data-client-key', clientKey)
+    document.body.appendChild(s)
+  }, [])
+
+  const saveLocalBooking = (ref: string) => {
     try {
       const prev = JSON.parse(localStorage.getItem('balible_bookings') ?? '[]')
       localStorage.setItem('balible_bookings', JSON.stringify([
@@ -608,17 +581,44 @@ function CheckoutInner() {
         localStorage.setItem(slotKey, JSON.stringify(prevSlots))
       }
     } catch {}
-    // Persist to DB (best-effort — works when experience is in DB and user is signed in)
-    createBookingAction({
-      slug: booking.slug,
-      rawDate: booking.rawDate,
-      guests,
-      totalPrice: total,
-      guestName: contact.fullName || 'Guest',
-      guestEmail: contact.email || '',
-      guestPhone: contact.phone || undefined,
-    }).catch(() => {})
-    setStep(3)
+  }
+
+  const startPayment = async () => {
+    if (paying) return
+    setPaying(true)
+    setPayError(null)
+    try {
+      const res = await createBookingAction({
+        slug: booking.slug,
+        rawDate: booking.rawDate,
+        guests,
+        totalPrice: total,
+        guestName: contact.fullName || 'Guest',
+        guestEmail: contact.email || '',
+        guestPhone: contact.phone || undefined,
+      })
+      if (!res.ok || !res.snapToken || !res.bookingRef) {
+        setPayError(res.error ?? 'Could not start payment. Please try again.')
+        setPaying(false)
+        return
+      }
+      const snap = (window as unknown as { snap?: { pay: (token: string, opts: Record<string, () => void>) => void } }).snap
+      if (!snap) {
+        setPayError('The payment window failed to load. Please refresh the page and try again.')
+        setPaying(false)
+        return
+      }
+      const ref = res.bookingRef
+      snap.pay(res.snapToken, {
+        onSuccess: () => { saveLocalBooking(ref); setPaidRef(ref); setPayStatus('paid'); setStep(3); setPaying(false) },
+        onPending: () => { saveLocalBooking(ref); setPaidRef(ref); setPayStatus('pending'); setStep(3); setPaying(false) },
+        onError:   () => { setPayError('Payment failed — you have not been charged. Please try again.'); setPaying(false) },
+        onClose:   () => { setPaying(false) },
+      })
+    } catch {
+      setPayError('Something went wrong. Please try again.')
+      setPaying(false)
+    }
   }
 
   return (
@@ -653,8 +653,8 @@ function CheckoutInner() {
           <div className="flex-1 min-w-0">
             {step === 0 && <StepExperience booking={booking} guests={guests} setGuests={setGuests} onNext={() => setStep(1)} slots={slots} selectedRawTime={selectedRawTime} setSelectedRawTime={setSelectedRawTime} />}
             {step === 1 && <StepDetails contact={contact} setContact={setContact} onNext={() => setStep(2)} />}
-            {step === 2 && <StepPayment total={total} onNext={confirmAndSave} />}
-            {step === 3 && <StepConfirmation booking={booking} guests={guests} />}
+            {step === 2 && <StepPayment total={total} onPay={startPayment} paying={paying} error={payError} />}
+            {step === 3 && <StepConfirmation booking={booking} guests={guests} bookingRef={paidRef} payStatus={payStatus} />}
           </div>
           {/* Full sidebar — desktop only */}
           {step < 3 && (

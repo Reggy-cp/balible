@@ -2,7 +2,7 @@
 
 import { prisma } from './prisma'
 import { getOrCreateNeonUser } from './user'
-import { sendBookingConfirmation } from './email'
+import { createSnapTransaction } from './midtrans'
 
 const AREA_DISPLAY: Record<string, string> = {
   UBUD: 'Ubud', CANGGU: 'Canggu', SEMINYAK: 'Seminyak', KUTA: 'Kuta',
@@ -69,14 +69,16 @@ export type CreateBookingInput = {
 
 export async function createBookingAction(
   input: CreateBookingInput,
-): Promise<{ ok: boolean; bookingRef?: string }> {
+): Promise<{ ok: boolean; bookingRef?: string; snapToken?: string; error?: string }> {
   try {
     const user = await getOrCreateNeonUser()
-    if (!user) return { ok: false }
+    if (!user) return { ok: false, error: 'Please sign in to complete your booking.' }
 
     const exp = await prisma.experience.findUnique({ where: { slug: input.slug } })
-    if (!exp) return { ok: false }
+    if (!exp) return { ok: false, error: 'This experience is not available for online payment yet.' }
 
+    // Booking starts PENDING; the Midtrans webhook flips it to CONFIRMED on
+    // settlement and sends the confirmation email at that point.
     const booking = await prisma.booking.create({
       data: {
         userId: user.id,
@@ -87,27 +89,23 @@ export async function createBookingAction(
         guestName: input.guestName,
         guestEmail: input.guestEmail,
         guestPhone: input.guestPhone ?? null,
-        status: 'CONFIRMED',
+        status: 'PENDING',
       },
     })
 
-    // Confirmation email is best-effort — a send failure must not fail the booking
-    await sendBookingConfirmation({
-      to: input.guestEmail,
-      guestName: input.guestName,
-      bookingRef: booking.bookingRef,
-      experienceTitle: exp.title,
-      area: AREA_DISPLAY[exp.area] ?? exp.area,
-      meetingPoint: exp.meetingPoint,
-      date: booking.date,
-      guests: booking.guests,
-      totalPrice: booking.totalPrice,
-      duration: exp.duration,
+    const snap = await createSnapTransaction({
+      orderId: booking.bookingRef,
+      grossAmount: input.totalPrice,
+      customerName: input.guestName,
+      customerEmail: input.guestEmail,
+      customerPhone: input.guestPhone,
+      itemName: exp.title,
     })
+    if ('error' in snap) return { ok: false, error: snap.error }
 
-    return { ok: true, bookingRef: booking.bookingRef }
+    return { ok: true, bookingRef: booking.bookingRef, snapToken: snap.token }
   } catch {
-    return { ok: false }
+    return { ok: false, error: 'Something went wrong. Please try again.' }
   }
 }
 
