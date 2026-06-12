@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import {
   Heart, Search, CalendarDays, MapPin, X,
   Leaf, Scissors, Landmark, ChefHat, Sun,
-  Mountain, Waves, Grid3x3, Star, ShieldCheck, Users, Sparkles,
+  Mountain, Star, Users,
   Instagram, Facebook, Twitter,
 } from 'lucide-react'
 import Navbar from '@/components/Navbar'
@@ -27,18 +27,17 @@ const CAT_GRID = [
   { label: 'Spiritual',    Icon: Sun,        href: '/categories/spiritual',  photo: 'https://images.unsplash.com/photo-1516690561799-46d8f74f9abf?w=400&auto=format&fit=crop&q=80' },
 ]
 
-const WHY_ITEMS = [
-  { Icon: ShieldCheck, title: 'Curated with Care',     body: 'Every experience is personally reviewed for quality and authenticity.' },
-  { Icon: Users,       title: 'Local Connections',     body: 'We work directly with passionate local hosts and artisans.' },
-  { Icon: Heart,       title: 'Meaningful Impact',     body: 'Your booking supports local communities in Bali.' },
-  { Icon: Sparkles,    title: 'Beautiful Experiences', body: 'From hidden studios to sacred rituals, made unforgettable.' },
+const VALUE_CHIPS = [
+  { Icon: Users, title: 'Authentic',   body: 'Meet real people, not tour operators.' },
+  { Icon: Heart, title: 'Meaningful',  body: 'Learn traditions passed through generations.' },
+  { Icon: Leaf,  title: 'Sustainable', body: 'Support local communities directly.' },
 ]
 
 const HOSTS = [
-  { slug: 'made-sari',       name: 'Made Sari',       role: 'Potter',          location: 'Ubud',    pronoun: 'her', photo: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&auto=format&fit=crop&q=80', quote: 'Every piece I create is a prayer. I love sharing the magic of clay with visitors from around the world.' },
-  { slug: 'ketut-suardana',  name: 'Ketut Suardana',  role: 'Silversmith',     location: 'Celuk',   pronoun: 'his', photo: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&auto=format&fit=crop&q=80', quote: "Silver is alive in my hands. I want every student to feel what it's like to make something beautiful." },
-  { slug: 'wayan-gede',      name: 'Wayan Gede',      role: 'Temple Guide',    location: 'Gianyar', pronoun: 'his', photo: 'https://images.unsplash.com/photo-1504257432389-52343af06ae3?w=400&auto=format&fit=crop&q=80', quote: 'The water temple is a living, sacred space. I want every guest to leave feeling truly connected to Bali.' },
-  { slug: 'nina-putri',      name: 'Nina Putri',      role: 'Wellness Teacher', location: 'Ubud',   pronoun: 'her', photo: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=400&auto=format&fit=crop&q=80', quote: 'Healing begins when we truly listen. My sessions are a space for presence, stillness, and transformation.' },
+  { slug: 'made-sari',       name: 'Made Sari',       role: 'Ceramic Artist',     location: 'Ubud',    cred: 'Third-generation potter',       photo: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&auto=format&fit=crop&q=80' },
+  { slug: 'ketut-suardana',  name: 'Ketut Suardana',  role: 'Master Silversmith', location: 'Celuk',   cred: '20+ years of craft',            photo: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&auto=format&fit=crop&q=80' },
+  { slug: 'wayan-gede',      name: 'Wayan Gede',      role: 'Temple Guide',       location: 'Gianyar', cred: 'Third-generation temple guide', photo: 'https://images.unsplash.com/photo-1504257432389-52343af06ae3?w=400&auto=format&fit=crop&q=80' },
+  { slug: 'nina-putri',      name: 'Nina Putri',      role: 'Wellness Teacher',   location: 'Ubud',    cred: 'Sound healing & breathwork',    photo: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=400&auto=format&fit=crop&q=80' },
 ]
 
 const FOOTER_COLS = [
@@ -77,6 +76,11 @@ function ExperienceCard({ exp }: { exp: ExperienceCard }) {
         <h3 className="line-clamp-2 leading-snug" style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, color: '#1D1D1D', fontWeight: 600 }}>
           {exp.title}
         </h3>
+        {exp.hostName && (
+          <p className="mt-0.5" style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#B58A4B', fontWeight: 500 }}>
+            with {exp.hostName}
+          </p>
+        )}
         <div className="flex items-center gap-1 mt-2">
           <Star size={11} fill="#B58A4B" color="#B58A4B" />
           <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 700, color: '#1D1D1D' }}>{exp.rating}</span>
@@ -92,19 +96,26 @@ function ExperienceCard({ exp }: { exp: ExperienceCard }) {
 
 function HostCard({ host }: { host: typeof HOSTS[0] }) {
   return (
-    <div>
-      <div className="relative overflow-hidden rounded-xl" style={{ height: 200 }}>
-        <img src={host.photo} alt={host.name} className="w-full h-full object-cover" />
+    <a
+      href={`/hosts/${host.slug}`}
+      className="relative block overflow-hidden rounded-2xl group"
+      style={{ height: 280, textDecoration: 'none' }}
+    >
+      <img
+        src={host.photo}
+        alt={host.name}
+        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+      />
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(30,47,35,0) 35%, rgba(30,47,35,0.88) 100%)' }} />
+      <div className="absolute bottom-0 left-0 right-0 p-4">
+        <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: 'white', lineHeight: 1.2 }}>{host.name}</h3>
+        <p className="mt-0.5" style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#D9C19A' }}>{host.role}</p>
+        <div className="flex items-center gap-1 mt-1.5">
+          <MapPin size={11} style={{ color: 'rgba(255,255,255,0.65)' }} />
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: 'rgba(255,255,255,0.65)' }}>{host.location} · {host.cred}</p>
+        </div>
       </div>
-      <h3 className="mt-3" style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#1D1D1D' }}>{host.name}</h3>
-      <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>{host.role}, {host.location}</p>
-      <p className="mt-2 line-clamp-2" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.6, fontStyle: 'italic' }}>
-        &ldquo;{host.quote}&rdquo;
-      </p>
-      <a href={`/hosts/${host.slug}`} className="mt-2 inline-block underline hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#1D1D1D' }}>
-        Read {host.pronoun} story →
-      </a>
-    </div>
+    </a>
   )
 }
 
@@ -203,22 +214,25 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
       <Navbar />
 
       {/* ── HERO ── */}
-      <section className="relative" style={{ height: 'clamp(280px, 40vw, 520px)' }}>
+      <section className="relative" style={{ height: 'clamp(320px, 44vw, 560px)' }}>
         <div className="absolute inset-0">
           <img
-            src="https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1400&auto=format&fit=crop&q=85"
-            alt="Bali rice terraces"
+            src="https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=1600&auto=format&fit=crop&q=85"
+            alt="Balinese artisan shaping clay on a pottery wheel"
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.2) 60%, transparent 100%)' }} />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(20,31,24,0.82) 0%, rgba(20,31,24,0.45) 55%, rgba(20,31,24,0.12) 100%)' }} />
         </div>
 
-        <div className="absolute bottom-0 left-0 p-8 lg:p-16" style={{ maxWidth: 560 }}>
-          <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px, 4vw, 52px)', color: 'white', lineHeight: 1.1, fontWeight: 700, maxWidth: 420 }}>
-            Curated Experiences in Bali
+        <div className="absolute bottom-0 left-0 p-8 lg:p-16" style={{ maxWidth: 620 }}>
+          <p className="mb-3" style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 600, letterSpacing: '0.16em', color: '#D9C19A' }}>
+            REAL PEOPLE. REAL STORIES. REAL BALI.
+          </p>
+          <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px, 4vw, 52px)', color: 'white', lineHeight: 1.12, fontWeight: 700, maxWidth: 480 }}>
+            Discover Bali Through Its <span style={{ color: '#D9A857' }}>People</span>
           </h1>
-          <p className="hidden sm:block mt-4" style={{ fontFamily: 'var(--font-inter)', fontSize: 16, color: 'rgba(255,255,255,0.8)', maxWidth: 380, lineHeight: 1.6 }}>
-            Discover authentic, meaningful, and beautiful experiences across the island.
+          <p className="hidden sm:block mt-4" style={{ fontFamily: 'var(--font-inter)', fontSize: 16, color: 'rgba(255,255,255,0.82)', maxWidth: 420, lineHeight: 1.6 }}>
+            Meet artisans, healers, guides, and storytellers who bring Bali&apos;s culture to life through unforgettable experiences.
           </p>
 
           {/* Search bar */}
@@ -227,7 +241,7 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
               <Search size={15} style={{ color: '#6F675C', flexShrink: 0 }} />
               <input
                 type="text"
-                placeholder="Search experiences…"
+                placeholder="What would you like to experience?"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 className="outline-none w-full bg-transparent placeholder:text-coconut text-charcoal"
@@ -258,7 +272,7 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
             <button
               type="submit"
               className="mx-2 flex-shrink-0 text-white rounded-md hover:opacity-90 transition-opacity flex items-center justify-center sm:hidden"
-              style={{ backgroundColor: '#1D1D1D', border: 'none', cursor: 'pointer', width: 36, height: 36 }}
+              style={{ backgroundColor: '#2E4A35', border: 'none', cursor: 'pointer', width: 36, height: 36 }}
               aria-label="Search"
             >
               <Search size={15} color="white" />
@@ -266,7 +280,7 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
             <button
               type="submit"
               className="mx-2 flex-shrink-0 text-white rounded-md px-6 py-2 hover:opacity-90 transition-opacity hidden sm:flex items-center"
-              style={{ backgroundColor: '#1D1D1D', fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500, border: 'none', cursor: 'pointer' }}
+              style={{ backgroundColor: '#2E4A35', fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500, border: 'none', cursor: 'pointer' }}
             >
               Search
             </button>
@@ -274,6 +288,59 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
         </div>
       </section>
 
+      {/* ── STATS BAR ── */}
+      <section className="px-6 lg:px-16 py-5" style={{ backgroundColor: '#1E2F23' }}>
+        <div className="max-w-[1440px] mx-auto grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-4">
+          {[
+            { value: String(experiences.length), label: 'Curated Experiences' },
+            { value: String(new Set(experiences.map(e => e.area)).size), label: 'Areas Across Bali' },
+            { value: experiences.reduce((a, e) => a + e.reviews, 0).toLocaleString('en-US'), label: 'Traveler Reviews' },
+            { value: experiences.length > 0 ? (experiences.reduce((a, e) => a + e.rating, 0) / experiences.length).toFixed(1) : '—', label: 'Average Rating' },
+          ].map(s => (
+            <div key={s.label} className="text-center sm:text-left">
+              <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#D9A857' }}>{s.value}</p>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: 'rgba(255,255,255,0.65)' }}>{s.label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── MEET THE PEOPLE ── */}
+      <section className="bg-white py-12 px-6 lg:px-16">
+        <div className="max-w-[1440px] mx-auto">
+          <div className="flex items-start justify-between mb-8">
+            <div>
+              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#1D1D1D', fontWeight: 700 }}>
+                Meet the People Behind Bali
+              </h2>
+              <p className="mt-1" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
+                Every experience is led by a local artisan, healer, or guide.
+              </p>
+            </div>
+            <a href="/hosts" className="flex-shrink-0 hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#B58A4B', textDecoration: 'underline' }}>
+              View all hosts →
+            </a>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
+            {HOSTS.map(host => <HostCard key={host.slug} host={host} />)}
+          </div>
+
+          {/* Value chips */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
+            {VALUE_CHIPS.map(({ Icon, title, body }) => (
+              <div key={title} className="flex items-center gap-4 rounded-xl p-4" style={{ backgroundColor: '#F3EEE5' }}>
+                <div className="flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center" style={{ backgroundColor: '#1E2F23' }}>
+                  <Icon size={18} color="white" strokeWidth={1.5} />
+                </div>
+                <div>
+                  <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 700, color: '#1D1D1D' }}>{title}</h3>
+                  <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', lineHeight: 1.5 }}>{body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* ── HANDPICKED EXPERIENCES ── */}
       <section className="bg-white py-12 px-6 lg:px-16">
@@ -289,7 +356,7 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
                 </div>
               )}
               <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#1D1D1D', fontWeight: 700 }}>
-                {nearbyArea ? `Experiences in ${nearbyArea}` : 'All Experiences'}
+                {nearbyArea ? `Experiences in ${nearbyArea}` : 'Experiences You’ll Remember Forever'}
               </h2>
               <div className="flex items-center gap-2 mt-1 flex-wrap">
                 <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
@@ -559,46 +626,6 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
                 </div>
               </a>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── WHY BALIBLE ── */}
-      <section className="bg-white py-12 px-6 lg:px-16">
-        <div className="max-w-[1440px] mx-auto">
-          <h2 className="mb-10" style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#1D1D1D', fontWeight: 700 }}>
-            Why Balible?
-          </h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
-            {WHY_ITEMS.map(({ Icon, title, body }) => (
-              <div key={title}>
-                <Icon size={28} style={{ color: '#1D1D1D' }} strokeWidth={1.5} />
-                <h3 className="mt-3" style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 600, color: '#1D1D1D' }}>{title}</h3>
-                <p className="mt-1.5" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.6 }}>{body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── HOST STORIES ── */}
-      <section className="py-12 px-6 lg:px-16" style={{ backgroundColor: '#F3EEE5' }}>
-        <div className="max-w-[1440px] mx-auto">
-          <div className="flex items-start justify-between mb-8">
-            <div>
-              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#1D1D1D', fontWeight: 700 }}>
-                Stories from Our Hosts
-              </h2>
-              <p className="mt-1" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
-                Meet the people behind the experiences.
-              </p>
-            </div>
-            <a href="/hosts" className="flex-shrink-0 hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#B58A4B', textDecoration: 'underline' }}>
-              View all →
-            </a>
-          </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-            {HOSTS.map(host => <HostCard key={host.name} host={host} />)}
           </div>
         </div>
       </section>
