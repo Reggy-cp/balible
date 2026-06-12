@@ -66,9 +66,9 @@ function ReviewForm({ onSubmit, onCancel }: {
   const canSubmit = rating > 0 && comment.trim().length > 0
 
   return (
-    <div className="p-5 rounded-xl mb-6" style={{ border: '1px solid #B58A4B', backgroundColor: '#FFFDF9' }}>
+    <div className="p-5 rounded-xl mb-6" style={{ border: '1px solid #C8A97E', backgroundColor: '#FFFDF9' }}>
       <div className="flex items-center justify-between mb-4">
-        <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#1D1D1D' }}>Write a review</p>
+        <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111' }}>Write a review</p>
         <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}>
           <X size={16} style={{ color: '#6F675C' }} />
         </button>
@@ -82,12 +82,12 @@ function ReviewForm({ onSubmit, onCancel }: {
               onClick={() => setRating(i)}
               className="hover:scale-110 transition-transform"
               style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}>
-              <Star size={26} fill={active >= i ? '#B58A4B' : 'none'} color={active >= i ? '#B58A4B' : '#E8E4DE'} />
+              <Star size={26} fill={active >= i ? '#C8A97E' : 'none'} color={active >= i ? '#C8A97E' : '#E8E4DE'} />
             </button>
           ))}
         </div>
         {active > 0 && (
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#B58A4B', fontWeight: 500 }}>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#C8A97E', fontWeight: 500 }}>
             {RATING_LABELS[active]}
           </p>
         )}
@@ -98,8 +98,8 @@ function ReviewForm({ onSubmit, onCancel }: {
         onChange={e => { if (e.target.value.length <= 500) setComment(e.target.value) }}
         placeholder="Share what you loved about this experience..."
         rows={3}
-        style={{ width: '100%', borderRadius: 10, border: '1px solid #E8E4DE', padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#1D1D1D', resize: 'none', outline: 'none', lineHeight: 1.6, boxSizing: 'border-box' }}
-        onFocus={e => (e.target.style.borderColor = '#B58A4B')}
+        style={{ width: '100%', borderRadius: 10, border: '1px solid #E8E4DE', padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', resize: 'none', outline: 'none', lineHeight: 1.6, boxSizing: 'border-box' }}
+        onFocus={e => (e.target.style.borderColor = '#C8A97E')}
         onBlur={e => (e.target.style.borderColor = '#E8E4DE')}
       />
       <div className="flex items-center justify-between mt-2">
@@ -110,7 +110,7 @@ function ReviewForm({ onSubmit, onCancel }: {
             Cancel
           </button>
           <button onClick={() => canSubmit && onSubmit(rating, comment)} disabled={!canSubmit}
-            style={{ height: 36, padding: '0 16px', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-inter)', backgroundColor: canSubmit ? '#1D1D1D' : '#E8E4DE', color: canSubmit ? 'white' : '#9E9A94', cursor: canSubmit ? 'pointer' : 'not-allowed' }}>
+            style={{ height: 36, padding: '0 16px', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-inter)', backgroundColor: canSubmit ? '#111111' : '#E8E4DE', color: canSubmit ? 'white' : '#9E9A94', cursor: canSubmit ? 'pointer' : 'not-allowed' }}>
             Submit
           </button>
         </div>
@@ -172,7 +172,7 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
                 style={{
                   fontFamily: 'var(--font-inter)',
                   fontSize: 14,
-                  backgroundColor: isActive ? '#1D1D1D' : 'transparent',
+                  backgroundColor: isActive ? '#111111' : 'transparent',
                   color: isActive ? 'white' : '#6F675C',
                   border: 'none',
                   cursor: 'pointer',
@@ -199,13 +199,13 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
               </p>
               {exp.highlights.length > 0 && (
                 <div className="mt-6">
-                  <h4 className="mb-3" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#1D1D1D' }}>
+                  <h4 className="mb-3" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111' }}>
                     Highlights
                   </h4>
                   <ul className="space-y-2">
                     {exp.highlights.map((h, i) => (
                       <li key={i} className="flex items-start gap-2">
-                        <CheckCircle2 size={15} style={{ color: '#2E4A35', marginTop: 2, flexShrink: 0 }} />
+                        <CheckCircle2 size={15} style={{ color: '#4A7C59', marginTop: 2, flexShrink: 0 }} />
                         <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.5 }}>{h}</span>
                       </li>
                     ))}
@@ -226,23 +226,23 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
                       className="w-12 h-12 rounded-full object-cover flex-shrink-0"
                     />
                   ) : (
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#F3EEE5' }}>
-                      <span style={{ fontFamily: 'var(--font-inter)', fontSize: 18, fontWeight: 700, color: '#1D1D1D' }}>
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#F5F1EB' }}>
+                      <span style={{ fontFamily: 'var(--font-inter)', fontSize: 18, fontWeight: 700, color: '#111111' }}>
                         {exp.operator.user.name[0]}
                       </span>
                     </div>
                   )}
                   <div>
-                    <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#1D1D1D' }}>{exp.operator.user.name}</p>
+                    <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111' }}>{exp.operator.user.name}</p>
                     <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>{exp.operator.businessName}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-1 mt-2">
-                  <Star size={11} fill="#B58A4B" color="#B58A4B" />
-                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 700, color: '#1D1D1D' }}>{exp.operator.rating}</span>
+                  <Star size={11} fill="#C8A97E" color="#C8A97E" />
+                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 700, color: '#111111' }}>{exp.operator.rating}</span>
                   <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>({exp.operator.totalReviews})</span>
                 </div>
-                <a href={`/hosts/${hostSlug(exp.operator.user.name)}`} className="mt-3 inline-block underline hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#1D1D1D' }}>
+                <a href={`/hosts/${hostSlug(exp.operator.user.name)}`} className="mt-3 inline-block underline hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>
                   View profile →
                 </a>
               </div>
@@ -254,18 +254,18 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
         {active === "What's included" && (
           <div className="grid sm:grid-cols-2 gap-8">
             <div>
-              <h4 className="mb-3" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#1D1D1D' }}>Included</h4>
+              <h4 className="mb-3" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111' }}>Included</h4>
               <ul className="space-y-2">
                 {includes.map((item, i) => (
                   <li key={i} className="flex items-start gap-2">
-                    <CheckCircle2 size={15} style={{ color: '#2E4A35', marginTop: 2, flexShrink: 0 }} />
+                    <CheckCircle2 size={15} style={{ color: '#4A7C59', marginTop: 2, flexShrink: 0 }} />
                     <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>{item}</span>
                   </li>
                 ))}
               </ul>
             </div>
             <div>
-              <h4 className="mb-3" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#1D1D1D' }}>Not included</h4>
+              <h4 className="mb-3" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111' }}>Not included</h4>
               <ul className="space-y-2">
                 {excludes.map((item, i) => (
                   <li key={i} className="flex items-start gap-2">
@@ -276,17 +276,17 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
               </ul>
             </div>
             <div>
-              <h4 className="mb-3" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#1D1D1D' }}>Meeting point</h4>
-              <div className="flex items-start gap-3 p-4 rounded-xl" style={{ backgroundColor: '#F3EEE5', border: '1px solid #E8E4DE' }}>
-                <MapPin size={16} style={{ color: '#B58A4B', flexShrink: 0, marginTop: 2 }} />
+              <h4 className="mb-3" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111' }}>Meeting point</h4>
+              <div className="flex items-start gap-3 p-4 rounded-xl" style={{ backgroundColor: '#F5F1EB', border: '1px solid #E8E4DE' }}>
+                <MapPin size={16} style={{ color: '#C8A97E', flexShrink: 0, marginTop: 2 }} />
                 <div className="flex-1 min-w-0">
-                  <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#1D1D1D', fontWeight: 500, lineHeight: 1.5 }}>{exp.meetingPoint}</p>
+                  <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', fontWeight: 500, lineHeight: 1.5 }}>{exp.meetingPoint}</p>
                   <a
                     href={`https://maps.google.com/?q=${encodeURIComponent(exp.meetingPoint + ', Bali, Indonesia')}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 mt-2 hover:opacity-70 transition-opacity"
-                    style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#B58A4B', textDecoration: 'none' }}
+                    style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#C8A97E', textDecoration: 'none' }}
                   >
                     <ExternalLink size={12} />
                     Get directions on Google Maps
@@ -302,13 +302,13 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
           <div>
             <div className="flex items-center justify-between gap-4 mb-8 pb-6" style={{ borderBottom: '1px solid #E8E4DE' }}>
               <div className="flex items-center gap-4">
-                <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 52, fontWeight: 700, color: '#1D1D1D', lineHeight: 1 }}>
+                <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 52, fontWeight: 700, color: '#111111', lineHeight: 1 }}>
                   {exp.rating.toFixed(1)}
                 </span>
                 <div>
                   <div className="flex gap-0.5 mb-1">
                     {[1,2,3,4,5].map(i => (
-                      <Star key={i} size={16} fill={i <= Math.round(exp.rating) ? '#B58A4B' : 'none'} color="#B58A4B" />
+                      <Star key={i} size={16} fill={i <= Math.round(exp.rating) ? '#C8A97E' : 'none'} color="#C8A97E" />
                     ))}
                   </div>
                   <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>
@@ -319,7 +319,7 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
               {hasBooking && !userReview && !showForm && (
                 <button
                   onClick={() => setShowForm(true)}
-                  style={{ height: 38, padding: '0 18px', borderRadius: 8, border: '1px solid #1D1D1D', background: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#1D1D1D', flexShrink: 0 }}
+                  style={{ height: 38, padding: '0 18px', borderRadius: 8, border: '1px solid #111111', background: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111', flexShrink: 0 }}
                   className="hover:bg-stone-50 transition-colors"
                 >
                   ★ Write a review
@@ -336,19 +336,19 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
               {userReview && (
                 <div className="pb-6" style={{ borderBottom: '1px solid #E8E4DE' }}>
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-semibold" style={{ backgroundColor: '#B58A4B', color: 'white' }}>
+                    <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-semibold" style={{ backgroundColor: '#C8A97E', color: 'white' }}>
                       Y
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#1D1D1D' }}>You</p>
-                        <span style={{ fontSize: 11, color: '#2E4A35', backgroundColor: '#F0F7F2', padding: '1px 8px', borderRadius: 20, fontWeight: 500 }}>Your review</span>
+                        <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111' }}>You</p>
+                        <span style={{ fontSize: 11, color: '#4A7C59', backgroundColor: '#F0F7F2', padding: '1px 8px', borderRadius: 20, fontWeight: 500 }}>Your review</span>
                       </div>
                       <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>{userReview.reviewDate}</p>
                     </div>
                     <div className="flex gap-0.5">
                       {[1,2,3,4,5].map(i => (
-                        <Star key={i} size={12} fill={i <= userReview.rating ? '#B58A4B' : 'none'} color="#B58A4B" />
+                        <Star key={i} size={12} fill={i <= userReview.rating ? '#C8A97E' : 'none'} color="#C8A97E" />
                       ))}
                     </div>
                   </div>
@@ -362,19 +362,19 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
                     {rev.user.image ? (
                       <img src={rev.user.image} alt={rev.user.name} className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
                     ) : (
-                      <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-semibold" style={{ backgroundColor: '#F3EEE5', color: '#1D1D1D' }}>
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-semibold" style={{ backgroundColor: '#F5F1EB', color: '#111111' }}>
                         {rev.user.name[0]}
                       </div>
                     )}
                     <div className="flex-1">
-                      <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#1D1D1D' }}>{rev.user.name}</p>
+                      <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111' }}>{rev.user.name}</p>
                       <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>
                         {new Date(rev.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                       </p>
                     </div>
                     <div className="flex gap-0.5">
                       {[1,2,3,4,5].map(i => (
-                        <Star key={i} size={12} fill={i <= rev.rating ? '#B58A4B' : 'none'} color="#B58A4B" />
+                        <Star key={i} size={12} fill={i <= rev.rating ? '#C8A97E' : 'none'} color="#C8A97E" />
                       ))}
                     </div>
                   </div>
@@ -396,14 +396,14 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
                   className="w-24 h-24 rounded-full object-cover"
                 />
               ) : (
-                <div className="w-24 h-24 rounded-full flex items-center justify-center" style={{ backgroundColor: '#F3EEE5' }}>
-                  <span style={{ fontSize: 32, fontWeight: 700, color: '#1D1D1D' }}>{exp.operator.user.name[0]}</span>
+                <div className="w-24 h-24 rounded-full flex items-center justify-center" style={{ backgroundColor: '#F5F1EB' }}>
+                  <span style={{ fontSize: 32, fontWeight: 700, color: '#111111' }}>{exp.operator.user.name[0]}</span>
                 </div>
               )}
             </div>
             <div>
               <a href={`/hosts/${hostSlug(exp.operator.user.name)}`} style={{ textDecoration: 'none' }}>
-                <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#1D1D1D' }} className="hover:opacity-70 transition-opacity">
+                <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#111111' }} className="hover:opacity-70 transition-opacity">
                   {exp.operator.user.name}
                 </h3>
               </a>
@@ -411,14 +411,14 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
                 {exp.operator.businessName}
               </p>
               <div className="flex items-center gap-2 mt-2">
-                <Star size={13} fill="#B58A4B" color="#B58A4B" />
-                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#1D1D1D' }}>{exp.operator.rating}</span>
+                <Star size={13} fill="#C8A97E" color="#C8A97E" />
+                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111' }}>{exp.operator.rating}</span>
                 <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>· {exp.operator.totalReviews} reviews</span>
               </div>
               <p className="mt-4" style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: '#6F675C', lineHeight: 1.7, maxWidth: 480 }}>
                 {exp.operator.description}
               </p>
-              <a href={`/hosts/${hostSlug(exp.operator.user.name)}`} className="mt-4 inline-flex items-center gap-1 hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#1D1D1D', textDecoration: 'none', borderBottom: '1px solid #1D1D1D', paddingBottom: 1 }}>
+              <a href={`/hosts/${hostSlug(exp.operator.user.name)}`} className="mt-4 inline-flex items-center gap-1 hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111', textDecoration: 'none', borderBottom: '1px solid #111111', paddingBottom: 1 }}>
                 See all experiences by {exp.operator.user.name.split(' ')[0]} →
               </a>
             </div>
@@ -455,16 +455,16 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
                     return (
                       <div key={label} className="flex gap-5" style={{ paddingBottom: i < steps.length - 1 ? 28 : 0 }}>
                         <div className="flex flex-col items-center flex-shrink-0">
-                          <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: i === 2 ? '#1D1D1D' : '#F3EEE5', border: '2px solid #E8E4DE', flexShrink: 0 }}>
-                            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 700, color: i === 2 ? '#B58A4B' : '#6F675C' }}>{i + 1}</span>
+                          <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: i === 2 ? '#111111' : '#F5F1EB', border: '2px solid #E8E4DE', flexShrink: 0 }}>
+                            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 700, color: i === 2 ? '#C8A97E' : '#6F675C' }}>{i + 1}</span>
                           </div>
                           {i < steps.length - 1 && <div style={{ flex: 1, width: 1, backgroundColor: '#E8E4DE', marginTop: 4 }} />}
                         </div>
                         <div style={{ paddingTop: 4 }}>
                           <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                            <h4 style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 700, color: '#1D1D1D' }}>{label}</h4>
-                            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C', backgroundColor: '#F3EEE5', padding: '2px 8px', borderRadius: 20 }}>{fmt(start)} – {fmt(start + mins)}</span>
-                            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#B58A4B' }}>~{fmt(mins)}</span>
+                            <h4 style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 700, color: '#111111' }}>{label}</h4>
+                            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C', backgroundColor: '#F5F1EB', padding: '2px 8px', borderRadius: 20 }}>{fmt(start)} – {fmt(start + mins)}</span>
+                            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#C8A97E' }}>~{fmt(mins)}</span>
                           </div>
                           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.75 }}>{desc}</p>
                         </div>

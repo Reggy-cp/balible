@@ -103,11 +103,11 @@ const NAV_TABS = [
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { bg: string; color: string }> = {
-    Upcoming:  { bg: '#F0F7F2', color: '#2E4A35' },
+    Upcoming:  { bg: '#F0F7F2', color: '#4A7C59' },
     Completed: { bg: '#EEF2FF', color: '#4B6CB7' },
     Cancelled: { bg: '#FEF2F2', color: '#B66A45' },
   }
-  const s = map[status] ?? { bg: '#F3EEE5', color: '#6F675C' }
+  const s = map[status] ?? { bg: '#F5F1EB', color: '#6F675C' }
   return (
     <span style={{ ...s, fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20, fontFamily: 'var(--font-inter)', whiteSpace: 'nowrap' }}>
       {status}
@@ -156,25 +156,25 @@ function ReviewModal({ booking, onSubmit, onClose }: {
         {done ? (
           <div className="text-center py-8">
             <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#F0F7F2' }}>
-              <Check size={26} style={{ color: '#2E4A35' }} />
+              <Check size={26} style={{ color: '#4A7C59' }} />
             </div>
-            <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#1D1D1D' }}>Review submitted!</p>
+            <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111' }}>Review submitted!</p>
             <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', marginTop: 6 }}>Thank you for sharing your experience.</p>
           </div>
         ) : (
           <>
             <div className="flex items-center justify-between mb-5">
-              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 19, fontWeight: 700, color: '#1D1D1D' }}>Leave a Review</h2>
+              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 19, fontWeight: 700, color: '#111111' }}>Leave a Review</h2>
               <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
                 <X size={18} style={{ color: '#6F675C' }} />
               </button>
             </div>
 
             {/* Experience info */}
-            <div className="flex items-center gap-3 mb-6 p-3 rounded-xl" style={{ backgroundColor: '#F3EEE5' }}>
+            <div className="flex items-center gap-3 mb-6 p-3 rounded-xl" style={{ backgroundColor: '#F5F1EB' }}>
               <img src={booking.image} alt={booking.title} className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
               <div>
-                <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#1D1D1D' }}>{booking.title}</p>
+                <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111' }}>{booking.title}</p>
                 <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>{booking.area} · {booking.date}</p>
               </div>
             </div>
@@ -190,12 +190,12 @@ function ReviewModal({ booking, onSubmit, onClose }: {
                     onClick={() => setRating(i)}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, transition: 'transform 0.1s' }}
                     className="hover:scale-110">
-                    <Star size={30} fill={active >= i ? '#B58A4B' : 'none'} color={active >= i ? '#B58A4B' : '#E8E4DE'} />
+                    <Star size={30} fill={active >= i ? '#C8A97E' : 'none'} color={active >= i ? '#C8A97E' : '#E8E4DE'} />
                   </button>
                 ))}
               </div>
               {active > 0 && (
-                <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#B58A4B', marginTop: 6, fontWeight: 500 }}>
+                <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#C8A97E', marginTop: 6, fontWeight: 500 }}>
                   {RATING_LABELS[active]}
                 </p>
               )}
@@ -209,8 +209,8 @@ function ReviewModal({ booking, onSubmit, onClose }: {
                 onChange={e => { if (e.target.value.length <= 500) setComment(e.target.value) }}
                 placeholder="Tell others what you loved about this experience..."
                 rows={4}
-                style={{ width: '100%', borderRadius: 10, border: '1px solid #E8E4DE', padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#1D1D1D', resize: 'none', outline: 'none', lineHeight: 1.6 }}
-                onFocus={e => (e.target.style.borderColor = '#B58A4B')}
+                style={{ width: '100%', borderRadius: 10, border: '1px solid #E8E4DE', padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', resize: 'none', outline: 'none', lineHeight: 1.6 }}
+                onFocus={e => (e.target.style.borderColor = '#C8A97E')}
                 onBlur={e => (e.target.style.borderColor = '#E8E4DE')}
               />
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#C8C4BE', marginTop: 3, textAlign: 'right' }}>{comment.length}/500</p>
@@ -221,7 +221,7 @@ function ReviewModal({ booking, onSubmit, onClose }: {
               disabled={!rating || !comment.trim()}
               style={{
                 width: '100%', height: 44, borderRadius: 10, border: 'none',
-                backgroundColor: !rating || !comment.trim() ? '#E8E4DE' : '#1D1D1D',
+                backgroundColor: !rating || !comment.trim() ? '#E8E4DE' : '#111111',
                 color: !rating || !comment.trim() ? '#6F675C' : 'white',
                 fontSize: 14, fontWeight: 600,
                 cursor: !rating || !comment.trim() ? 'not-allowed' : 'pointer',
@@ -259,7 +259,7 @@ function BookingsTab({ reviews, onReview, dbBookings }: { reviews: SubmittedRevi
 
   return (
     <div className="space-y-4">
-      <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#1D1D1D', marginBottom: 16 }}>My Bookings</h2>
+      <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', marginBottom: 16 }}>My Bookings</h2>
       {allBookings.map(b => {
         const isCancelled = cancelled.has(b.id)
         const effectiveStatus = isCancelled ? 'Cancelled' : b.status
@@ -272,7 +272,7 @@ function BookingsTab({ reviews, onReview, dbBookings }: { reviews: SubmittedRevi
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2 flex-wrap">
                 <div>
-                  <a href={`/experiences/${b.slug}`} style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 600, color: '#1D1D1D', textDecoration: 'none' }} className="hover:opacity-70 transition-opacity">
+                  <a href={`/experiences/${b.slug}`} style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 600, color: '#111111', textDecoration: 'none' }} className="hover:opacity-70 transition-opacity">
                     {b.title}
                   </a>
                   <div className="flex items-center gap-1 mt-0.5">
@@ -285,19 +285,19 @@ function BookingsTab({ reviews, onReview, dbBookings }: { reviews: SubmittedRevi
               <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1.5">
                 <span style={{ fontSize: 12, color: '#6F675C' }}>📅 {b.date}{b.time ? ` · ${b.time}` : ''}</span>
                 <span style={{ fontSize: 12, color: '#6F675C' }}>👤 {b.guests} guest{b.guests > 1 ? 's' : ''}</span>
-                <span style={{ fontSize: 12, fontWeight: 600, color: '#1D1D1D' }}>IDR {b.total.toLocaleString('id-ID')}</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>IDR {b.total.toLocaleString('id-ID')}</span>
               </div>
               {effectiveStatus === 'Completed' && (
                 displayRating ? (
                   <div className="flex items-center gap-1 mt-2">
-                    {[1,2,3,4,5].map(i => <Star key={i} size={11} fill={i <= displayRating ? '#B58A4B' : '#E8E4DE'} color={i <= displayRating ? '#B58A4B' : '#E8E4DE'} />)}
+                    {[1,2,3,4,5].map(i => <Star key={i} size={11} fill={i <= displayRating ? '#C8A97E' : '#E8E4DE'} color={i <= displayRating ? '#C8A97E' : '#E8E4DE'} />)}
                     <span style={{ fontSize: 12, color: '#6F675C', marginLeft: 2 }}>You rated this</span>
                   </div>
                 ) : (
                   <button
                     onClick={() => setReviewing(b)}
                     className="mt-2 hover:opacity-80 transition-opacity"
-                    style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'var(--font-inter)', fontSize: 13, color: '#B58A4B', fontWeight: 600 }}>
+                    style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'var(--font-inter)', fontSize: 13, color: '#C8A97E', fontWeight: 600 }}>
                     ★ Leave a review
                   </button>
                 )
@@ -306,7 +306,7 @@ function BookingsTab({ reviews, onReview, dbBookings }: { reviews: SubmittedRevi
                 <div className="flex gap-2 mt-3">
                   <a
                     href={`/experiences/${b.slug}`}
-                    style={{ height: 32, display: 'inline-flex', alignItems: 'center', padding: '0 14px', backgroundColor: '#1D1D1D', color: 'white', borderRadius: 6, fontSize: 12, fontWeight: 500, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}
+                    style={{ height: 32, display: 'inline-flex', alignItems: 'center', padding: '0 14px', backgroundColor: '#111111', color: 'white', borderRadius: 6, fontSize: 12, fontWeight: 500, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}
                     className="hover:opacity-90 transition-opacity"
                   >
                     View experience
@@ -363,18 +363,18 @@ function WishlistTab({ dbSlugs }: { dbSlugs?: string[] }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#1D1D1D' }}>
+        <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111' }}>
           My Wishlist{items.length > 0 && <span style={{ fontSize: 14, fontWeight: 400, color: '#6F675C', marginLeft: 8 }}>({items.length})</span>}
         </h2>
-        <a href="/wishlist" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#B58A4B', textDecoration: 'underline' }} className="hover:opacity-70 transition-opacity">
+        <a href="/wishlist" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#C8A97E', textDecoration: 'underline' }} className="hover:opacity-70 transition-opacity">
           Manage →
         </a>
       </div>
       {items.length === 0 ? (
         <div className="bg-white rounded-xl p-10 text-center" style={{ border: '1px solid #E8E4DE' }}>
-          <Heart size={28} style={{ color: '#B58A4B', margin: '0 auto 12px' }} strokeWidth={1.5} />
+          <Heart size={28} style={{ color: '#C8A97E', margin: '0 auto 12px' }} strokeWidth={1.5} />
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>No saved experiences yet.</p>
-          <a href="/search" style={{ display: 'inline-block', marginTop: 12, fontSize: 13, color: '#B58A4B', textDecoration: 'underline' }}>Browse experiences →</a>
+          <a href="/search" style={{ display: 'inline-block', marginTop: 12, fontSize: 13, color: '#C8A97E', textDecoration: 'underline' }}>Browse experiences →</a>
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -391,13 +391,13 @@ function WishlistTab({ dbSlugs }: { dbSlugs?: string[] }) {
               </div>
               <div className="p-3.5">
                 <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>{exp.area}</p>
-                <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 14, fontWeight: 600, color: '#1D1D1D', marginTop: 2, lineHeight: 1.3 }}>{exp.title}</h3>
+                <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 14, fontWeight: 600, color: '#111111', marginTop: 2, lineHeight: 1.3 }}>{exp.title}</h3>
                 <div className="flex items-center justify-between mt-2">
                   <div className="flex items-center gap-1">
-                    <Star size={11} fill="#B58A4B" color="#B58A4B" />
-                    <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 700, color: '#1D1D1D' }}>{exp.rating}</span>
+                    <Star size={11} fill="#C8A97E" color="#C8A97E" />
+                    <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 700, color: '#111111' }}>{exp.rating}</span>
                   </div>
-                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#1D1D1D' }}>IDR {(exp.price/1000).toFixed(0)}K</span>
+                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#111111' }}>IDR {(exp.price/1000).toFixed(0)}K</span>
                 </div>
               </div>
             </a>
@@ -444,7 +444,7 @@ function ReviewsTab({ reviews, dbReviews }: { reviews: SubmittedReview[]; dbRevi
 
   return (
     <div>
-      <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#1D1D1D', marginBottom: 16 }}>My Reviews</h2>
+      <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', marginBottom: 16 }}>My Reviews</h2>
       {merged.length === 0 ? (
         <div className="bg-white rounded-xl p-10 text-center" style={{ border: '1px solid #E8E4DE' }}>
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>No reviews yet. Complete a booking to leave your first review.</p>
@@ -456,13 +456,13 @@ function ReviewsTab({ reviews, dbReviews }: { reviews: SubmittedReview[]; dbRevi
             <div className="flex items-start gap-3 mb-3">
               <img src={r.image} alt={r.experience} className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
               <div className="flex-1">
-                <a href={`/experiences/${r.slug}`} style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#1D1D1D', textDecoration: 'none' }} className="hover:opacity-70 transition-opacity">
+                <a href={`/experiences/${r.slug}`} style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111', textDecoration: 'none' }} className="hover:opacity-70 transition-opacity">
                   {r.experience}
                 </a>
                 <p style={{ fontSize: 12, color: '#6F675C', marginTop: 2 }}>{r.date}</p>
               </div>
               <div className="flex items-center gap-0.5">
-                {[1,2,3,4,5].map(i => <Star key={i} size={12} fill={i <= r.rating ? '#B58A4B' : '#E8E4DE'} color={i <= r.rating ? '#B58A4B' : '#E8E4DE'} />)}
+                {[1,2,3,4,5].map(i => <Star key={i} size={12} fill={i <= r.rating ? '#C8A97E' : '#E8E4DE'} color={i <= r.rating ? '#C8A97E' : '#E8E4DE'} />)}
               </div>
             </div>
             <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.7, fontStyle: 'italic' }}>
@@ -505,12 +505,12 @@ function SettingsTab({ clerkName, clerkEmail }: { clerkName: string; clerkEmail:
 
   return (
     <div className="space-y-5">
-      <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#1D1D1D' }}>Account Settings</h2>
+      <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111' }}>Account Settings</h2>
 
       {/* Clerk-managed fields — read-only */}
       <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
         <div className="flex items-center justify-between mb-4">
-          <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#1D1D1D' }}>Account Information</h3>
+          <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111' }}>Account Information</h3>
           <span style={{ fontSize: 11, color: '#9E9A94', fontFamily: 'var(--font-inter)' }}>Managed via Clerk</span>
         </div>
         <div className="grid sm:grid-cols-2 gap-4">
@@ -530,7 +530,7 @@ function SettingsTab({ clerkName, clerkEmail }: { clerkName: string; clerkEmail:
 
       {/* Extra fields saved locally */}
       <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
-        <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#1D1D1D', marginBottom: 16 }}>Additional Details</h3>
+        <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111', marginBottom: 16 }}>Additional Details</h3>
         <div className="grid sm:grid-cols-2 gap-4">
           {([{ label: 'Phone', key: 'phone' as const, placeholder: '+62 812 345 6789' }, { label: 'Nationality', key: 'nationality' as const, placeholder: 'e.g. Australian' }]).map(f => (
             <div key={f.key}>
@@ -539,8 +539,8 @@ function SettingsTab({ clerkName, clerkEmail }: { clerkName: string; clerkEmail:
                 value={extra[f.key]}
                 onChange={e => setExtra(p => ({ ...p, [f.key]: e.target.value }))}
                 placeholder={f.placeholder}
-                style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#1D1D1D', outline: 'none' }}
-                onFocus={e => (e.target.style.borderColor = '#B58A4B')}
+                style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }}
+                onFocus={e => (e.target.style.borderColor = '#C8A97E')}
                 onBlur={e => (e.target.style.borderColor = '#E8E4DE')}
               />
             </div>
@@ -550,7 +550,7 @@ function SettingsTab({ clerkName, clerkEmail }: { clerkName: string; clerkEmail:
 
       {/* Notifications */}
       <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
-        <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#1D1D1D', marginBottom: 16 }}>Notifications</h3>
+        <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111', marginBottom: 16 }}>Notifications</h3>
         <div className="space-y-4">
           {[
             { key: 'bookingConfirm', label: 'Booking confirmations', desc: 'Receive email when a booking is confirmed' },
@@ -561,12 +561,12 @@ function SettingsTab({ clerkName, clerkEmail }: { clerkName: string; clerkEmail:
             return (
               <div key={key} className="flex items-center justify-between gap-4">
                 <div>
-                  <p style={{ fontSize: 14, fontWeight: 500, color: '#1D1D1D' }}>{label}</p>
+                  <p style={{ fontSize: 14, fontWeight: 500, color: '#111111' }}>{label}</p>
                   <p style={{ fontSize: 12, color: '#6F675C', marginTop: 1 }}>{desc}</p>
                 </div>
                 <button
                   onClick={() => setNotifs(n => ({ ...n, [key]: !n[key as keyof typeof notifs] }))}
-                  style={{ width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', flexShrink: 0, backgroundColor: on ? '#1D1D1D' : '#E8E4DE', transition: 'background 0.2s', position: 'relative' }}
+                  style={{ width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', flexShrink: 0, backgroundColor: on ? '#111111' : '#E8E4DE', transition: 'background 0.2s', position: 'relative' }}
                 >
                   <span style={{ display: 'block', width: 18, height: 18, borderRadius: 9, backgroundColor: 'white', position: 'absolute', top: 3, left: on ? 23 : 3, transition: 'left 0.2s' }} />
                 </button>
@@ -579,7 +579,7 @@ function SettingsTab({ clerkName, clerkEmail }: { clerkName: string; clerkEmail:
       <button
         onClick={save}
         className="flex items-center gap-2 hover:opacity-90 transition-opacity"
-        style={{ height: 44, paddingInline: 24, borderRadius: 10, border: 'none', backgroundColor: saved ? '#2E4A35' : '#1D1D1D', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s', minWidth: 140 }}
+        style={{ height: 44, paddingInline: 24, borderRadius: 10, border: 'none', backgroundColor: saved ? '#4A7C59' : '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s', minWidth: 140 }}
       >
         {saved ? <><Check size={14} /> Saved!</> : 'Save Changes'}
       </button>
@@ -635,7 +635,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F3EEE5', minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
 
       <Navbar />
 
@@ -648,9 +648,9 @@ export default function ProfilePage() {
               {/* Avatar */}
               <div className="relative mx-auto mb-4" style={{ width: 80, height: 80 }}>
                 {displayImage ? (
-                  <img src={displayImage} alt={displayName} className="w-full h-full rounded-full object-cover" style={{ border: '3px solid white', boxShadow: '0 0 0 2px #B58A4B' }} />
+                  <img src={displayImage} alt={displayName} className="w-full h-full rounded-full object-cover" style={{ border: '3px solid white', boxShadow: '0 0 0 2px #C8A97E' }} />
                 ) : (
-                  <div className="w-full h-full rounded-full flex items-center justify-center" style={{ backgroundColor: '#B58A4B', border: '3px solid white', boxShadow: '0 0 0 2px #B58A4B' }}>
+                  <div className="w-full h-full rounded-full flex items-center justify-center" style={{ backgroundColor: '#C8A97E', border: '3px solid white', boxShadow: '0 0 0 2px #C8A97E' }}>
                     <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 32, fontWeight: 700, color: 'white' }}>
                       {displayName[0]?.toUpperCase()}
                     </span>
@@ -658,13 +658,13 @@ export default function ProfilePage() {
                 )}
                 <button
                   className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: '#1D1D1D', border: '2px solid white', cursor: 'pointer' }}
+                  style={{ backgroundColor: '#111111', border: '2px solid white', cursor: 'pointer' }}
                 >
                   <Camera size={12} style={{ color: 'white' }} />
                 </button>
               </div>
 
-              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#1D1D1D' }}>{displayName}</h2>
+              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>{displayName}</h2>
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', marginTop: 3 }}>{displayEmail}</p>
               {memberSince && (
                 <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', marginTop: 2 }}>Member since {memberSince}</p>
@@ -678,7 +678,7 @@ export default function ProfilePage() {
                   { label: 'Saved',    value: wishlistCount },
                 ].map(s => (
                   <div key={s.label}>
-                    <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#1D1D1D' }}>{s.value}</p>
+                    <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111' }}>{s.value}</p>
                     <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>{s.label}</p>
                   </div>
                 ))}
@@ -692,7 +692,7 @@ export default function ProfilePage() {
                     onClick={() => setActiveTab(id)}
                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors"
                     style={{
-                      backgroundColor: activeTab === id ? '#1D1D1D' : 'transparent',
+                      backgroundColor: activeTab === id ? '#111111' : 'transparent',
                       color: activeTab === id ? 'white' : '#6F675C',
                       border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: activeTab === id ? 600 : 400,
                       fontFamily: 'var(--font-inter)', textAlign: 'left',
@@ -708,7 +708,7 @@ export default function ProfilePage() {
                 <a
                   href="/for-hosts"
                   className="flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
-                  style={{ height: 40, borderRadius: 8, backgroundColor: '#F3EEE5', color: '#1D1D1D', fontSize: 13, fontWeight: 600, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}
+                  style={{ height: 40, borderRadius: 8, backgroundColor: '#F5F1EB', color: '#111111', fontSize: 13, fontWeight: 600, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}
                 >
                   Become A Host <ArrowRight size={13} />
                 </a>
@@ -726,9 +726,9 @@ export default function ProfilePage() {
                   onClick={() => setActiveTab(id)}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-full flex-shrink-0 transition-all"
                   style={{
-                    backgroundColor: activeTab === id ? '#1D1D1D' : 'white',
+                    backgroundColor: activeTab === id ? '#111111' : 'white',
                     color: activeTab === id ? 'white' : '#6F675C',
-                    border: `1px solid ${activeTab === id ? '#1D1D1D' : '#E8E4DE'}`,
+                    border: `1px solid ${activeTab === id ? '#111111' : '#E8E4DE'}`,
                     fontSize: 13, fontWeight: activeTab === id ? 600 : 400, cursor: 'pointer',
                   }}
                 >

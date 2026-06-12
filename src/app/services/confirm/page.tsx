@@ -29,7 +29,7 @@ function ConfirmInner() {
   }
 
   return (
-    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F3EEE5', minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
       <Navbar />
 
       <div className="max-w-[520px] mx-auto px-6 py-16 pb-24 text-center">
@@ -37,18 +37,18 @@ function ConfirmInner() {
         {/* Icon */}
         <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: pending ? '#FDF8F4' : '#F0F7F2' }}>
           {pending
-            ? <Clock size={40} style={{ color: '#B58A4B' }} />
-            : <CheckCircle size={40} style={{ color: '#2E4A35' }} />}
+            ? <Clock size={40} style={{ color: '#C8A97E' }} />
+            : <CheckCircle size={40} style={{ color: '#4A7C59' }} />}
         </div>
 
-        <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 700, color: '#1D1D1D', marginBottom: 8 }}>
+        <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 700, color: '#111111', marginBottom: 8 }}>
           {pending ? 'Request Sent!' : 'Booking Confirmed!'}
         </h1>
         <p style={{ fontSize: 15, color: '#6F675C', lineHeight: 1.6, marginBottom: 32 }}>
           {pending ? (
-            <>Your request for <strong style={{ color: '#1D1D1D' }}>{title}</strong> has been sent. The provider will confirm within 24 hours.</>
+            <>Your request for <strong style={{ color: '#111111' }}>{title}</strong> has been sent. The provider will confirm within 24 hours.</>
           ) : (
-            <>Your booking for <strong style={{ color: '#1D1D1D' }}>{title}</strong> is confirmed. The provider will be in touch shortly.</>
+            <>Your booking for <strong style={{ color: '#111111' }}>{title}</strong> is confirmed. The provider will be in touch shortly.</>
           )}
         </p>
 
@@ -57,21 +57,21 @@ function ConfirmInner() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span style={{ fontSize: 13, color: '#6F675C' }}>Booking reference</span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: '#1D1D1D', fontFamily: 'monospace' }}>{ref}</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: '#111111', fontFamily: 'monospace' }}>{ref}</span>
             </div>
-            <div className="flex items-center justify-between" style={{ borderTop: '1px solid #F3EEE5', paddingTop: 12 }}>
+            <div className="flex items-center justify-between" style={{ borderTop: '1px solid #F5F1EB', paddingTop: 12 }}>
               <div className="flex items-center gap-2">
                 <Calendar size={14} style={{ color: '#6F675C' }} />
                 <span style={{ fontSize: 13, color: '#6F675C' }}>Service date</span>
               </div>
-              <span style={{ fontSize: 13, fontWeight: 500, color: '#1D1D1D' }}>
+              <span style={{ fontSize: 13, fontWeight: 500, color: '#111111' }}>
                 {formatDate(date)}{time ? ` · ${formatTime(time)}` : ''}
               </span>
             </div>
             {total > 0 && (
-              <div className="flex items-center justify-between" style={{ borderTop: '1px solid #F3EEE5', paddingTop: 12 }}>
+              <div className="flex items-center justify-between" style={{ borderTop: '1px solid #F5F1EB', paddingTop: 12 }}>
                 <span style={{ fontSize: 13, color: '#6F675C' }}>{pending ? 'Total if confirmed' : 'Total'}</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: '#1D1D1D' }}>IDR {total.toLocaleString('id-ID')}</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: '#111111' }}>IDR {total.toLocaleString('id-ID')}</span>
               </div>
             )}
           </div>
@@ -79,7 +79,7 @@ function ConfirmInner() {
 
         {/* What's next */}
         <div className="bg-white rounded-xl p-5 text-left mb-8" style={{ border: '1px solid #E8E4DE' }}>
-          <h3 style={{ fontSize: 14, fontWeight: 700, color: '#1D1D1D', marginBottom: 12 }}>What happens next?</h3>
+          <h3 style={{ fontSize: 14, fontWeight: 700, color: '#111111', marginBottom: 12 }}>What happens next?</h3>
           <ol className="space-y-3">
             {[
               'Save your booking reference — you\'ll need it for any changes.',
@@ -89,7 +89,7 @@ function ConfirmInner() {
               'Check your WhatsApp — they may reach out there too.',
             ].map((step, i) => (
               <li key={i} className="flex items-start gap-3">
-                <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-white" style={{ backgroundColor: '#B58A4B', fontSize: 11, fontWeight: 700 }}>{i + 1}</span>
+                <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-white" style={{ backgroundColor: '#C8A97E', fontSize: 11, fontWeight: 700 }}>{i + 1}</span>
                 <span style={{ fontSize: 13, color: '#555', lineHeight: 1.5 }}>{step}</span>
               </li>
             ))}
@@ -100,14 +100,14 @@ function ConfirmInner() {
           <a
             href="/services"
             className="flex-1 flex items-center justify-center gap-2 hover:opacity-80 transition-opacity"
-            style={{ height: 46, borderRadius: 12, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 14, fontWeight: 500, color: '#1D1D1D', textDecoration: 'none' }}
+            style={{ height: 46, borderRadius: 12, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 14, fontWeight: 500, color: '#111111', textDecoration: 'none' }}
           >
             Browse more services
           </a>
           <a
             href="/"
             className="flex-1 flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
-            style={{ height: 46, borderRadius: 12, backgroundColor: '#1D1D1D', fontSize: 14, fontWeight: 600, color: 'white', textDecoration: 'none' }}
+            style={{ height: 46, borderRadius: 12, backgroundColor: '#111111', fontSize: 14, fontWeight: 600, color: 'white', textDecoration: 'none' }}
           >
             Back to home <ArrowRight size={14} />
           </a>

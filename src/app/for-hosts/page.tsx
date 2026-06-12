@@ -86,7 +86,7 @@ function EarningsCalculator() {
 
   return (
     <div className="bg-white rounded-2xl p-6 lg:p-8" style={{ border: '1px solid #E8E4DE' }}>
-      <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#1D1D1D', marginBottom: 6 }}>
+      <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#111111', marginBottom: 6 }}>
         Estimate your earnings
       </h3>
       <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', marginBottom: 24 }}>
@@ -101,8 +101,8 @@ function EarningsCalculator() {
         ].map(({ label, value, set, min, max, step, fmt }) => (
           <div key={label}>
             <div className="flex justify-between items-center mb-2">
-              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#1D1D1D' }}>{label}</span>
-              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 700, color: '#B58A4B' }}>{fmt(value)}</span>
+              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111' }}>{label}</span>
+              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 700, color: '#C8A97E' }}>{fmt(value)}</span>
             </div>
             <input
               type="range" min={min} max={max} step={step} value={value}
@@ -114,13 +114,13 @@ function EarningsCalculator() {
         ))}
       </div>
 
-      <div className="mt-8 p-5 rounded-xl" style={{ backgroundColor: '#F3EEE5' }}>
+      <div className="mt-8 p-5 rounded-xl" style={{ backgroundColor: '#F5F1EB' }}>
         <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>Estimated monthly earnings</p>
         <div className="flex items-baseline gap-2 mt-1">
-          <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 32, fontWeight: 700, color: '#1D1D1D' }}>
+          <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 32, fontWeight: 700, color: '#111111' }}>
             IDR {(net / 1_000_000).toFixed(1)}M
           </span>
-          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#2E4A35' }}>after 15% fee</span>
+          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#4A7C59' }}>after 15% fee</span>
         </div>
         <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', marginTop: 4 }}>
           Gross: IDR {(gross / 1_000_000).toFixed(1)}M · You keep 85%
@@ -149,7 +149,7 @@ export default function ForHostsPage() {
           <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 60%, transparent 100%)' }} />
         </div>
         <div className="relative z-10 px-6 lg:px-16 max-w-[1440px] mx-auto w-full py-20">
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#B58A4B', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#C8A97E', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>
             Host on Balible
           </p>
           <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(32px, 5vw, 60px)', fontWeight: 700, color: 'white', lineHeight: 1.1, maxWidth: 540, marginBottom: 20 }}>
@@ -162,7 +162,7 @@ export default function ForHostsPage() {
             <a
               href="/sign-up/host"
               className="flex items-center gap-2 hover:opacity-90 transition-opacity"
-              style={{ height: 52, padding: '0 28px', backgroundColor: '#B58A4B', color: '#1D1D1D', borderRadius: 10, fontSize: 15, fontWeight: 700, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}
+              style={{ height: 52, padding: '0 28px', backgroundColor: '#C8A97E', color: '#111111', borderRadius: 10, fontSize: 15, fontWeight: 700, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}
             >
               Become A Host <ArrowRight size={16} />
             </a>
@@ -193,12 +193,12 @@ export default function ForHostsPage() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section id="how-it-works" className="py-16 px-6 lg:px-16" style={{ backgroundColor: '#F3EEE5' }}>
+      <section id="how-it-works" className="py-16 px-6 lg:px-16" style={{ backgroundColor: '#F5F1EB' }}>
         <div className="max-w-[1440px] mx-auto">
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 600, color: '#B58A4B', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 10 }}>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 600, color: '#C8A97E', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 10 }}>
             Getting started
           </p>
-          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 3.5vw, 38px)', fontWeight: 700, color: '#1D1D1D', marginBottom: 48 }}>
+          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 3.5vw, 38px)', fontWeight: 700, color: '#111111', marginBottom: 48 }}>
             Start hosting in 3 simple steps
           </h2>
           <div className="grid sm:grid-cols-3 gap-8">
@@ -206,11 +206,11 @@ export default function ForHostsPage() {
               <div key={number}>
                 <div className="flex items-center gap-4 mb-4">
                   <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 40, fontWeight: 700, color: '#E8E4DE', lineHeight: 1 }}>{number}</span>
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#1D1D1D' }}>
-                    <Icon size={18} style={{ color: '#B58A4B' }} />
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#111111' }}>
+                    <Icon size={18} style={{ color: '#C8A97E' }} />
                   </div>
                 </div>
-                <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 17, fontWeight: 700, color: '#1D1D1D', marginBottom: 8 }}>{title}</h3>
+                <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 17, fontWeight: 700, color: '#111111', marginBottom: 8 }}>{title}</h3>
                 <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.7 }}>{body}</p>
               </div>
             ))}
@@ -219,7 +219,7 @@ export default function ForHostsPage() {
             <a
               href="/sign-up/host"
               className="inline-flex items-center gap-2 hover:opacity-90 transition-opacity"
-              style={{ height: 50, padding: '0 32px', backgroundColor: '#1D1D1D', color: 'white', borderRadius: 10, fontSize: 15, fontWeight: 600, textDecoration: 'none' }}
+              style={{ height: 50, padding: '0 32px', backgroundColor: '#111111', color: 'white', borderRadius: 10, fontSize: 15, fontWeight: 600, textDecoration: 'none' }}
             >
               Apply to host <ArrowRight size={15} />
             </a>
@@ -230,19 +230,19 @@ export default function ForHostsPage() {
       {/* BENEFITS */}
       <section className="py-16 px-6 lg:px-16 bg-white">
         <div className="max-w-[1440px] mx-auto">
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 600, color: '#B58A4B', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 10 }}>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 600, color: '#C8A97E', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 10 }}>
             Why Balible?
           </p>
-          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 3.5vw, 38px)', fontWeight: 700, color: '#1D1D1D', marginBottom: 48 }}>
+          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 3.5vw, 38px)', fontWeight: 700, color: '#111111', marginBottom: 48 }}>
             Everything you need to succeed
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {BENEFITS.map(({ Icon, title, body }) => (
               <div key={title}>
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-4" style={{ backgroundColor: '#F3EEE5' }}>
-                  <Icon size={20} strokeWidth={1.5} style={{ color: '#1D1D1D' }} />
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-4" style={{ backgroundColor: '#F5F1EB' }}>
+                  <Icon size={20} strokeWidth={1.5} style={{ color: '#111111' }} />
                 </div>
-                <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 16, fontWeight: 700, color: '#1D1D1D', marginBottom: 8 }}>{title}</h3>
+                <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 8 }}>{title}</h3>
                 <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.7 }}>{body}</p>
               </div>
             ))}
@@ -251,9 +251,9 @@ export default function ForHostsPage() {
       </section>
 
       {/* HOST STORIES */}
-      <section className="py-16 px-6 lg:px-16" style={{ backgroundColor: '#1D1D1D' }}>
+      <section className="py-16 px-6 lg:px-16" style={{ backgroundColor: '#111111' }}>
         <div className="max-w-[1440px] mx-auto">
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 600, color: '#B58A4B', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 10 }}>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 600, color: '#C8A97E', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 10 }}>
             Host stories
           </p>
           <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 3.5vw, 38px)', fontWeight: 700, color: 'white', marginBottom: 48 }}>
@@ -270,15 +270,15 @@ export default function ForHostsPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-1 mb-3">
-                  {[1,2,3,4,5].map(i => <Star key={i} size={12} fill="#B58A4B" color="#B58A4B" />)}
-                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#B58A4B', marginLeft: 4 }}>{host.rating}</span>
+                  {[1,2,3,4,5].map(i => <Star key={i} size={12} fill="#C8A97E" color="#C8A97E" />)}
+                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#C8A97E', marginLeft: 4 }}>{host.rating}</span>
                 </div>
                 <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.7, fontStyle: 'italic', marginBottom: 16 }}>
                   "{host.quote}"
                 </p>
                 <div className="pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
                   <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Monthly earnings</p>
-                  <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#B58A4B', marginTop: 2 }}>{host.earning}</p>
+                  <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#C8A97E', marginTop: 2 }}>{host.earning}</p>
                 </div>
               </div>
             ))}
@@ -287,14 +287,14 @@ export default function ForHostsPage() {
       </section>
 
       {/* EARNINGS CALCULATOR */}
-      <section className="py-16 px-6 lg:px-16" style={{ backgroundColor: '#F3EEE5' }}>
+      <section className="py-16 px-6 lg:px-16" style={{ backgroundColor: '#F5F1EB' }}>
         <div className="max-w-[1440px] mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-start">
             <div>
-              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 600, color: '#B58A4B', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 10 }}>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 600, color: '#C8A97E', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 10 }}>
                 Earnings
               </p>
-              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 3.5vw, 38px)', fontWeight: 700, color: '#1D1D1D', marginBottom: 16 }}>
+              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 3.5vw, 38px)', fontWeight: 700, color: '#111111', marginBottom: 16 }}>
                 See what you could earn
               </h2>
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: '#6F675C', lineHeight: 1.7, marginBottom: 24 }}>
@@ -308,8 +308,8 @@ export default function ForHostsPage() {
                   'Set your own price and capacity',
                 ].map(item => (
                   <li key={item} className="flex items-start gap-2.5">
-                    <CheckCircle2 size={16} style={{ color: '#2E4A35', flexShrink: 0, marginTop: 2 }} />
-                    <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#1D1D1D' }}>{item}</span>
+                    <CheckCircle2 size={16} style={{ color: '#4A7C59', flexShrink: 0, marginTop: 2 }} />
+                    <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111' }}>{item}</span>
                   </li>
                 ))}
               </ul>
@@ -322,7 +322,7 @@ export default function ForHostsPage() {
       {/* FAQ */}
       <section className="py-16 px-6 lg:px-16 bg-white">
         <div className="max-w-[720px] mx-auto">
-          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(24px, 3vw, 34px)', fontWeight: 700, color: '#1D1D1D', marginBottom: 40, textAlign: 'center' }}>
+          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(24px, 3vw, 34px)', fontWeight: 700, color: '#111111', marginBottom: 40, textAlign: 'center' }}>
             Frequently asked questions
           </h2>
           <div className="space-y-3">
@@ -333,7 +333,7 @@ export default function ForHostsPage() {
                   className="w-full flex items-center justify-between p-5 hover:bg-ivory transition-colors"
                   style={{ background: 'none', cursor: 'pointer' }}
                 >
-                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 600, color: '#1D1D1D', textAlign: 'left', flex: 1, paddingRight: 12 }}>{faq.q}</span>
+                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 600, color: '#111111', textAlign: 'left', flex: 1, paddingRight: 12 }}>{faq.q}</span>
                   {openFaq === i ? <ChevronUp size={16} style={{ color: '#6F675C', flexShrink: 0 }} /> : <ChevronDown size={16} style={{ color: '#6F675C', flexShrink: 0 }} />}
                 </button>
                 {openFaq === i && (
@@ -348,9 +348,9 @@ export default function ForHostsPage() {
       </section>
 
       {/* CTA BANNER */}
-      <section className="py-16 px-6 lg:px-16 text-center" style={{ backgroundColor: '#B58A4B' }}>
+      <section className="py-16 px-6 lg:px-16 text-center" style={{ backgroundColor: '#C8A97E' }}>
         <div className="max-w-[1440px] mx-auto">
-          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 700, color: '#1D1D1D', marginBottom: 12 }}>
+          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 700, color: '#111111', marginBottom: 12 }}>
             Ready to share your Bali?
           </h2>
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 16, color: 'rgba(0,0,0,0.65)', maxWidth: 440, margin: '0 auto 28px' }}>
@@ -359,7 +359,7 @@ export default function ForHostsPage() {
           <a
             href="/sign-up/host"
             className="inline-flex items-center gap-2 hover:opacity-90 transition-opacity"
-            style={{ height: 52, padding: '0 36px', backgroundColor: '#1D1D1D', color: 'white', borderRadius: 10, fontSize: 15, fontWeight: 700, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}
+            style={{ height: 52, padding: '0 36px', backgroundColor: '#111111', color: 'white', borderRadius: 10, fontSize: 15, fontWeight: 700, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}
           >
             Become A Host <ArrowRight size={16} />
           </a>

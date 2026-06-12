@@ -28,7 +28,7 @@ const AREAS: Record<string, AreaData> = {
     rating: 4.85,
     image: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=800&auto=format&fit=crop&q=80',
     heroImage: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=1600&auto=format&fit=crop&q=80',
-    color: '#2E4A35', bg: '#F0F7F2',
+    color: '#4A7C59', bg: '#F0F7F2',
     mustSee: [
       { name: 'Tegalalang Rice Terraces', description: 'The iconic stepped paddies north of Ubud — best at golden hour, when the light catches the water in the flooded fields.' },
       { name: 'Campuhan Ridge Walk', description: 'A two-kilometre walk along a jungle ridge above the Campuhan river — peaceful, green, and free of charge.' },
@@ -72,7 +72,7 @@ const AREAS: Record<string, AreaData> = {
     rating: 4.92,
     image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&auto=format&fit=crop&q=80',
     heroImage: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1600&auto=format&fit=crop&q=80',
-    color: '#6F675C', bg: '#F3EEE5',
+    color: '#6F675C', bg: '#F5F1EB',
     mustSee: [
       { name: 'Pura Luhur Uluwatu', description: 'A sixth-century sea temple on a seventy-metre cliff. One of Bali\'s nine directional temples, believed to protect the island from evil spirits rising from the sea.' },
       { name: 'The Kecak Dance', description: 'Performed nightly at sunset in the temple complex. A hundred men create an extraordinary choral soundscape while enacting the Ramayana. Arrive by 5:15pm for a good seat.' },
@@ -94,7 +94,7 @@ const AREAS: Record<string, AreaData> = {
     rating: 4.78,
     image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&auto=format&fit=crop&q=80',
     heroImage: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1600&auto=format&fit=crop&q=80',
-    color: '#B58A4B', bg: '#FFFDF9',
+    color: '#C8A97E', bg: '#FFFDF9',
     mustSee: [
       { name: 'Seminyak Beach at Sunset', description: 'The westward-facing beach turns gold then pink in the last hour of daylight. Rent a bean bag from a beach club or bring a mat — locals do both.' },
       { name: 'Petitenget Temple', description: 'An important sea temple at the northern end of Seminyak beach, often overlooked by visitors staying nearby. Ceremonies are held regularly.' },
@@ -116,7 +116,7 @@ const AREAS: Record<string, AreaData> = {
     rating: 4.62,
     image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&auto=format&fit=crop&q=80',
     heroImage: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1600&auto=format&fit=crop&q=80',
-    color: '#2E4A35', bg: '#F0F7F2',
+    color: '#4A7C59', bg: '#F0F7F2',
     mustSee: [
       { name: 'Kedonganan Fish Market', description: 'Active from 5am to 7am — the outrigger canoes arrive, the catch is sorted and sold. A vivid insight into the village life that underpins the tourist-facing seafood restaurants.' },
       { name: 'Seafood Beach Warungs', description: 'The row of candlelit tables on the sand at sunset is the definitive Jimbaran experience. The best warungs are at the northern end near the fish market.' },
@@ -182,7 +182,7 @@ const AREAS: Record<string, AreaData> = {
     rating: 4.80,
     image: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=800&auto=format&fit=crop&q=80',
     heroImage: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=1600&auto=format&fit=crop&q=80',
-    color: '#2E4A35', bg: '#F0F7F2',
+    color: '#4A7C59', bg: '#F0F7F2',
     mustSee: [
       { name: 'Pura Tirta Empul', description: 'A living purification temple fed by a natural spring. Balinese Hindus queue to move through a series of stone spouts in a mebok or spiritual bathing ritual. One of the most authentic sacred experiences available to visitors in Bali.' },
       { name: 'Goa Gajah', description: 'An eleventh-century rock-carved cave sanctuary whose entrance is shaped like a demonic face. The bathing pools outside are older than the cave and still used for ritual.' },
@@ -270,7 +270,7 @@ const AREAS: Record<string, AreaData> = {
     rating: 4.70,
     image: 'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=800&auto=format&fit=crop&q=80',
     heroImage: 'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=1600&auto=format&fit=crop&q=80',
-    color: '#2E4A35', bg: '#F0F7F2',
+    color: '#4A7C59', bg: '#F0F7F2',
     mustSee: [
       { name: 'The Medewi Wave', description: 'A long, peeling left-hander over a rock shelf — one of the longest rideable waves in Bali, best for intermediate surfers who want to work on their turns over a sustained ride.' },
       { name: 'Pura Rambut Siwi', description: 'A sea temple complex on a black-sand cliff, attributed to the Hindu priest Nirartha who is credited with bringing Hinduism to Bali. The site has three separate temple compounds and extraordinary ocean views.' },
@@ -292,7 +292,7 @@ const AREAS: Record<string, AreaData> = {
     rating: 4.88,
     image: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=800&auto=format&fit=crop&q=80',
     heroImage: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=1600&auto=format&fit=crop&q=80',
-    color: '#6F675C', bg: '#F3EEE5',
+    color: '#6F675C', bg: '#F5F1EB',
     mustSee: [
       { name: 'Gunung Batur Sunrise Trek', description: 'A two-hour climb to the 1,717-metre summit, starting at 4am. The sunrise from the caldera rim — with the lake below, Agung behind, and Lombok visible on clear mornings — is one of the great dawn experiences in Southeast Asia.' },
       { name: 'Lake Batur by Boat', description: 'The caldera lake is best understood from its surface. Boat trips to the natural hot springs on the lake shore, and to Trunyan village where the Bali Aga practise open-air burial in a sacred banyan grove, take two to three hours.' },
@@ -365,7 +365,7 @@ export default async function DestinationAreaPage({ params }: { params: Promise<
   }
 
   return (
-    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F3EEE5', minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
       <Navbar />
 
       {/* HERO */}
@@ -374,8 +374,8 @@ export default async function DestinationAreaPage({ params }: { params: Promise<
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.6) 100%)' }} />
         <div className="absolute inset-0 flex flex-col justify-end px-6 pb-12 max-w-[1100px] mx-auto">
           <div className="flex items-center gap-2 mb-3">
-            <MapPin size={14} style={{ color: '#B58A4B' }} />
-            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#B58A4B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            <MapPin size={14} style={{ color: '#C8A97E' }} />
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#C8A97E', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
               Bali
             </span>
           </div>
@@ -386,7 +386,7 @@ export default async function DestinationAreaPage({ params }: { params: Promise<
             {data.tagline}
           </p>
           <div className="flex items-center gap-3 mt-4">
-            <Star size={14} fill="#B58A4B" color="#B58A4B" />
+            <Star size={14} fill="#C8A97E" color="#C8A97E" />
             <span style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: 'white' }}>{data.rating}</span>
             <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)' }}>avg experience rating</span>
           </div>
@@ -397,9 +397,9 @@ export default async function DestinationAreaPage({ params }: { params: Promise<
 
         {/* BREADCRUMB */}
         <div className="flex items-center gap-2 pt-8 pb-2">
-          <a href="/destinations" style={{ fontSize: 13, color: '#6F675C', textDecoration: 'none' }} className="hover:text-[#1D1D1D] transition-colors">Destinations</a>
+          <a href="/destinations" style={{ fontSize: 13, color: '#6F675C', textDecoration: 'none' }} className="hover:text-[#111111] transition-colors">Destinations</a>
           <ChevronRight size={13} style={{ color: '#6F675C' }} />
-          <span style={{ fontSize: 13, color: '#1D1D1D', fontWeight: 500 }}>{data.name}</span>
+          <span style={{ fontSize: 13, color: '#111111', fontWeight: 500 }}>{data.name}</span>
         </div>
 
         {/* OVERVIEW */}
@@ -430,7 +430,7 @@ export default async function DestinationAreaPage({ params }: { params: Promise<
           <div className="flex items-center justify-between mb-8">
             <div>
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.15em', color: data.color, textTransform: 'uppercase', fontWeight: 700, marginBottom: 6 }}>Experiences</p>
-              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(22px, 2.5vw, 30px)', fontWeight: 700, color: '#1D1D1D' }}>
+              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(22px, 2.5vw, 30px)', fontWeight: 700, color: '#111111' }}>
                 {experiences.length > 0 ? `${experiences.length} Experience${experiences.length !== 1 ? 's' : ''} in ${data.name.split(' ')[0]}` : `Explore ${data.name.split(' ')[0]}`}
               </h2>
             </div>
@@ -459,13 +459,13 @@ export default async function DestinationAreaPage({ params }: { params: Promise<
                     </span>
                   </div>
                   <div className="p-4">
-                    <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#1D1D1D', lineHeight: 1.3, marginBottom: 8 }}>
+                    <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', lineHeight: 1.3, marginBottom: 8 }}>
                       {exp.title}
                     </h3>
                     <div className="flex items-center gap-3 mb-3">
                       <div className="flex items-center gap-1">
-                        <Star size={11} fill="#B58A4B" color="#B58A4B" />
-                        <span style={{ fontSize: 12, fontWeight: 600, color: '#1D1D1D' }}>{exp.rating}</span>
+                        <Star size={11} fill="#C8A97E" color="#C8A97E" />
+                        <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>{exp.rating}</span>
                         <span style={{ fontSize: 12, color: '#6F675C' }}>({exp.reviews})</span>
                       </div>
                       <div style={{ width: 1, height: 12, backgroundColor: '#E8E4DE' }} />
@@ -477,7 +477,7 @@ export default async function DestinationAreaPage({ params }: { params: Promise<
                     <div className="flex items-center justify-between pt-3" style={{ borderTop: '1px solid #E8E4DE' }}>
                       <div>
                         <span style={{ fontSize: 11, color: '#6F675C' }}>From </span>
-                        <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: '#1D1D1D' }}>
+                        <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: '#111111' }}>
                           IDR {exp.price.toLocaleString('id-ID')}
                         </span>
                       </div>
@@ -490,7 +490,7 @@ export default async function DestinationAreaPage({ params }: { params: Promise<
           ) : (
             <div className="text-center py-10 rounded-2xl" style={{ backgroundColor: 'white', border: '1px solid #E8E4DE' }}>
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: '#6F675C', marginBottom: 12 }}>Browse all experiences in {data.name}</p>
-              <a href={`/search?location=${data.slug}`} className="inline-flex items-center gap-2 hover:opacity-90 transition-opacity" style={{ height: 42, padding: '0 20px', backgroundColor: '#1D1D1D', color: 'white', borderRadius: 8, fontSize: 13, fontWeight: 600, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}>
+              <a href={`/search?location=${data.slug}`} className="inline-flex items-center gap-2 hover:opacity-90 transition-opacity" style={{ height: 42, padding: '0 20px', backgroundColor: '#111111', color: 'white', borderRadius: 8, fontSize: 13, fontWeight: 600, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}>
                 Search experiences <ArrowRight size={13} />
               </a>
             </div>
@@ -500,7 +500,7 @@ export default async function DestinationAreaPage({ params }: { params: Promise<
         {/* MUST SEE */}
         <div className="py-14" style={{ borderBottom: '1px solid #E8E4DE' }}>
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.15em', color: data.color, textTransform: 'uppercase', fontWeight: 700, marginBottom: 8 }}>Don&apos;t Miss</p>
-          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(22px, 2.5vw, 28px)', fontWeight: 700, color: '#1D1D1D', marginBottom: 24 }}>
+          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(22px, 2.5vw, 28px)', fontWeight: 700, color: '#111111', marginBottom: 24 }}>
             Essential {data.name.split(' ')[0]}
           </h2>
           <div className="grid sm:grid-cols-3 gap-5">
@@ -509,7 +509,7 @@ export default async function DestinationAreaPage({ params }: { params: Promise<
                 <div className="w-8 h-8 rounded-full flex items-center justify-center mb-4 text-sm font-bold" style={{ backgroundColor: data.bg, color: data.color }}>
                   {i + 1}
                 </div>
-                <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#1D1D1D', marginBottom: 8 }}>{item.name}</h3>
+                <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 8 }}>{item.name}</h3>
                 <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', lineHeight: 1.7 }}>{item.description}</p>
               </div>
             ))}
@@ -519,7 +519,7 @@ export default async function DestinationAreaPage({ params }: { params: Promise<
         {/* PRACTICAL TIPS */}
         <div className="py-14">
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.15em', color: data.color, textTransform: 'uppercase', fontWeight: 700, marginBottom: 8 }}>Practical Tips</p>
-          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(22px, 2.5vw, 28px)', fontWeight: 700, color: '#1D1D1D', marginBottom: 20 }}>
+          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(22px, 2.5vw, 28px)', fontWeight: 700, color: '#111111', marginBottom: 20 }}>
             Before You Go
           </h2>
           <div className="space-y-3">
@@ -538,9 +538,9 @@ export default async function DestinationAreaPage({ params }: { params: Promise<
 
       {/* CTA BANNER */}
       <div className="mx-5 lg:mx-8 mb-16 rounded-2xl overflow-hidden max-w-[1100px] lg:mx-auto" style={{ maxWidth: 1100, margin: '0 auto 64px' }}>
-        <div className="relative px-8 py-14 text-center" style={{ backgroundColor: '#1D1D1D' }}>
-          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: `radial-gradient(circle at 20% 50%, ${data.color} 0%, transparent 50%), radial-gradient(circle at 80% 50%, #B58A4B 0%, transparent 50%)` }} />
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.2em', color: '#B58A4B', textTransform: 'uppercase', marginBottom: 10 }}>
+        <div className="relative px-8 py-14 text-center" style={{ backgroundColor: '#111111' }}>
+          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: `radial-gradient(circle at 20% 50%, ${data.color} 0%, transparent 50%), radial-gradient(circle at 80% 50%, #C8A97E 0%, transparent 50%)` }} />
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.2em', color: '#C8A97E', textTransform: 'uppercase', marginBottom: 10 }}>
             Ready to explore?
           </p>
           <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: 'white', marginBottom: 12 }}>
@@ -550,7 +550,7 @@ export default async function DestinationAreaPage({ params }: { params: Promise<
             Handpicked by people who know the island. Every experience is led by a local.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <a href={`/search?location=${data.slug}`} className="inline-flex items-center justify-center gap-2 hover:opacity-90 transition-opacity" style={{ height: 48, padding: '0 32px', backgroundColor: '#B58A4B', color: 'white', borderRadius: 10, fontSize: 14, fontWeight: 600, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}>
+            <a href={`/search?location=${data.slug}`} className="inline-flex items-center justify-center gap-2 hover:opacity-90 transition-opacity" style={{ height: 48, padding: '0 32px', backgroundColor: '#C8A97E', color: 'white', borderRadius: 10, fontSize: 14, fontWeight: 600, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}>
               Browse experiences <ArrowRight size={14} />
             </a>
             <a href="/destinations" className="inline-flex items-center justify-center hover:bg-white/10 transition-colors" style={{ height: 48, padding: '0 32px', border: '1px solid rgba(255,255,255,0.25)', color: 'white', borderRadius: 10, fontSize: 14, fontWeight: 500, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}>

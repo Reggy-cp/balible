@@ -78,7 +78,7 @@ const TIMELINE = [
 
 export default function AboutPage() {
   return (
-    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F3EEE5', minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
 
       <Navbar />
 
@@ -89,7 +89,7 @@ export default function AboutPage() {
           <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(17,17,17,0.75) 0%, rgba(17,17,17,0.35) 100%)' }} />
         </div>
         <div className="relative px-6 lg:px-16 py-24 max-w-[1200px] mx-auto w-full">
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.2em', color: '#B58A4B', textTransform: 'uppercase', marginBottom: 16 }}>Our Story</p>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.2em', color: '#C8A97E', textTransform: 'uppercase', marginBottom: 16 }}>Our Story</p>
           <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(32px, 5vw, 58px)', fontWeight: 700, color: 'white', lineHeight: 1.1, maxWidth: 680, marginBottom: 20 }}>
             We Built the Platform<br />We Wished Existed
           </h1>
@@ -104,7 +104,7 @@ export default function AboutPage() {
         <div className="max-w-[1200px] mx-auto px-6 lg:px-16 py-10 grid grid-cols-2 lg:grid-cols-4 gap-6">
           {STATS.map(({ value, label }) => (
             <div key={label} className="text-center">
-              <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px, 3vw, 40px)', fontWeight: 700, color: '#1D1D1D' }}>{value}</p>
+              <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px, 3vw, 40px)', fontWeight: 700, color: '#111111' }}>{value}</p>
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', marginTop: 4 }}>{label}</p>
             </div>
           ))}
@@ -115,8 +115,8 @@ export default function AboutPage() {
       <div className="max-w-[1200px] mx-auto px-6 lg:px-16 py-20">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div>
-            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.15em', color: '#B58A4B', textTransform: 'uppercase', marginBottom: 14 }}>Why Balible</p>
-            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 700, color: '#1D1D1D', lineHeight: 1.2, marginBottom: 18 }}>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.15em', color: '#C8A97E', textTransform: 'uppercase', marginBottom: 14 }}>Why Balible</p>
+            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 700, color: '#111111', lineHeight: 1.2, marginBottom: 18 }}>
               Bali Has More to Offer Than Most People See
             </h2>
             <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: '#6F675C', lineHeight: 1.85, marginBottom: 14 }}>
@@ -142,9 +142,9 @@ export default function AboutPage() {
       </div>
 
       {/* VALUES */}
-      <div style={{ backgroundColor: '#1D1D1D', padding: '80px 24px' }}>
+      <div style={{ backgroundColor: '#111111', padding: '80px 24px' }}>
         <div className="max-w-[1200px] mx-auto">
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.2em', color: '#B58A4B', textTransform: 'uppercase', marginBottom: 12, textAlign: 'center' }}>What we stand for</p>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.2em', color: '#C8A97E', textTransform: 'uppercase', marginBottom: 12, textAlign: 'center' }}>What we stand for</p>
           <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 3vw, 36px)', fontWeight: 700, color: 'white', textAlign: 'center', marginBottom: 56 }}>
             Our Principles
           </h2>
@@ -152,7 +152,7 @@ export default function AboutPage() {
             {VALUES.map(({ Icon, title, body }) => (
               <div key={title} className="p-6 rounded-2xl" style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ backgroundColor: 'rgba(200,169,126,0.15)' }}>
-                  <Icon size={18} style={{ color: '#B58A4B' }} />
+                  <Icon size={18} style={{ color: '#C8A97E' }} />
                 </div>
                 <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: 'white', marginBottom: 10 }}>{title}</h3>
                 <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.55)', lineHeight: 1.8 }}>{body}</p>
@@ -164,8 +164,8 @@ export default function AboutPage() {
 
       {/* TEAM */}
       <div className="max-w-[1200px] mx-auto px-6 lg:px-16 py-20">
-        <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.15em', color: '#B58A4B', textTransform: 'uppercase', marginBottom: 12, textAlign: 'center' }}>The People Behind It</p>
-        <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 3vw, 36px)', fontWeight: 700, color: '#1D1D1D', textAlign: 'center', marginBottom: 48 }}>
+        <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.15em', color: '#C8A97E', textTransform: 'uppercase', marginBottom: 12, textAlign: 'center' }}>The People Behind It</p>
+        <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 3vw, 36px)', fontWeight: 700, color: '#111111', textAlign: 'center', marginBottom: 48 }}>
           Meet the Team
         </h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -175,8 +175,8 @@ export default function AboutPage() {
                 <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
               </div>
               <div className="p-5">
-                <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#1D1D1D' }}>{member.name}</h3>
-                <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#B58A4B', fontWeight: 600, marginTop: 2, marginBottom: 4 }}>{member.role}</p>
+                <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111' }}>{member.name}</h3>
+                <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#C8A97E', fontWeight: 600, marginTop: 2, marginBottom: 4 }}>{member.role}</p>
                 <div className="flex items-center gap-1 mb-8">
                   <MapPin size={10} style={{ color: '#6F675C' }} />
                   <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>{member.location}</span>
@@ -189,17 +189,17 @@ export default function AboutPage() {
       </div>
 
       {/* TIMELINE */}
-      <div style={{ backgroundColor: '#F3EEE5', borderTop: '1px solid #E8E4DE', borderBottom: '1px solid #E8E4DE' }}>
+      <div style={{ backgroundColor: '#F5F1EB', borderTop: '1px solid #E8E4DE', borderBottom: '1px solid #E8E4DE' }}>
         <div className="max-w-[860px] mx-auto px-6 lg:px-8 py-20">
-          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 3vw, 34px)', fontWeight: 700, color: '#1D1D1D', marginBottom: 48, textAlign: 'center' }}>
+          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 3vw, 34px)', fontWeight: 700, color: '#111111', marginBottom: 48, textAlign: 'center' }}>
             How We Got Here
           </h2>
           <div className="space-y-0">
             {TIMELINE.map(({ year, event }, i) => (
               <div key={year} className="flex gap-6" style={{ paddingBottom: i < TIMELINE.length - 1 ? 32 : 0 }}>
                 <div className="flex flex-col items-center" style={{ flexShrink: 0 }}>
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#1D1D1D' }}>
-                    <span style={{ fontFamily: 'var(--font-inter)', fontSize: 10, fontWeight: 700, color: '#B58A4B' }}>{year}</span>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#111111' }}>
+                    <span style={{ fontFamily: 'var(--font-inter)', fontSize: 10, fontWeight: 700, color: '#C8A97E' }}>{year}</span>
                   </div>
                   {i < TIMELINE.length - 1 && <div style={{ flex: 1, width: 1, backgroundColor: '#E8E4DE', marginTop: 6 }} />}
                 </div>
@@ -214,17 +214,17 @@ export default function AboutPage() {
 
       {/* CTA */}
       <div className="max-w-[1200px] mx-auto px-6 lg:px-16 py-20 text-center">
-        <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 700, color: '#1D1D1D', marginBottom: 14 }}>
+        <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 700, color: '#111111', marginBottom: 14 }}>
           Ready to Experience the Real Bali?
         </h2>
         <p style={{ fontFamily: 'var(--font-inter)', fontSize: 16, color: '#6F675C', marginBottom: 32, maxWidth: 440, margin: '0 auto 32px' }}>
           Browse 16+ curated experiences led by Bali's finest local hosts.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <a href="/search" style={{ height: 48, display: 'inline-flex', alignItems: 'center', padding: '0 32px', backgroundColor: '#1D1D1D', color: 'white', borderRadius: 10, fontSize: 14, fontWeight: 600, textDecoration: 'none', fontFamily: 'var(--font-inter)' }} className="hover:opacity-90 transition-opacity">
+          <a href="/search" style={{ height: 48, display: 'inline-flex', alignItems: 'center', padding: '0 32px', backgroundColor: '#111111', color: 'white', borderRadius: 10, fontSize: 14, fontWeight: 600, textDecoration: 'none', fontFamily: 'var(--font-inter)' }} className="hover:opacity-90 transition-opacity">
             Browse experiences
           </a>
-          <a href="/for-hosts" style={{ height: 48, display: 'inline-flex', alignItems: 'center', padding: '0 32px', border: '1px solid #E8E4DE', color: '#1D1D1D', borderRadius: 10, fontSize: 14, fontWeight: 500, textDecoration: 'none', fontFamily: 'var(--font-inter)' }} className="hover:opacity-70 transition-opacity">
+          <a href="/for-hosts" style={{ height: 48, display: 'inline-flex', alignItems: 'center', padding: '0 32px', border: '1px solid #E8E4DE', color: '#111111', borderRadius: 10, fontSize: 14, fontWeight: 500, textDecoration: 'none', fontFamily: 'var(--font-inter)' }} className="hover:opacity-70 transition-opacity">
             Become A Host →
           </a>
         </div>

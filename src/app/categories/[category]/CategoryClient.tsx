@@ -46,7 +46,7 @@ const CATEGORY_META: Record<string, {
     tagline: 'Restore mind, body and spirit',
     description: 'Restore your mind, body and soul with authentic Balinese healing practices — from sound healing bowls to traditional jamu rituals, guided by healers with decades of experience.',
     image: 'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=1200&auto=format&fit=crop&q=80',
-    color: '#2E4A35',
+    color: '#4A7C59',
     subcategories: ['All', 'Yoga', 'Meditation', 'Sound Healing', 'Spa & Ritual', 'Breathwork'],
   },
   culture: {
@@ -62,7 +62,7 @@ const CATEGORY_META: Record<string, {
     tagline: 'Bali beyond the beach',
     description: "Trek through volcanic landscapes, swim beneath hidden waterfalls, and watch the sunrise paint Mount Batur gold. The island's natural wonders, experienced with a local guide.",
     image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&auto=format&fit=crop&q=80',
-    color: '#2E4A35',
+    color: '#4A7C59',
     subcategories: ['All', 'Trekking', 'Waterfall', 'Sunrise', 'Rice Terrace', 'Wildlife'],
   },
   'surf-water': {
@@ -102,7 +102,7 @@ const CATEGORY_META: Record<string, {
     tagline: 'Cook, taste, and discover Balinese flavours',
     description: "Go beyond eating — learn the spices, the techniques, and the stories behind Balinese food. From market foraging to hands-on cooking in a family compound, led by people who grew up in the kitchen.",
     image: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=1200&auto=format&fit=crop&q=80',
-    color: '#B58A4B',
+    color: '#C8A97E',
     subcategories: ['All', 'Cooking Class', 'Spice & Herb', 'Market Tour', 'Coffee & Tea', 'Fermentation', 'Dessert & Sweets', 'Farm to Table'],
   },
 }
@@ -138,7 +138,7 @@ function ExperienceCard({
         {exp.badge && (
           <span
             className="absolute top-3 left-3 px-2.5 py-1 rounded-full"
-            style={{ backgroundColor: '#B58A4B', color: 'white', fontSize: 11, fontWeight: 600, fontFamily: 'var(--font-inter)', letterSpacing: '0.02em' }}
+            style={{ backgroundColor: '#C8A97E', color: 'white', fontSize: 11, fontWeight: 600, fontFamily: 'var(--font-inter)', letterSpacing: '0.02em' }}
           >
             {exp.badge}
           </span>
@@ -148,7 +148,7 @@ function ExperienceCard({
           className="absolute top-3 right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm hover:scale-110 transition-transform"
           aria-label="Add to wishlist"
         >
-          <Heart size={14} fill={wishlisted ? '#ef4444' : 'none'} color={wishlisted ? '#ef4444' : '#1D1D1D'} />
+          <Heart size={14} fill={wishlisted ? '#ef4444' : 'none'} color={wishlisted ? '#ef4444' : '#111111'} />
         </button>
         <div className="absolute bottom-3 left-3 flex items-center gap-1">
           <MapPin size={11} style={{ color: 'white' }} />
@@ -156,13 +156,13 @@ function ExperienceCard({
         </div>
       </div>
       <div className="p-4">
-        <h3 className="leading-snug mb-2" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 600, color: '#1D1D1D' }}>
+        <h3 className="leading-snug mb-2" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 600, color: '#111111' }}>
           {exp.title}
         </h3>
         <div className="flex items-center gap-2 mb-3">
           <div className="flex items-center gap-1">
-            <Star size={11} fill="#B58A4B" color="#B58A4B" />
-            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 700, color: '#1D1D1D' }}>{exp.rating.toFixed(1)}</span>
+            <Star size={11} fill="#C8A97E" color="#C8A97E" />
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 700, color: '#111111' }}>{exp.rating.toFixed(1)}</span>
             <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>({exp.reviews})</span>
           </div>
           <span style={{ color: '#E8E4DE' }}>·</span>
@@ -177,15 +177,15 @@ function ExperienceCard({
           </div>
         </div>
         <div className="flex items-center justify-between">
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#1D1D1D' }}>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111' }}>
             <span style={{ color: '#6F675C', fontSize: 11 }}>From </span>
-            <span style={{ color: '#B58A4B', fontWeight: 600, fontSize: 13 }}>IDR</span>{' '}
+            <span style={{ color: '#C8A97E', fontWeight: 600, fontSize: 13 }}>IDR</span>{' '}
             <span style={{ fontWeight: 700 }}>{exp.price.toLocaleString('id-ID')}</span>
           </p>
           {exp.subcategory && (
             <span
               className="text-xs px-2.5 py-1 rounded-full"
-              style={{ backgroundColor: '#F3EEE5', color: '#6F675C', fontFamily: 'var(--font-inter)', fontSize: 11 }}
+              style={{ backgroundColor: '#F5F1EB', color: '#6F675C', fontFamily: 'var(--font-inter)', fontSize: 11 }}
             >
               {exp.subcategory}
             </span>
@@ -235,7 +235,7 @@ export default function CategoryClient({
   const totalReviews = initialExperiences.reduce((s, e) => s + e.reviews, 0)
 
   return (
-    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F3EEE5', minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
 
       <Navbar />
 
@@ -251,7 +251,7 @@ export default function CategoryClient({
             <span style={{ fontSize: 12, color: 'white' }}>{meta.label}</span>
           </nav>
 
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.2em', color: meta.color === '#3B82F6' ? '#93C5FD' : '#B58A4B', textTransform: 'uppercase', marginBottom: 8 }}>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.2em', color: meta.color === '#3B82F6' ? '#93C5FD' : '#C8A97E', textTransform: 'uppercase', marginBottom: 8 }}>
             {meta.tagline}
           </p>
           <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 700, color: 'white', lineHeight: 1.1, marginBottom: 12, maxWidth: 600 }}>
@@ -301,9 +301,9 @@ export default function CategoryClient({
                   borderRadius: 20,
                   fontSize: 13,
                   fontWeight: activeSub === sub ? 600 : 400,
-                  backgroundColor: activeSub === sub ? '#1D1D1D' : 'transparent',
+                  backgroundColor: activeSub === sub ? '#111111' : 'transparent',
                   color: activeSub === sub ? 'white' : '#6F675C',
-                  border: `1px solid ${activeSub === sub ? '#1D1D1D' : '#E8E4DE'}`,
+                  border: `1px solid ${activeSub === sub ? '#111111' : '#E8E4DE'}`,
                   cursor: 'pointer',
                   whiteSpace: 'nowrap',
                   fontFamily: 'var(--font-inter)',
@@ -321,12 +321,12 @@ export default function CategoryClient({
 
         <div className="flex items-center justify-between mb-6">
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
-            <span style={{ fontWeight: 700, color: '#1D1D1D' }}>{results.length}</span> experience{results.length !== 1 ? 's' : ''} found
+            <span style={{ fontWeight: 700, color: '#111111' }}>{results.length}</span> experience{results.length !== 1 ? 's' : ''} found
             {activeSub !== 'All' && (
               <button
                 onClick={() => setActiveSub('All')}
                 className="inline-flex items-center gap-1 ml-3 px-2.5 py-1 rounded-full"
-                style={{ backgroundColor: '#F3EEE5', border: '1px solid #E8E4DE', fontSize: 12, color: '#6F675C', cursor: 'pointer' }}
+                style={{ backgroundColor: '#F5F1EB', border: '1px solid #E8E4DE', fontSize: 12, color: '#6F675C', cursor: 'pointer' }}
               >
                 {activeSub} <X size={11} />
               </button>
@@ -339,7 +339,7 @@ export default function CategoryClient({
               className="flex items-center gap-2"
               style={{
                 height: 38, border: '1px solid #E8E4DE', borderRadius: 8,
-                padding: '0 14px', fontSize: 13, color: '#1D1D1D',
+                padding: '0 14px', fontSize: 13, color: '#111111',
                 backgroundColor: 'white', cursor: 'pointer', fontFamily: 'var(--font-inter)',
               }}
             >
@@ -358,7 +358,7 @@ export default function CategoryClient({
                     className="w-full text-left px-4 py-3 transition-colors hover:bg-stone-50"
                     style={{
                       fontSize: 13, fontFamily: 'var(--font-inter)',
-                      color: sort === opt ? '#1D1D1D' : '#6F675C',
+                      color: sort === opt ? '#111111' : '#6F675C',
                       fontWeight: sort === opt ? 600 : 400,
                       backgroundColor: 'transparent', border: 'none', cursor: 'pointer',
                     }}
@@ -384,13 +384,13 @@ export default function CategoryClient({
           </div>
         ) : (
           <div className="text-center py-20 bg-white rounded-2xl" style={{ border: '1px solid #E8E4DE' }}>
-            <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, color: '#1D1D1D', marginBottom: 8 }}>No experiences found</p>
+            <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, color: '#111111', marginBottom: 8 }}>No experiences found</p>
             <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', marginBottom: 20 }}>
               Try selecting a different subcategory.
             </p>
             <button
               onClick={() => setActiveSub('All')}
-              style={{ height: 40, padding: '0 24px', backgroundColor: '#1D1D1D', color: 'white', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer', border: 'none', fontFamily: 'var(--font-inter)' }}
+              style={{ height: 40, padding: '0 24px', backgroundColor: '#111111', color: 'white', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer', border: 'none', fontFamily: 'var(--font-inter)' }}
             >
               Show all {meta.label}
             </button>
@@ -401,7 +401,7 @@ export default function CategoryClient({
       {/* ── OTHER CATEGORIES ── */}
       <div className="max-w-[1440px] mx-auto px-6 lg:px-16 pb-16">
         <div style={{ borderTop: '1px solid #E8E4DE', paddingTop: 40 }}>
-          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: '#1D1D1D', marginBottom: 20 }}>
+          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: '#111111', marginBottom: 20 }}>
             Explore other categories
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">

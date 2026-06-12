@@ -236,7 +236,7 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
   const related = ALL_ARTICLES.filter(a => a.slug !== slug).slice(0, 3)
 
   return (
-    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F3EEE5', minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
       <Navbar />
 
       {/* HERO IMAGE */}
@@ -244,7 +244,7 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
         <img src={article.image} alt={article.title} className="w-full h-full object-cover" />
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.5) 100%)' }} />
         <div className="absolute bottom-0 left-0 right-0 px-6 pb-10 max-w-[800px] mx-auto">
-          <span className="inline-block px-3 py-1 rounded-full mb-4" style={{ backgroundColor: '#B58A4B', color: 'white', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <span className="inline-block px-3 py-1 rounded-full mb-4" style={{ backgroundColor: '#C8A97E', color: 'white', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             {article.category}
           </span>
           <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 4vw, 46px)', fontWeight: 700, color: 'white', lineHeight: 1.15, textShadow: '0 2px 16px rgba(0,0,0,0.25)' }}>
@@ -265,7 +265,7 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
         <div className="flex items-center gap-4 mb-10 pb-8" style={{ borderBottom: '1px solid #E8E4DE' }}>
           <img src={article.authorImage} alt={article.author} className="w-12 h-12 rounded-full object-cover" />
           <div>
-            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#1D1D1D' }}>{article.author}</p>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111' }}>{article.author}</p>
             <div className="flex items-center gap-3 mt-0.5">
               <div className="flex items-center gap-1.5">
                 <Calendar size={11} style={{ color: '#6F675C' }} />
@@ -281,7 +281,7 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
         </div>
 
         {/* Excerpt / lead */}
-        <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(17px, 2vw, 20px)', color: '#1D1D1D', lineHeight: 1.7, marginBottom: 32, fontStyle: 'italic' }}>
+        <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(17px, 2vw, 20px)', color: '#111111', lineHeight: 1.7, marginBottom: 32, fontStyle: 'italic' }}>
           {article.excerpt}
         </p>
 
@@ -289,17 +289,17 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
         <div style={{ lineHeight: 1.85 }}>
           {article.content.map((block, i) => {
             if (block.type === 'h2') return (
-              <h2 key={i} style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(20px, 2.5vw, 26px)', fontWeight: 700, color: '#1D1D1D', marginTop: 40, marginBottom: 16 }}>
+              <h2 key={i} style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(20px, 2.5vw, 26px)', fontWeight: 700, color: '#111111', marginTop: 40, marginBottom: 16 }}>
                 {block.text}
               </h2>
             )
             if (block.type === 'h3') return (
-              <h3 key={i} style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(17px, 2vw, 20px)', fontWeight: 700, color: '#1D1D1D', marginTop: 28, marginBottom: 12 }}>
+              <h3 key={i} style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(17px, 2vw, 20px)', fontWeight: 700, color: '#111111', marginTop: 28, marginBottom: 12 }}>
                 {block.text}
               </h3>
             )
             if (block.type === 'blockquote') return (
-              <blockquote key={i} style={{ margin: '32px 0', paddingLeft: 20, borderLeft: '3px solid #B58A4B', fontFamily: 'var(--font-playfair)', fontSize: 'clamp(15px, 1.8vw, 18px)', color: '#6F675C', fontStyle: 'italic', lineHeight: 1.75 }}>
+              <blockquote key={i} style={{ margin: '32px 0', paddingLeft: 20, borderLeft: '3px solid #C8A97E', fontFamily: 'var(--font-playfair)', fontSize: 'clamp(15px, 1.8vw, 18px)', color: '#6F675C', fontStyle: 'italic', lineHeight: 1.75 }}>
                 {block.text}
               </blockquote>
             )
@@ -324,8 +324,8 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
         <div className="mt-10 p-6 rounded-2xl flex gap-5 items-start" style={{ backgroundColor: 'white', border: '1px solid #E8E4DE' }}>
           <img src={article.authorImage} alt={article.author} className="w-14 h-14 rounded-full object-cover flex-shrink-0" />
           <div>
-            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 700, color: '#B58A4B', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>About the author</p>
-            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 600, color: '#1D1D1D', marginBottom: 6 }}>{article.author}</p>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 700, color: '#C8A97E', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>About the author</p>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 600, color: '#111111', marginBottom: 6 }}>{article.author}</p>
             <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', lineHeight: 1.7 }}>{article.authorBio}</p>
           </div>
         </div>
@@ -333,8 +333,8 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
 
       {/* NEWSLETTER STRIP */}
       <div className="max-w-[800px] mx-auto px-6 pb-4">
-        <div className="rounded-2xl p-8 text-center" style={{ backgroundColor: '#1D1D1D' }}>
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, letterSpacing: '0.2em', color: '#B58A4B', textTransform: 'uppercase', marginBottom: 8 }}>New stories, every fortnight</p>
+        <div className="rounded-2xl p-8 text-center" style={{ backgroundColor: '#111111' }}>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, letterSpacing: '0.2em', color: '#C8A97E', textTransform: 'uppercase', marginBottom: 8 }}>New stories, every fortnight</p>
           <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(20px, 2.5vw, 26px)', fontWeight: 700, color: 'white', marginBottom: 6 }}>Enjoy this story?</h2>
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.6)', marginBottom: 20 }}>
             Get one good story about Bali every two weeks, written by people who live here.
@@ -347,7 +347,7 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
 
       {/* RELATED ARTICLES */}
       <div className="max-w-[1200px] mx-auto px-6 lg:px-8 py-16">
-        <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(22px, 2.5vw, 28px)', fontWeight: 700, color: '#1D1D1D', marginBottom: 24 }}>More from the Journal</h2>
+        <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(22px, 2.5vw, 28px)', fontWeight: 700, color: '#111111', marginBottom: 24 }}>More from the Journal</h2>
         <div className="grid sm:grid-cols-3 gap-6">
           {related.map(a => (
             <a key={a.slug} href={`/blog/${a.slug}`} className="bg-white rounded-2xl overflow-hidden hover:shadow-md transition-shadow" style={{ border: '1px solid #E8E4DE', textDecoration: 'none' }}>
@@ -355,10 +355,10 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
                 <img src={a.image} alt={a.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
               </div>
               <div className="p-4">
-                <span className="inline-block px-2.5 py-0.5 rounded-full mb-2" style={{ backgroundColor: '#F3EEE5', color: '#B58A4B', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                <span className="inline-block px-2.5 py-0.5 rounded-full mb-2" style={{ backgroundColor: '#F5F1EB', color: '#C8A97E', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                   {a.category}
                 </span>
-                <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: '#1D1D1D', lineHeight: 1.3, marginBottom: 8 }}>{a.title}</h3>
+                <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: '#111111', lineHeight: 1.3, marginBottom: 8 }}>{a.title}</h3>
                 <div className="flex items-center gap-1.5">
                   <Clock size={10} style={{ color: '#6F675C' }} />
                   <span style={{ fontSize: 11, color: '#6F675C' }}>{a.readMins} min read</span>

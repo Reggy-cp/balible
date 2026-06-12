@@ -796,12 +796,12 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
           {/* LEFT */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1">
-              <MapPin size={12} style={{ color: '#B58A4B' }} />
+              <MapPin size={12} style={{ color: '#C8A97E' }} />
               <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>{experience.area}</span>
             </div>
 
             <div className="flex items-start justify-between gap-3 mt-2">
-              <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(24px, 3vw, 32px)', fontWeight: 700, color: '#1D1D1D' }}>
+              <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(24px, 3vw, 32px)', fontWeight: 700, color: '#111111' }}>
                 {experience.title}
               </h1>
               <div className="flex items-center gap-2 flex-shrink-0">
@@ -812,8 +812,8 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
 
             <div className="flex items-center gap-3 mt-2 flex-wrap">
               <div className="flex items-center gap-1">
-                <Star size={14} fill="#B58A4B" color="#B58A4B" />
-                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 700, color: '#B58A4B' }}>{experience.rating.toFixed(1)}</span>
+                <Star size={14} fill="#C8A97E" color="#C8A97E" />
+                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 700, color: '#C8A97E' }}>{experience.rating.toFixed(1)}</span>
                 <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>({experience.totalReviews} reviews)</span>
               </div>
               <div className="flex items-center gap-1">
@@ -835,8 +835,8 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
                 { Icon: Users,  text: `Max ${experience.maxGuests} people` },
               ].map(({ Icon, text }) => (
                 <div key={text} className="flex items-center gap-1.5">
-                  <Icon size={15} strokeWidth={1.5} style={{ color: '#1D1D1D' }} />
-                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#1D1D1D' }}>{text}</span>
+                  <Icon size={15} strokeWidth={1.5} style={{ color: '#111111' }} />
+                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>{text}</span>
                 </div>
               ))}
             </div>

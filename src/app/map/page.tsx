@@ -23,11 +23,11 @@ function MapLoading() {
         justifyContent: 'center',
         flexDirection: 'column',
         gap: 16,
-        backgroundColor: '#F3EEE5',
+        backgroundColor: '#F5F1EB',
         fontFamily: 'var(--font-inter), sans-serif',
       }}
     >
-      <div style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#1D1D1D' }}>
+      <div style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#111111' }}>
         BALIBLE
       </div>
       <div style={{ fontSize: 14, color: '#6F675C' }}>Loading map…</div>
@@ -40,7 +40,7 @@ function MapLoading() {
               width: 8,
               height: 8,
               borderRadius: '50%',
-              backgroundColor: '#B58A4B',
+              backgroundColor: '#C8A97E',
               animation: `pulse 1.2s ${i * 0.2}s ease-in-out infinite`,
             }}
           />

@@ -17,7 +17,6 @@ export type ExperienceCard = {
   badge: string | null
   subcategory: string | null
   level: string
-  hostName?: string
 }
 
 export type FeaturedExp = {
@@ -88,7 +87,6 @@ export async function getExperienceCards(): Promise<ExperienceCard[]> {
         slug: true, title: true, area: true, rating: true, totalReviews: true,
         price: true, duration: true, maxGuests: true, category: true, images: true,
         featured: true, level: true,
-        operator: { select: { user: { select: { name: true } } } },
       },
       orderBy: [{ featured: 'desc' }, { rating: 'desc' }],
     })
@@ -109,7 +107,6 @@ export async function getExperienceCards(): Promise<ExperienceCard[]> {
       badge: e.featured ? 'Bestseller' : null,
       subcategory: null,
       level: e.level,
-      hostName: e.operator?.user?.name ?? undefined,
     }))
   } catch {
     return []

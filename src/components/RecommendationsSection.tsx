@@ -32,21 +32,21 @@ function RecommendationCard({ exp }: { exp: ExpSummary }) {
           className="absolute top-2 right-2 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow"
           onClick={e => { e.preventDefault(); setLiked(!liked) }}
         >
-          <Heart size={12} fill={liked ? '#ef4444' : 'none'} color={liked ? '#ef4444' : '#1D1D1D'} />
+          <Heart size={12} fill={liked ? '#ef4444' : 'none'} color={liked ? '#ef4444' : '#111111'} />
         </button>
       </div>
       <div className="p-3">
         <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>{exp.area}</p>
-        <h4 className="mt-0.5 line-clamp-2 leading-snug" style={{ fontFamily: 'var(--font-playfair)', fontSize: 14, fontWeight: 600, color: '#1D1D1D' }}>
+        <h4 className="mt-0.5 line-clamp-2 leading-snug" style={{ fontFamily: 'var(--font-playfair)', fontSize: 14, fontWeight: 600, color: '#111111' }}>
           {exp.title}
         </h4>
         <div className="flex items-center gap-1 mt-1.5">
-          <Star size={11} fill="#B58A4B" color="#B58A4B" />
-          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 700, color: '#1D1D1D' }}>{exp.rating.toFixed(1)}</span>
+          <Star size={11} fill="#C8A97E" color="#C8A97E" />
+          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 700, color: '#111111' }}>{exp.rating.toFixed(1)}</span>
           <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>({exp.totalReviews})</span>
         </div>
-        <p className="mt-1" style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#1D1D1D' }}>
-          From <span style={{ color: '#B58A4B' }}>IDR</span> {exp.price.toLocaleString('id-ID')}
+        <p className="mt-1" style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#111111' }}>
+          From <span style={{ color: '#C8A97E' }}>IDR</span> {exp.price.toLocaleString('id-ID')}
         </p>
       </div>
     </a>
@@ -90,9 +90,9 @@ export default function RecommendationsSection({
 
   if (loading) {
     return (
-      <section className="py-12 px-6 lg:px-16" style={{ backgroundColor: '#F3EEE5' }}>
+      <section className="py-12 px-6 lg:px-16" style={{ backgroundColor: '#F5F1EB' }}>
         <div className="max-w-[1440px] mx-auto">
-          <h2 className="mb-6" style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: '#1D1D1D' }}>
+          <h2 className="mb-6" style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: '#111111' }}>
             You might also love
           </h2>
           <div className="flex gap-5">
@@ -108,18 +108,18 @@ export default function RecommendationsSection({
   if (recommended.length === 0) return null
 
   return (
-    <section className="py-12 px-6 lg:px-16" style={{ backgroundColor: '#F3EEE5' }}>
+    <section className="py-12 px-6 lg:px-16" style={{ backgroundColor: '#F5F1EB' }}>
       <div className="max-w-[1440px] mx-auto">
         <div className="flex items-end justify-between mb-6">
           <div>
-            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: '#1D1D1D' }}>
+            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: '#111111' }}>
               You might also love
             </h2>
             <p className="mt-1" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
               Recommended by our AI based on what you're viewing.
             </p>
           </div>
-          <a href="/search" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#B58A4B', textDecoration: 'underline' }} className="flex-shrink-0 hover:opacity-70 transition-opacity">
+          <a href="/search" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#C8A97E', textDecoration: 'underline' }} className="flex-shrink-0 hover:opacity-70 transition-opacity">
             View all →
           </a>
         </div>

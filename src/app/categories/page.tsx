@@ -31,7 +31,7 @@ const CATEGORIES = [
     count: 4,
     avgPrice: 357500,
     featured: ['Sound Healing Journey', 'Sunrise Yoga', 'Jamu Ritual'],
-    accent: '#2E4A35',
+    accent: '#4A7C59',
     span: 'lg:col-span-2',
     imageHeight: 'h-48',
   },
@@ -57,7 +57,7 @@ const CATEGORIES = [
     count: 3,
     avgPrice: 473333,
     featured: ['Mount Batur Sunrise Trek', 'Waterfall Canyon Hike', 'Rice Terrace Trek'],
-    accent: '#2E4A35',
+    accent: '#4A7C59',
     span: 'lg:col-span-2',
     imageHeight: 'h-48',
   },
@@ -96,7 +96,7 @@ const CATEGORIES = [
     count: 6,
     avgPrice: 385000,
     featured: ['Balinese Cooking Class', 'Balinese Spice Workshop', 'Farm to Table Lunch'],
-    accent: '#B58A4B',
+    accent: '#C8A97E',
     span: 'lg:col-span-2',
     imageHeight: 'h-48',
   },
@@ -110,7 +110,7 @@ export default function CategoriesPage() {
   const totalExperiences = CATEGORIES.reduce((s, c) => s + c.count, 0)
 
   return (
-    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F3EEE5', minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
 
       <Navbar />
 
@@ -118,10 +118,10 @@ export default function CategoriesPage() {
       <div className="max-w-[1200px] mx-auto px-6 lg:px-8 pt-14 pb-10">
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
           <div>
-            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.2em', color: '#B58A4B', textTransform: 'uppercase', marginBottom: 14 }}>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.2em', color: '#C8A97E', textTransform: 'uppercase', marginBottom: 14 }}>
               Browse by category
             </p>
-            <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(36px, 5vw, 60px)', fontWeight: 700, color: '#1D1D1D', lineHeight: 1.05, maxWidth: 560 }}>
+            <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(36px, 5vw, 60px)', fontWeight: 700, color: '#111111', lineHeight: 1.05, maxWidth: 560 }}>
               Every way to experience Bali
             </h1>
             <p style={{ fontFamily: 'var(--font-inter)', fontSize: 16, color: '#6F675C', marginTop: 16, lineHeight: 1.75, maxWidth: 520 }}>
@@ -133,7 +133,7 @@ export default function CategoriesPage() {
             href="/search"
             className="flex-shrink-0 flex items-center gap-2 hover:opacity-90 transition-opacity"
             style={{
-              height: 48, padding: '0 28px', backgroundColor: '#1D1D1D', color: 'white',
+              height: 48, padding: '0 28px', backgroundColor: '#111111', color: 'white',
               borderRadius: 10, fontSize: 14, fontWeight: 600, textDecoration: 'none',
               fontFamily: 'var(--font-inter)', whiteSpace: 'nowrap',
             }}
@@ -151,7 +151,7 @@ export default function CategoriesPage() {
             { value: '10+', label: 'areas of Bali' },
           ].map(({ value, label }) => (
             <div key={label}>
-              <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 700, color: '#1D1D1D', lineHeight: 1 }}>{value}</p>
+              <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 700, color: '#111111', lineHeight: 1 }}>{value}</p>
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', marginTop: 4 }}>{label}</p>
             </div>
           ))}
@@ -317,10 +317,10 @@ export default function CategoriesPage() {
         <div className="bg-white rounded-2xl p-8 lg:p-12" style={{ border: '1px solid #E8E4DE' }}>
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
             <div>
-              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.2em', color: '#B58A4B', textTransform: 'uppercase', marginBottom: 12 }}>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.2em', color: '#C8A97E', textTransform: 'uppercase', marginBottom: 12 }}>
                 What makes us different
               </p>
-              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 3vw, 36px)', fontWeight: 700, color: '#1D1D1D', lineHeight: 1.15, marginBottom: 16 }}>
+              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 3vw, 36px)', fontWeight: 700, color: '#111111', lineHeight: 1.15, marginBottom: 16 }}>
                 Every experience is personally reviewed
               </h2>
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: '#6F675C', lineHeight: 1.8, marginBottom: 24 }}>
@@ -334,9 +334,9 @@ export default function CategoriesPage() {
                   'Instant booking confirmation — no waiting',
                 ].map(point => (
                   <div key={point} className="flex items-start gap-3">
-                    <div className="w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center mt-0.5" style={{ backgroundColor: '#F3EEE5' }}>
+                    <div className="w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center mt-0.5" style={{ backgroundColor: '#F5F1EB' }}>
                       <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
-                        <path d="M2 6l3 3 5-5" stroke="#B58A4B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M2 6l3 3 5-5" stroke="#C8A97E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                     </div>
                     <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.55 }}>{point}</p>
@@ -366,11 +366,11 @@ export default function CategoriesPage() {
       <div className="max-w-[1200px] mx-auto px-6 lg:px-8 pb-16">
         <div
           className="rounded-2xl text-center px-8 py-14 relative overflow-hidden"
-          style={{ backgroundColor: '#1D1D1D' }}
+          style={{ backgroundColor: '#111111' }}
         >
-          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 70% 50%, #B58A4B 0%, transparent 60%)' }} />
+          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 70% 50%, #C8A97E 0%, transparent 60%)' }} />
           <div className="relative">
-            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.2em', color: '#B58A4B', textTransform: 'uppercase', marginBottom: 14 }}>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.2em', color: '#C8A97E', textTransform: 'uppercase', marginBottom: 14 }}>
               Not sure where to start?
             </p>
             <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 700, color: 'white', marginBottom: 16, lineHeight: 1.15 }}>
@@ -384,7 +384,7 @@ export default function CategoriesPage() {
                 href="/search"
                 style={{
                   height: 50, display: 'inline-flex', alignItems: 'center', padding: '0 32px',
-                  backgroundColor: '#B58A4B', color: '#1D1D1D', borderRadius: 10,
+                  backgroundColor: '#C8A97E', color: '#111111', borderRadius: 10,
                   fontSize: 14, fontWeight: 700, textDecoration: 'none', fontFamily: 'var(--font-inter)',
                 }}
                 className="hover:opacity-90 transition-opacity"

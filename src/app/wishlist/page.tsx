@@ -34,27 +34,27 @@ function WishlistCard({ exp }: { exp: ExpWishlistMeta }) {
           <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>{exp.area}</span>
         </div>
         <a href={`/experiences/${exp.slug}`} style={{ textDecoration: 'none' }}>
-          <h3 className="mt-1 leading-snug hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 600, color: '#1D1D1D' }}>
+          <h3 className="mt-1 leading-snug hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 600, color: '#111111' }}>
             {exp.title}
           </h3>
         </a>
         <div className="flex items-center gap-1.5 mt-1.5">
-          <Star size={11} fill="#B58A4B" color="#B58A4B" />
-          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 700, color: '#1D1D1D' }}>{exp.rating.toFixed(1)}</span>
+          <Star size={11} fill="#C8A97E" color="#C8A97E" />
+          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 700, color: '#111111' }}>{exp.rating.toFixed(1)}</span>
           <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>({exp.totalReviews})</span>
           <span style={{ color: '#E8E4DE' }}>·</span>
           <Clock size={11} style={{ color: '#6F675C' }} />
           <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>{exp.duration}</span>
         </div>
         <div className="flex items-center justify-between mt-3">
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#1D1D1D' }}>
-            <span style={{ color: '#B58A4B', fontWeight: 600 }}>IDR</span>{' '}
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>
+            <span style={{ color: '#C8A97E', fontWeight: 600 }}>IDR</span>{' '}
             <span style={{ fontWeight: 600 }}>{exp.price.toLocaleString('id-ID')}</span>
           </p>
           <a
             href={`/experiences/${exp.slug}`}
             className="hover:opacity-90 transition-opacity"
-            style={{ height: 32, display: 'flex', alignItems: 'center', padding: '0 14px', backgroundColor: '#1D1D1D', color: 'white', borderRadius: 6, fontSize: 12, fontWeight: 500, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}
+            style={{ height: 32, display: 'flex', alignItems: 'center', padding: '0 14px', backgroundColor: '#111111', color: 'white', borderRadius: 6, fontSize: 12, fontWeight: 500, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}
           >
             Book now
           </a>
@@ -128,7 +128,7 @@ export default function WishlistPage() {
   const hasFilters = area !== 'All areas' || category !== 'All categories' || sort !== 'Recommended'
 
   return (
-    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F3EEE5', minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
 
       <Navbar />
 
@@ -136,7 +136,7 @@ export default function WishlistPage() {
       <div className="max-w-[1440px] mx-auto px-6 lg:px-16 py-8 pb-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(24px, 3vw, 32px)', fontWeight: 700, color: '#1D1D1D' }}>
+            <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(24px, 3vw, 32px)', fontWeight: 700, color: '#111111' }}>
               My Wishlist
             </h1>
             <p className="mt-1" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
@@ -166,22 +166,22 @@ export default function WishlistPage() {
             </div>
             {/* Area */}
             <select value={area} onChange={e => setArea(e.target.value)}
-              style={{ height: 36, borderRadius: 8, border: '1px solid #E8E4DE', padding: '0 10px', fontSize: 13, fontFamily: 'var(--font-inter)', color: '#1D1D1D', backgroundColor: 'white', cursor: 'pointer', outline: 'none' }}>
+              style={{ height: 36, borderRadius: 8, border: '1px solid #E8E4DE', padding: '0 10px', fontSize: 13, fontFamily: 'var(--font-inter)', color: '#111111', backgroundColor: 'white', cursor: 'pointer', outline: 'none' }}>
               {allAreas.map(a => <option key={a}>{a}</option>)}
             </select>
             {/* Category */}
             <select value={category} onChange={e => setCategory(e.target.value)}
-              style={{ height: 36, borderRadius: 8, border: '1px solid #E8E4DE', padding: '0 10px', fontSize: 13, fontFamily: 'var(--font-inter)', color: '#1D1D1D', backgroundColor: 'white', cursor: 'pointer', outline: 'none' }}>
+              style={{ height: 36, borderRadius: 8, border: '1px solid #E8E4DE', padding: '0 10px', fontSize: 13, fontFamily: 'var(--font-inter)', color: '#111111', backgroundColor: 'white', cursor: 'pointer', outline: 'none' }}>
               {allCategories.map(c => <option key={c}>{c}</option>)}
             </select>
             {/* Sort */}
             <select value={sort} onChange={e => setSort(e.target.value)}
-              style={{ height: 36, borderRadius: 8, border: '1px solid #E8E4DE', padding: '0 10px', fontSize: 13, fontFamily: 'var(--font-inter)', color: '#1D1D1D', backgroundColor: 'white', cursor: 'pointer', outline: 'none', marginLeft: 'auto' }}>
+              style={{ height: 36, borderRadius: 8, border: '1px solid #E8E4DE', padding: '0 10px', fontSize: 13, fontFamily: 'var(--font-inter)', color: '#111111', backgroundColor: 'white', cursor: 'pointer', outline: 'none', marginLeft: 'auto' }}>
               {SORT_OPTIONS.map(s => <option key={s}>{s}</option>)}
             </select>
             {hasFilters && (
               <button onClick={() => { setArea('All areas'); setCategory('All categories'); setSort('Recommended') }}
-                style={{ height: 36, paddingInline: 12, borderRadius: 8, border: 'none', backgroundColor: '#F3EEE5', color: '#B66A45', fontSize: 13, cursor: 'pointer' }}>
+                style={{ height: 36, paddingInline: 12, borderRadius: 8, border: 'none', backgroundColor: '#F5F1EB', color: '#B66A45', fontSize: 13, cursor: 'pointer' }}>
                 Clear filters
               </button>
             )}
@@ -193,10 +193,10 @@ export default function WishlistPage() {
       <div className="max-w-[1440px] mx-auto px-6 lg:px-16 pb-24">
         {!mounted ? null : expDetails.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6" style={{ backgroundColor: '#F3EEE5' }}>
-              <Heart size={32} style={{ color: '#B58A4B' }} strokeWidth={1.5} />
+            <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6" style={{ backgroundColor: '#F5F1EB' }}>
+              <Heart size={32} style={{ color: '#C8A97E' }} strokeWidth={1.5} />
             </div>
-            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: '#1D1D1D', marginBottom: 8 }}>
+            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: '#111111', marginBottom: 8 }}>
               Your wishlist is empty
             </h2>
             <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: '#6F675C', maxWidth: 360, lineHeight: 1.6, marginBottom: 28 }}>
@@ -204,7 +204,7 @@ export default function WishlistPage() {
             </p>
             <a
               href="/search"
-              style={{ height: 44, display: 'inline-flex', alignItems: 'center', padding: '0 28px', backgroundColor: '#1D1D1D', color: 'white', borderRadius: 8, fontSize: 14, fontWeight: 500, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}
+              style={{ height: 44, display: 'inline-flex', alignItems: 'center', padding: '0 28px', backgroundColor: '#111111', color: 'white', borderRadius: 8, fontSize: 14, fontWeight: 500, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}
               className="hover:opacity-90 transition-opacity"
             >
               Browse experiences →
@@ -214,7 +214,7 @@ export default function WishlistPage() {
           <div className="py-16 text-center">
             <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', marginBottom: 12 }}>No saved experiences match your filters.</p>
             <button onClick={() => { setArea('All areas'); setCategory('All categories') }}
-              style={{ fontSize: 13, color: '#B58A4B', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
+              style={{ fontSize: 13, color: '#C8A97E', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
               Clear filters
             </button>
           </div>

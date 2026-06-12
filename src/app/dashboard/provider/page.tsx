@@ -19,15 +19,15 @@ function fmt(n: number) {
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { bg: string; color: string }> = {
-    Active:    { bg: '#F0F7F2', color: '#2E4A35' },
-    Confirmed: { bg: '#F0F7F2', color: '#2E4A35' },
+    Active:    { bg: '#F0F7F2', color: '#4A7C59' },
+    Confirmed: { bg: '#F0F7F2', color: '#4A7C59' },
     Completed: { bg: '#EEF2FF', color: '#4B6CB7' },
-    Pending:   { bg: '#FDF8F4', color: '#B58A4B' },
-    Draft:     { bg: '#F3EEE5', color: '#6F675C' },
-    Paused:    { bg: '#FEF9F4', color: '#B58A4B' },
+    Pending:   { bg: '#FDF8F4', color: '#C8A97E' },
+    Draft:     { bg: '#F5F1EB', color: '#6F675C' },
+    Paused:    { bg: '#FEF9F4', color: '#C8A97E' },
     Cancelled: { bg: '#FEF2F2', color: '#B66A45' },
   }
-  const s = map[status] ?? { bg: '#F3EEE5', color: '#6F675C' }
+  const s = map[status] ?? { bg: '#F5F1EB', color: '#6F675C' }
   return (
     <span style={{ ...s, fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20, whiteSpace: 'nowrap' }}>
       {status}
@@ -62,7 +62,7 @@ function OverviewPanel({ data }: { data: ProviderDashboardData }) {
 
   return (
     <div>
-      <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: '#1D1D1D', marginBottom: 4 }}>
+      <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: '#111111', marginBottom: 4 }}>
         Welcome back, {data.providerName}
       </h1>
       <p style={{ fontSize: 14, color: '#6F675C', marginBottom: 24 }}>Here's how your services are performing.</p>
@@ -72,30 +72,30 @@ function OverviewPanel({ data }: { data: ProviderDashboardData }) {
         {stats.map(s => (
           <div key={s.label} className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
             <p style={{ fontSize: 12, color: '#6F675C', marginBottom: 6 }}>{s.label}</p>
-            <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#1D1D1D' }}>{s.value}</p>
+            <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#111111' }}>{s.value}</p>
           </div>
         ))}
       </div>
 
       {/* Recent bookings */}
       <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
-        <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1D1D1D', marginBottom: 14 }}>Recent Bookings</h2>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 14 }}>Recent Bookings</h2>
         {data.bookings.length === 0 ? (
           <p style={{ fontSize: 14, color: '#6F675C' }}>No bookings yet. Share your listings to get started.</p>
         ) : (
           <div className="space-y-3">
             {data.bookings.slice(0, 5).map(b => (
-              <div key={b.id} className="flex items-center gap-3 py-3" style={{ borderBottom: '1px solid #F3EEE5' }}>
+              <div key={b.id} className="flex items-center gap-3 py-3" style={{ borderBottom: '1px solid #F5F1EB' }}>
                 {b.serviceImage && (
                   <img src={b.serviceImage} alt="" className="rounded-lg object-cover flex-shrink-0" style={{ width: 44, height: 44 }} />
                 )}
                 <div className="flex-1 min-w-0">
-                  <p style={{ fontSize: 13, fontWeight: 600, color: '#1D1D1D' }} className="truncate">{b.service}</p>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: '#111111' }} className="truncate">{b.service}</p>
                   <p style={{ fontSize: 12, color: '#6F675C' }}>{b.guest} · {b.date}</p>
                 </div>
                 <div className="flex flex-col items-end gap-1">
                   <StatusBadge status={b.status} />
-                  <span style={{ fontSize: 12, fontWeight: 600, color: '#1D1D1D' }}>{fmt(b.total)}</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>{fmt(b.total)}</span>
                 </div>
               </div>
             ))}
@@ -165,12 +165,12 @@ function NewListingPanel({ onSuccess }: { onSuccess: (slug: string) => void }) {
 
   const input = (value: string, onChange: (v: string) => void, placeholder = '', type = 'text') => (
     <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} required={false}
-      style={{ width:'100%', height:42, borderRadius:10, border:'1px solid #E8E4DE', padding:'0 12px', fontSize:13, color:'#1D1D1D', outline:'none', backgroundColor:'#FAFAF8', fontFamily:'var(--font-inter)' }} />
+      style={{ width:'100%', height:42, borderRadius:10, border:'1px solid #E8E4DE', padding:'0 12px', fontSize:13, color:'#111111', outline:'none', backgroundColor:'#FAFAF8', fontFamily:'var(--font-inter)' }} />
   )
 
   const select = (value: string, onChange: (v: string) => void, options: {value:string;label:string}[]) => (
     <select value={value} onChange={e => onChange(e.target.value)}
-      style={{ width:'100%', height:42, borderRadius:10, border:'1px solid #E8E4DE', padding:'0 12px', fontSize:13, color:'#1D1D1D', outline:'none', backgroundColor:'#FAFAF8', appearance:'none', fontFamily:'var(--font-inter)' }}>
+      style={{ width:'100%', height:42, borderRadius:10, border:'1px solid #E8E4DE', padding:'0 12px', fontSize:13, color:'#111111', outline:'none', backgroundColor:'#FAFAF8', appearance:'none', fontFamily:'var(--font-inter)' }}>
       {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
     </select>
   )
@@ -178,37 +178,37 @@ function NewListingPanel({ onSuccess }: { onSuccess: (slug: string) => void }) {
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
-        <h1 style={{ fontFamily:'var(--font-playfair)', fontSize:26, fontWeight:700, color:'#1D1D1D', flex:1 }}>New Service Listing</h1>
+        <h1 style={{ fontFamily:'var(--font-playfair)', fontSize:26, fontWeight:700, color:'#111111', flex:1 }}>New Service Listing</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5 max-w-[720px]">
 
         {/* Basic info */}
         <div className="bg-white rounded-xl p-6 space-y-4" style={{ border:'1px solid #E8E4DE' }}>
-          <h2 style={{ fontSize:15, fontWeight:700, color:'#1D1D1D', marginBottom:4 }}>Basic Info</h2>
+          <h2 style={{ fontSize:15, fontWeight:700, color:'#111111', marginBottom:4 }}>Basic Info</h2>
 
           <div>
-            <label style={{ fontSize:12, fontWeight:600, color:'#1D1D1D', display:'block', marginBottom:6 }}>Title *</label>
+            <label style={{ fontSize:12, fontWeight:600, color:'#111111', display:'block', marginBottom:6 }}>Title *</label>
             {input(title, setTitle, 'e.g. Balinese Massage at Your Villa')}
           </div>
 
           <div>
-            <label style={{ fontSize:12, fontWeight:600, color:'#1D1D1D', display:'block', marginBottom:6 }}>Description *</label>
+            <label style={{ fontSize:12, fontWeight:600, color:'#111111', display:'block', marginBottom:6 }}>Description *</label>
             <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe your service in detail — what guests can expect, your experience, your approach..." rows={4}
-              style={{ width:'100%', borderRadius:10, border:'1px solid #E8E4DE', padding:'10px 12px', fontSize:13, color:'#1D1D1D', outline:'none', backgroundColor:'#FAFAF8', resize:'vertical', fontFamily:'var(--font-inter)' }} />
+              style={{ width:'100%', borderRadius:10, border:'1px solid #E8E4DE', padding:'10px 12px', fontSize:13, color:'#111111', outline:'none', backgroundColor:'#FAFAF8', resize:'vertical', fontFamily:'var(--font-inter)' }} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label style={{ fontSize:12, fontWeight:600, color:'#1D1D1D', display:'block', marginBottom:6 }}>Category *</label>
+              <label style={{ fontSize:12, fontWeight:600, color:'#111111', display:'block', marginBottom:6 }}>Category *</label>
               {select(category, v => { setCategory(v); setSubcategory('') },
                 Object.entries(CATEGORY_LABEL).map(([k,v]) => ({ value:k, label:v })))}
             </div>
             <div>
-              <label style={{ fontSize:12, fontWeight:600, color:'#1D1D1D', display:'block', marginBottom:6 }}>Subcategory *</label>
+              <label style={{ fontSize:12, fontWeight:600, color:'#111111', display:'block', marginBottom:6 }}>Subcategory *</label>
               <input list="subcats" value={subcategory} onChange={e => setSubcategory(e.target.value)}
                 placeholder="Select or type..." required
-                style={{ width:'100%', height:42, borderRadius:10, border:'1px solid #E8E4DE', padding:'0 12px', fontSize:13, color:'#1D1D1D', outline:'none', backgroundColor:'#FAFAF8', fontFamily:'var(--font-inter)' }} />
+                style={{ width:'100%', height:42, borderRadius:10, border:'1px solid #E8E4DE', padding:'0 12px', fontSize:13, color:'#111111', outline:'none', backgroundColor:'#FAFAF8', fontFamily:'var(--font-inter)' }} />
               <datalist id="subcats">
                 {(SUBCATEGORIES[category] ?? []).map(s => <option key={s} value={s} />)}
               </datalist>
@@ -216,17 +216,17 @@ function NewListingPanel({ onSuccess }: { onSuccess: (slug: string) => void }) {
           </div>
 
           <div>
-            <label style={{ fontSize:12, fontWeight:600, color:'#1D1D1D', display:'block', marginBottom:6 }}>Area *</label>
+            <label style={{ fontSize:12, fontWeight:600, color:'#111111', display:'block', marginBottom:6 }}>Area *</label>
             {select(area, setArea, AREAS.map(a => ({ value:a, label:AREA_LABEL[a] })))}
           </div>
         </div>
 
         {/* Pricing */}
         <div className="bg-white rounded-xl p-6 space-y-4" style={{ border:'1px solid #E8E4DE' }}>
-          <h2 style={{ fontSize:15, fontWeight:700, color:'#1D1D1D', marginBottom:4 }}>Pricing</h2>
+          <h2 style={{ fontSize:15, fontWeight:700, color:'#111111', marginBottom:4 }}>Pricing</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label style={{ fontSize:12, fontWeight:600, color:'#1D1D1D', display:'block', marginBottom:6 }}>Price Type *</label>
+              <label style={{ fontSize:12, fontWeight:600, color:'#111111', display:'block', marginBottom:6 }}>Price Type *</label>
               {select(priceType, setPriceType, [
                 { value:'FIXED', label:'Fixed (per booking)' },
                 { value:'HOURLY', label:'Hourly (per hour)' },
@@ -234,23 +234,23 @@ function NewListingPanel({ onSuccess }: { onSuccess: (slug: string) => void }) {
               ])}
             </div>
             <div>
-              <label style={{ fontSize:12, fontWeight:600, color:'#1D1D1D', display:'block', marginBottom:6 }}>Price (IDR) *</label>
+              <label style={{ fontSize:12, fontWeight:600, color:'#111111', display:'block', marginBottom:6 }}>Price (IDR) *</label>
               {input(price, setPrice, 'e.g. 350000', 'number')}
             </div>
           </div>
           <label className="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" checked={instantConfirm} onChange={e => setInstantConfirm(e.target.checked)}
-              style={{ width:16, height:16, accentColor:'#1D1D1D' }} />
-            <span style={{ fontSize:13, color:'#1D1D1D' }}>Instant confirmation (no approval needed)</span>
+              style={{ width:16, height:16, accentColor:'#111111' }} />
+            <span style={{ fontSize:13, color:'#111111' }}>Instant confirmation (no approval needed)</span>
           </label>
         </div>
 
         {/* Highlights */}
         <div className="bg-white rounded-xl p-6" style={{ border:'1px solid #E8E4DE' }}>
           <div className="flex items-center justify-between mb-4">
-            <h2 style={{ fontSize:15, fontWeight:700, color:'#1D1D1D' }}>Highlights</h2>
+            <h2 style={{ fontSize:15, fontWeight:700, color:'#111111' }}>Highlights</h2>
             <button type="button" onClick={() => addItem(setHighlights)}
-              className="flex items-center gap-1 hover:opacity-70" style={{ background:'none', border:'none', cursor:'pointer', fontSize:13, color:'#B58A4B' }}>
+              className="flex items-center gap-1 hover:opacity-70" style={{ background:'none', border:'none', cursor:'pointer', fontSize:13, color:'#C8A97E' }}>
               <Plus size={13} /> Add
             </button>
           </div>
@@ -268,12 +268,12 @@ function NewListingPanel({ onSuccess }: { onSuccess: (slug: string) => void }) {
 
         {/* Includes / Excludes */}
         <div className="bg-white rounded-xl p-6" style={{ border:'1px solid #E8E4DE' }}>
-          <h2 style={{ fontSize:15, fontWeight:700, color:'#1D1D1D', marginBottom:14 }}>What's Included / Excluded</h2>
+          <h2 style={{ fontSize:15, fontWeight:700, color:'#111111', marginBottom:14 }}>What's Included / Excluded</h2>
           <div className="grid sm:grid-cols-2 gap-6">
             <div>
               <div className="flex items-center justify-between mb-2">
-                <p style={{ fontSize:12, fontWeight:600, color:'#2E4A35' }}>Included</p>
-                <button type="button" onClick={() => addItem(setIncludes)} className="flex items-center gap-1 hover:opacity-70" style={{ background:'none', border:'none', cursor:'pointer', fontSize:12, color:'#2E4A35' }}><Plus size={12} /> Add</button>
+                <p style={{ fontSize:12, fontWeight:600, color:'#4A7C59' }}>Included</p>
+                <button type="button" onClick={() => addItem(setIncludes)} className="flex items-center gap-1 hover:opacity-70" style={{ background:'none', border:'none', cursor:'pointer', fontSize:12, color:'#4A7C59' }}><Plus size={12} /> Add</button>
               </div>
               <div className="space-y-2">
                 {includes.map((inc, i) => (
@@ -304,8 +304,8 @@ function NewListingPanel({ onSuccess }: { onSuccess: (slug: string) => void }) {
         {/* Images */}
         <div className="bg-white rounded-xl p-6" style={{ border:'1px solid #E8E4DE' }}>
           <div className="flex items-center justify-between mb-4">
-            <h2 style={{ fontSize:15, fontWeight:700, color:'#1D1D1D' }}>Images (URL)</h2>
-            <button type="button" onClick={() => addItem(setImages)} className="flex items-center gap-1 hover:opacity-70" style={{ background:'none', border:'none', cursor:'pointer', fontSize:13, color:'#B58A4B' }}><Plus size={13} /> Add</button>
+            <h2 style={{ fontSize:15, fontWeight:700, color:'#111111' }}>Images (URL)</h2>
+            <button type="button" onClick={() => addItem(setImages)} className="flex items-center gap-1 hover:opacity-70" style={{ background:'none', border:'none', cursor:'pointer', fontSize:13, color:'#C8A97E' }}><Plus size={13} /> Add</button>
           </div>
           <div className="space-y-2">
             {images.map((img, i) => (
@@ -322,7 +322,7 @@ function NewListingPanel({ onSuccess }: { onSuccess: (slug: string) => void }) {
 
         <button type="submit" disabled={submitting}
           className="w-full hover:opacity-90 transition-opacity disabled:opacity-50"
-          style={{ height:50, borderRadius:12, backgroundColor:'#1D1D1D', color:'white', fontSize:15, fontWeight:600, border:'none', cursor:submitting?'not-allowed':'pointer', fontFamily:'var(--font-inter)' }}>
+          style={{ height:50, borderRadius:12, backgroundColor:'#111111', color:'white', fontSize:15, fontWeight:600, border:'none', cursor:submitting?'not-allowed':'pointer', fontFamily:'var(--font-inter)' }}>
           {submitting ? 'Creating listing…' : 'Publish Listing'}
         </button>
       </form>
@@ -337,12 +337,12 @@ function ListingsPanel({ listings, onAdd }: { listings: ProviderListing[]; onAdd
     <div>
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: '#1D1D1D' }}>My Listings</h1>
+          <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: '#111111' }}>My Listings</h1>
           <p style={{ fontSize: 14, color: '#6F675C', marginTop: 2 }}>{listings.length} service{listings.length !== 1 ? 's' : ''}</p>
         </div>
         <button onClick={onAdd}
           className="flex items-center gap-2 hover:opacity-90 transition-opacity"
-          style={{ height:40, padding:'0 16px', backgroundColor:'#1D1D1D', color:'white', borderRadius:10, fontSize:13, fontWeight:600, border:'none', cursor:'pointer' }}>
+          style={{ height:40, padding:'0 16px', backgroundColor:'#111111', color:'white', borderRadius:10, fontSize:13, fontWeight:600, border:'none', cursor:'pointer' }}>
           <Plus size={14} /> Add listing
         </button>
       </div>
@@ -350,7 +350,7 @@ function ListingsPanel({ listings, onAdd }: { listings: ProviderListing[]; onAdd
       {listings.length === 0 ? (
         <div className="bg-white rounded-xl p-10 text-center" style={{ border: '1px solid #E8E4DE' }}>
           <p style={{ fontSize: 15, color: '#6F675C', marginBottom:16 }}>No listings yet.</p>
-          <button onClick={onAdd} style={{ height:40, padding:'0 20px', backgroundColor:'#1D1D1D', color:'white', borderRadius:10, fontSize:13, fontWeight:600, border:'none', cursor:'pointer' }}>
+          <button onClick={onAdd} style={{ height:40, padding:'0 20px', backgroundColor:'#111111', color:'white', borderRadius:10, fontSize:13, fontWeight:600, border:'none', cursor:'pointer' }}>
             + Create your first listing
           </button>
         </div>
@@ -366,7 +366,7 @@ function ListingsPanel({ listings, onAdd }: { listings: ProviderListing[]; onAdd
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-3 flex-wrap">
                   <div>
-                    <h3 style={{ fontSize: 15, fontWeight: 700, color: '#1D1D1D' }}>{l.title}</h3>
+                    <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111111' }}>{l.title}</h3>
                     <p style={{ fontSize: 12, color: '#6F675C', marginTop: 2 }}>{l.subcategory} · {l.area}</p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -378,12 +378,12 @@ function ListingsPanel({ listings, onAdd }: { listings: ProviderListing[]; onAdd
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-4 mt-3">
-                  <span style={{ fontSize: 13, color: '#1D1D1D', fontWeight: 600 }}>
+                  <span style={{ fontSize: 13, color: '#111111', fontWeight: 600 }}>
                     IDR {l.price.toLocaleString('id-ID')}{PRICE_LABEL[l.priceTypeKey]}
                   </span>
                   <span style={{ fontSize: 13, color: '#6F675C' }}>⭐ {l.rating.toFixed(1)} ({l.totalReviews})</span>
                   <span style={{ fontSize: 13, color: '#6F675C' }}>{l.bookings} bookings</span>
-                  <span style={{ fontSize: 13, color: '#2E4A35', fontWeight: 600 }}>Earned: {fmt(l.earnings)}</span>
+                  <span style={{ fontSize: 13, color: '#4A7C59', fontWeight: 600 }}>Earned: {fmt(l.earnings)}</span>
                 </div>
               </div>
             </div>
@@ -423,7 +423,7 @@ function BookingsPanel({ bookings, onUpdate }: {
     <div>
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: '#1D1D1D' }}>Bookings</h1>
+          <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: '#111111' }}>Bookings</h1>
           <p style={{ fontSize: 14, color: '#6F675C', marginTop: 2 }}>{bookings.length} total</p>
         </div>
         <button
@@ -443,14 +443,14 @@ function BookingsPanel({ bookings, onUpdate }: {
         <div className="relative flex-1">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#6F675C' }} />
           <input placeholder="Search guest, service, ref..." value={search} onChange={e => setSearch(e.target.value)}
-            style={{ width: '100%', height: 40, borderRadius: 10, border: '1px solid #E8E4DE', paddingLeft: 34, paddingRight: 14, fontSize: 13, color: '#1D1D1D', outline: 'none', backgroundColor: 'white' }} />
+            style={{ width: '100%', height: 40, borderRadius: 10, border: '1px solid #E8E4DE', paddingLeft: 34, paddingRight: 14, fontSize: 13, color: '#111111', outline: 'none', backgroundColor: 'white' }} />
         </div>
       </div>
 
       <div className="flex gap-2 mb-5 overflow-x-auto">
         {statuses.map(s => (
           <button key={s} onClick={() => setStatusFilter(s)}
-            style={{ padding: '7px 14px', borderRadius: 10, fontSize: 13, fontWeight: statusFilter === s ? 600 : 400, flexShrink: 0, backgroundColor: statusFilter === s ? '#1D1D1D' : 'white', color: statusFilter === s ? 'white' : '#6F675C', border: '1px solid', borderColor: statusFilter === s ? '#1D1D1D' : '#E8E4DE', cursor: 'pointer' }}>
+            style={{ padding: '7px 14px', borderRadius: 10, fontSize: 13, fontWeight: statusFilter === s ? 600 : 400, flexShrink: 0, backgroundColor: statusFilter === s ? '#111111' : 'white', color: statusFilter === s ? 'white' : '#6F675C', border: '1px solid', borderColor: statusFilter === s ? '#111111' : '#E8E4DE', cursor: 'pointer' }}>
             {s}
           </button>
         ))}
@@ -473,18 +473,18 @@ function BookingsPanel({ bookings, onUpdate }: {
               </thead>
               <tbody>
                 {filtered.map((b, i) => (
-                  <tr key={b.id} style={{ borderBottom: i < filtered.length - 1 ? '1px solid #F3EEE5' : 'none' }}>
+                  <tr key={b.id} style={{ borderBottom: i < filtered.length - 1 ? '1px solid #F5F1EB' : 'none' }}>
                     <td style={{ padding: '12px 16px', color: '#6F675C', fontFamily: 'monospace', whiteSpace: 'nowrap' }}>{b.ref.slice(0, 14)}</td>
                     <td style={{ padding: '12px 16px' }}>
-                      <p style={{ fontWeight: 600, color: '#1D1D1D' }}>{b.guest}</p>
+                      <p style={{ fontWeight: 600, color: '#111111' }}>{b.guest}</p>
                       <p style={{ fontSize: 11, color: '#9E9A94' }}>{b.email}</p>
                     </td>
-                    <td style={{ padding: '12px 16px', color: '#1D1D1D', maxWidth: 180 }}>
+                    <td style={{ padding: '12px 16px', color: '#111111', maxWidth: 180 }}>
                       <p className="truncate">{b.service}</p>
                     </td>
                     <td style={{ padding: '12px 16px', color: '#6F675C', whiteSpace: 'nowrap' }}>{b.date}</td>
                     <td style={{ padding: '12px 16px', color: '#6F675C', textAlign: 'center' }}>{b.guests}</td>
-                    <td style={{ padding: '12px 16px', fontWeight: 600, color: '#1D1D1D', whiteSpace: 'nowrap' }}>{fmt(b.total)}</td>
+                    <td style={{ padding: '12px 16px', fontWeight: 600, color: '#111111', whiteSpace: 'nowrap' }}>{fmt(b.total)}</td>
                     <td style={{ padding: '12px 16px' }}><StatusBadge status={b.status} /></td>
                     <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
                       {b.status === 'Pending' && (
@@ -493,7 +493,7 @@ function BookingsPanel({ bookings, onUpdate }: {
                             onClick={() => handleAction(b.id, 'accept')}
                             disabled={updating === b.id}
                             className="flex items-center gap-1 hover:opacity-80 disabled:opacity-40"
-                            style={{ height: 30, padding: '0 12px', borderRadius: 8, backgroundColor: '#2E4A35', color: 'white', fontSize: 12, fontWeight: 600, border: 'none', cursor: updating === b.id ? 'wait' : 'pointer' }}
+                            style={{ height: 30, padding: '0 12px', borderRadius: 8, backgroundColor: '#4A7C59', color: 'white', fontSize: 12, fontWeight: 600, border: 'none', cursor: updating === b.id ? 'wait' : 'pointer' }}
                           >
                             <Check size={12} /> Accept
                           </button>
@@ -528,7 +528,7 @@ function EarningsPanel({ data }: { data: ProviderDashboardData }) {
 
   return (
     <div>
-      <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: '#1D1D1D', marginBottom: 24 }}>Earnings</h1>
+      <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: '#111111', marginBottom: 24 }}>Earnings</h1>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         {[
           { label: 'Gross Revenue',  value: fmt(gross),      note: 'Total from all bookings' },
@@ -537,25 +537,25 @@ function EarningsPanel({ data }: { data: ProviderDashboardData }) {
         ].map(s => (
           <div key={s.label} className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
             <p style={{ fontSize: 12, color: '#6F675C', marginBottom: 6 }}>{s.label}</p>
-            <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: '#1D1D1D' }}>{s.value}</p>
+            <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: '#111111' }}>{s.value}</p>
             <p style={{ fontSize: 11, color: '#9E9A94', marginTop: 4 }}>{s.note}</p>
           </div>
         ))}
       </div>
 
       <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
-        <h2 style={{ fontSize: 15, fontWeight: 700, color: '#1D1D1D', marginBottom: 14 }}>Earnings by Listing</h2>
+        <h2 style={{ fontSize: 15, fontWeight: 700, color: '#111111', marginBottom: 14 }}>Earnings by Listing</h2>
         {data.listings.length === 0 ? (
           <p style={{ fontSize: 14, color: '#6F675C' }}>No earnings yet.</p>
         ) : (
           <div className="space-y-3">
             {data.listings.map(l => (
-              <div key={l.id} className="flex items-center justify-between gap-4 py-3" style={{ borderBottom: '1px solid #F3EEE5' }}>
+              <div key={l.id} className="flex items-center justify-between gap-4 py-3" style={{ borderBottom: '1px solid #F5F1EB' }}>
                 <div className="flex-1 min-w-0">
-                  <p style={{ fontSize: 13, fontWeight: 600, color: '#1D1D1D' }} className="truncate">{l.title}</p>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: '#111111' }} className="truncate">{l.title}</p>
                   <p style={{ fontSize: 11, color: '#6F675C' }}>{l.bookings} bookings</p>
                 </div>
-                <span style={{ fontSize: 14, fontWeight: 700, color: '#1D1D1D', flexShrink: 0 }}>{fmt(l.earnings)}</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: '#111111', flexShrink: 0 }}>{fmt(l.earnings)}</span>
               </div>
             ))}
           </div>
@@ -634,7 +634,7 @@ export default function ProviderDashboard() {
       case 'earnings':  return <EarningsPanel data={data} />
       case 'settings':  return (
         <div>
-          <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: '#1D1D1D', marginBottom: 8 }}>Settings</h1>
+          <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: '#111111', marginBottom: 8 }}>Settings</h1>
           <p style={{ fontSize: 14, color: '#6F675C' }}>Profile and account settings coming soon.</p>
         </div>
       )
@@ -643,13 +643,13 @@ export default function ProviderDashboard() {
   }
 
   return (
-    <div className="flex" style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F3EEE5', minHeight: '100vh' }}>
+    <div className="flex" style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
 
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex">
           <div className="absolute inset-0 bg-black/50" onClick={() => setSidebarOpen(false)} />
-          <aside className="relative z-10 flex flex-col" style={{ width: 240, backgroundColor: '#1E2F23', height: '100%' }}>
+          <aside className="relative z-10 flex flex-col" style={{ width: 240, backgroundColor: '#111111', height: '100%' }}>
             <button className="absolute top-4 right-4" onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
               <X size={18} style={{ color: 'rgba(255,255,255,0.6)' }} />
             </button>
@@ -659,7 +659,7 @@ export default function ProviderDashboard() {
       )}
 
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex flex-col flex-shrink-0" style={{ width: 240, backgroundColor: '#1E2F23', minHeight: '100vh', position: 'sticky', top: 0, height: '100vh' }}>
+      <aside className="hidden lg:flex flex-col flex-shrink-0" style={{ width: 240, backgroundColor: '#111111', minHeight: '100vh', position: 'sticky', top: 0, height: '100vh' }}>
         <Sidebar active={activeNav} setActive={setActiveNav} />
       </aside>
 
@@ -667,9 +667,9 @@ export default function ProviderDashboard() {
       <main className="flex-1 min-w-0 p-5 lg:p-8 pb-24 lg:pb-8">
         <div className="flex items-center justify-between mb-6 lg:hidden">
           <button onClick={() => setSidebarOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
-            <Menu size={22} style={{ color: '#1D1D1D' }} />
+            <Menu size={22} style={{ color: '#111111' }} />
           </button>
-          <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#1D1D1D' }}>
+          <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>
             {NAV.find(n => n.id === activeNav)?.label ?? 'Dashboard'}
           </span>
           <div style={{ width: 22 }} />

@@ -91,14 +91,14 @@ export default function BlogPage() {
   const rest = ARTICLES.slice(1)
 
   return (
-    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F3EEE5', minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
 
       <Navbar />
 
       {/* HEADER */}
       <div className="max-w-[1200px] mx-auto px-6 lg:px-8 pt-14 pb-10 text-center">
-        <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.2em', color: '#B58A4B', textTransform: 'uppercase', marginBottom: 12 }}>Balible Journal</p>
-        <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: 700, color: '#1D1D1D', marginBottom: 14 }}>
+        <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.2em', color: '#C8A97E', textTransform: 'uppercase', marginBottom: 12 }}>Balible Journal</p>
+        <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: 700, color: '#111111', marginBottom: 14 }}>
           Stories from the Island
         </h1>
         <p style={{ fontFamily: 'var(--font-inter)', fontSize: 16, color: '#6F675C', maxWidth: 480, margin: '0 auto', lineHeight: 1.7 }}>
@@ -114,9 +114,9 @@ export default function BlogPage() {
               key={cat}
               className="flex-shrink-0 px-4 py-2 rounded-full cursor-pointer"
               style={{
-                backgroundColor: i === 0 ? '#1D1D1D' : 'white',
+                backgroundColor: i === 0 ? '#111111' : 'white',
                 color: i === 0 ? 'white' : '#6F675C',
-                border: `1px solid ${i === 0 ? '#1D1D1D' : '#E8E4DE'}`,
+                border: `1px solid ${i === 0 ? '#111111' : '#E8E4DE'}`,
                 fontSize: 13, fontWeight: i === 0 ? 600 : 400,
               }}
             >
@@ -139,7 +139,7 @@ export default function BlogPage() {
               <img src={featured.image} alt={featured.title} className="w-full h-full object-cover absolute inset-0" />
               <span
                 className="absolute top-5 left-5 px-3 py-1 rounded-full"
-                style={{ backgroundColor: '#B58A4B', color: 'white', fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}
+                style={{ backgroundColor: '#C8A97E', color: 'white', fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}
               >
                 Featured
               </span>
@@ -147,11 +147,11 @@ export default function BlogPage() {
             <div className="p-8 lg:p-10 flex flex-col justify-center">
               <span
                 className="inline-block px-3 py-1 rounded-full mb-4 self-start"
-                style={{ backgroundColor: '#F3EEE5', color: '#B58A4B', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}
+                style={{ backgroundColor: '#F5F1EB', color: '#C8A97E', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}
               >
                 {featured.category}
               </span>
-              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(22px, 2.5vw, 30px)', fontWeight: 700, color: '#1D1D1D', lineHeight: 1.2, marginBottom: 14 }}>
+              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(22px, 2.5vw, 30px)', fontWeight: 700, color: '#111111', lineHeight: 1.2, marginBottom: 14 }}>
                 {featured.title}
               </h2>
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: '#6F675C', lineHeight: 1.8, marginBottom: 20 }}>
@@ -161,7 +161,7 @@ export default function BlogPage() {
                 <div className="flex items-center gap-3">
                   <img src={featured.authorImage} alt={featured.author} className="w-9 h-9 rounded-full object-cover" />
                   <div>
-                    <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#1D1D1D' }}>{featured.author}</p>
+                    <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111' }}>{featured.author}</p>
                     <div className="flex items-center gap-2">
                       <span style={{ fontSize: 12, color: '#6F675C' }}>{featured.date}</span>
                       <span style={{ color: '#E8E4DE' }}>·</span>
@@ -170,7 +170,7 @@ export default function BlogPage() {
                     </div>
                   </div>
                 </div>
-                <span style={{ fontSize: 13, color: '#B58A4B', fontWeight: 600 }}>Read →</span>
+                <span style={{ fontSize: 13, color: '#C8A97E', fontWeight: 600 }}>Read →</span>
               </div>
             </div>
           </div>
@@ -191,11 +191,11 @@ export default function BlogPage() {
               <div className="p-5">
                 <span
                   className="inline-block px-2.5 py-0.5 rounded-full mb-3"
-                  style={{ backgroundColor: '#F3EEE5', color: '#B58A4B', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}
+                  style={{ backgroundColor: '#F5F1EB', color: '#C8A97E', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}
                 >
                   {article.category}
                 </span>
-                <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#1D1D1D', lineHeight: 1.3, marginBottom: 10 }}>
+                <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111', lineHeight: 1.3, marginBottom: 10 }}>
                   {article.title}
                 </h3>
                 <p className="line-clamp-2" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', lineHeight: 1.7, marginBottom: 14 }}>
@@ -205,7 +205,7 @@ export default function BlogPage() {
                   <div className="flex items-center gap-2">
                     <img src={article.authorImage} alt={article.author} className="w-7 h-7 rounded-full object-cover" />
                     <div>
-                      <p style={{ fontSize: 12, fontWeight: 600, color: '#1D1D1D' }}>{article.author.split(' ')[0]}</p>
+                      <p style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>{article.author.split(' ')[0]}</p>
                       <div className="flex items-center gap-1">
                         <Calendar size={10} style={{ color: '#6F675C' }} />
                         <span style={{ fontSize: 11, color: '#6F675C' }}>{article.date}</span>
@@ -223,8 +223,8 @@ export default function BlogPage() {
         </div>
 
         {/* NEWSLETTER STRIP */}
-        <div className="mt-16 rounded-2xl p-10 text-center" style={{ backgroundColor: '#1D1D1D' }}>
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.2em', color: '#B58A4B', textTransform: 'uppercase', marginBottom: 10 }}>New stories, every fortnight</p>
+        <div className="mt-16 rounded-2xl p-10 text-center" style={{ backgroundColor: '#111111' }}>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.2em', color: '#C8A97E', textTransform: 'uppercase', marginBottom: 10 }}>New stories, every fortnight</p>
           <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(22px, 2.5vw, 30px)', fontWeight: 700, color: 'white', marginBottom: 8 }}>
             Join the Journal
           </h2>

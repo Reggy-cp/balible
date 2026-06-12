@@ -82,7 +82,7 @@ function FaqItem({ q, a }: { q: string; a: string }) {
         className="w-full flex items-center justify-between py-4 text-left"
         style={{ background: 'none', border: 'none', cursor: 'pointer' }}
       >
-        <span style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 500, color: '#1D1D1D', paddingRight: 16 }}>{q}</span>
+        <span style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 500, color: '#111111', paddingRight: 16 }}>{q}</span>
         {open
           ? <ChevronUp size={16} style={{ color: '#6F675C', flexShrink: 0 }} />
           : <ChevronDown size={16} style={{ color: '#6F675C', flexShrink: 0 }} />}
@@ -108,12 +108,12 @@ export default function HelpPage() {
   })).filter(cat => cat.faqs.length > 0)
 
   return (
-    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F3EEE5', minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
 
       <Navbar />
 
       {/* HERO */}
-      <div style={{ backgroundColor: '#1D1D1D', padding: '56px 24px' }}>
+      <div style={{ backgroundColor: '#111111', padding: '56px 24px' }}>
         <div className="max-w-[720px] mx-auto text-center">
           <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 700, color: 'white', marginBottom: 14 }}>
             How can we help?
@@ -129,7 +129,7 @@ export default function HelpPage() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="w-full outline-none"
-              style={{ height: 52, borderRadius: 12, border: 'none', padding: '0 20px 0 46px', fontSize: 15, color: '#1D1D1D', fontFamily: 'var(--font-inter)' }}
+              style={{ height: 52, borderRadius: 12, border: 'none', padding: '0 20px 0 46px', fontSize: 15, color: '#111111', fontFamily: 'var(--font-inter)' }}
             />
           </div>
         </div>
@@ -146,13 +146,13 @@ export default function HelpPage() {
                 onClick={() => setActiveCategory(activeCategory === cat.id ? null : cat.id)}
                 className="p-4 rounded-xl text-left transition-all hover:shadow-md"
                 style={{
-                  backgroundColor: activeCategory === cat.id ? '#1D1D1D' : 'white',
-                  border: `1px solid ${activeCategory === cat.id ? '#1D1D1D' : '#E8E4DE'}`,
+                  backgroundColor: activeCategory === cat.id ? '#111111' : 'white',
+                  border: `1px solid ${activeCategory === cat.id ? '#111111' : '#E8E4DE'}`,
                   cursor: 'pointer',
                 }}
               >
                 <span style={{ fontSize: 22 }}>{cat.icon}</span>
-                <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 700, color: activeCategory === cat.id ? 'white' : '#1D1D1D', marginTop: 8, marginBottom: 3 }}>{cat.title}</h3>
+                <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 700, color: activeCategory === cat.id ? 'white' : '#111111', marginTop: 8, marginBottom: 3 }}>{cat.title}</h3>
                 <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: activeCategory === cat.id ? 'rgba(255,255,255,0.6)' : '#6F675C', lineHeight: 1.5 }}>{cat.desc}</p>
               </button>
             ))}
@@ -166,7 +166,7 @@ export default function HelpPage() {
               <div key={cat.id} className="bg-white rounded-2xl p-6" style={{ border: '1px solid #E8E4DE' }}>
                 <div className="flex items-center gap-3 mb-5">
                   <span style={{ fontSize: 20 }}>{cat.icon}</span>
-                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#1D1D1D' }}>{cat.title}</h2>
+                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>{cat.title}</h2>
                   <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>{cat.faqs.length} articles</span>
                 </div>
                 <div>
@@ -176,7 +176,7 @@ export default function HelpPage() {
             ))}
             {search && filtered.length === 0 && (
               <div className="bg-white rounded-2xl p-10 text-center" style={{ border: '1px solid #E8E4DE' }}>
-                <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#1D1D1D', marginBottom: 8 }}>No results found</p>
+                <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', marginBottom: 8 }}>No results found</p>
                 <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>Try a different search or browse the categories above.</p>
               </div>
             )}
@@ -185,7 +185,7 @@ export default function HelpPage() {
           {/* CONTACT SIDEBAR */}
           <div className="space-y-4">
             <div className="bg-white rounded-2xl p-6" style={{ border: '1px solid #E8E4DE' }}>
-              <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#1D1D1D', marginBottom: 4 }}>Still need help?</h3>
+              <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111', marginBottom: 4 }}>Still need help?</h3>
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', marginBottom: 20, lineHeight: 1.6 }}>
                 Our team is based in Bali and typically responds within 2 hours during business hours (8am–8pm WITA).
               </p>
@@ -199,13 +199,13 @@ export default function HelpPage() {
                     key={label}
                     href={href}
                     className="flex items-center gap-3 p-3 rounded-xl hover:opacity-80 transition-opacity"
-                    style={{ backgroundColor: '#F3EEE5', textDecoration: 'none' }}
+                    style={{ backgroundColor: '#F5F1EB', textDecoration: 'none' }}
                   >
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#1D1D1D' }}>
-                      <Icon size={15} style={{ color: '#B58A4B' }} />
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#111111' }}>
+                      <Icon size={15} style={{ color: '#C8A97E' }} />
                     </div>
                     <div>
-                      <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#1D1D1D' }}>{label}</p>
+                      <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111' }}>{label}</p>
                       <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>{sub}</p>
                     </div>
                   </a>
@@ -214,8 +214,8 @@ export default function HelpPage() {
             </div>
 
             <div className="rounded-2xl p-5" style={{ backgroundColor: '#F0F7F2', border: '1px solid #D4E8DA' }}>
-              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 700, color: '#2E4A35', marginBottom: 5 }}>💚 Emergency during your experience?</p>
-              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#2E4A35', lineHeight: 1.6 }}>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 700, color: '#4A7C59', marginBottom: 5 }}>💚 Emergency during your experience?</p>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#4A7C59', lineHeight: 1.6 }}>
                 Call our Bali emergency line: <strong>+62 811 3892 7441</strong><br />
                 Available 24/7 for active bookings.
               </p>

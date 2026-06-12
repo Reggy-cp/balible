@@ -21,14 +21,14 @@ export default function MobileBookingModal({
         <div className="flex items-center justify-between">
           <div>
             <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>From</span>
-            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 18, fontWeight: 700, color: '#1D1D1D', margin: 0 }}>
-              <span style={{ color: '#B58A4B', fontSize: 13 }}>IDR</span> {price.toLocaleString('id-ID')}
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 18, fontWeight: 700, color: '#111111', margin: 0 }}>
+              <span style={{ color: '#C8A97E', fontSize: 13 }}>IDR</span> {price.toLocaleString('id-ID')}
             </p>
           </div>
           <button
             onClick={() => setOpen(true)}
             style={{
-              height: 44, padding: '0 24px', backgroundColor: '#1D1D1D', color: 'white',
+              height: 44, padding: '0 24px', backgroundColor: '#111111', color: 'white',
               borderRadius: 10, border: 'none', cursor: 'pointer',
               fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600,
             }}
@@ -66,7 +66,7 @@ export default function MobileBookingModal({
 
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: '1px solid #E8E4DE' }}>
-          <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#1D1D1D', margin: 0 }}>
+          <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111', margin: 0 }}>
             Book this experience
           </p>
           <button

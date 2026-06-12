@@ -8,13 +8,13 @@ export default function SignInPage() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#F3EEE5',
+        backgroundColor: '#F5F1EB',
         fontFamily: 'var(--font-inter)',
       }}
     >
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}>
         <div style={{ textAlign: 'center' }}>
-          <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#1D1D1D', letterSpacing: '0.02em', marginBottom: 4 }}>
+          <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#111111', letterSpacing: '0.02em', marginBottom: 4 }}>
             BALIBLE
           </p>
           <p style={{ fontSize: 12, letterSpacing: '0.18em', color: '#6F675C', textTransform: 'uppercase' }}>
@@ -24,9 +24,9 @@ export default function SignInPage() {
         <SignIn
           appearance={{
             variables: {
-              colorPrimary: '#B58A4B',
+              colorPrimary: '#C8A97E',
               colorBackground: '#FFFFFF',
-              colorText: '#1D1D1D',
+              colorText: '#111111',
               colorTextSecondary: '#6F675C',
               borderRadius: '12px',
               fontFamily: 'var(--font-inter)',
@@ -34,7 +34,7 @@ export default function SignInPage() {
             elements: {
               card: { boxShadow: '0 4px 24px rgba(17,17,17,0.08)', border: '1px solid #E8E4DE' },
               headerTitle: { fontFamily: 'var(--font-playfair)', fontWeight: 600 },
-              formButtonPrimary: { backgroundColor: '#1D1D1D', color: '#FFFFFF', fontWeight: 600, '&:hover': { backgroundColor: '#B58A4B' } },
+              formButtonPrimary: { backgroundColor: '#111111', color: '#FFFFFF', fontWeight: 600, '&:hover': { backgroundColor: '#C8A97E' } },
             },
           }}
         />

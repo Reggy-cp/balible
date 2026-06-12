@@ -13,7 +13,7 @@ export default function ReadMore({ text }: { text: string }) {
       <button
         onClick={() => setExpanded(e => !e)}
         className="mt-1 hover:opacity-70 transition-opacity"
-        style={{ background: 'none', border: 'none', fontFamily: 'var(--font-inter)', fontSize: 14, color: '#B58A4B', cursor: 'pointer', padding: 0 }}
+        style={{ background: 'none', border: 'none', fontFamily: 'var(--font-inter)', fontSize: 14, color: '#C8A97E', cursor: 'pointer', padding: 0 }}
       >
         {expanded ? 'Show less ↑' : 'Read more →'}
       </button>

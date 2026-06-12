@@ -56,14 +56,14 @@ const FAQS = [
 
 export default function HowItWorksPage() {
   return (
-    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F3EEE5', minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
 
       <Navbar />
 
       {/* HERO */}
       <div className="text-center px-6 py-20 max-w-[800px] mx-auto">
-        <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.2em', color: '#B58A4B', textTransform: 'uppercase', marginBottom: 14 }}>Simple by design</p>
-        <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 700, color: '#1D1D1D', lineHeight: 1.1, marginBottom: 18 }}>
+        <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.2em', color: '#C8A97E', textTransform: 'uppercase', marginBottom: 14 }}>Simple by design</p>
+        <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 700, color: '#111111', lineHeight: 1.1, marginBottom: 18 }}>
           Four Steps to an Unforgettable Bali Experience
         </h1>
         <p style={{ fontFamily: 'var(--font-inter)', fontSize: 17, color: '#6F675C', lineHeight: 1.8, maxWidth: 560, margin: '0 auto' }}>
@@ -90,12 +90,12 @@ export default function HowItWorksPage() {
             {/* Content */}
             <div className="p-8 lg:p-12 flex flex-col justify-center" style={{ gridColumn: i % 2 === 0 ? undefined : '1' }}>
               <div className="flex items-center gap-4 mb-5">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#1D1D1D' }}>
-                  <Icon size={20} style={{ color: '#B58A4B' }} />
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#111111' }}>
+                  <Icon size={20} style={{ color: '#C8A97E' }} />
                 </div>
                 <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 48, fontWeight: 700, color: '#E8E4DE', lineHeight: 1 }}>{step}</span>
               </div>
-              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(20px, 2vw, 26px)', fontWeight: 700, color: '#1D1D1D', marginBottom: 12, lineHeight: 1.2 }}>
+              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(20px, 2vw, 26px)', fontWeight: 700, color: '#111111', marginBottom: 12, lineHeight: 1.2 }}>
                 {title}
               </h2>
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: '#6F675C', lineHeight: 1.85, maxWidth: 460 }}>
@@ -114,10 +114,10 @@ export default function HowItWorksPage() {
       </div>
 
       {/* TRUST SIGNALS */}
-      <div style={{ backgroundColor: '#1D1D1D', padding: '80px 24px' }}>
+      <div style={{ backgroundColor: '#111111', padding: '80px 24px' }}>
         <div className="max-w-[1100px] mx-auto">
           <div className="text-center mb-12">
-            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.2em', color: '#B58A4B', textTransform: 'uppercase', marginBottom: 10 }}>Why Balible</p>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.2em', color: '#C8A97E', textTransform: 'uppercase', marginBottom: 10 }}>Why Balible</p>
             <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 3vw, 36px)', fontWeight: 700, color: 'white' }}>
               Booked with Confidence
             </h2>
@@ -126,7 +126,7 @@ export default function HowItWorksPage() {
             {TRUST_ITEMS.map(({ Icon, title, body }) => (
               <div key={title} className="p-6 rounded-2xl" style={{ backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ backgroundColor: 'rgba(200,169,126,0.12)' }}>
-                  <Icon size={18} style={{ color: '#B58A4B' }} />
+                  <Icon size={18} style={{ color: '#C8A97E' }} />
                 </div>
                 <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 700, color: 'white', marginBottom: 8 }}>{title}</h3>
                 <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.5)', lineHeight: 1.75 }}>{body}</p>
@@ -138,14 +138,14 @@ export default function HowItWorksPage() {
 
       {/* FAQ */}
       <div className="max-w-[760px] mx-auto px-5 lg:px-8 py-20">
-        <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(24px, 3vw, 34px)', fontWeight: 700, color: '#1D1D1D', marginBottom: 32, textAlign: 'center' }}>
+        <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(24px, 3vw, 34px)', fontWeight: 700, color: '#111111', marginBottom: 32, textAlign: 'center' }}>
           Common Questions
         </h2>
         <div className="bg-white rounded-2xl p-6" style={{ border: '1px solid #E8E4DE' }}>
           {FAQS.map(({ q, a }, i) => (
             <div key={q} style={{ borderBottom: i < FAQS.length - 1 ? '1px solid #E8E4DE' : 'none' }}>
               <div className="py-4">
-                <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 600, color: '#1D1D1D', marginBottom: 6 }}>{q}</p>
+                <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 600, color: '#111111', marginBottom: 6 }}>{q}</p>
                 <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.75 }}>{a}</p>
               </div>
             </div>
@@ -153,28 +153,28 @@ export default function HowItWorksPage() {
         </div>
         <p className="text-center mt-6" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
           More questions?{' '}
-          <a href="/help" style={{ color: '#B58A4B', textDecoration: 'underline' }}>Visit our Help Centre</a>
+          <a href="/help" style={{ color: '#C8A97E', textDecoration: 'underline' }}>Visit our Help Centre</a>
           {' '}or email{' '}
-          <a href="mailto:hello@balible.com" style={{ color: '#B58A4B', textDecoration: 'underline' }}>hello@balible.com</a>
+          <a href="mailto:hello@balible.com" style={{ color: '#C8A97E', textDecoration: 'underline' }}>hello@balible.com</a>
         </p>
       </div>
 
       {/* CTA */}
       <div className="max-w-[1100px] mx-auto px-5 lg:px-8 pb-20">
-        <div className="rounded-2xl overflow-hidden relative" style={{ backgroundColor: '#F3EEE5', border: '1px solid #E8E4DE' }}>
+        <div className="rounded-2xl overflow-hidden relative" style={{ backgroundColor: '#F5F1EB', border: '1px solid #E8E4DE' }}>
           <div className="grid lg:grid-cols-2">
             <div className="p-10 lg:p-14">
-              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(24px, 2.5vw, 34px)', fontWeight: 700, color: '#1D1D1D', marginBottom: 14, lineHeight: 1.2 }}>
+              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(24px, 2.5vw, 34px)', fontWeight: 700, color: '#111111', marginBottom: 14, lineHeight: 1.2 }}>
                 Ready to Experience the Real Bali?
               </h2>
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: '#6F675C', marginBottom: 28, lineHeight: 1.7 }}>
                 16+ handpicked experiences, from pottery in Ubud to snorkelling in Amed. Every one of them worth it.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
-                <a href="/search" style={{ height: 48, display: 'inline-flex', alignItems: 'center', padding: '0 28px', backgroundColor: '#1D1D1D', color: 'white', borderRadius: 10, fontSize: 14, fontWeight: 600, textDecoration: 'none', fontFamily: 'var(--font-inter)' }} className="hover:opacity-90 transition-opacity">
+                <a href="/search" style={{ height: 48, display: 'inline-flex', alignItems: 'center', padding: '0 28px', backgroundColor: '#111111', color: 'white', borderRadius: 10, fontSize: 14, fontWeight: 600, textDecoration: 'none', fontFamily: 'var(--font-inter)' }} className="hover:opacity-90 transition-opacity">
                   Browse all experiences
                 </a>
-                <a href="/destinations" style={{ height: 48, display: 'inline-flex', alignItems: 'center', padding: '0 28px', border: '1px solid #E8E4DE', color: '#1D1D1D', borderRadius: 10, fontSize: 14, fontWeight: 500, textDecoration: 'none', fontFamily: 'var(--font-inter)', backgroundColor: 'white' }} className="hover:opacity-70 transition-opacity">
+                <a href="/destinations" style={{ height: 48, display: 'inline-flex', alignItems: 'center', padding: '0 28px', border: '1px solid #E8E4DE', color: '#111111', borderRadius: 10, fontSize: 14, fontWeight: 500, textDecoration: 'none', fontFamily: 'var(--font-inter)', backgroundColor: 'white' }} className="hover:opacity-70 transition-opacity">
                   Explore destinations →
                 </a>
               </div>

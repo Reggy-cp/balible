@@ -38,12 +38,12 @@ export default async function ExperiencesPage() {
   const experiences = await getExperiences()
 
   return (
-    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F3EEE5', minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
       <Navbar />
 
       <div className="max-w-[1440px] mx-auto px-6 lg:px-16 py-10 pb-24">
         <div className="mb-8">
-          <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px, 3.5vw, 40px)', fontWeight: 700, color: '#1D1D1D' }}>
+          <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px, 3.5vw, 40px)', fontWeight: 700, color: '#111111' }}>
             All Experiences
           </h1>
           <p className="mt-2" style={{ fontSize: 15, color: '#6F675C' }}>
@@ -73,7 +73,7 @@ export default async function ExperiencesPage() {
                     {exp.featured && (
                       <span
                         className="absolute top-3 left-3 px-2 py-0.5 rounded-full text-white"
-                        style={{ fontSize: 11, fontWeight: 600, backgroundColor: '#B58A4B' }}
+                        style={{ fontSize: 11, fontWeight: 600, backgroundColor: '#C8A97E' }}
                       >
                         Featured
                       </span>
@@ -95,18 +95,18 @@ export default async function ExperiencesPage() {
                     </div>
                     <h3
                       className="line-clamp-2 leading-snug mt-1"
-                      style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, color: '#1D1D1D', fontWeight: 600 }}
+                      style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, color: '#111111', fontWeight: 600 }}
                     >
                       {exp.title}
                     </h3>
                     <p className="mt-1" style={{ fontSize: 11, color: '#9E9A94' }}>{category}</p>
                     <div className="flex items-center gap-1 mt-2">
-                      <Star size={11} fill="#B58A4B" color="#B58A4B" />
-                      <span style={{ fontSize: 12, fontWeight: 700, color: '#1D1D1D' }}>{exp.rating.toFixed(1)}</span>
+                      <Star size={11} fill="#C8A97E" color="#C8A97E" />
+                      <span style={{ fontSize: 12, fontWeight: 700, color: '#111111' }}>{exp.rating.toFixed(1)}</span>
                       <span style={{ fontSize: 12, color: '#6F675C' }}>({exp.totalReviews})</span>
                     </div>
-                    <p className="mt-2" style={{ fontSize: 13, color: '#1D1D1D' }}>
-                      From <span style={{ color: '#B58A4B' }}>IDR</span> {exp.price.toLocaleString('id-ID')}
+                    <p className="mt-2" style={{ fontSize: 13, color: '#111111' }}>
+                      From <span style={{ color: '#C8A97E' }}>IDR</span> {exp.price.toLocaleString('id-ID')}
                     </p>
                   </div>
                 </a>

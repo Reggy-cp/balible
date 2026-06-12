@@ -8,13 +8,12 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        ivory:      '#F3EEE5',
+        ivory:      '#F5F1EB',
         sand:       '#E8E4DE',
         coconut:    '#6F675C',
-        charcoal:   '#1D1D1D',
-        gold:       '#B58A4B',
-        forest:     '#2E4A35',
-        moss:       '#1E2F23',
+        charcoal:   '#111111',
+        gold:       '#C8A97E',
+        forest:     '#4A7C59',
         terracotta: '#B66A45',
       },
       fontFamily: {
