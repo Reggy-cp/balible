@@ -75,20 +75,20 @@ function StepIndicator({ current }: { current: Step }) {
             <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
               <div
                 className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center flex-shrink-0"
-                style={{ backgroundColor: done ? '#4A7C59' : active ? '#111111' : '#E8E4DE', color: done || active ? 'white' : '#6F675C', fontSize: 11, fontFamily: 'var(--font-inter)' }}
+                style={{ backgroundColor: done ? '#2E4A35' : active ? '#1D1D1D' : '#E8E4DE', color: done || active ? 'white' : '#6F675C', fontSize: 11, fontFamily: 'var(--font-inter)' }}
               >
                 {done ? '✓' : i + 1}
               </div>
               {/* short label on mobile, full label on sm+ */}
-              <span className="hidden xs:inline sm:hidden" style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: active ? 600 : 400, color: active ? '#111111' : done ? '#4A7C59' : '#9E9A94', whiteSpace: 'nowrap' }}>
+              <span className="hidden xs:inline sm:hidden" style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: active ? 600 : 400, color: active ? '#1D1D1D' : done ? '#2E4A35' : '#9E9A94', whiteSpace: 'nowrap' }}>
                 {STEP_SHORT[i]}
               </span>
-              <span className="hidden sm:inline" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: active ? 600 : 400, color: active ? '#111111' : done ? '#4A7C59' : '#6F675C', whiteSpace: 'nowrap' }}>
+              <span className="hidden sm:inline" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: active ? 600 : 400, color: active ? '#1D1D1D' : done ? '#2E4A35' : '#6F675C', whiteSpace: 'nowrap' }}>
                 {label}
               </span>
             </div>
             {i < STEPS.length - 1 && (
-              <div className="flex-1 mx-1.5 sm:mx-3" style={{ height: 1, backgroundColor: i < current ? '#4A7C59' : '#E8E4DE', minWidth: 8 }} />
+              <div className="flex-1 mx-1.5 sm:mx-3" style={{ height: 1, backgroundColor: i < current ? '#2E4A35' : '#E8E4DE', minWidth: 8 }} />
             )}
           </div>
         )
@@ -107,11 +107,11 @@ function MobileBookingSummary({ booking, guests, total, editing, onEdit }: { boo
       <button onClick={() => setOpen(o => !o)} className="w-full flex items-center gap-3 p-4" style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
         <img src={booking.image} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
         <div className="flex-1 min-w-0">
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{booking.title}</p>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#1D1D1D', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{booking.title}</p>
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', margin: 0 }}>{booking.date}{booking.time ? ` · ${booking.time}` : ''}</p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 700, color: '#111111' }}>IDR {total.toLocaleString('id-ID')}</span>
+          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 700, color: '#1D1D1D' }}>IDR {total.toLocaleString('id-ID')}</span>
           <ChevronUp size={15} style={{ color: '#6F675C', transform: open ? 'rotate(0deg)' : 'rotate(180deg)', transition: 'transform 0.2s' }} />
         </div>
       </button>
@@ -120,14 +120,14 @@ function MobileBookingSummary({ booking, guests, total, editing, onEdit }: { boo
         <div style={{ borderTop: '1px solid #E8E4DE', padding: '12px 16px' }}>
           <div className="flex justify-between items-center mb-2">
             <span style={{ fontSize: 12, color: '#6F675C' }}>Guests</span>
-            <span style={{ fontSize: 13, fontWeight: 500, color: '#111111' }}>{guests} guest{guests > 1 ? 's' : ''}</span>
+            <span style={{ fontSize: 13, fontWeight: 500, color: '#1D1D1D' }}>{guests} guest{guests > 1 ? 's' : ''}</span>
           </div>
           <div className="flex justify-between items-center mb-3">
             <span style={{ fontSize: 12, color: '#6F675C' }}>Service fee ({Math.round(booking.serviceFeeRate * 100)}%)</span>
-            <span style={{ fontSize: 13, color: '#111111' }}>IDR {Math.round(booking.pricePerPerson * guests * booking.serviceFeeRate).toLocaleString('id-ID')}</span>
+            <span style={{ fontSize: 13, color: '#1D1D1D' }}>IDR {Math.round(booking.pricePerPerson * guests * booking.serviceFeeRate).toLocaleString('id-ID')}</span>
           </div>
           {!editing && (
-            <button onClick={onEdit} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#C8A97E', fontSize: 13, fontFamily: 'var(--font-inter)', display: 'flex', alignItems: 'center', gap: 4, padding: 0 }}>
+            <button onClick={onEdit} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#B58A4B', fontSize: 13, fontFamily: 'var(--font-inter)', display: 'flex', alignItems: 'center', gap: 4, padding: 0 }}>
               <Edit2 size={12} /> Edit booking details
             </button>
           )}
@@ -146,12 +146,12 @@ function BookingSummary({ booking, guests, editing, onEdit }: { booking: Booking
 
   return (
     <div className="bg-white rounded-xl p-6" style={{ border: '1px solid #E8E4DE', position: 'sticky', top: 88 }}>
-      <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111', marginBottom: 16 }}>Booking Summary</h3>
+      <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#1D1D1D', marginBottom: 16 }}>Booking Summary</h3>
 
       <div className="flex gap-3 pb-4" style={{ borderBottom: '1px solid #E8E4DE' }}>
         <img src={booking.image} alt={booking.title} className="flex-shrink-0 rounded-lg object-cover" style={{ width: 72, height: 72 }} />
         <div>
-          <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 600, color: '#111111', lineHeight: 1.3 }}>{booking.title}</p>
+          <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 600, color: '#1D1D1D', lineHeight: 1.3 }}>{booking.title}</p>
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', marginTop: 3 }}>{booking.area}</p>
         </div>
       </div>
@@ -166,7 +166,7 @@ function BookingSummary({ booking, guests, editing, onEdit }: { booking: Booking
             ].map(({ label, value }) => (
               <div key={label} className="flex items-center gap-1.5 mb-1">
                 <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', width: 40 }}>{label}</span>
-                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111', fontWeight: 500 }}>{value}</span>
+                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#1D1D1D', fontWeight: 500 }}>{value}</span>
               </div>
             ))}
           </div>
@@ -174,7 +174,7 @@ function BookingSummary({ booking, guests, editing, onEdit }: { booking: Booking
             <button
               onClick={onEdit}
               className="flex items-center gap-1 hover:opacity-70 transition-opacity"
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#C8A97E', fontSize: 13, fontFamily: 'var(--font-inter)' }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#B58A4B', fontSize: 13, fontFamily: 'var(--font-inter)' }}
             >
               <Edit2 size={12} /> Edit
             </button>
@@ -187,16 +187,16 @@ function BookingSummary({ booking, guests, editing, onEdit }: { booking: Booking
           <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>
             IDR {booking.pricePerPerson.toLocaleString('id-ID')} × {guests} guest{guests > 1 ? 's' : ''}
           </span>
-          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>IDR {sub.toLocaleString('id-ID')}</span>
+          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#1D1D1D' }}>IDR {sub.toLocaleString('id-ID')}</span>
         </div>
         <div className="flex justify-between">
           <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>Service fee ({Math.round(booking.serviceFeeRate * 100)}%)</span>
-          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>IDR {fee.toLocaleString('id-ID')}</span>
+          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#1D1D1D' }}>IDR {fee.toLocaleString('id-ID')}</span>
         </div>
         <div className="flex justify-between pt-3" style={{ borderTop: '1px solid #E8E4DE', marginTop: 4 }}>
-          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111' }}>Total</span>
+          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#1D1D1D' }}>Total</span>
           <div className="text-right">
-            <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>IDR {total.toLocaleString('id-ID')}</p>
+            <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#1D1D1D' }}>IDR {total.toLocaleString('id-ID')}</p>
             <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>Taxes included</p>
           </div>
         </div>
@@ -205,7 +205,7 @@ function BookingSummary({ booking, guests, editing, onEdit }: { booking: Booking
       <div className="mt-5 pt-4 space-y-2" style={{ borderTop: '1px solid #E8E4DE' }}>
         {[{ Icon: Shield, text: 'Secure Payment' }, { Icon: Award, text: 'Best Price Guarantee' }, { Icon: Clock, text: '24/7 Support' }].map(({ Icon, text }) => (
           <div key={text} className="flex items-center gap-2">
-            <Icon size={13} style={{ color: '#4A7C59' }} />
+            <Icon size={13} style={{ color: '#2E4A35' }} />
             <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>{text}</span>
           </div>
         ))}
@@ -223,31 +223,31 @@ function StepExperience({ booking, guests, setGuests, onNext, slots, selectedRaw
   return (
     <div className="bg-white rounded-xl p-6" style={{ border: '1px solid #E8E4DE' }}>
       <div className="flex justify-between items-start mb-5">
-        <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111' }}>1. Experience &amp; Date</h2>
+        <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#1D1D1D' }}>1. Experience &amp; Date</h2>
         <ChevronUp size={18} style={{ color: '#6F675C' }} />
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4 mb-4">
         <div>
-          <label style={{ fontSize: 13, fontWeight: 500, color: '#111111', display: 'block', marginBottom: 6 }}>Experience</label>
-          <div className="flex items-center gap-3 p-3 rounded-lg" style={{ border: '1px solid #E8E4DE', backgroundColor: '#F5F1EB' }}>
+          <label style={{ fontSize: 13, fontWeight: 500, color: '#1D1D1D', display: 'block', marginBottom: 6 }}>Experience</label>
+          <div className="flex items-center gap-3 p-3 rounded-lg" style={{ border: '1px solid #E8E4DE', backgroundColor: '#F3EEE5' }}>
             <img src={booking.image} alt="" className="w-10 h-10 rounded-md object-cover flex-shrink-0" />
             <div>
-              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111' }}>{booking.title}</p>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#1D1D1D' }}>{booking.title}</p>
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>{booking.area}</p>
             </div>
           </div>
         </div>
         <div>
-          <label style={{ fontSize: 13, fontWeight: 500, color: '#111111', display: 'block', marginBottom: 6 }}>Date</label>
-          <div className="p-3 rounded-lg" style={{ border: '1px solid #E8E4DE', backgroundColor: '#F5F1EB' }}>
-            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111' }}>{booking.date}</p>
+          <label style={{ fontSize: 13, fontWeight: 500, color: '#1D1D1D', display: 'block', marginBottom: 6 }}>Date</label>
+          <div className="p-3 rounded-lg" style={{ border: '1px solid #E8E4DE', backgroundColor: '#F3EEE5' }}>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#1D1D1D' }}>{booking.date}</p>
           </div>
         </div>
       </div>
 
       <div className="mb-4">
-        <label style={{ fontSize: 13, fontWeight: 500, color: '#111111', display: 'block', marginBottom: 8 }}>Time</label>
+        <label style={{ fontSize: 13, fontWeight: 500, color: '#1D1D1D', display: 'block', marginBottom: 8 }}>Time</label>
         {slots.length > 0 ? (
           <div className="flex flex-wrap gap-2 overflow-y-auto" style={{ maxHeight: 140 }}>
             {slots.map(slot => {
@@ -258,9 +258,9 @@ function StepExperience({ booking, guests, setGuests, onNext, slots, selectedRaw
                   onClick={() => setSelectedRawTime(isSel ? '' : slot)}
                   style={{
                     padding: '7px 14px', borderRadius: 8, fontSize: 13, fontWeight: isSel ? 600 : 400,
-                    backgroundColor: isSel ? '#111111' : 'white',
-                    color: isSel ? 'white' : '#111111',
-                    border: `1px solid ${isSel ? '#111111' : '#E8E4DE'}`,
+                    backgroundColor: isSel ? '#1D1D1D' : 'white',
+                    color: isSel ? 'white' : '#1D1D1D',
+                    border: `1px solid ${isSel ? '#1D1D1D' : '#E8E4DE'}`,
                     cursor: 'pointer', fontFamily: 'var(--font-inter)', transition: 'all 0.15s',
                   }}
                 >
@@ -270,8 +270,8 @@ function StepExperience({ booking, guests, setGuests, onNext, slots, selectedRaw
             })}
           </div>
         ) : (
-          <div className="p-3 rounded-lg" style={{ border: '1px solid #E8E4DE', backgroundColor: '#F5F1EB' }}>
-            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111' }}>
+          <div className="p-3 rounded-lg" style={{ border: '1px solid #E8E4DE', backgroundColor: '#F3EEE5' }}>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#1D1D1D' }}>
               {booking.time || 'No time available'}
             </p>
           </div>
@@ -279,25 +279,25 @@ function StepExperience({ booking, guests, setGuests, onNext, slots, selectedRaw
       </div>
 
       <div className="mb-5">
-        <label style={{ fontSize: 13, fontWeight: 500, color: '#111111', display: 'block', marginBottom: 6 }}>Participants</label>
+        <label style={{ fontSize: 13, fontWeight: 500, color: '#1D1D1D', display: 'block', marginBottom: 6 }}>Participants</label>
         <select
           value={guests}
           onChange={e => setGuests(Number(e.target.value))}
           className="outline-none"
-          style={{ height: 44, border: '1px solid #E8E4DE', borderRadius: 8, padding: '0 14px', fontSize: 14, color: '#111111', backgroundColor: 'white', width: '100%', cursor: 'pointer' }}
+          style={{ height: 44, border: '1px solid #E8E4DE', borderRadius: 8, padding: '0 14px', fontSize: 14, color: '#1D1D1D', backgroundColor: 'white', width: '100%', cursor: 'pointer' }}
         >
           {[1,2,3,4,5,6,7,8].map(n => <option key={n} value={n}>{n} guest{n > 1 ? 's' : ''}</option>)}
         </select>
       </div>
 
       <div className="flex items-start gap-2 p-3 rounded-lg mb-4" style={{ backgroundColor: '#F0F7F2' }}>
-        <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: '#4A7C59' }}>
+        <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: '#2E4A35' }}>
           <span style={{ color: 'white', fontSize: 9, fontWeight: 700 }}>✓</span>
         </div>
-        <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#4A7C59' }}>Your booking will be confirmed instantly.</p>
+        <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#2E4A35' }}>Your booking will be confirmed instantly.</p>
       </div>
       <div className="flex items-start gap-2 p-3 rounded-lg mb-6" style={{ backgroundColor: '#FDF8F4' }}>
-        <Clock size={14} style={{ color: '#C8A97E', flexShrink: 0, marginTop: 1 }} />
+        <Clock size={14} style={{ color: '#B58A4B', flexShrink: 0, marginTop: 1 }} />
         <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>Free cancellation up to 24 hours before the experience.</p>
       </div>
 
@@ -307,7 +307,7 @@ function StepExperience({ booking, guests, setGuests, onNext, slots, selectedRaw
         className="w-full flex items-center justify-center hover:opacity-90 transition-opacity"
         style={{
           height: 48,
-          backgroundColor: slots.length > 0 && !selectedRawTime ? '#E8E4DE' : '#111111',
+          backgroundColor: slots.length > 0 && !selectedRawTime ? '#E8E4DE' : '#1D1D1D',
           color: slots.length > 0 && !selectedRawTime ? '#9E9A94' : 'white',
           borderRadius: 10, fontSize: 15, fontWeight: 600, border: 'none',
           cursor: slots.length > 0 && !selectedRawTime ? 'not-allowed' : 'pointer',
@@ -331,7 +331,7 @@ function StepDetails({ contact, setContact, onNext }: { contact: ContactFields; 
   return (
     <div className="bg-white rounded-xl p-6" style={{ border: '1px solid #E8E4DE' }}>
       <div className="flex justify-between items-start mb-5">
-        <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111' }}>2. Your Details</h2>
+        <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#1D1D1D' }}>2. Your Details</h2>
         <ChevronUp size={18} style={{ color: '#6F675C' }} />
       </div>
       <div className="space-y-4">
@@ -342,21 +342,21 @@ function StepDetails({ contact, setContact, onNext }: { contact: ContactFields; 
           { id: 'requests', label: 'Special requests (optional)', placeholder: 'Any dietary requirements, accessibility needs…', type: 'textarea' },
         ] as { id: keyof ContactFields; label: string; placeholder: string; type: string }[]).map(f => (
           <div key={f.id}>
-            <label style={{ fontSize: 13, fontWeight: 500, color: '#111111', display: 'block', marginBottom: 6 }}>{f.label}</label>
+            <label style={{ fontSize: 13, fontWeight: 500, color: '#1D1D1D', display: 'block', marginBottom: 6 }}>{f.label}</label>
             {f.type === 'textarea' ? (
               <textarea
                 value={contact[f.id]} onChange={set(f.id)}
                 placeholder={f.placeholder} rows={3} className="w-full outline-none resize-none"
-                style={{ border: '1px solid #E8E4DE', borderRadius: 8, padding: '10px 14px', fontSize: 14, color: '#111111', backgroundColor: 'white', fontFamily: 'var(--font-inter)' }}
-                onFocus={e => (e.target.style.borderColor = '#C8A97E')}
+                style={{ border: '1px solid #E8E4DE', borderRadius: 8, padding: '10px 14px', fontSize: 14, color: '#1D1D1D', backgroundColor: 'white', fontFamily: 'var(--font-inter)' }}
+                onFocus={e => (e.target.style.borderColor = '#B58A4B')}
                 onBlur={e => (e.target.style.borderColor = '#E8E4DE')}
               />
             ) : (
               <input
                 type={f.type} value={contact[f.id]} onChange={set(f.id)}
                 placeholder={f.placeholder} className="w-full outline-none"
-                style={{ height: 44, border: '1px solid #E8E4DE', borderRadius: 8, padding: '0 14px', fontSize: 14, color: '#111111', backgroundColor: 'white' }}
-                onFocus={e => (e.target.style.borderColor = '#C8A97E')}
+                style={{ height: 44, border: '1px solid #E8E4DE', borderRadius: 8, padding: '0 14px', fontSize: 14, color: '#1D1D1D', backgroundColor: 'white' }}
+                onFocus={e => (e.target.style.borderColor = '#B58A4B')}
                 onBlur={e => (e.target.style.borderColor = '#E8E4DE')}
               />
             )}
@@ -366,7 +366,7 @@ function StepDetails({ contact, setContact, onNext }: { contact: ContactFields; 
       <button
         onClick={onNext}
         className="w-full flex items-center justify-center hover:opacity-90 transition-opacity mt-6"
-        style={{ height: 48, backgroundColor: '#111111', color: 'white', borderRadius: 10, fontSize: 15, fontWeight: 600, border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}
+        style={{ height: 48, backgroundColor: '#1D1D1D', color: 'white', borderRadius: 10, fontSize: 15, fontWeight: 600, border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}
       >
         Continue to Payment →
       </button>
@@ -381,7 +381,7 @@ function StepPayment({ total, onNext }: { total: number; onNext: () => void }) {
   return (
     <div className="bg-white rounded-xl p-6" style={{ border: '1px solid #E8E4DE' }}>
       <div className="flex justify-between items-start mb-5">
-        <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111' }}>3. Payment</h2>
+        <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#1D1D1D' }}>3. Payment</h2>
         <ChevronUp size={18} style={{ color: '#6F675C' }} />
       </div>
 
@@ -391,7 +391,7 @@ function StepPayment({ total, onNext }: { total: number; onNext: () => void }) {
             key={m.id}
             onClick={() => setMethod(m.id as typeof method)}
             className="py-2 rounded-lg transition-all"
-            style={{ fontSize: 12, fontWeight: method === m.id ? 600 : 400, backgroundColor: method === m.id ? '#111111' : 'white', color: method === m.id ? 'white' : '#6F675C', border: `1px solid ${method === m.id ? '#111111' : '#E8E4DE'}`, cursor: 'pointer', fontFamily: 'var(--font-inter)', lineHeight: 1.3, padding: '8px 4px' }}
+            style={{ fontSize: 12, fontWeight: method === m.id ? 600 : 400, backgroundColor: method === m.id ? '#1D1D1D' : 'white', color: method === m.id ? 'white' : '#6F675C', border: `1px solid ${method === m.id ? '#1D1D1D' : '#E8E4DE'}`, cursor: 'pointer', fontFamily: 'var(--font-inter)', lineHeight: 1.3, padding: '8px 4px' }}
           >
             {m.label}
           </button>
@@ -414,8 +414,8 @@ function StepPayment({ total, onNext }: { total: number; onNext: () => void }) {
                 <div className="grid grid-cols-2 gap-4" key={f.label}>
                   {[arr[i], arr[i + 1]].map(ff => ff && (
                     <div key={ff.label}>
-                      <label style={{ fontSize: 13, fontWeight: 500, color: '#111111', display: 'block', marginBottom: 6 }}>{ff.label}</label>
-                      <input placeholder={ff.placeholder} className="w-full outline-none" style={{ height: 44, border: '1px solid #E8E4DE', borderRadius: 8, padding: '0 14px', fontSize: 14, color: '#111111', backgroundColor: 'white' }} onFocus={e => (e.target.style.borderColor = '#C8A97E')} onBlur={e => (e.target.style.borderColor = '#E8E4DE')} />
+                      <label style={{ fontSize: 13, fontWeight: 500, color: '#1D1D1D', display: 'block', marginBottom: 6 }}>{ff.label}</label>
+                      <input placeholder={ff.placeholder} className="w-full outline-none" style={{ height: 44, border: '1px solid #E8E4DE', borderRadius: 8, padding: '0 14px', fontSize: 14, color: '#1D1D1D', backgroundColor: 'white' }} onFocus={e => (e.target.style.borderColor = '#B58A4B')} onBlur={e => (e.target.style.borderColor = '#E8E4DE')} />
                     </div>
                   ))}
                 </div>
@@ -423,22 +423,22 @@ function StepPayment({ total, onNext }: { total: number; onNext: () => void }) {
             }
             return (
               <div key={f.label}>
-                <label style={{ fontSize: 13, fontWeight: 500, color: '#111111', display: 'block', marginBottom: 6 }}>{f.label}</label>
-                <input placeholder={f.placeholder} className="w-full outline-none" style={{ height: 44, border: '1px solid #E8E4DE', borderRadius: 8, padding: '0 14px', fontSize: 14, color: '#111111', backgroundColor: 'white' }} onFocus={e => (e.target.style.borderColor = '#C8A97E')} onBlur={e => (e.target.style.borderColor = '#E8E4DE')} />
+                <label style={{ fontSize: 13, fontWeight: 500, color: '#1D1D1D', display: 'block', marginBottom: 6 }}>{f.label}</label>
+                <input placeholder={f.placeholder} className="w-full outline-none" style={{ height: 44, border: '1px solid #E8E4DE', borderRadius: 8, padding: '0 14px', fontSize: 14, color: '#1D1D1D', backgroundColor: 'white' }} onFocus={e => (e.target.style.borderColor = '#B58A4B')} onBlur={e => (e.target.style.borderColor = '#E8E4DE')} />
               </div>
             )
           })}
         </div>
       )}
       {method === 'transfer' && (
-        <div className="p-4 rounded-lg" style={{ backgroundColor: '#F5F1EB' }}>
+        <div className="p-4 rounded-lg" style={{ backgroundColor: '#F3EEE5' }}>
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.6 }}>
             You'll receive bank transfer details via email. Please transfer within 24 hours to secure your spot.
           </p>
         </div>
       )}
       {method === 'gopay' && (
-        <div className="p-4 rounded-lg text-center" style={{ backgroundColor: '#F5F1EB' }}>
+        <div className="p-4 rounded-lg text-center" style={{ backgroundColor: '#F3EEE5' }}>
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
             You'll be redirected to GoPay / OVO to complete payment securely.
           </p>
@@ -448,7 +448,7 @@ function StepPayment({ total, onNext }: { total: number; onNext: () => void }) {
       <button
         onClick={onNext}
         className="w-full flex items-center justify-center gap-2 hover:opacity-90 transition-opacity mt-6"
-        style={{ height: 52, backgroundColor: '#111111', color: 'white', borderRadius: 10, fontSize: 15, fontWeight: 600, border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}
+        style={{ height: 52, backgroundColor: '#1D1D1D', color: 'white', borderRadius: 10, fontSize: 15, fontWeight: 600, border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}
       >
         <Lock size={15} />
         Pay IDR {total.toLocaleString('id-ID')}
@@ -471,32 +471,32 @@ function StepConfirmation({ booking, guests }: { booking: BookingData; guests: n
   return (
     <div className="bg-white rounded-xl p-8 text-center" style={{ border: '1px solid #E8E4DE' }}>
       <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: '#F0F7F2' }}>
-        <span style={{ fontSize: 28, color: '#4A7C59' }}>✓</span>
+        <span style={{ fontSize: 28, color: '#2E4A35' }}>✓</span>
       </div>
-      <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: '#111111', marginBottom: 8 }}>
+      <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: '#1D1D1D', marginBottom: 8 }}>
         Booking Confirmed!
       </h2>
       <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: '#6F675C', marginBottom: 6 }}>
         Your booking has been saved to your profile.
       </p>
       <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', marginBottom: 32 }}>
-        Ref: <span style={{ fontWeight: 600, color: '#111111', letterSpacing: '0.05em' }}>{ref}</span>
+        Ref: <span style={{ fontWeight: 600, color: '#1D1D1D', letterSpacing: '0.05em' }}>{ref}</span>
       </p>
 
-      <div className="flex items-center gap-3 p-4 rounded-xl text-left mx-auto max-w-sm mb-8" style={{ border: '1px solid #E8E4DE', backgroundColor: '#F5F1EB' }}>
+      <div className="flex items-center gap-3 p-4 rounded-xl text-left mx-auto max-w-sm mb-8" style={{ border: '1px solid #E8E4DE', backgroundColor: '#F3EEE5' }}>
         <img src={booking.image} alt="" className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
         <div>
-          <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 600, color: '#111111' }}>{booking.title}</p>
+          <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 600, color: '#1D1D1D' }}>{booking.title}</p>
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>{booking.date} · {booking.time}</p>
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>{guests} guest{guests > 1 ? 's' : ''} · IDR {total.toLocaleString('id-ID')}</p>
         </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
-        <a href="/profile" className="flex items-center justify-center hover:opacity-90 transition-opacity" style={{ height: 44, backgroundColor: '#111111', color: 'white', borderRadius: 8, fontSize: 14, fontWeight: 500, textDecoration: 'none', padding: '0 24px', fontFamily: 'var(--font-inter)' }}>
+        <a href="/profile" className="flex items-center justify-center hover:opacity-90 transition-opacity" style={{ height: 44, backgroundColor: '#1D1D1D', color: 'white', borderRadius: 8, fontSize: 14, fontWeight: 500, textDecoration: 'none', padding: '0 24px', fontFamily: 'var(--font-inter)' }}>
           View my bookings
         </a>
-        <a href="/search" className="flex items-center justify-center hover:opacity-70 transition-opacity" style={{ height: 44, border: '1px solid #E8E4DE', color: '#111111', borderRadius: 8, fontSize: 14, fontWeight: 500, textDecoration: 'none', padding: '0 24px', fontFamily: 'var(--font-inter)' }}>
+        <a href="/search" className="flex items-center justify-center hover:opacity-70 transition-opacity" style={{ height: 44, border: '1px solid #E8E4DE', color: '#1D1D1D', borderRadius: 8, fontSize: 14, fontWeight: 500, textDecoration: 'none', padding: '0 24px', fontFamily: 'var(--font-inter)' }}>
           Explore more →
         </a>
       </div>
@@ -622,21 +622,21 @@ function CheckoutInner() {
   }
 
   return (
-    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F3EEE5', minHeight: '100vh' }}>
       <nav className="bg-white" style={{ height: 56, borderBottom: '1px solid #E8E4DE' }}>
         <div className="flex items-center justify-between h-full px-6 lg:px-16 max-w-[1440px] mx-auto">
           <a href="/" className="flex flex-col leading-none" style={{ textDecoration: 'none' }}>
-            <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111' }}>BALIBLE</span>
+            <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#1D1D1D' }}>BALIBLE</span>
           </a>
           <div className="flex items-center gap-1.5">
-            <Lock size={12} style={{ color: '#4A7C59' }} />
-            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#4A7C59' }}>Secure booking</span>
+            <Lock size={12} style={{ color: '#2E4A35' }} />
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#2E4A35' }}>Secure booking</span>
           </div>
         </div>
       </nav>
 
       <div className="max-w-[1100px] mx-auto px-4 py-6 pb-24 md:pb-10">
-        <h1 className="mb-5 hidden sm:block" style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 700, color: '#111111' }}>
+        <h1 className="mb-5 hidden sm:block" style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 700, color: '#1D1D1D' }}>
           Checkout
         </h1>
 
@@ -674,7 +674,7 @@ function CheckoutInner() {
 export default function CheckoutPage() {
   return (
     <Suspense fallback={
-      <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F3EEE5', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <p style={{ color: '#6F675C', fontSize: 14 }}>Loading checkout…</p>
       </div>
     }>

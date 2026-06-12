@@ -28,10 +28,10 @@ export default function MobileNav() {
 
         const content = (
           <>
-            <Icon size={20} color={active ? '#C8A97E' : '#6F675C'} />
+            <Icon size={20} color={active ? '#B58A4B' : '#6F675C'} />
             <span style={{
               fontFamily: 'var(--font-inter)', fontSize: 10,
-              color: active ? '#C8A97E' : '#6F675C',
+              color: active ? '#B58A4B' : '#6F675C',
               fontWeight: active ? 600 : 400,
             }}>
               {label}

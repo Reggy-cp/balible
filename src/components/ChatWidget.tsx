@@ -14,10 +14,10 @@ const SUGGESTIONS = [
 
 function TypingDots() {
   return (
-    <div className="flex items-center gap-1 px-4 py-3 rounded-2xl rounded-bl-sm" style={{ backgroundColor: '#F5F1EB', width: 'fit-content' }}>
+    <div className="flex items-center gap-1 px-4 py-3 rounded-2xl rounded-bl-sm" style={{ backgroundColor: '#F3EEE5', width: 'fit-content' }}>
       {[0, 1, 2].map(i => (
         <span key={i} style={{
-          width: 7, height: 7, borderRadius: '50%', backgroundColor: '#C8A97E', display: 'block',
+          width: 7, height: 7, borderRadius: '50%', backgroundColor: '#B58A4B', display: 'block',
           animation: `dot-bounce 1.2s ${i * 0.2}s ease-in-out infinite`,
         }} />
       ))}
@@ -31,15 +31,15 @@ function Bubble({ msg }: { msg: Message }) {
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       {!isUser && (
-        <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mr-2 mt-0.5" style={{ backgroundColor: '#C8A97E' }}>
+        <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mr-2 mt-0.5" style={{ backgroundColor: '#B58A4B' }}>
           <span style={{ fontSize: 12, fontWeight: 700, color: 'white' }}>K</span>
         </div>
       )}
       <div
         style={{
           maxWidth: '78%', padding: '10px 14px', borderRadius: isUser ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-          backgroundColor: isUser ? '#111111' : '#F5F1EB',
-          color: isUser ? 'white' : '#111111',
+          backgroundColor: isUser ? '#1D1D1D' : '#F3EEE5',
+          color: isUser ? 'white' : '#1D1D1D',
           fontSize: 14, lineHeight: 1.55, fontFamily: 'var(--font-inter)',
           whiteSpace: 'pre-wrap',
         }}
@@ -128,12 +128,12 @@ export default function ChatWidget() {
           style={{
             bottom: 28, right: 28, zIndex: 901,
             height: 54, padding: '0 22px 0 10px',
-            backgroundColor: '#111111', borderRadius: 999,
+            backgroundColor: '#1D1D1D', borderRadius: 999,
             border: 'none', cursor: 'pointer',
             boxShadow: '0 6px 24px rgba(0,0,0,0.22)',
           }}
         >
-          <div style={{ width: 34, height: 34, borderRadius: '50%', backgroundColor: '#C8A97E', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <div style={{ width: 34, height: 34, borderRadius: '50%', backgroundColor: '#B58A4B', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <span style={{ fontSize: 15, fontWeight: 700, color: 'white' }}>K</span>
           </div>
           <div style={{ textAlign: 'left' }}>
@@ -159,9 +159,9 @@ export default function ChatWidget() {
           className="lg:bottom-[100px] lg:right-7"
         >
           {/* Header */}
-          <div style={{ padding: '14px 16px', borderBottom: '1px solid #E8E4DE', backgroundColor: '#111111', flexShrink: 0 }}>
+          <div style={{ padding: '14px 16px', borderBottom: '1px solid #E8E4DE', backgroundColor: '#1D1D1D', flexShrink: 0 }}>
             <div className="flex items-center gap-2.5">
-              <div style={{ width: 34, height: 34, borderRadius: '50%', backgroundColor: '#C8A97E', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <div style={{ width: 34, height: 34, borderRadius: '50%', backgroundColor: '#B58A4B', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <span style={{ fontSize: 14, fontWeight: 700, color: 'white' }}>K</span>
               </div>
               <div>
@@ -178,10 +178,10 @@ export default function ChatWidget() {
           <div className="flex-1 overflow-y-auto" style={{ padding: '16px 14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
             {isEmpty && (
               <div style={{ textAlign: 'center', paddingTop: 16 }}>
-                <div style={{ width: 48, height: 48, borderRadius: '50%', backgroundColor: '#C8A97E', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                <div style={{ width: 48, height: 48, borderRadius: '50%', backgroundColor: '#B58A4B', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
                   <span style={{ fontSize: 22 }}>🌴</span>
                 </div>
-                <p style={{ fontSize: 15, fontWeight: 700, color: '#111111', marginBottom: 4 }}>Hi! I&apos;m Kala</p>
+                <p style={{ fontSize: 15, fontWeight: 700, color: '#1D1D1D', marginBottom: 4 }}>Hi! I&apos;m Kala</p>
                 <p style={{ fontSize: 13, color: '#6F675C', marginBottom: 20, lineHeight: 1.5 }}>
                   Your Bali experience guide. Ask me anything about activities, bookings, or travel tips.
                 </p>
@@ -192,7 +192,7 @@ export default function ChatWidget() {
                       onClick={() => send(s)}
                       style={{
                         padding: '8px 14px', borderRadius: 12, fontSize: 13, cursor: 'pointer', textAlign: 'left',
-                        backgroundColor: '#F5F1EB', border: '1px solid #E8E4DE', color: '#111111',
+                        backgroundColor: '#F3EEE5', border: '1px solid #E8E4DE', color: '#1D1D1D',
                         fontFamily: 'var(--font-inter)', transition: 'background-color 0.15s',
                       }}
                       className="hover:bg-stone-100"
@@ -207,7 +207,7 @@ export default function ChatWidget() {
             {messages.map((msg, i) => <Bubble key={i} msg={msg} />)}
             {loading && (
               <div className="flex justify-start">
-                <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mr-2 mt-0.5" style={{ backgroundColor: '#C8A97E' }}>
+                <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mr-2 mt-0.5" style={{ backgroundColor: '#B58A4B' }}>
                   <span style={{ fontSize: 12, fontWeight: 700, color: 'white' }}>K</span>
                 </div>
                 <TypingDots />
@@ -231,7 +231,7 @@ export default function ChatWidget() {
                 disabled={loading}
                 style={{
                   flex: 1, border: 'none', outline: 'none', fontSize: 14,
-                  color: '#111111', backgroundColor: 'transparent',
+                  color: '#1D1D1D', backgroundColor: 'transparent',
                   fontFamily: 'var(--font-inter)',
                 }}
               />
@@ -240,7 +240,7 @@ export default function ChatWidget() {
                 disabled={!input.trim() || loading}
                 style={{
                   width: 34, height: 34, borderRadius: 9, border: 'none', cursor: input.trim() && !loading ? 'pointer' : 'default',
-                  backgroundColor: input.trim() && !loading ? '#111111' : '#E8E4DE',
+                  backgroundColor: input.trim() && !loading ? '#1D1D1D' : '#E8E4DE',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   transition: 'background-color 0.15s', flexShrink: 0,
                 }}

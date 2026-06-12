@@ -119,17 +119,17 @@ function fmt(n: number) {
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { bg: string; color: string }> = {
-    Active:    { bg: '#F0F7F2', color: '#4A7C59' },
-    Confirmed: { bg: '#F0F7F2', color: '#4A7C59' },
+    Active:    { bg: '#F0F7F2', color: '#2E4A35' },
+    Confirmed: { bg: '#F0F7F2', color: '#2E4A35' },
     Completed: { bg: '#EEF2FF', color: '#4B6CB7' },
-    Pending:   { bg: '#FDF8F4', color: '#C8A97E' },
-    Draft:     { bg: '#F5F1EB', color: '#6F675C' },
-    Paused:          { bg: '#FEF9F4', color: '#C8A97E' },
-    'Pending Review': { bg: '#FDF8F4', color: '#C8A97E' },
+    Pending:   { bg: '#FDF8F4', color: '#B58A4B' },
+    Draft:     { bg: '#F3EEE5', color: '#6F675C' },
+    Paused:          { bg: '#FEF9F4', color: '#B58A4B' },
+    'Pending Review': { bg: '#FDF8F4', color: '#B58A4B' },
     Cancelled:       { bg: '#FEF2F2', color: '#B66A45' },
-    Paid:            { bg: '#F0F7F2', color: '#4A7C59' },
+    Paid:            { bg: '#F0F7F2', color: '#2E4A35' },
   }
-  const s = map[status] ?? { bg: '#F5F1EB', color: '#6F675C' }
+  const s = map[status] ?? { bg: '#F3EEE5', color: '#6F675C' }
   return (
     <span style={{ ...s, fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20, fontFamily: 'var(--font-inter)', whiteSpace: 'nowrap' }}>
       {status}
@@ -163,7 +163,7 @@ function Stars({ n }: { n: number }) {
   return (
     <span className="flex items-center gap-0.5">
       {[1, 2, 3, 4, 5].map(i => (
-        <svg key={i} width="12" height="12" viewBox="0 0 24 24" fill={i <= n ? '#C8A97E' : '#E8E4DE'}>
+        <svg key={i} width="12" height="12" viewBox="0 0 24 24" fill={i <= n ? '#B58A4B' : '#E8E4DE'}>
           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
         </svg>
       ))}
@@ -175,7 +175,7 @@ function PageHeader({ title, subtitle, action }: { title: string; subtitle?: str
   return (
     <div className="flex items-start justify-between mb-6">
       <div>
-        <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(20px,2.5vw,26px)', fontWeight: 700, color: '#111111' }}>{title}</h1>
+        <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(20px,2.5vw,26px)', fontWeight: 700, color: '#1D1D1D' }}>{title}</h1>
         {subtitle && <p style={{ fontSize: 14, color: '#6F675C', marginTop: 3 }}>{subtitle}</p>}
       </div>
       {action}
@@ -219,14 +219,14 @@ function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences }: 
     <div>
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(20px,2.5vw,26px)', fontWeight: 700, color: '#111111' }}>
+          <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(20px,2.5vw,26px)', fontWeight: 700, color: '#1D1D1D' }}>
             Welcome back, Made Sari
           </h1>
           <p style={{ fontSize: 14, color: '#6F675C', marginTop: 3 }}>Here's what's happening with your experiences.</p>
         </div>
         <button onClick={() => onNav('experiences')}
           className="hidden sm:flex items-center gap-2 hover:opacity-90 transition-opacity flex-shrink-0 ml-4"
-          style={{ height: 42, backgroundColor: '#111111', color: 'white', border: 'none', borderRadius: 8, padding: '0 18px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+          style={{ height: 42, backgroundColor: '#1D1D1D', color: 'white', border: 'none', borderRadius: 8, padding: '0 18px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
           <Plus size={15} /> New Experience
         </button>
       </div>
@@ -236,8 +236,8 @@ function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences }: 
         {stats.map(s => (
           <div key={s.label} className="bg-white rounded-xl p-4 lg:p-5" style={{ border: '1px solid #E8E4DE' }}>
             <p style={{ fontSize: 12, color: '#6F675C' }}>{s.label}</p>
-            <p className="mt-1" style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(16px,1.8vw,22px)', fontWeight: 700, color: '#111111', lineHeight: 1.2 }}>{s.value}</p>
-            <p className="mt-1.5 flex items-center gap-1" style={{ fontSize: 11, color: s.up ? '#4A7C59' : '#6F675C' }}>
+            <p className="mt-1" style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(16px,1.8vw,22px)', fontWeight: 700, color: '#1D1D1D', lineHeight: 1.2 }}>{s.value}</p>
+            <p className="mt-1.5 flex items-center gap-1" style={{ fontSize: 11, color: s.up ? '#2E4A35' : '#6F675C' }}>
               {s.up && <ArrowUpRight size={11} />}
               {s.change}
             </p>
@@ -249,18 +249,18 @@ function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences }: 
         {/* Upcoming bookings */}
         <div className="lg:col-span-3 bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
           <div className="flex items-center justify-between mb-4">
-            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Upcoming Bookings</h2>
+            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#1D1D1D' }}>Upcoming Bookings</h2>
             <button onClick={() => onNav('bookings')}
-              style={{ fontSize: 13, color: '#C8A97E', background: 'none', border: 'none', cursor: 'pointer' }}>
+              style={{ fontSize: 13, color: '#B58A4B', background: 'none', border: 'none', cursor: 'pointer' }}>
               View all →
             </button>
           </div>
           <div className="space-y-3">
             {UPCOMING.map((b, i) => (
-              <div key={i} className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: '#F5F1EB' }}>
+              <div key={i} className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: '#F3EEE5' }}>
                 <img src={b.image} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p style={{ fontSize: 13, fontWeight: 600, color: '#111111', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.title}</p>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: '#1D1D1D', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.title}</p>
                   <p style={{ fontSize: 12, color: '#6F675C', marginTop: 2 }}>{b.date}</p>
                   <p style={{ fontSize: 12, color: '#6F675C' }}>{b.guests} guest{b.guests > 1 ? 's' : ''}</p>
                 </div>
@@ -274,7 +274,7 @@ function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences }: 
         <div className="lg:col-span-2 space-y-5">
           <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
             <div className="flex items-center justify-between mb-1">
-              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Earnings</h2>
+              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#1D1D1D' }}>Earnings</h2>
               <button onClick={() => setPeriod(p => p === 'This Month' ? 'Last 6 Months' : 'This Month')}
                 className="flex items-center gap-1"
                 style={{ background: 'none', border: '1px solid #E8E4DE', borderRadius: 6, padding: '3px 9px', fontSize: 11, color: '#6F675C', cursor: 'pointer' }}>
@@ -282,25 +282,25 @@ function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences }: 
               </button>
             </div>
             <div className="flex items-baseline gap-2 my-2">
-              <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#111111' }}>{fmt(lastMonthNet)}</span>
-              <span style={{ fontSize: 12, color: '#4A7C59' }}>↑ 30%</span>
+              <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#1D1D1D' }}>{fmt(lastMonthNet)}</span>
+              <span style={{ fontSize: 12, color: '#2E4A35' }}>↑ 30%</span>
             </div>
-            <MiniChart data={slice} color="#C8A97E" />
+            <MiniChart data={slice} color="#B58A4B" />
             <div className="flex justify-between mt-1">
               {labels.map(m => <span key={m} style={{ fontSize: 9, color: '#6F675C' }}>{m}</span>)}
             </div>
           </div>
 
           <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
-            <h2 className="mb-3" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Top Experiences</h2>
+            <h2 className="mb-3" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#1D1D1D' }}>Top Experiences</h2>
             <div className="space-y-3">
               {EXPERIENCES.filter(e => e.status === 'Active').map((e, i) => (
                 <div key={e.id} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span style={{ fontSize: 12, fontWeight: 700, color: '#6F675C', width: 16 }}>{i + 1}</span>
-                    <span style={{ fontSize: 13, color: '#111111', fontWeight: 500 }}>{e.title}</span>
+                    <span style={{ fontSize: 13, color: '#1D1D1D', fontWeight: 500 }}>{e.title}</span>
                   </div>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: '#4A7C59' }}>{fmt(Math.round(e.earnings * netMult))}</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#2E4A35' }}>{fmt(Math.round(e.earnings * netMult))}</span>
                 </div>
               ))}
             </div>
@@ -478,7 +478,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
         action={
           <button onClick={() => setShowForm(true)}
             className="hidden sm:flex items-center gap-2 hover:opacity-90 transition-opacity"
-            style={{ height: 42, backgroundColor: '#111111', color: 'white', border: 'none', borderRadius: 8, padding: '0 18px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+            style={{ height: 42, backgroundColor: '#1D1D1D', color: 'white', border: 'none', borderRadius: 8, padding: '0 18px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
             <Plus size={15} /> New Experience
           </button>
         }
@@ -489,7 +489,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
         <div className="inline-flex gap-1 bg-white rounded-xl p-1" style={{ border: '1px solid #E8E4DE' }}>
           {tabs.map(t => (
             <button key={t} onClick={() => setFilter(t)}
-              style={{ padding: '6px 16px', borderRadius: 10, fontSize: 13, fontWeight: filter === t ? 600 : 400, flexShrink: 0, backgroundColor: filter === t ? '#111111' : 'transparent', color: filter === t ? 'white' : '#6F675C', border: 'none', cursor: 'pointer', transition: 'all 0.15s' }}>
+              style={{ padding: '6px 16px', borderRadius: 10, fontSize: 13, fontWeight: filter === t ? 600 : 400, flexShrink: 0, backgroundColor: filter === t ? '#1D1D1D' : 'transparent', color: filter === t ? 'white' : '#6F675C', border: 'none', cursor: 'pointer', transition: 'all 0.15s' }}>
               {t}
               <span className="ml-1.5" style={{ fontSize: 11, color: filter === t ? 'rgba(255,255,255,0.5)' : '#C8C4BE' }}>
                 {t === 'All' ? exps.length : exps.filter(e => e.status === t).length}
@@ -508,7 +508,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
               <img src={exp.image} alt={exp.title} className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-1">
-                  <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: '#111111' }}>{exp.title}</h3>
+                  <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: '#1D1D1D' }}>{exp.title}</h3>
                   <StatusBadge status={exp.status} />
                 </div>
                 <div className="flex flex-wrap gap-x-3 gap-y-0.5">
@@ -517,16 +517,16 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                   <span className="flex items-center gap-1" style={{ fontSize: 11, color: '#6F675C' }}><Users size={10} />Up to {exp.maxGuests}</span>
                 </div>
                 <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1.5">
-                  <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>IDR {exp.price.toLocaleString('id-ID')}<span style={{ fontWeight: 400, color: '#6F675C' }}>/person</span></span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: '#1D1D1D' }}>IDR {exp.price.toLocaleString('id-ID')}<span style={{ fontWeight: 400, color: '#6F675C' }}>/person</span></span>
                   <span style={{ fontSize: 12, color: '#6F675C' }}>⭐ {exp.rating} ({exp.totalReviews})</span>
                   <span style={{ fontSize: 12, color: '#6F675C' }}>{exp.bookings} bookings</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: '#4A7C59' }}>{fmt(Math.round(exp.earnings * (100 - commissionRate) / 100))} <span style={{ fontSize: 10, fontWeight: 400, color: '#9E9A94' }}>net</span></span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: '#2E4A35' }}>{fmt(Math.round(exp.earnings * (100 - commissionRate) / 100))} <span style={{ fontSize: 10, fontWeight: 400, color: '#9E9A94' }}>net</span></span>
                 </div>
               </div>
             </div>
 
             {/* Actions */}
-            <div className="flex flex-wrap items-center gap-2 mt-3 pt-3" style={{ borderTop: '1px solid #F5F1EB' }}>
+            <div className="flex flex-wrap items-center gap-2 mt-3 pt-3" style={{ borderTop: '1px solid #F3EEE5' }}>
               <a href={`/experiences/${exp.slug}`} target="_blank" rel="noreferrer"
                 className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
                 style={{ height: 30, padding: '0 10px', borderRadius: 8, border: '1px solid #E8E4DE', color: '#6F675C', fontSize: 12, textDecoration: 'none' }}>
@@ -540,14 +540,14 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
               {exp.status !== 'Active' && (
                 <button onClick={() => setStatus(exp.id, 'Active')}
                   className="flex items-center gap-1.5 hover:opacity-90 transition-opacity"
-                  style={{ height: 30, padding: '0 10px', borderRadius: 8, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                  style={{ height: 30, padding: '0 10px', borderRadius: 8, border: 'none', backgroundColor: '#1D1D1D', color: 'white', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
                   <Play size={11} /> {exp.status === 'Draft' ? 'Publish' : 'Activate'}
                 </button>
               )}
               {exp.status === 'Active' && (
                 <button onClick={() => setStatus(exp.id, 'Paused')}
                   className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
-                  style={{ height: 30, padding: '0 10px', borderRadius: 8, border: '1px solid #E8E4DE', background: 'white', color: '#C8A97E', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                  style={{ height: 30, padding: '0 10px', borderRadius: 8, border: '1px solid #E8E4DE', background: 'white', color: '#B58A4B', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
                   <Pause size={11} /> Pause
                 </button>
               )}
@@ -569,7 +569,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
 
       <div className="sm:hidden mt-4">
         <button onClick={() => setShowForm(true)} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl"
-          style={{ backgroundColor: '#111111', color: 'white', fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
+          style={{ backgroundColor: '#1D1D1D', color: 'white', fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
           <Plus size={15} /> New Experience
         </button>
       </div>
@@ -577,8 +577,8 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
       {/* Create modal — step-by-step wizard */}
       {showForm && (() => {
         const STEPS = ['Basics', 'Details', 'Photos', 'Itinerary', 'Schedule']
-        const inputStyle: React.CSSProperties = { width: '100%', borderRadius: 10, border: '1px solid #E8E4DE', padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }
-        const labelStyle: React.CSSProperties = { display: 'block', fontSize: 13, fontWeight: 600, color: '#111111', marginBottom: 6 }
+        const inputStyle: React.CSSProperties = { width: '100%', borderRadius: 10, border: '1px solid #E8E4DE', padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#1D1D1D', outline: 'none' }
+        const labelStyle: React.CSSProperties = { display: 'block', fontSize: 13, fontWeight: 600, color: '#1D1D1D', marginBottom: 6 }
 
         return (
           <div className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center sm:p-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
@@ -592,7 +592,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
               {/* Header */}
               <div className="flex items-start justify-between px-5 sm:px-6 pt-3 sm:pt-6 mb-5">
                 <div>
-                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', margin: 0 }}>{editingExp ? 'Edit Experience' : 'New Experience'}</h2>
+                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#1D1D1D', margin: 0 }}>{editingExp ? 'Edit Experience' : 'New Experience'}</h2>
                   <p style={{ fontSize: 12, color: '#9E9A94', margin: '3px 0 0' }}>Step {formStep} of {STEPS.length} · {STEPS[formStep - 1]}</p>
                 </div>
                 <button onClick={closeForm} style={{ background: 'none', border: 'none', cursor: 'pointer', marginTop: 2 }}><X size={20} style={{ color: '#6F675C' }} /></button>
@@ -600,7 +600,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
 
               {/* Progress bar */}
               <div style={{ height: 4, borderRadius: 99, backgroundColor: '#F0EDE8', marginBottom: 24, marginInline: 20 }}>
-                <div style={{ height: '100%', borderRadius: 99, backgroundColor: '#111111', width: `${(formStep / STEPS.length) * 100}%`, transition: 'width 0.3s ease' }} />
+                <div style={{ height: '100%', borderRadius: 99, backgroundColor: '#1D1D1D', width: `${(formStep / STEPS.length) * 100}%`, transition: 'width 0.3s ease' }} />
               </div>
 
               {/* Step 1 — Basics */}
@@ -707,12 +707,12 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                         onDragOver={e => { e.preventDefault(); setImageDragging(true) }}
                         onDragLeave={() => setImageDragging(false)}
                         onDrop={e => { e.preventDefault(); setImageDragging(false); const f = e.dataTransfer.files[0]; if (f) handleImageFile(f) }}
-                        style={{ height: 150, borderRadius: 12, border: `2px dashed ${imageDragging ? '#C8A97E' : '#E8E4DE'}`, backgroundColor: imageDragging ? '#FFFDF9' : '#F9F9F7', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer', transition: 'all 0.2s' }}>
+                        style={{ height: 150, borderRadius: 12, border: `2px dashed ${imageDragging ? '#B58A4B' : '#E8E4DE'}`, backgroundColor: imageDragging ? '#FFFDF9' : '#F9F9F7', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer', transition: 'all 0.2s' }}>
                         <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: '#F0EDE8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <Camera size={18} style={{ color: '#6F675C' }} />
                         </div>
                         <div style={{ textAlign: 'center' }}>
-                          <p style={{ fontSize: 13, fontWeight: 600, color: '#111111', margin: 0 }}>Upload cover photo</p>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: '#1D1D1D', margin: 0 }}>Upload cover photo</p>
                           <p style={{ fontSize: 12, color: '#6F675C', margin: '2px 0 0' }}>Click or drag & drop · JPG, PNG, WEBP</p>
                         </div>
                       </div>
@@ -722,7 +722,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                   {/* Gallery */}
                   <div>
                     <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
-                      <label style={{ fontSize: 13, fontWeight: 600, color: '#111111' }}>Gallery Photos</label>
+                      <label style={{ fontSize: 13, fontWeight: 600, color: '#1D1D1D' }}>Gallery Photos</label>
                       <span style={{ fontSize: 12, color: '#9E9A94' }}>{galleryPreviews.length}/8</span>
                     </div>
                     <input ref={galleryInputRef} type="file" accept="image/*" multiple className="hidden"
@@ -745,7 +745,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                         onDragOver={e => { e.preventDefault(); setGalleryDragging(true) }}
                         onDragLeave={() => setGalleryDragging(false)}
                         onDrop={e => { e.preventDefault(); setGalleryDragging(false); handleGalleryFiles(e.dataTransfer.files) }}
-                        style={{ height: 68, borderRadius: 10, border: `2px dashed ${galleryDragging ? '#C8A97E' : '#E8E4DE'}`, backgroundColor: galleryDragging ? '#FFFDF9' : '#F9F9F7', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer', transition: 'all 0.2s' }}>
+                        style={{ height: 68, borderRadius: 10, border: `2px dashed ${galleryDragging ? '#B58A4B' : '#E8E4DE'}`, backgroundColor: galleryDragging ? '#FFFDF9' : '#F9F9F7', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer', transition: 'all 0.2s' }}>
                         <Camera size={15} style={{ color: '#6F675C' }} />
                         <span style={{ fontSize: 13, color: '#6F675C' }}>{galleryPreviews.length === 0 ? 'Add gallery photos' : 'Add more photos'}</span>
                       </div>
@@ -763,10 +763,10 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                     {itinerary.map((step, i) => (
                       <div key={i} className="flex gap-2 items-center">
                         <input type="time" value={step.time} onChange={e => updateStep(i, 'time', e.target.value)}
-                          style={{ width: 110, flexShrink: 0, borderRadius: 10, border: '1px solid #E8E4DE', padding: '9px 10px', fontSize: 13, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }} />
+                          style={{ width: 110, flexShrink: 0, borderRadius: 10, border: '1px solid #E8E4DE', padding: '9px 10px', fontSize: 13, fontFamily: 'var(--font-inter)', color: '#1D1D1D', outline: 'none' }} />
                         <input type="text" value={step.activity} onChange={e => updateStep(i, 'activity', e.target.value)}
                           placeholder="Activity or description"
-                          style={{ flex: 1, borderRadius: 10, border: '1px solid #E8E4DE', padding: '9px 12px', fontSize: 13, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }} />
+                          style={{ flex: 1, borderRadius: 10, border: '1px solid #E8E4DE', padding: '9px 12px', fontSize: 13, fontFamily: 'var(--font-inter)', color: '#1D1D1D', outline: 'none' }} />
                         <button onClick={() => removeStep(i)} disabled={itinerary.length === 1}
                           style={{ flexShrink: 0, width: 28, height: 28, borderRadius: 8, border: '1px solid #E8E4DE', background: 'none', cursor: itinerary.length === 1 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: itinerary.length === 1 ? 0.35 : 1 }}>
                           <X size={13} style={{ color: '#6F675C' }} />
@@ -775,7 +775,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                     ))}
                   </div>
                   <button onClick={addStep}
-                    style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 600, color: '#C8A97E', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                    style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 600, color: '#B58A4B', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                     <Plus size={14} /> Add step
                   </button>
                 </div>
@@ -796,7 +796,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                           onClick={() => toggleDay(i)}
                           style={{
                             flexShrink: 0, width: 36, height: 20, borderRadius: 99,
-                            backgroundColor: row.enabled ? '#111111' : '#E8E4DE',
+                            backgroundColor: row.enabled ? '#1D1D1D' : '#E8E4DE',
                             border: 'none', cursor: 'pointer', position: 'relative', transition: 'background 0.2s',
                           }}>
                           <span style={{
@@ -806,17 +806,17 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                           }} />
                         </button>
                         {/* Day label */}
-                        <span style={{ width: 32, fontSize: 13, fontWeight: 600, color: row.enabled ? '#111111' : '#9E9A94', flexShrink: 0 }}>{row.day}</span>
+                        <span style={{ width: 32, fontSize: 13, fontWeight: 600, color: row.enabled ? '#1D1D1D' : '#9E9A94', flexShrink: 0 }}>{row.day}</span>
                         {/* Time inputs */}
                         {row.enabled ? (
                           <div className="flex items-center gap-2 flex-1">
                             <input type="time" value={row.open}
                               onChange={e => updateSchedule(i, 'open', e.target.value)}
-                              style={{ flex: 1, borderRadius: 8, border: '1px solid #E8E4DE', padding: '6px 8px', fontSize: 13, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }} />
+                              style={{ flex: 1, borderRadius: 8, border: '1px solid #E8E4DE', padding: '6px 8px', fontSize: 13, fontFamily: 'var(--font-inter)', color: '#1D1D1D', outline: 'none' }} />
                             <span style={{ fontSize: 12, color: '#9E9A94', flexShrink: 0 }}>to</span>
                             <input type="time" value={row.close}
                               onChange={e => updateSchedule(i, 'close', e.target.value)}
-                              style={{ flex: 1, borderRadius: 8, border: '1px solid #E8E4DE', padding: '6px 8px', fontSize: 13, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }} />
+                              style={{ flex: 1, borderRadius: 8, border: '1px solid #E8E4DE', padding: '6px 8px', fontSize: 13, fontFamily: 'var(--font-inter)', color: '#1D1D1D', outline: 'none' }} />
                           </div>
                         ) : (
                           <span style={{ fontSize: 13, color: '#C8C4BE', flex: 1 }}>Closed</span>
@@ -838,7 +838,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                 )}
                 {formStep < STEPS.length ? (
                   <button onClick={() => setFormStep(s => s + 1)}
-                    style={{ flex: 2, height: 44, borderRadius: 10, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Next →</button>
+                    style={{ flex: 2, height: 44, borderRadius: 10, border: 'none', backgroundColor: '#1D1D1D', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Next →</button>
                 ) : (
                   <>
                     <button onClick={() => saveAndClose('draft')} disabled={submitting}
@@ -846,7 +846,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                       Save Draft
                     </button>
                     <button onClick={() => saveAndClose('submit')} disabled={submitting}
-                      style={{ flex: 2, height: 44, borderRadius: 10, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: submitting ? 0.6 : 1 }}>
+                      style={{ flex: 2, height: 44, borderRadius: 10, border: 'none', backgroundColor: '#1D1D1D', color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: submitting ? 0.6 : 1 }}>
                       {submitting ? 'Submitting…' : 'Submit for Review'}
                     </button>
                   </>
@@ -887,7 +887,7 @@ function BookingsPanel({ initialBookings }: { initialBookings?: DashBooking[] })
         <div className="relative flex-1">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#6F675C' }} />
           <input placeholder="Search guest, experience, or ref..." value={search} onChange={e => setSearch(e.target.value)}
-            style={{ width: '100%', height: 40, borderRadius: 10, border: '1px solid #E8E4DE', paddingLeft: 34, paddingRight: 14, fontSize: 13, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none', backgroundColor: 'white' }} />
+            style={{ width: '100%', height: 40, borderRadius: 10, border: '1px solid #E8E4DE', paddingLeft: 34, paddingRight: 14, fontSize: 13, fontFamily: 'var(--font-inter)', color: '#1D1D1D', outline: 'none', backgroundColor: 'white' }} />
         </div>
         <button
           onClick={() => {
@@ -904,7 +904,7 @@ function BookingsPanel({ initialBookings }: { initialBookings?: DashBooking[] })
       <div className="flex gap-2 mb-5 overflow-x-auto scrollbar-none">
         {statuses.map(s => (
           <button key={s} onClick={() => setStatusFilter(s)}
-            style={{ padding: '7px 14px', borderRadius: 10, fontSize: 13, fontWeight: statusFilter === s ? 600 : 400, flexShrink: 0, backgroundColor: statusFilter === s ? '#111111' : 'white', color: statusFilter === s ? 'white' : '#6F675C', border: '1px solid', borderColor: statusFilter === s ? '#111111' : '#E8E4DE', cursor: 'pointer', transition: 'all 0.15s' }}>
+            style={{ padding: '7px 14px', borderRadius: 10, fontSize: 13, fontWeight: statusFilter === s ? 600 : 400, flexShrink: 0, backgroundColor: statusFilter === s ? '#1D1D1D' : 'white', color: statusFilter === s ? 'white' : '#6F675C', border: '1px solid', borderColor: statusFilter === s ? '#1D1D1D' : '#E8E4DE', cursor: 'pointer', transition: 'all 0.15s' }}>
             {s}
             <span className="ml-1.5" style={{ fontSize: 11, opacity: 0.6 }}>
               {s === 'All' ? bookings.length : bookings.filter(b => b.status === s).length}
@@ -926,24 +926,24 @@ function BookingsPanel({ initialBookings }: { initialBookings?: DashBooking[] })
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between flex-wrap gap-2">
                   <div>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: '#111111' }}>{b.guest}</p>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: '#1D1D1D' }}>{b.guest}</p>
                     <p style={{ fontSize: 12, color: '#6F675C' }}>{b.email}</p>
                   </div>
                   <StatusBadge status={b.status} />
                 </div>
-                <p className="mt-1.5" style={{ fontSize: 13, color: '#111111', fontWeight: 500 }}>{b.experience}</p>
+                <p className="mt-1.5" style={{ fontSize: 13, color: '#1D1D1D', fontWeight: 500 }}>{b.experience}</p>
                 <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
                   <span style={{ fontSize: 12, color: '#6F675C' }}>📅 {b.date} · {b.time}</span>
                   <span style={{ fontSize: 12, color: '#6F675C' }}>👤 {b.guests} guest{b.guests > 1 ? 's' : ''}</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>IDR {b.total.toLocaleString('id-ID')}</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: '#1D1D1D' }}>IDR {b.total.toLocaleString('id-ID')}</span>
                 </div>
                 <p style={{ fontSize: 11, color: '#C8C4BE', marginTop: 3 }}>{b.ref} · Booked {b.bookedOn}</p>
               </div>
             </div>
             {b.status === 'Pending' && (
-              <div className="flex gap-2 mt-3 pt-3" style={{ borderTop: '1px solid #F5F1EB' }}>
+              <div className="flex gap-2 mt-3 pt-3" style={{ borderTop: '1px solid #F3EEE5' }}>
                 <button onClick={() => confirm(b.id)} className="flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity"
-                  style={{ height: 36, flex: 1, borderRadius: 8, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                  style={{ height: 36, flex: 1, borderRadius: 8, border: 'none', backgroundColor: '#1D1D1D', color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
                   <CheckCircle size={13} /> Confirm
                 </button>
                 <button onClick={() => cancel(b.id)} className="flex items-center justify-center gap-1.5 hover:bg-red-50 transition-colors"
@@ -975,23 +975,23 @@ function EarningsPanel({ commissionRate }: { commissionRate: number }) {
 
       {/* Commission info banner */}
       <div className="mb-5 px-4 py-3 rounded-xl flex items-center gap-3" style={{ backgroundColor: '#FDF8F4', border: '1px solid #E8D4B8' }}>
-        <TrendingUp size={15} style={{ color: '#C8A97E', flexShrink: 0 }} />
+        <TrendingUp size={15} style={{ color: '#B58A4B', flexShrink: 0 }} />
         <p style={{ fontSize: 13, color: '#6F675C', margin: 0 }}>
-          Balible charges a <strong style={{ color: '#111111' }}>{commissionRate}%</strong> platform commission per booking.
-          You receive <strong style={{ color: '#4A7C59' }}>{100 - commissionRate}%</strong> of each booking total as your net payout.
+          Balible charges a <strong style={{ color: '#1D1D1D' }}>{commissionRate}%</strong> platform commission per booking.
+          You receive <strong style={{ color: '#2E4A35' }}>{100 - commissionRate}%</strong> of each booking total as your net payout.
         </p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
           { label: 'Total Earned',    value: fmt(Math.round(totalGross * netMult)),   sub: `After ${commissionRate}% commission`, subColor: '#6F675C' },
-          { label: 'This Month',      value: fmt(Math.round(lastMoGross * netMult)),  sub: `↑ ${growth}% vs last month`,         subColor: '#4A7C59' },
+          { label: 'This Month',      value: fmt(Math.round(lastMoGross * netMult)),  sub: `↑ ${growth}% vs last month`,         subColor: '#2E4A35' },
           { label: 'Avg per Booking', value: fmt(Math.round(690000 * netMult)),       sub: 'Last 90 days',                       subColor: '#6F675C' },
-          { label: 'Pending Payout',  value: fmt(Math.round(lastMoGross * netMult)),  sub: 'Releases Jun 5',                     subColor: '#C8A97E' },
+          { label: 'Pending Payout',  value: fmt(Math.round(lastMoGross * netMult)),  sub: 'Releases Jun 5',                     subColor: '#B58A4B' },
         ].map(s => (
           <div key={s.label} className="bg-white rounded-xl p-4 lg:p-5" style={{ border: '1px solid #E8E4DE' }}>
             <p style={{ fontSize: 12, color: '#6F675C' }}>{s.label}</p>
-            <p className="mt-1" style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(14px,1.6vw,20px)', fontWeight: 700, color: '#111111', lineHeight: 1.2 }}>{s.value}</p>
+            <p className="mt-1" style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(14px,1.6vw,20px)', fontWeight: 700, color: '#1D1D1D', lineHeight: 1.2 }}>{s.value}</p>
             <p className="mt-1" style={{ fontSize: 11, color: s.subColor }}>{s.sub}</p>
           </div>
         ))}
@@ -999,8 +999,8 @@ function EarningsPanel({ commissionRate }: { commissionRate: number }) {
 
       {/* Chart */}
       <div className="bg-white rounded-xl p-5 mb-5" style={{ border: '1px solid #E8E4DE' }}>
-        <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Monthly Revenue</h2>
-        <MiniChart data={MONTHLY_EARNINGS} color="#C8A97E" />
+        <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#1D1D1D' }}>Monthly Revenue</h2>
+        <MiniChart data={MONTHLY_EARNINGS} color="#B58A4B" />
         <div className="flex justify-between mt-1 mb-5">
           {MONTHS_SHORT.map(m => <span key={m} style={{ fontSize: 9, color: '#6F675C' }}>{m}</span>)}
         </div>
@@ -1010,7 +1010,7 @@ function EarningsPanel({ commissionRate }: { commissionRate: number }) {
             const isLast = i === MONTHLY_EARNINGS.length - 1
             return (
               <div key={i} title={`${MONTHS_SHORT[i]}: ${fmt(v)}`}
-                style={{ flex: 1, height: `${(v / max) * 100}%`, borderRadius: '3px 3px 0 0', backgroundColor: isLast ? '#C8A97E' : '#E8E4DE', minHeight: 4, cursor: 'default', transition: 'background 0.2s' }} />
+                style={{ flex: 1, height: `${(v / max) * 100}%`, borderRadius: '3px 3px 0 0', backgroundColor: isLast ? '#B58A4B' : '#E8E4DE', minHeight: 4, cursor: 'default', transition: 'background 0.2s' }} />
             )
           })}
         </div>
@@ -1019,7 +1019,7 @@ function EarningsPanel({ commissionRate }: { commissionRate: number }) {
       <div className="grid lg:grid-cols-2 gap-5">
         {/* By experience */}
         <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
-          <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>By Experience</h2>
+          <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#1D1D1D' }}>By Experience</h2>
           <div className="space-y-4">
             {EXPERIENCES.map(e => {
               const pct = (e.earnings / totalExp) * 100
@@ -1027,14 +1027,14 @@ function EarningsPanel({ commissionRate }: { commissionRate: number }) {
               return (
                 <div key={e.id}>
                   <div className="flex justify-between items-center mb-1">
-                    <span style={{ fontSize: 13, color: '#111111', fontWeight: 500 }}>{e.title}</span>
+                    <span style={{ fontSize: 13, color: '#1D1D1D', fontWeight: 500 }}>{e.title}</span>
                     <div className="text-right">
-                      <span style={{ fontSize: 13, fontWeight: 600, color: '#4A7C59' }}>{fmt(netEarnings)}</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: '#2E4A35' }}>{fmt(netEarnings)}</span>
                       <span style={{ fontSize: 10, color: '#9E9A94', marginLeft: 3 }}>net</span>
                     </div>
                   </div>
-                  <div style={{ height: 6, borderRadius: 3, backgroundColor: '#F5F1EB', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${pct}%`, backgroundColor: '#C8A97E', borderRadius: 3 }} />
+                  <div style={{ height: 6, borderRadius: 3, backgroundColor: '#F3EEE5', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${pct}%`, backgroundColor: '#B58A4B', borderRadius: 3 }} />
                   </div>
                   <p style={{ fontSize: 11, color: '#6F675C', marginTop: 2 }}>{e.bookings} bookings · {pct.toFixed(0)}% of total</p>
                 </div>
@@ -1045,20 +1045,20 @@ function EarningsPanel({ commissionRate }: { commissionRate: number }) {
 
         {/* Payout history */}
         <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
-          <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Payout History</h2>
+          <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#1D1D1D' }}>Payout History</h2>
           <div className="space-y-3">
             {PAYOUTS.map(p => {
               const commission = Math.round(p.gross * commissionRate / 100)
               const net = p.gross - commission
               return (
-                <div key={p.id} className="p-3.5 rounded-xl" style={{ backgroundColor: '#F5F1EB' }}>
+                <div key={p.id} className="p-3.5 rounded-xl" style={{ backgroundColor: '#F3EEE5' }}>
                   <div className="flex items-center justify-between mb-2">
                     <div>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: '#111111' }}>{p.period}</p>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: '#1D1D1D' }}>{p.period}</p>
                       <p style={{ fontSize: 11, color: '#6F675C', marginTop: 1 }}>{p.status === 'Paid' ? `Paid ${p.date}` : `Expected ${p.date}`}</p>
                     </div>
                     <div className="text-right">
-                      <p style={{ fontSize: 14, fontWeight: 700, color: '#4A7C59' }}>{fmt(net)}</p>
+                      <p style={{ fontSize: 14, fontWeight: 700, color: '#2E4A35' }}>{fmt(net)}</p>
                       <div className="mt-1"><StatusBadge status={p.status} /></div>
                     </div>
                   </div>
@@ -1107,7 +1107,7 @@ function ReviewsPanel({ initialReviews }: { initialReviews?: DashReview[] }) {
       {/* Summary */}
       <div className="bg-white rounded-xl p-5 mb-5 flex flex-col sm:flex-row gap-6 items-start" style={{ border: '1px solid #E8E4DE' }}>
         <div className="text-center flex-shrink-0">
-          <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 52, fontWeight: 700, color: '#111111', lineHeight: 1 }}>{avg}</p>
+          <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 52, fontWeight: 700, color: '#1D1D1D', lineHeight: 1 }}>{avg}</p>
           <Stars n={Math.round(Number(avg))} />
           <p style={{ fontSize: 12, color: '#6F675C', marginTop: 4 }}>{reviews.length} reviews</p>
         </div>
@@ -1117,12 +1117,12 @@ function ReviewsPanel({ initialReviews }: { initialReviews?: DashReview[] }) {
               onClick={() => setStarFilter(starFilter === d.star ? 0 : d.star)}
               className="w-full flex items-center gap-3 hover:opacity-80 transition-opacity"
               style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-              <span style={{ fontSize: 12, color: '#111111', width: 10, flexShrink: 0 }}>{d.star}</span>
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="#C8A97E">
+              <span style={{ fontSize: 12, color: '#1D1D1D', width: 10, flexShrink: 0 }}>{d.star}</span>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="#B58A4B">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
               </svg>
-              <div style={{ flex: 1, height: 8, borderRadius: 4, backgroundColor: '#F5F1EB', overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${d.pct}%`, backgroundColor: starFilter === d.star ? '#111111' : '#C8A97E', borderRadius: 4, transition: 'background 0.2s' }} />
+              <div style={{ flex: 1, height: 8, borderRadius: 4, backgroundColor: '#F3EEE5', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${d.pct}%`, backgroundColor: starFilter === d.star ? '#1D1D1D' : '#B58A4B', borderRadius: 4, transition: 'background 0.2s' }} />
               </div>
               <span style={{ fontSize: 12, color: '#6F675C', width: 18, textAlign: 'right', flexShrink: 0 }}>{d.count}</span>
             </button>
@@ -1134,7 +1134,7 @@ function ReviewsPanel({ initialReviews }: { initialReviews?: DashReview[] }) {
         <div className="flex items-center gap-2 mb-4">
           <span style={{ fontSize: 13, color: '#6F675C' }}>Showing {starFilter}-star reviews</span>
           <button onClick={() => setStarFilter(0)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#C8A97E', fontSize: 13, textDecoration: 'underline' }}>Clear</button>
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#B58A4B', fontSize: 13, textDecoration: 'underline' }}>Clear</button>
         </div>
       )}
 
@@ -1143,11 +1143,11 @@ function ReviewsPanel({ initialReviews }: { initialReviews?: DashReview[] }) {
           <div key={r.id} className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#C8A97E' }}>
+                <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#B58A4B' }}>
                   <span style={{ fontSize: 13, fontWeight: 700, color: 'white' }}>{r.guest[0]}</span>
                 </div>
                 <div>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: '#111111' }}>{r.guest}</p>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: '#1D1D1D' }}>{r.guest}</p>
                   <p style={{ fontSize: 12, color: '#6F675C' }}>{r.experience}</p>
                 </div>
               </div>
@@ -1201,32 +1201,32 @@ function ProfilePanel() {
       <div className="grid lg:grid-cols-3 gap-5">
         <div className="bg-white rounded-xl p-6 flex flex-col items-center text-center" style={{ border: '1px solid #E8E4DE' }}>
           <div className="relative mb-4">
-            <div className="w-24 h-24 rounded-full overflow-hidden" style={{ border: '3px solid #C8A97E' }}>
-              <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: '#C8A97E' }}>
+            <div className="w-24 h-24 rounded-full overflow-hidden" style={{ border: '3px solid #B58A4B' }}>
+              <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: '#B58A4B' }}>
                 <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 36, fontWeight: 700, color: 'white' }}>M</span>
               </div>
             </div>
             <button className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: '#111111', border: 'none', cursor: 'pointer' }}>
+              style={{ backgroundColor: '#1D1D1D', border: 'none', cursor: 'pointer' }}>
               <Camera size={12} style={{ color: 'white' }} />
             </button>
           </div>
-          <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>{profile.name}</h3>
+          <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#1D1D1D' }}>{profile.name}</h3>
           <p style={{ fontSize: 13, color: '#6F675C', marginTop: 2 }}>Operator · {profile.area}</p>
           <div className="flex items-center gap-1 mt-2">
-            <Star size={13} fill="#C8A97E" color="#C8A97E" />
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#111111' }}>4.9</span>
+            <Star size={13} fill="#B58A4B" color="#B58A4B" />
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#1D1D1D' }}>4.9</span>
             <span style={{ fontSize: 13, color: '#6F675C' }}>(128 reviews)</span>
           </div>
           <div className="mt-3 px-3 py-1 rounded-full flex items-center gap-1.5" style={{ backgroundColor: '#F0F7F2' }}>
-            <Check size={11} style={{ color: '#4A7C59' }} />
-            <span style={{ fontSize: 12, fontWeight: 600, color: '#4A7C59' }}>Verified Host</span>
+            <Check size={11} style={{ color: '#2E4A35' }} />
+            <span style={{ fontSize: 12, fontWeight: 600, color: '#2E4A35' }}>Verified Host</span>
           </div>
           <div className="mt-5 w-full pt-5" style={{ borderTop: '1px solid #E8E4DE' }}>
             <div className="grid grid-cols-3 gap-2">
               {[{ label: 'Bookings', value: '145' }, { label: 'Reviews', value: '220' }, { label: 'Listings', value: '4' }].map(s => (
                 <div key={s.label}>
-                  <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>{s.value}</p>
+                  <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#1D1D1D' }}>{s.value}</p>
                   <p style={{ fontSize: 11, color: '#6F675C' }}>{s.label}</p>
                 </div>
               ))}
@@ -1235,7 +1235,7 @@ function ProfilePanel() {
         </div>
 
         <div className="lg:col-span-2 bg-white rounded-xl p-6" style={{ border: '1px solid #E8E4DE' }}>
-          <h2 className="mb-5" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Edit Profile</h2>
+          <h2 className="mb-5" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#1D1D1D' }}>Edit Profile</h2>
           <div className="grid sm:grid-cols-2 gap-4">
             {([
               { label: 'Full Name',     key: 'name' as const },
@@ -1246,30 +1246,30 @@ function ProfilePanel() {
               <div key={f.key}>
                 <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{f.label}</label>
                 <input value={profile[f.key]} onChange={set(f.key)}
-                  style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }} />
+                  style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#1D1D1D', outline: 'none' }} />
               </div>
             ))}
             <div className="sm:col-span-2">
               <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Bio</label>
               <textarea rows={4} value={profile.bio} onChange={set('bio')}
-                style={{ width: '100%', borderRadius: 10, border: '1px solid #E8E4DE', padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', resize: 'none', outline: 'none', lineHeight: 1.6 }} />
+                style={{ width: '100%', borderRadius: 10, border: '1px solid #E8E4DE', padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#1D1D1D', resize: 'none', outline: 'none', lineHeight: 1.6 }} />
             </div>
             <div>
               <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Primary Area</label>
               <select value={profile.area} onChange={set('area')}
-                style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none', backgroundColor: 'white', cursor: 'pointer' }}>
+                style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#1D1D1D', outline: 'none', backgroundColor: 'white', cursor: 'pointer' }}>
                 {['Ubud','Canggu','Kuta','Seminyak','Uluwatu','Gianyar','Sanur'].map(a => <option key={a}>{a}</option>)}
               </select>
             </div>
             <div>
               <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Languages</label>
               <input value={profile.languages} onChange={set('languages')}
-                style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }} />
+                style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#1D1D1D', outline: 'none' }} />
             </div>
           </div>
           <div className="flex items-center gap-3 mt-6">
             <button onClick={save} className="flex items-center gap-2 hover:opacity-90 transition-opacity"
-              style={{ height: 44, paddingInline: 24, borderRadius: 10, border: 'none', backgroundColor: saved ? '#4A7C59' : '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s', minWidth: 140 }}>
+              style={{ height: 44, paddingInline: 24, borderRadius: 10, border: 'none', backgroundColor: saved ? '#2E4A35' : '#1D1D1D', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s', minWidth: 140 }}>
               {saved ? <><Check size={14} /> Saved!</> : 'Save Changes'}
             </button>
             <button onClick={discard} style={{ height: 44, paddingInline: 24, borderRadius: 10, border: '1px solid #E8E4DE', background: 'none', fontSize: 14, color: '#6F675C', cursor: 'pointer' }}>Discard</button>
@@ -1312,9 +1312,9 @@ function SettingsPanel() {
       <div className="space-y-5">
         <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
           <div className="flex items-center justify-between mb-4">
-            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Notifications</h2>
+            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#1D1D1D' }}>Notifications</h2>
             {notifSaved && (
-              <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#4A7C59', fontWeight: 600, transition: 'opacity 0.3s' }}>
+              <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#2E4A35', fontWeight: 600, transition: 'opacity 0.3s' }}>
                 <Check size={12} /> Saved
               </span>
             )}
@@ -1330,11 +1330,11 @@ function SettingsPanel() {
               return (
                 <div key={key} className="flex items-center justify-between gap-4">
                   <div>
-                    <p style={{ fontSize: 14, fontWeight: 500, color: '#111111' }}>{label}</p>
+                    <p style={{ fontSize: 14, fontWeight: 500, color: '#1D1D1D' }}>{label}</p>
                     <p style={{ fontSize: 12, color: '#6F675C', marginTop: 1 }}>{desc}</p>
                   </div>
                   <button onClick={() => toggle(key as keyof typeof notifs)}
-                    style={{ width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', flexShrink: 0, backgroundColor: on ? '#111111' : '#E8E4DE', transition: 'background 0.2s', position: 'relative' }}>
+                    style={{ width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', flexShrink: 0, backgroundColor: on ? '#1D1D1D' : '#E8E4DE', transition: 'background 0.2s', position: 'relative' }}>
                     <span style={{ display: 'block', width: 18, height: 18, borderRadius: 9, backgroundColor: 'white', position: 'absolute', top: 3, left: on ? 23 : 3, transition: 'left 0.2s' }} />
                   </button>
                 </div>
@@ -1344,22 +1344,22 @@ function SettingsPanel() {
         </div>
 
         <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
-          <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Payout Settings</h2>
+          <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#1D1D1D' }}>Payout Settings</h2>
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2">
               <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Bank Name</label>
               <input value={payout.bankName} onChange={e => setPayout(p => ({ ...p, bankName: e.target.value }))}
-                style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }} />
+                style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#1D1D1D', outline: 'none' }} />
             </div>
             <div>
               <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Account Number</label>
               <input value={payout.accountNumber} onChange={e => setPayout(p => ({ ...p, accountNumber: e.target.value }))}
-                style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }} />
+                style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#1D1D1D', outline: 'none' }} />
             </div>
             <div>
               <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Account Holder</label>
               <input value={payout.accountHolder} onChange={e => setPayout(p => ({ ...p, accountHolder: e.target.value }))}
-                style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }} />
+                style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#1D1D1D', outline: 'none' }} />
             </div>
           </div>
         </div>
@@ -1378,7 +1378,7 @@ function SettingsPanel() {
         </div>
 
         <button onClick={save} className="flex items-center gap-2 hover:opacity-90 transition-opacity"
-          style={{ height: 44, paddingInline: 24, borderRadius: 10, border: 'none', backgroundColor: saved ? '#4A7C59' : '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s', minWidth: 140 }}>
+          style={{ height: 44, paddingInline: 24, borderRadius: 10, border: 'none', backgroundColor: saved ? '#2E4A35' : '#1D1D1D', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s', minWidth: 140 }}>
           {saved ? <><Check size={14} /> Saved!</> : 'Save Settings'}
         </button>
       </div>
@@ -1518,9 +1518,9 @@ function EventsPanel() {
 
   const inputStyle: React.CSSProperties = {
     width: '100%', borderRadius: 10, border: '1px solid #E8E4DE',
-    padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none',
+    padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#1D1D1D', outline: 'none',
   }
-  const labelStyle: React.CSSProperties = { display: 'block', fontSize: 13, fontWeight: 600, color: '#111111', marginBottom: 6 }
+  const labelStyle: React.CSSProperties = { display: 'block', fontSize: 13, fontWeight: 600, color: '#1D1D1D', marginBottom: 6 }
 
   return (
     <div>
@@ -1530,7 +1530,7 @@ function EventsPanel() {
         action={
           <button onClick={openCreate}
             className="flex items-center gap-2 hover:opacity-90 transition-opacity"
-            style={{ height: 38, padding: '0 16px', borderRadius: 10, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+            style={{ height: 38, padding: '0 16px', borderRadius: 10, border: 'none', backgroundColor: '#1D1D1D', color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
             <Plus size={14} /> New Event
           </button>
         }
@@ -1538,18 +1538,18 @@ function EventsPanel() {
 
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <div style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid #E8E4DE', borderTopColor: '#111111', animation: 'spin 0.7s linear infinite' }} />
+          <div style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid #E8E4DE', borderTopColor: '#1D1D1D', animation: 'spin 0.7s linear infinite' }} />
           <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
         </div>
       ) : events.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl" style={{ border: '1px solid #E8E4DE' }}>
-          <div style={{ width: 56, height: 56, borderRadius: '50%', backgroundColor: '#F5F1EB', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-            <Ticket size={24} style={{ color: '#C8A97E' }} />
+          <div style={{ width: 56, height: 56, borderRadius: '50%', backgroundColor: '#F3EEE5', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+            <Ticket size={24} style={{ color: '#B58A4B' }} />
           </div>
-          <p style={{ fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 6 }}>No events yet</p>
+          <p style={{ fontSize: 16, fontWeight: 700, color: '#1D1D1D', marginBottom: 6 }}>No events yet</p>
           <p style={{ fontSize: 14, color: '#6F675C', marginBottom: 20 }}>Create your first one-time event for guests to discover</p>
           <button onClick={openCreate}
-            style={{ height: 38, padding: '0 20px', borderRadius: 10, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+            style={{ height: 38, padding: '0 20px', borderRadius: 10, border: 'none', backgroundColor: '#1D1D1D', color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
             Create event
           </button>
         </div>
@@ -1569,29 +1569,29 @@ function EventsPanel() {
                   <div className="flex-1 min-w-0 p-3 sm:p-4">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
-                        <p style={{ fontSize: 14, fontWeight: 700, color: '#111111', marginBottom: 2 }}>{ev.title}</p>
+                        <p style={{ fontSize: 14, fontWeight: 700, color: '#1D1D1D', marginBottom: 2 }}>{ev.title}</p>
                         <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
                           <span style={{ fontSize: 11, color: '#6F675C' }}>📅 {dateStr} · {timeStr}</span>
                           <span style={{ fontSize: 11, color: '#6F675C' }}>📍 {ev.location}</span>
                           <span style={{ fontSize: 11, color: '#6F675C' }}>👥 Max {ev.capacity}</span>
-                          <span style={{ fontSize: 11, fontWeight: 600, color: '#111111' }}>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: '#1D1D1D' }}>
                             {ev.price === 0 ? 'Free' : `IDR ${ev.price.toLocaleString('id-ID')}`}
                           </span>
                         </div>
                       </div>
                       <StatusBadge status={ev.status === 'PUBLISHED' ? 'Active' : ev.status === 'CANCELLED' ? 'Cancelled' : 'Draft'} />
                     </div>
-                    <div className="flex flex-wrap items-center gap-1.5 mt-3 pt-3" style={{ borderTop: '1px solid #F5F1EB' }}>
+                    <div className="flex flex-wrap items-center gap-1.5 mt-3 pt-3" style={{ borderTop: '1px solid #F3EEE5' }}>
                       {!isPast && ev.status !== 'CANCELLED' && (
                         <button onClick={() => toggleStatus(ev)}
                           className="flex items-center gap-1 hover:opacity-80 transition-opacity"
-                          style={{ height: 28, padding: '0 10px', borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 11, fontWeight: 600, color: '#111111', cursor: 'pointer' }}>
+                          style={{ height: 28, padding: '0 10px', borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 11, fontWeight: 600, color: '#1D1D1D', cursor: 'pointer' }}>
                           {ev.status === 'PUBLISHED' ? <><Lock size={10} /> Unpublish</> : <><Globe size={10} /> Publish</>}
                         </button>
                       )}
                       <button onClick={() => openEdit(ev)}
                         className="flex items-center gap-1 hover:opacity-80 transition-opacity"
-                        style={{ height: 28, padding: '0 10px', borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 11, fontWeight: 600, color: '#111111', cursor: 'pointer' }}>
+                        style={{ height: 28, padding: '0 10px', borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 11, fontWeight: 600, color: '#1D1D1D', cursor: 'pointer' }}>
                         <Edit2 size={10} /> Edit
                       </button>
                       <button onClick={() => handleDelete(ev.id)}
@@ -1621,8 +1621,8 @@ function EventsPanel() {
             <div className="flex justify-center pt-3 pb-1 sm:hidden">
               <div style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: '#D1CDC7' }} />
             </div>
-            <div className="px-5 pt-4 sm:pt-5 pb-3 flex items-center justify-between" style={{ borderBottom: '1px solid #F5F1EB' }}>
-              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', margin: 0 }}>
+            <div className="px-5 pt-4 sm:pt-5 pb-3 flex items-center justify-between" style={{ borderBottom: '1px solid #F3EEE5' }}>
+              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#1D1D1D', margin: 0 }}>
                 {editing ? 'Edit Event' : 'New Event'}
               </h2>
               <button onClick={() => setShowForm(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
@@ -1679,10 +1679,10 @@ function EventsPanel() {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label style={{ ...labelStyle, marginBottom: 0 }}>Cover image</label>
-                  <div className="flex gap-1 p-0.5 rounded-lg" style={{ backgroundColor: '#F5F1EB' }}>
+                  <div className="flex gap-1 p-0.5 rounded-lg" style={{ backgroundColor: '#F3EEE5' }}>
                     {(['url', 'upload'] as const).map(m => (
                       <button key={m} onClick={() => setImageMode(m)}
-                        style={{ height: 26, padding: '0 10px', borderRadius: 8, border: 'none', fontSize: 11, fontWeight: 600, cursor: 'pointer', backgroundColor: imageMode === m ? 'white' : 'transparent', color: imageMode === m ? '#111111' : '#6F675C', transition: 'all 0.15s' }}>
+                        style={{ height: 26, padding: '0 10px', borderRadius: 8, border: 'none', fontSize: 11, fontWeight: 600, cursor: 'pointer', backgroundColor: imageMode === m ? 'white' : 'transparent', color: imageMode === m ? '#1D1D1D' : '#6F675C', transition: 'all 0.15s' }}>
                         {m === 'url' ? 'URL' : 'Upload'}
                       </button>
                     ))}
@@ -1765,7 +1765,7 @@ function EventsPanel() {
                 Cancel
               </button>
               <button onClick={handleSave} disabled={saving}
-                style={{ flex: 2, height: 44, borderRadius: 10, border: 'none', backgroundColor: saving ? '#9E9A94' : '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: saving ? 'wait' : 'pointer', transition: 'background 0.15s' }}>
+                style={{ flex: 2, height: 44, borderRadius: 10, border: 'none', backgroundColor: saving ? '#9E9A94' : '#1D1D1D', color: 'white', fontSize: 14, fontWeight: 600, cursor: saving ? 'wait' : 'pointer', transition: 'background 0.15s' }}>
                 {saving ? 'Saving…' : editing ? 'Save changes' : 'Create event'}
               </button>
             </div>
@@ -1788,7 +1788,7 @@ function HostNotifBell({ onSettings, align = 'left', dark = false }: { onSetting
   const [notifOpen, setNotifOpen] = useState(false)
   const [notifs, setNotifs] = useState(HOST_NOTIFICATIONS)
   const unreadCount = notifs.filter(n => n.unread).length
-  const bellColor = dark ? (unreadCount > 0 ? '#111111' : '#6F675C') : (unreadCount > 0 ? 'white' : 'rgba(255,255,255,0.55)')
+  const bellColor = dark ? (unreadCount > 0 ? '#1D1D1D' : '#6F675C') : (unreadCount > 0 ? 'white' : 'rgba(255,255,255,0.55)')
 
   return (
     <div className="relative">
@@ -1806,10 +1806,10 @@ function HostNotifBell({ onSettings, align = 'left', dark = false }: { onSetting
           <div className="absolute top-9 z-50 bg-white rounded-xl shadow-2xl overflow-hidden"
             style={{ [align === 'right' ? 'right' : 'left']: 0, width: 'min(300px, calc(100vw - 32px))', border: '1px solid #E8E4DE' }}>
             <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid #E8E4DE' }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: '#111111' }}>Notifications</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: '#1D1D1D' }}>Notifications</span>
               {unreadCount > 0 && (
                 <button onClick={() => setNotifs(n => n.map(x => ({ ...x, unread: false })))}
-                  style={{ fontSize: 11, color: '#C8A97E', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
+                  style={{ fontSize: 11, color: '#B58A4B', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
                   Mark all read
                 </button>
               )}
@@ -1818,11 +1818,11 @@ function HostNotifBell({ onSettings, align = 'left', dark = false }: { onSetting
               {notifs.map(n => (
                 <div key={n.id} onClick={() => setNotifs(prev => prev.map(x => x.id === n.id ? { ...x, unread: false } : x))}
                   className="px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors"
-                  style={{ borderBottom: '1px solid #F5F1EB', backgroundColor: n.unread ? '#FFFDF9' : 'white' }}>
+                  style={{ borderBottom: '1px solid #F3EEE5', backgroundColor: n.unread ? '#FFFDF9' : 'white' }}>
                   <div className="flex items-start gap-2">
-                    {n.unread && <span className="mt-1.5 flex-shrink-0 w-2 h-2 rounded-full" style={{ backgroundColor: '#C8A97E' }} />}
+                    {n.unread && <span className="mt-1.5 flex-shrink-0 w-2 h-2 rounded-full" style={{ backgroundColor: '#B58A4B' }} />}
                     <div className={n.unread ? '' : 'pl-4'}>
-                      <p style={{ fontSize: 13, fontWeight: n.unread ? 600 : 400, color: '#111111', marginBottom: 2 }}>{n.title}</p>
+                      <p style={{ fontSize: 13, fontWeight: n.unread ? 600 : 400, color: '#1D1D1D', marginBottom: 2 }}>{n.title}</p>
                       <p style={{ fontSize: 12, color: '#6F675C', lineHeight: 1.4 }}>{n.body}</p>
                       <p style={{ fontSize: 11, color: '#9E9A94', marginTop: 3 }}>{n.time}</p>
                     </div>
@@ -1832,7 +1832,7 @@ function HostNotifBell({ onSettings, align = 'left', dark = false }: { onSetting
             </div>
             <button onClick={() => { onSettings(); setNotifOpen(false) }}
               className="w-full py-3 text-center hover:bg-gray-50 transition-colors"
-              style={{ fontSize: 12, color: '#C8A97E', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', borderTop: '1px solid #E8E4DE' }}>
+              style={{ fontSize: 12, color: '#B58A4B', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', borderTop: '1px solid #E8E4DE' }}>
               Notification settings →
             </button>
           </div>
@@ -1853,7 +1853,7 @@ function SidebarInner({ activeNav, setActiveNav }: { activeNav: string; setActiv
       </div>
 
       <div className="flex items-center gap-3 mx-3 px-3 py-3 rounded-xl mb-3" style={{ backgroundColor: 'rgba(255,255,255,0.06)' }}>
-        <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#C8A97E' }}>
+        <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#B58A4B' }}>
           <span style={{ fontSize: 16, fontWeight: 700, color: 'white' }}>M</span>
         </div>
         <div className="min-w-0">
@@ -1868,10 +1868,10 @@ function SidebarInner({ activeNav, setActiveNav }: { activeNav: string; setActiv
           return (
             <button key={id} onClick={() => setActiveNav(id)}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all hover:bg-white/5"
-              style={{ color: active ? '#C8A97E' : 'rgba(255,255,255,0.6)', fontSize: 13, fontFamily: 'var(--font-inter)', fontWeight: active ? 600 : 400, cursor: 'pointer', background: active ? 'rgba(200,169,126,0.1)' : 'none', border: 'none', textAlign: 'left' }}>
+              style={{ color: active ? '#B58A4B' : 'rgba(255,255,255,0.6)', fontSize: 13, fontFamily: 'var(--font-inter)', fontWeight: active ? 600 : 400, cursor: 'pointer', background: active ? 'rgba(200,169,126,0.1)' : 'none', border: 'none', textAlign: 'left' }}>
               <Icon size={15} style={{ flexShrink: 0 }} />
               {label}
-              {active && <span style={{ marginLeft: 'auto', width: 6, height: 6, borderRadius: 3, backgroundColor: '#C8A97E', display: 'block' }} />}
+              {active && <span style={{ marginLeft: 'auto', width: 6, height: 6, borderRadius: 3, backgroundColor: '#B58A4B', display: 'block' }} />}
             </button>
           )
         })}
@@ -1919,13 +1919,13 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex" style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
+    <div className="flex" style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F3EEE5', minHeight: '100vh' }}>
 
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex">
           <div className="absolute inset-0 bg-black/50" onClick={() => setSidebarOpen(false)} />
-          <aside className="relative z-10 flex flex-col" style={{ width: 240, backgroundColor: '#111111', height: '100%' }}>
+          <aside className="relative z-10 flex flex-col" style={{ width: 240, backgroundColor: '#1D1D1D', height: '100%' }}>
             <button className="absolute top-4 right-4" onClick={() => setSidebarOpen(false)}
               style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
               <X size={18} style={{ color: 'rgba(255,255,255,0.6)' }} />
@@ -1937,7 +1937,7 @@ export default function DashboardPage() {
 
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex flex-col flex-shrink-0"
-        style={{ width: 240, backgroundColor: '#111111', minHeight: '100vh', position: 'sticky', top: 0, height: '100vh' }}>
+        style={{ width: 240, backgroundColor: '#1D1D1D', minHeight: '100vh', position: 'sticky', top: 0, height: '100vh' }}>
         <SidebarInner activeNav={activeNav} setActiveNav={setActiveNav} />
       </aside>
 
@@ -1947,9 +1947,9 @@ export default function DashboardPage() {
         {/* Mobile top bar */}
         <div className="flex items-center justify-between mb-6 lg:hidden">
           <button onClick={() => setSidebarOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
-            <Menu size={22} style={{ color: '#111111' }} />
+            <Menu size={22} style={{ color: '#1D1D1D' }} />
           </button>
-          <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>
+          <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#1D1D1D' }}>
             {NAV_ITEMS.find(n => n.id === activeNav)?.label ?? 'Dashboard'}
           </span>
           <HostNotifBell onSettings={() => setActiveNav('settings')} align="right" dark />
@@ -1967,8 +1967,8 @@ export default function DashboardPage() {
             <button key={id} onClick={() => setActiveNav(id)}
               className="flex flex-col items-center justify-center gap-0.5"
               style={{ background: 'none', border: 'none', cursor: 'pointer', flex: 1, height: '100%' }}>
-              <Icon size={18} style={{ color: active ? '#C8A97E' : '#6F675C' }} />
-              <span style={{ fontSize: 9, color: active ? '#C8A97E' : '#6F675C', fontWeight: active ? 600 : 400 }}>{label}</span>
+              <Icon size={18} style={{ color: active ? '#B58A4B' : '#6F675C' }} />
+              <span style={{ fontSize: 9, color: active ? '#B58A4B' : '#6F675C', fontWeight: active ? 600 : 400 }}>{label}</span>
             </button>
           )
         })}

@@ -15,11 +15,11 @@ export default async function EventsPage() {
 
       <Navbar />
 
-      <div className="max-w-[1440px] mx-auto px-6 lg:px-16 py-10" style={{ backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
+      <div className="max-w-[1440px] mx-auto px-6 lg:px-16 py-10" style={{ backgroundColor: '#F3EEE5', minHeight: '100vh' }}>
 
         {/* Page header */}
         <div style={{ marginBottom: 36 }}>
-          <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px,4vw,42px)', fontWeight: 700, color: '#111111', marginBottom: 10 }}>
+          <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px,4vw,42px)', fontWeight: 700, color: '#1D1D1D', marginBottom: 10 }}>
             Upcoming Events in Bali
           </h1>
           <p style={{ fontSize: 15, color: '#6F675C', maxWidth: 520 }}>
@@ -29,7 +29,7 @@ export default async function EventsPage() {
 
         {events.length === 0 ? (
           <div className="text-center" style={{ padding: '80px 24px' }}>
-            <p style={{ fontSize: 18, fontWeight: 600, color: '#111111', marginBottom: 8 }}>No events scheduled yet</p>
+            <p style={{ fontSize: 18, fontWeight: 600, color: '#1D1D1D', marginBottom: 8 }}>No events scheduled yet</p>
             <p style={{ fontSize: 15, color: '#6F675C' }}>Check back soon — hosts are adding events regularly.</p>
           </div>
         ) : (
@@ -61,10 +61,10 @@ export default async function EventsPage() {
 
                     {/* Info */}
                     <div style={{ padding: '18px 20px' }}>
-                      <p style={{ fontSize: 11, fontWeight: 600, color: '#C8A97E', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
+                      <p style={{ fontSize: 11, fontWeight: 600, color: '#B58A4B', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
                         {dateStr}
                       </p>
-                      <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111', marginBottom: 8, lineHeight: 1.3 }}>
+                      <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#1D1D1D', marginBottom: 8, lineHeight: 1.3 }}>
                         {ev.title}
                       </h2>
                       <p style={{ fontSize: 13, color: '#6F675C', marginBottom: 14, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
@@ -75,7 +75,7 @@ export default async function EventsPage() {
                           <span style={{ fontSize: 12, color: '#6F675C' }}>⏰ {timeStr} · 📍 {ev.location.split(',')[0]}</span>
                           <span style={{ fontSize: 12, color: '#6F675C' }}>👥 Up to {ev.capacity} guests</span>
                         </div>
-                        <span style={{ fontSize: 15, fontWeight: 700, color: '#111111' }}>
+                        <span style={{ fontSize: 15, fontWeight: 700, color: '#1D1D1D' }}>
                           {ev.price === 0 ? 'Free' : `IDR ${ev.price.toLocaleString('id-ID')}`}
                         </span>
                       </div>

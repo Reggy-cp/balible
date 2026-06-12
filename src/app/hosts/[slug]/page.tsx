@@ -293,28 +293,28 @@ function ExpCard({ exp }: { exp: Experience }) {
         </div>
       </div>
       <div style={{ padding: '14px 16px 16px' }}>
-        <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: '#111111', lineHeight: 1.3, marginBottom: 8 }}>
+        <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: '#1D1D1D', lineHeight: 1.3, marginBottom: 8 }}>
           {exp.title}
         </h3>
         <div className="flex items-center gap-3 flex-wrap" style={{ marginBottom: 10 }}>
           <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#6F675C' }}>
-            <MapPin size={11} style={{ color: '#C8A97E' }} />{exp.area}
+            <MapPin size={11} style={{ color: '#B58A4B' }} />{exp.area}
           </span>
           <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#6F675C' }}>
             <Clock size={11} />{exp.duration}
           </span>
           <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#6F675C' }}>
-            <Star size={11} fill="#C8A97E" color="#C8A97E" />
-            <strong style={{ color: '#111111' }}>{exp.rating}</strong>
+            <Star size={11} fill="#B58A4B" color="#B58A4B" />
+            <strong style={{ color: '#1D1D1D' }}>{exp.rating}</strong>
             <span>({exp.reviews})</span>
           </span>
         </div>
         <div className="flex items-center justify-between">
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111' }}>
-            From <span style={{ color: '#C8A97E', fontWeight: 700 }}>IDR</span>{' '}
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#1D1D1D' }}>
+            From <span style={{ color: '#B58A4B', fontWeight: 700 }}>IDR</span>{' '}
             <span style={{ fontWeight: 700 }}>{exp.price.toLocaleString('id-ID')}</span>
           </p>
-          <span className="flex items-center gap-1" style={{ fontSize: 12, fontWeight: 600, color: '#C8A97E' }}>
+          <span className="flex items-center gap-1" style={{ fontSize: 12, fontWeight: 600, color: '#B58A4B' }}>
             Book <ChevronRight size={13} />
           </span>
         </div>
@@ -339,7 +339,7 @@ function EventCard({ ev }: { ev: HostEvent }) {
           <img src={ev.coverImage} alt={ev.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         ) : (
           <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: '#F0EDE8' }}>
-            <Ticket size={32} style={{ color: '#C8A97E' }} />
+            <Ticket size={32} style={{ color: '#B58A4B' }} />
           </div>
         )}
         <div className="absolute top-3 left-3">
@@ -349,13 +349,13 @@ function EventCard({ ev }: { ev: HostEvent }) {
         </div>
       </div>
       <div style={{ padding: '14px 16px 16px' }}>
-        <p style={{ fontSize: 11, fontWeight: 600, color: '#C8A97E', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>{dateStr}</p>
-        <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: '#111111', lineHeight: 1.3, marginBottom: 8 }}>
+        <p style={{ fontSize: 11, fontWeight: 600, color: '#B58A4B', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>{dateStr}</p>
+        <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: '#1D1D1D', lineHeight: 1.3, marginBottom: 8 }}>
           {ev.title}
         </h3>
         <div className="flex items-center gap-3 flex-wrap" style={{ marginBottom: 10 }}>
           <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#6F675C' }}>
-            <CalendarDays size={11} style={{ color: '#C8A97E' }} />{timeStr}
+            <CalendarDays size={11} style={{ color: '#B58A4B' }} />{timeStr}
           </span>
           <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#6F675C' }}>
             <MapPin size={11} />{ev.location.split(',')[0]}
@@ -365,10 +365,10 @@ function EventCard({ ev }: { ev: HostEvent }) {
           </span>
         </div>
         <div className="flex items-center justify-between">
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111' }}>
-            {ev.price === 0 ? 'Free' : <><span style={{ color: '#C8A97E', fontWeight: 700 }}>IDR</span>{' '}<span style={{ fontWeight: 700 }}>{ev.price.toLocaleString('id-ID')}</span></>}
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#1D1D1D' }}>
+            {ev.price === 0 ? 'Free' : <><span style={{ color: '#B58A4B', fontWeight: 700 }}>IDR</span>{' '}<span style={{ fontWeight: 700 }}>{ev.price.toLocaleString('id-ID')}</span></>}
           </p>
-          <span className="flex items-center gap-1" style={{ fontSize: 12, fontWeight: 600, color: '#C8A97E' }}>
+          <span className="flex items-center gap-1" style={{ fontSize: 12, fontWeight: 600, color: '#B58A4B' }}>
             View <ChevronRight size={13} />
           </span>
         </div>
@@ -388,11 +388,11 @@ export default async function HostPage({ params }: { params: { slug: string } })
   const initials = host.name.split(' ').map(w => w[0]).join('').slice(0, 2)
 
   return (
-    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F3EEE5', minHeight: '100vh' }}>
       <Navbar />
 
       {/* ── HERO ── */}
-      <div style={{ backgroundColor: '#111111' }}>
+      <div style={{ backgroundColor: '#1D1D1D' }}>
         <div className="max-w-[1100px] mx-auto px-6 lg:px-16 py-12">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
 
@@ -405,14 +405,14 @@ export default async function HostPage({ params }: { params: { slug: string } })
               />
             ) : (
               <div className="rounded-2xl flex items-center justify-center flex-shrink-0"
-                style={{ width: 96, height: 96, backgroundColor: '#C8A97E' }}>
+                style={{ width: 96, height: 96, backgroundColor: '#B58A4B' }}>
                 <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 32, fontWeight: 700, color: 'white' }}>{initials}</span>
               </div>
             )}
 
             {/* Info */}
             <div className="flex-1">
-              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#C8A97E', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#B58A4B', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>
                 Host on Balible
               </p>
               <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(24px,3vw,32px)', fontWeight: 700, color: 'white', lineHeight: 1.2, marginBottom: 4 }}>
@@ -423,16 +423,16 @@ export default async function HostPage({ params }: { params: { slug: string } })
               </p>
               <div className="flex flex-wrap gap-4">
                 <div className="flex items-center gap-1.5">
-                  <Star size={14} fill="#C8A97E" color="#C8A97E" />
+                  <Star size={14} fill="#B58A4B" color="#B58A4B" />
                   <span style={{ fontSize: 14, fontWeight: 700, color: 'white' }}>{host.rating}</span>
                   <span style={{ fontSize: 13, color: '#9E9A94' }}>({totalReviews} reviews)</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <Award size={14} style={{ color: '#C8A97E' }} />
+                  <Award size={14} style={{ color: '#B58A4B' }} />
                   <span style={{ fontSize: 13, color: '#9E9A94' }}>Member since {host.memberSince}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <Users size={14} style={{ color: '#C8A97E' }} />
+                  <Users size={14} style={{ color: '#B58A4B' }} />
                   <span style={{ fontSize: 13, color: '#9E9A94' }}>{host.responseRate} response rate</span>
                 </div>
               </div>
@@ -450,7 +450,7 @@ export default async function HostPage({ params }: { params: { slug: string } })
 
             {/* About */}
             <div className="bg-white rounded-2xl p-6 mb-6" style={{ border: '1px solid #E8E4DE' }}>
-              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', marginBottom: 12 }}>
+              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#1D1D1D', marginBottom: 12 }}>
                 About {host.name.split(' ')[0]}
               </h2>
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: '#4A4540', lineHeight: 1.75 }}>
@@ -458,7 +458,7 @@ export default async function HostPage({ params }: { params: { slug: string } })
               </p>
               <div className="flex flex-wrap gap-2 mt-4">
                 {host.languages.map(lang => (
-                  <span key={lang} style={{ padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 500, backgroundColor: '#F5F1EB', color: '#6F675C', border: '1px solid #E8E4DE' }}>
+                  <span key={lang} style={{ padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 500, backgroundColor: '#F3EEE5', color: '#6F675C', border: '1px solid #E8E4DE' }}>
                     {lang}
                   </span>
                 ))}
@@ -466,7 +466,7 @@ export default async function HostPage({ params }: { params: { slug: string } })
             </div>
 
             {/* Experiences */}
-            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', marginBottom: 16 }}>
+            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#1D1D1D', marginBottom: 16 }}>
               Experiences by {host.name.split(' ')[0]}
               <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 400, color: '#6F675C', marginLeft: 10 }}>
                 {host.experiences.length} listing{host.experiences.length !== 1 ? 's' : ''}
@@ -480,7 +480,7 @@ export default async function HostPage({ params }: { params: { slug: string } })
             {/* Events */}
             {host.events.length > 0 && (
               <div className="mt-10">
-                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', marginBottom: 16 }}>
+                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#1D1D1D', marginBottom: 16 }}>
                   Events by {host.name.split(' ')[0]}
                   <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 400, color: '#6F675C', marginLeft: 10 }}>
                     {host.events.length} event{host.events.length !== 1 ? 's' : ''}
@@ -496,7 +496,7 @@ export default async function HostPage({ params }: { params: { slug: string } })
           {/* RIGHT — stats card */}
           <div style={{ width: 280, flexShrink: 0, alignSelf: 'flex-start', position: 'sticky', top: 88 }}>
             <div className="bg-white rounded-2xl p-5" style={{ border: '1px solid #E8E4DE' }}>
-              <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 16 }}>
+              <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#1D1D1D', marginBottom: 16 }}>
                 Host details
               </h3>
               {[
@@ -508,15 +508,15 @@ export default async function HostPage({ params }: { params: { slug: string } })
                 { label: 'Member since',  value: host.memberSince },
                 { label: 'Languages',     value: host.languages.join(', ') },
               ].map(({ label, value }) => (
-                <div key={label} className="flex justify-between items-start py-2.5" style={{ borderBottom: '1px solid #F5F1EB' }}>
+                <div key={label} className="flex justify-between items-start py-2.5" style={{ borderBottom: '1px solid #F3EEE5' }}>
                   <span style={{ fontSize: 13, color: '#6F675C' }}>{label}</span>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: '#111111', textAlign: 'right', maxWidth: '55%' }}>{value}</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#1D1D1D', textAlign: 'right', maxWidth: '55%' }}>{value}</span>
                 </div>
               ))}
               <a
                 href={`/search`}
                 className="mt-5 flex items-center justify-center hover:opacity-90 transition-opacity"
-                style={{ height: 44, backgroundColor: '#111111', color: 'white', borderRadius: 10, fontSize: 14, fontWeight: 600, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}
+                style={{ height: 44, backgroundColor: '#1D1D1D', color: 'white', borderRadius: 10, fontSize: 14, fontWeight: 600, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}
               >
                 Browse all experiences
               </a>

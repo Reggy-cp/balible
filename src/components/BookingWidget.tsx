@@ -78,13 +78,13 @@ function MiniCalendar({
     <div>
       <div className="flex items-center justify-between mb-3">
         <button onClick={prev} className="w-6 h-6 flex items-center justify-center rounded hover:bg-ivory transition-colors">
-          <ChevronLeft size={13} style={{ color: '#111111' }} />
+          <ChevronLeft size={13} style={{ color: '#1D1D1D' }} />
         </button>
-        <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111' }}>
+        <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#1D1D1D' }}>
           {MONTHS[month]} {year}
         </span>
         <button onClick={next} className="w-6 h-6 flex items-center justify-center rounded hover:bg-ivory transition-colors">
-          <ChevronRight size={13} style={{ color: '#111111' }} />
+          <ChevronRight size={13} style={{ color: '#1D1D1D' }} />
         </button>
       </div>
 
@@ -112,9 +112,9 @@ function MiniCalendar({
                 width: 32, height: 32, borderRadius: 6, margin: '0 auto',
                 fontFamily: 'var(--font-inter)', fontSize: 12,
                 fontWeight: isSel ? 600 : 400,
-                backgroundColor: isSel ? '#111111' : 'transparent',
-                color: isSel ? 'white' : unavailable ? '#C8C4BE' : '#111111',
-                border: isToday && !isSel ? '2px solid #C8A97E' : '1px solid transparent',
+                backgroundColor: isSel ? '#1D1D1D' : 'transparent',
+                color: isSel ? 'white' : unavailable ? '#C8C4BE' : '#1D1D1D',
+                border: isToday && !isSel ? '2px solid #B58A4B' : '1px solid transparent',
                 opacity: isPast ? 0.3 : 1,
                 cursor: disabled ? 'not-allowed' : 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -247,8 +247,8 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
   return (
     <div className={embedded ? '' : 'bg-white rounded-xl p-6 sticky top-24'} style={embedded ? {} : { border: '1px solid #E8E4DE' }}>
       <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>From</span>
-      <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: '#111111', marginTop: 2 }}>
-        <span style={{ color: '#C8A97E' }}>IDR</span> {formatted}
+      <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: '#1D1D1D', marginTop: 2 }}>
+        <span style={{ color: '#B58A4B' }}>IDR</span> {formatted}
       </p>
 
       {hasSchedule && (
@@ -257,7 +257,7 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
             <span key={d.day} style={{
               padding: '2px 8px', borderRadius: 99, fontSize: 11, fontWeight: 500,
               backgroundColor: d.enabled ? '#F0EDE8' : 'transparent',
-              color: d.enabled ? '#111111' : '#C8C4BE',
+              color: d.enabled ? '#1D1D1D' : '#C8C4BE',
               border: d.enabled ? '1px solid #E8E4DE' : '1px solid transparent',
             }}>{d.day}</span>
           ))}
@@ -285,9 +285,9 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
                 <button key={slot} onClick={() => handleTimeSelect(slot)}
                   style={{
                     padding: '5px 10px', borderRadius: 8, fontSize: 12, fontWeight: isSel ? 600 : 400,
-                    backgroundColor: isSel ? '#111111' : 'white',
-                    color: isSel ? 'white' : '#111111',
-                    border: isSel ? '1px solid #111111' : '1px solid #E8E4DE',
+                    backgroundColor: isSel ? '#1D1D1D' : 'white',
+                    color: isSel ? 'white' : '#1D1D1D',
+                    border: isSel ? '1px solid #1D1D1D' : '1px solid #E8E4DE',
                     cursor: 'pointer', transition: 'all 0.15s',
                     fontFamily: 'var(--font-inter)',
                     display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
@@ -334,7 +334,7 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
         <p className="mb-1.5" style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>Guests</p>
         <select value={guests} onChange={e => setGuests(Number(e.target.value))}
           className="w-full px-3 py-2.5 rounded-md outline-none appearance-none cursor-pointer"
-          style={{ border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', backgroundColor: 'white' }}>
+          style={{ border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 14, color: '#1D1D1D', backgroundColor: 'white' }}>
           {Array.from(
             { length: selectedTime
                 ? effectiveMaxGuests - (bookedGuests[selectedTime] ?? 0)
@@ -348,10 +348,10 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
 
       {/* Summary */}
       {selectedDate && selectedTime && (
-        <div className="mt-4 p-3 rounded-lg" style={{ backgroundColor: '#F5F1EB' }}>
+        <div className="mt-4 p-3 rounded-lg" style={{ backgroundColor: '#F3EEE5' }}>
           <div className="flex justify-between mb-1">
             <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>Date & time</span>
-            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 600, color: '#111111' }}>
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 600, color: '#1D1D1D' }}>
               {minsToLabel(parseTimeMins(selectedTime))} – {endTimeLabel(selectedTime)}
             </span>
           </div>
@@ -359,7 +359,7 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
             <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>
               IDR {formatted} × {guests} guest{guests > 1 ? 's' : ''}
             </span>
-            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111' }}>
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#1D1D1D' }}>
               IDR {(effectivePrice * guests).toLocaleString('id-ID')}
             </span>
           </div>
@@ -377,7 +377,7 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
         style={{
           height: 44, borderRadius: 8, fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500,
           textDecoration: 'none', display: 'flex',
-          backgroundColor: selectedDate && selectedTime ? '#111111' : '#E8E4DE',
+          backgroundColor: selectedDate && selectedTime ? '#1D1D1D' : '#E8E4DE',
           color: selectedDate && selectedTime ? 'white' : '#9E9A94',
           cursor: selectedDate && selectedTime ? 'pointer' : 'not-allowed',
         }}>

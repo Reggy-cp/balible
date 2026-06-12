@@ -68,7 +68,7 @@ export default function ServiceBookingWidget({
 
       {/* Price */}
       <div className="mb-5">
-        <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: '#111111' }}>
+        <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: '#1D1D1D' }}>
           IDR {price.toLocaleString('id-ID')}
           <span style={{ fontSize: 14, fontWeight: 400, color: '#6F675C', marginLeft: 4 }}>{priceLabel}</span>
         </p>
@@ -77,7 +77,7 @@ export default function ServiceBookingWidget({
       {/* Date + Time side by side */}
       <div className="grid grid-cols-2 gap-3 mb-4">
         <div>
-          <label style={{ fontSize: 12, fontWeight: 600, color: '#111111', display: 'block', marginBottom: 6 }}>Date</label>
+          <label style={{ fontSize: 12, fontWeight: 600, color: '#1D1D1D', display: 'block', marginBottom: 6 }}>Date</label>
           <div className="relative">
             <Calendar size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#6F675C' }} />
             <input
@@ -85,19 +85,19 @@ export default function ServiceBookingWidget({
               value={date}
               onChange={e => setDate(e.target.value)}
               min={new Date().toISOString().split('T')[0]}
-              style={{ width: '100%', height: 44, borderRadius: 10, border: '1px solid #E8E4DE', paddingLeft: 32, paddingRight: 8, fontSize: 13, color: '#111111', outline: 'none', backgroundColor: '#FAFAF8', fontFamily: 'var(--font-inter)' }}
+              style={{ width: '100%', height: 44, borderRadius: 10, border: '1px solid #E8E4DE', paddingLeft: 32, paddingRight: 8, fontSize: 13, color: '#1D1D1D', outline: 'none', backgroundColor: '#FAFAF8', fontFamily: 'var(--font-inter)' }}
             />
           </div>
         </div>
 
         <div>
-          <label style={{ fontSize: 12, fontWeight: 600, color: '#111111', display: 'block', marginBottom: 6 }}>Time</label>
+          <label style={{ fontSize: 12, fontWeight: 600, color: '#1D1D1D', display: 'block', marginBottom: 6 }}>Time</label>
           <div className="relative">
             <Clock size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#6F675C', zIndex: 1 }} />
             <select
               value={time}
               onChange={e => setTime(e.target.value)}
-              style={{ width: '100%', height: 44, borderRadius: 10, border: '1px solid #E8E4DE', paddingLeft: 32, paddingRight: 8, fontSize: 13, color: time ? '#111111' : '#9E9A94', outline: 'none', backgroundColor: '#FAFAF8', appearance: 'none', fontFamily: 'var(--font-inter)' }}
+              style={{ width: '100%', height: 44, borderRadius: 10, border: '1px solid #E8E4DE', paddingLeft: 32, paddingRight: 8, fontSize: 13, color: time ? '#1D1D1D' : '#9E9A94', outline: 'none', backgroundColor: '#FAFAF8', appearance: 'none', fontFamily: 'var(--font-inter)' }}
             >
               <option value="">Select</option>
               {TIME_SLOTS.map(s => (
@@ -111,7 +111,7 @@ export default function ServiceBookingWidget({
       {/* Duration */}
       {durationOptions && (
         <div className="mb-4">
-          <label style={{ fontSize: 12, fontWeight: 600, color: '#111111', display: 'block', marginBottom: 6 }}>
+          <label style={{ fontSize: 12, fontWeight: 600, color: '#1D1D1D', display: 'block', marginBottom: 6 }}>
             Duration ({priceType === 'HOURLY' ? 'hours' : 'days'})
           </label>
           <div className="flex gap-2 flex-wrap">
@@ -121,9 +121,9 @@ export default function ServiceBookingWidget({
                 onClick={() => setDuration(d)}
                 style={{
                   height: 36, paddingInline: 14, borderRadius: 8, fontSize: 13, cursor: 'pointer',
-                  backgroundColor: duration === d ? '#111111' : 'white',
+                  backgroundColor: duration === d ? '#1D1D1D' : 'white',
                   color: duration === d ? 'white' : '#6F675C',
-                  border: `1px solid ${duration === d ? '#111111' : '#E8E4DE'}`,
+                  border: `1px solid ${duration === d ? '#1D1D1D' : '#E8E4DE'}`,
                   fontWeight: duration === d ? 600 : 400,
                 }}
               >
@@ -136,13 +136,13 @@ export default function ServiceBookingWidget({
 
       {/* Guests */}
       <div className="mb-5">
-        <label style={{ fontSize: 12, fontWeight: 600, color: '#111111', display: 'block', marginBottom: 6 }}>Guests</label>
+        <label style={{ fontSize: 12, fontWeight: 600, color: '#1D1D1D', display: 'block', marginBottom: 6 }}>Guests</label>
         <div className="relative">
           <Users size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#6F675C' }} />
           <select
             value={guests}
             onChange={e => setGuests(Number(e.target.value))}
-            style={{ width: '100%', height: 44, borderRadius: 10, border: '1px solid #E8E4DE', paddingLeft: 32, paddingRight: 12, fontSize: 14, color: '#111111', outline: 'none', backgroundColor: '#FAFAF8', appearance: 'none', fontFamily: 'var(--font-inter)' }}
+            style={{ width: '100%', height: 44, borderRadius: 10, border: '1px solid #E8E4DE', paddingLeft: 32, paddingRight: 12, fontSize: 14, color: '#1D1D1D', outline: 'none', backgroundColor: '#FAFAF8', appearance: 'none', fontFamily: 'var(--font-inter)' }}
           >
             {[1, 2, 3, 4, 5, 6].map(n => (
               <option key={n} value={n}>{n} {n === 1 ? 'guest' : 'guests'}</option>
@@ -152,22 +152,22 @@ export default function ServiceBookingWidget({
       </div>
 
       {/* Price summary */}
-      <div className="space-y-2 mb-4 py-3" style={{ borderTop: '1px solid #F5F1EB' }}>
+      <div className="space-y-2 mb-4 py-3" style={{ borderTop: '1px solid #F3EEE5' }}>
         {priceType !== 'FIXED' && (
           <div className="flex items-center justify-between">
             <span style={{ fontSize: 13, color: '#6F675C' }}>
               IDR {price.toLocaleString('id-ID')} × {unit} {priceType === 'HOURLY' ? (unit === 1 ? 'hr' : 'hrs') : (unit === 1 ? 'day' : 'days')}
             </span>
-            <span style={{ fontSize: 13, color: '#111111' }}>IDR {subtotal.toLocaleString('id-ID')}</span>
+            <span style={{ fontSize: 13, color: '#1D1D1D' }}>IDR {subtotal.toLocaleString('id-ID')}</span>
           </div>
         )}
         <div className="flex items-center justify-between">
           <span style={{ fontSize: 13, color: '#6F675C' }}>Service fee (10%)</span>
-          <span style={{ fontSize: 13, color: '#111111' }}>IDR {serviceFee.toLocaleString('id-ID')}</span>
+          <span style={{ fontSize: 13, color: '#1D1D1D' }}>IDR {serviceFee.toLocaleString('id-ID')}</span>
         </div>
-        <div className="flex items-center justify-between pt-2" style={{ borderTop: '1px solid #F5F1EB' }}>
-          <span style={{ fontSize: 14, fontWeight: 700, color: '#111111' }}>Total</span>
-          <span style={{ fontSize: 15, fontWeight: 700, color: '#111111' }}>IDR {total.toLocaleString('id-ID')}</span>
+        <div className="flex items-center justify-between pt-2" style={{ borderTop: '1px solid #F3EEE5' }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: '#1D1D1D' }}>Total</span>
+          <span style={{ fontSize: 15, fontWeight: 700, color: '#1D1D1D' }}>IDR {total.toLocaleString('id-ID')}</span>
         </div>
       </div>
 
@@ -176,15 +176,15 @@ export default function ServiceBookingWidget({
         onClick={handleBook}
         disabled={!canBook}
         className="w-full hover:opacity-90 transition-opacity disabled:opacity-40"
-        style={{ height: 48, borderRadius: 12, backgroundColor: '#111111', color: 'white', fontSize: 15, fontWeight: 600, border: 'none', cursor: canBook ? 'pointer' : 'not-allowed', fontFamily: 'var(--font-inter)' }}
+        style={{ height: 48, borderRadius: 12, backgroundColor: '#1D1D1D', color: 'white', fontSize: 15, fontWeight: 600, border: 'none', cursor: canBook ? 'pointer' : 'not-allowed', fontFamily: 'var(--font-inter)' }}
       >
         {instantConfirm ? 'Book Now' : 'Request to Book'}
       </button>
 
       {instantConfirm && (
         <div className="flex items-center justify-center gap-1.5 mt-3">
-          <CheckCircle size={13} style={{ color: '#4A7C59' }} />
-          <p style={{ fontSize: 12, color: '#4A7C59' }}>Instant confirmation — no waiting</p>
+          <CheckCircle size={13} style={{ color: '#2E4A35' }} />
+          <p style={{ fontSize: 12, color: '#2E4A35' }}>Instant confirmation — no waiting</p>
         </div>
       )}
 

@@ -102,11 +102,11 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
             {/* Date pill */}
             <div className="inline-flex items-center gap-2 mb-4"
               style={{ backgroundColor: '#FDF8F4', border: '1px solid #F0E6D6', borderRadius: 20, padding: '5px 14px' }}>
-              <CalendarDays size={13} style={{ color: '#C8A97E' }} />
-              <span style={{ fontSize: 13, fontWeight: 600, color: '#C8A97E' }}>{dateStr} · {timeStr}</span>
+              <CalendarDays size={13} style={{ color: '#B58A4B' }} />
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#B58A4B' }}>{dateStr} · {timeStr}</span>
             </div>
 
-            <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px,3.5vw,40px)', fontWeight: 700, color: '#111111', lineHeight: 1.2, marginBottom: 16 }}>
+            <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px,3.5vw,40px)', fontWeight: 700, color: '#1D1D1D', lineHeight: 1.2, marginBottom: 16 }}>
               {event.title}
             </h1>
 
@@ -128,7 +128,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
 
             {/* About */}
             <div className="bg-white rounded-2xl p-6 mb-6" style={{ border: '1px solid #E8E4DE' }}>
-              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', marginBottom: 12 }}>
+              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#1D1D1D', marginBottom: 12 }}>
                 About this event
               </h2>
               <p style={{ fontSize: 15, color: '#3A3530', lineHeight: 1.75, whiteSpace: 'pre-line' }}>
@@ -139,7 +139,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
             {/* Hosted by */}
             {event.operatorName && (
               <div className="bg-white rounded-2xl p-6" style={{ border: '1px solid #E8E4DE' }}>
-                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', marginBottom: 14 }}>
+                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#1D1D1D', marginBottom: 14 }}>
                   Hosted by
                 </h2>
                 <div className="flex items-center gap-4">
@@ -154,7 +154,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                     </div>
                   )}
                   <div>
-                    <p style={{ fontSize: 16, fontWeight: 700, color: '#111111' }}>{event.operatorName}</p>
+                    <p style={{ fontSize: 16, fontWeight: 700, color: '#1D1D1D' }}>{event.operatorName}</p>
                     <p style={{ fontSize: 13, color: '#6F675C', marginTop: 2 }}>Verified Balible host</p>
                   </div>
                 </div>
@@ -168,7 +168,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
 
               {/* Price */}
               <div className="mb-5">
-                <span style={{ fontSize: 26, fontWeight: 800, color: '#111111' }}>
+                <span style={{ fontSize: 26, fontWeight: 800, color: '#1D1D1D' }}>
                   {event.price === 0 ? 'Free' : `IDR ${event.price.toLocaleString('id-ID')}`}
                 </span>
                 {event.price > 0 && (
@@ -177,10 +177,10 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
               </div>
 
               {/* Event summary */}
-              <div className="rounded-xl p-4 mb-5 space-y-2" style={{ backgroundColor: '#F5F1EB' }}>
+              <div className="rounded-xl p-4 mb-5 space-y-2" style={{ backgroundColor: '#F3EEE5' }}>
                 <div className="flex items-start gap-2">
                   <CalendarDays size={14} style={{ color: '#6F675C', marginTop: 1, flexShrink: 0 }} />
-                  <span style={{ fontSize: 13, color: '#111111', fontWeight: 600 }}>{dateStr}</span>
+                  <span style={{ fontSize: 13, color: '#1D1D1D', fontWeight: 600 }}>{dateStr}</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <Clock size={14} style={{ color: '#6F675C', marginTop: 1, flexShrink: 0 }} />
@@ -203,7 +203,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
               ) : (
                 <>
                   <button
-                    style={{ width: '100%', height: 50, borderRadius: 12, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 15, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                    style={{ width: '100%', height: 50, borderRadius: 12, border: 'none', backgroundColor: '#1D1D1D', color: 'white', fontSize: 15, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                     <Ticket size={16} />
                     Get tickets
                   </button>
@@ -220,9 +220,9 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
 
       {/* ── YOU MIGHT ALSO LOVE ── */}
       {otherEvents.length > 0 && (
-        <section className="py-12 px-6 lg:px-16" style={{ backgroundColor: '#F5F1EB' }}>
+        <section className="py-12 px-6 lg:px-16" style={{ backgroundColor: '#F3EEE5' }}>
           <div className="max-w-[1440px] mx-auto">
-            <h2 className="mb-8" style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: '#111111' }}>
+            <h2 className="mb-8" style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: '#1D1D1D' }}>
               You might also love
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -246,7 +246,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                         </div>
                       </div>
                       <div className="p-5">
-                        <h3 className="line-clamp-2 mb-3" style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111', lineHeight: 1.3 }}>
+                        <h3 className="line-clamp-2 mb-3" style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#1D1D1D', lineHeight: 1.3 }}>
                           {ev.title}
                         </h3>
                         <div className="flex flex-col gap-1.5 mb-4">
@@ -260,10 +260,10 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                           </div>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span style={{ fontSize: 16, fontWeight: 700, color: '#111111' }}>
+                          <span style={{ fontSize: 16, fontWeight: 700, color: '#1D1D1D' }}>
                             {ev.price === 0 ? 'Free' : `IDR ${ev.price.toLocaleString('id-ID')}`}
                           </span>
-                          <span style={{ fontSize: 13, fontWeight: 600, color: '#C8A97E' }}>View event →</span>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: '#B58A4B' }}>View event →</span>
                         </div>
                       </div>
                     </div>

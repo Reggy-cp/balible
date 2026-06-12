@@ -83,7 +83,7 @@ function CheckoutInner() {
   }
 
   return (
-    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F3EEE5', minHeight: '100vh' }}>
       <Navbar />
 
       <div className="max-w-[900px] mx-auto px-6 py-8 pb-24">
@@ -94,71 +94,71 @@ function CheckoutInner() {
           <ChevronRight size={13} />
           <a href={`/services/${slug}`} style={{ color: '#6F675C', textDecoration: 'none' }}>{meta.title}</a>
           <ChevronRight size={13} />
-          <span style={{ color: '#111111' }}>Checkout</span>
+          <span style={{ color: '#1D1D1D' }}>Checkout</span>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
 
           {/* Left — form */}
           <form onSubmit={handleSubmit} className="flex-1 min-w-0 space-y-5">
-            <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: '#111111', marginBottom: 4 }}>
+            <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: '#1D1D1D', marginBottom: 4 }}>
               Complete your booking
             </h1>
 
             {/* Guest details */}
             <div className="bg-white rounded-xl p-6" style={{ border: '1px solid #E8E4DE' }}>
-              <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 16 }}>Your details</h2>
+              <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1D1D1D', marginBottom: 16 }}>Your details</h2>
 
               <div className="space-y-4">
                 {/* Name */}
                 <div>
-                  <label style={{ fontSize: 12, fontWeight: 600, color: '#111111', display: 'block', marginBottom: 6 }}>Full name *</label>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: '#1D1D1D', display: 'block', marginBottom: 6 }}>Full name *</label>
                   <div className="relative">
                     <User size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#6F675C' }} />
                     <input
                       value={name} onChange={e => setName(e.target.value)} required
                       placeholder="Your full name"
-                      style={{ width: '100%', height: 44, borderRadius: 10, border: '1px solid #E8E4DE', paddingLeft: 36, paddingRight: 12, fontSize: 14, color: '#111111', outline: 'none', backgroundColor: '#FAFAF8', fontFamily: 'var(--font-inter)' }}
+                      style={{ width: '100%', height: 44, borderRadius: 10, border: '1px solid #E8E4DE', paddingLeft: 36, paddingRight: 12, fontSize: 14, color: '#1D1D1D', outline: 'none', backgroundColor: '#FAFAF8', fontFamily: 'var(--font-inter)' }}
                     />
                   </div>
                 </div>
 
                 {/* Email */}
                 <div>
-                  <label style={{ fontSize: 12, fontWeight: 600, color: '#111111', display: 'block', marginBottom: 6 }}>Email *</label>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: '#1D1D1D', display: 'block', marginBottom: 6 }}>Email *</label>
                   <div className="relative">
                     <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#6F675C' }} />
                     <input
                       type="email" value={email} onChange={e => setEmail(e.target.value)} required
                       placeholder="your@email.com"
-                      style={{ width: '100%', height: 44, borderRadius: 10, border: '1px solid #E8E4DE', paddingLeft: 36, paddingRight: 12, fontSize: 14, color: '#111111', outline: 'none', backgroundColor: '#FAFAF8', fontFamily: 'var(--font-inter)' }}
+                      style={{ width: '100%', height: 44, borderRadius: 10, border: '1px solid #E8E4DE', paddingLeft: 36, paddingRight: 12, fontSize: 14, color: '#1D1D1D', outline: 'none', backgroundColor: '#FAFAF8', fontFamily: 'var(--font-inter)' }}
                     />
                   </div>
                 </div>
 
                 {/* Phone */}
                 <div>
-                  <label style={{ fontSize: 12, fontWeight: 600, color: '#111111', display: 'block', marginBottom: 6 }}>WhatsApp / phone</label>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: '#1D1D1D', display: 'block', marginBottom: 6 }}>WhatsApp / phone</label>
                   <div className="relative">
                     <Phone size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#6F675C' }} />
                     <input
                       value={phone} onChange={e => setPhone(e.target.value)}
                       placeholder="+62 ..."
-                      style={{ width: '100%', height: 44, borderRadius: 10, border: '1px solid #E8E4DE', paddingLeft: 36, paddingRight: 12, fontSize: 14, color: '#111111', outline: 'none', backgroundColor: '#FAFAF8', fontFamily: 'var(--font-inter)' }}
+                      style={{ width: '100%', height: 44, borderRadius: 10, border: '1px solid #E8E4DE', paddingLeft: 36, paddingRight: 12, fontSize: 14, color: '#1D1D1D', outline: 'none', backgroundColor: '#FAFAF8', fontFamily: 'var(--font-inter)' }}
                     />
                   </div>
                 </div>
 
                 {/* Notes */}
                 <div>
-                  <label style={{ fontSize: 12, fontWeight: 600, color: '#111111', display: 'block', marginBottom: 6 }}>Special requests</label>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: '#1D1D1D', display: 'block', marginBottom: 6 }}>Special requests</label>
                   <div className="relative">
                     <FileText size={14} className="absolute left-3 top-3" style={{ color: '#6F675C' }} />
                     <textarea
                       value={notes} onChange={e => setNotes(e.target.value)}
                       placeholder="Anything the provider should know..."
                       rows={3}
-                      style={{ width: '100%', borderRadius: 10, border: '1px solid #E8E4DE', paddingLeft: 36, paddingRight: 12, paddingTop: 12, paddingBottom: 12, fontSize: 14, color: '#111111', outline: 'none', backgroundColor: '#FAFAF8', resize: 'none', fontFamily: 'var(--font-inter)' }}
+                      style={{ width: '100%', borderRadius: 10, border: '1px solid #E8E4DE', paddingLeft: 36, paddingRight: 12, paddingTop: 12, paddingBottom: 12, fontSize: 14, color: '#1D1D1D', outline: 'none', backgroundColor: '#FAFAF8', resize: 'none', fontFamily: 'var(--font-inter)' }}
                     />
                   </div>
                 </div>
@@ -167,8 +167,8 @@ function CheckoutInner() {
 
             {/* Trust */}
             <div className="flex items-start gap-3 p-4 rounded-xl" style={{ backgroundColor: '#F0F7F2', border: '1px solid #D4E8D9' }}>
-              <Shield size={16} style={{ color: '#4A7C59', flexShrink: 0, marginTop: 1 }} />
-              <p style={{ fontSize: 13, color: '#4A7C59', lineHeight: 1.5 }}>
+              <Shield size={16} style={{ color: '#2E4A35', flexShrink: 0, marginTop: 1 }} />
+              <p style={{ fontSize: 13, color: '#2E4A35', lineHeight: 1.5 }}>
                 Your booking is protected. Payment is only released to the provider after your service is delivered.
               </p>
             </div>
@@ -192,7 +192,7 @@ function CheckoutInner() {
               type="submit"
               disabled={submitting || !name || !email || !meta.id}
               className="w-full hover:opacity-90 transition-opacity disabled:opacity-40"
-              style={{ height: 50, borderRadius: 12, backgroundColor: '#111111', color: 'white', fontSize: 15, fontWeight: 600, border: 'none', cursor: submitting || !name || !email || !meta.id ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-inter)' }}
+              style={{ height: 50, borderRadius: 12, backgroundColor: '#1D1D1D', color: 'white', fontSize: 15, fontWeight: 600, border: 'none', cursor: submitting || !name || !email || !meta.id ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-inter)' }}
             >
               {submitting ? 'Confirming…' : meta.instantConfirm ? 'Confirm Booking' : 'Send Request'}
             </button>
@@ -208,19 +208,19 @@ function CheckoutInner() {
               )}
 
               <p style={{ fontSize: 11, color: '#6F675C', marginBottom: 2 }}>{meta.area} · by {meta.providerName}</p>
-              <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 12 }}>
+              <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#1D1D1D', marginBottom: 12 }}>
                 {meta.title}
               </h3>
 
-              <div className="space-y-2 mb-4 pb-4" style={{ borderBottom: '1px solid #F5F1EB' }}>
+              <div className="space-y-2 mb-4 pb-4" style={{ borderBottom: '1px solid #F3EEE5' }}>
                 <div className="flex justify-between">
                   <span style={{ fontSize: 13, color: '#6F675C' }}>Date</span>
-                  <span style={{ fontSize: 13, color: '#111111', fontWeight: 500 }}>{formatDate(date)}</span>
+                  <span style={{ fontSize: 13, color: '#1D1D1D', fontWeight: 500 }}>{formatDate(date)}</span>
                 </div>
                 {time && (
                   <div className="flex justify-between">
                     <span style={{ fontSize: 13, color: '#6F675C' }}>Time</span>
-                    <span style={{ fontSize: 13, color: '#111111', fontWeight: 500 }}>
+                    <span style={{ fontSize: 13, color: '#1D1D1D', fontWeight: 500 }}>
                       {(() => { const [h, m] = time.split(':').map(Number); const ampm = h < 12 ? 'AM' : 'PM'; return `${h % 12 || 12}:${String(m).padStart(2,'0')} ${ampm}` })()}
                     </span>
                   </div>
@@ -228,12 +228,12 @@ function CheckoutInner() {
                 {meta.priceTypeKey !== 'FIXED' && (
                   <div className="flex justify-between">
                     <span style={{ fontSize: 13, color: '#6F675C' }}>Duration</span>
-                    <span style={{ fontSize: 13, color: '#111111', fontWeight: 500 }}>{duration} {PRICE_TYPE_LABEL[meta.priceTypeKey]}{duration > 1 ? 's' : ''}</span>
+                    <span style={{ fontSize: 13, color: '#1D1D1D', fontWeight: 500 }}>{duration} {PRICE_TYPE_LABEL[meta.priceTypeKey]}{duration > 1 ? 's' : ''}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
                   <span style={{ fontSize: 13, color: '#6F675C' }}>Guests</span>
-                  <span style={{ fontSize: 13, color: '#111111', fontWeight: 500 }}>{guests}</span>
+                  <span style={{ fontSize: 13, color: '#1D1D1D', fontWeight: 500 }}>{guests}</span>
                 </div>
               </div>
 
@@ -242,17 +242,17 @@ function CheckoutInner() {
                   <span style={{ fontSize: 13, color: '#6F675C' }}>
                     IDR {meta.price.toLocaleString('id-ID')} × {unit} {PRICE_TYPE_LABEL[meta.priceTypeKey]}{unit > 1 ? 's' : ''}
                   </span>
-                  <span style={{ fontSize: 13, color: '#111111' }}>IDR {subtotal.toLocaleString('id-ID')}</span>
+                  <span style={{ fontSize: 13, color: '#1D1D1D' }}>IDR {subtotal.toLocaleString('id-ID')}</span>
                 </div>
                 <div className="flex justify-between">
                   <span style={{ fontSize: 13, color: '#6F675C' }}>Service fee (10%)</span>
-                  <span style={{ fontSize: 13, color: '#111111' }}>IDR {serviceFee.toLocaleString('id-ID')}</span>
+                  <span style={{ fontSize: 13, color: '#1D1D1D' }}>IDR {serviceFee.toLocaleString('id-ID')}</span>
                 </div>
               </div>
 
               <div className="flex justify-between pt-3" style={{ borderTop: '1px solid #E8E4DE' }}>
-                <span style={{ fontSize: 14, fontWeight: 700, color: '#111111' }}>Total</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: '#111111' }}>IDR {total.toLocaleString('id-ID')}</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: '#1D1D1D' }}>Total</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: '#1D1D1D' }}>IDR {total.toLocaleString('id-ID')}</span>
               </div>
             </div>
           </div>

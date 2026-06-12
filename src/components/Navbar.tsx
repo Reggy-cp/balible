@@ -68,7 +68,7 @@ export default function Navbar() {
 
           {/* Logo */}
           <a href="/" className="flex flex-col leading-none flex-shrink-0" style={{ textDecoration: 'none' }}>
-            <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', letterSpacing: '0.02em' }}>
+            <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#1D1D1D', letterSpacing: '0.02em' }}>
               BALIBLE
             </span>
             <span className="hidden sm:block" style={{ fontSize: 8, letterSpacing: '0.2em', color: '#6F675C', textTransform: 'uppercase' }}>
@@ -86,7 +86,7 @@ export default function Navbar() {
                     className="flex items-center gap-1 px-3 py-2 rounded-lg transition-colors hover:bg-stone-50"
                     style={{
                       fontFamily: 'var(--font-inter)', fontSize: 14,
-                      color: isActive(href) ? '#C8A97E' : '#111111',
+                      color: isActive(href) ? '#B58A4B' : '#1D1D1D',
                       fontWeight: isActive(href) ? 600 : 400,
                       background: 'none', border: 'none', cursor: 'pointer',
                     }}
@@ -108,15 +108,15 @@ export default function Navbar() {
                         className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors"
                         style={{ textDecoration: 'none', marginBottom: 4 }}
                       >
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#F5F1EB' }}>
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#F3EEE5' }}>
                           <span style={{ fontSize: 14 }}>🌟</span>
                         </div>
                         <div>
-                          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111' }}>All Experiences</p>
+                          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#1D1D1D' }}>All Experiences</p>
                           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>Browse all 16+ experiences</p>
                         </div>
                       </a>
-                      <div style={{ height: 1, backgroundColor: '#F5F1EB', marginBottom: 8, marginInline: 8 }} />
+                      <div style={{ height: 1, backgroundColor: '#F3EEE5', marginBottom: 8, marginInline: 8 }} />
                       <p style={{ fontFamily: 'var(--font-inter)', fontSize: 10, fontWeight: 700, color: '#6F675C', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '4px 12px 8px' }}>
                         Browse by category
                       </p>
@@ -127,10 +127,10 @@ export default function Navbar() {
                           className="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-stone-50 transition-colors"
                           style={{ textDecoration: 'none' }}
                         >
-                          <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#F5F1EB' }}>
-                            <Icon size={13} style={{ color: '#C8A97E' }} />
+                          <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#F3EEE5' }}>
+                            <Icon size={13} style={{ color: '#B58A4B' }} />
                           </div>
-                          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>{catLabel}</span>
+                          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#1D1D1D' }}>{catLabel}</span>
                         </a>
                       ))}
                     </div>
@@ -143,7 +143,7 @@ export default function Navbar() {
                   className="px-3 py-2 rounded-lg transition-colors hover:bg-stone-50"
                   style={{
                     fontFamily: 'var(--font-inter)', fontSize: 14, textDecoration: 'none',
-                    color: isActive(href) ? '#C8A97E' : '#111111',
+                    color: isActive(href) ? '#B58A4B' : '#1D1D1D',
                     fontWeight: isActive(href) ? 600 : 400,
                   }}
                 >
@@ -158,7 +158,7 @@ export default function Navbar() {
             {!isLoaded ? (
               /* Skeleton while Clerk loads — prevents layout shift */
               <div className="hidden sm:flex items-center gap-2">
-                <div style={{ width: 64, height: 34, borderRadius: 10, backgroundColor: '#F5F1EB' }} />
+                <div style={{ width: 64, height: 34, borderRadius: 10, backgroundColor: '#F3EEE5' }} />
                 <div style={{ width: 76, height: 34, borderRadius: 10, backgroundColor: '#E8E4DE' }} />
               </div>
             ) : isSignedIn ? (
@@ -169,7 +169,7 @@ export default function Navbar() {
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors hover:bg-stone-50"
                     style={{
                       fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 500,
-                      color: isActive('/dashboard') ? '#C8A97E' : '#6F675C', textDecoration: 'none',
+                      color: isActive('/dashboard') ? '#B58A4B' : '#6F675C', textDecoration: 'none',
                     }}
                   >
                     <LayoutDashboard size={14} />
@@ -178,7 +178,7 @@ export default function Navbar() {
                 )}
                 <UserButton
                   appearance={{
-                    variables: { colorPrimary: '#C8A97E' },
+                    variables: { colorPrimary: '#B58A4B' },
                     elements: { avatarBox: { width: 36, height: 36 } },
                   }}
                 />
@@ -190,7 +190,7 @@ export default function Navbar() {
                   className="px-4 py-2 rounded-lg transition-colors hover:bg-stone-50"
                   style={{
                     fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500,
-                    color: '#111111', textDecoration: 'none', border: '1px solid #E8E4DE',
+                    color: '#1D1D1D', textDecoration: 'none', border: '1px solid #E8E4DE',
                   }}
                 >
                   Sign in
@@ -200,7 +200,7 @@ export default function Navbar() {
                   className="px-4 py-2 rounded-lg transition-colors"
                   style={{
                     fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600,
-                    color: 'white', textDecoration: 'none', backgroundColor: '#111111',
+                    color: 'white', textDecoration: 'none', backgroundColor: '#1D1D1D',
                   }}
                 >
                   Sign up
@@ -215,7 +215,7 @@ export default function Navbar() {
               onClick={() => setMenuOpen(o => !o)}
               aria-label="Toggle menu"
             >
-              {menuOpen ? <X size={22} style={{ color: '#111111' }} /> : <Menu size={22} style={{ color: '#111111' }} />}
+              {menuOpen ? <X size={22} style={{ color: '#1D1D1D' }} /> : <Menu size={22} style={{ color: '#1D1D1D' }} />}
             </button>
           </div>
         </div>
@@ -234,25 +234,25 @@ export default function Navbar() {
                   className="flex items-center px-4 py-3 rounded-xl transition-colors hover:bg-stone-50"
                   style={{
                     fontFamily: 'var(--font-inter)', fontSize: 15, textDecoration: 'none',
-                    color: isActive(href) ? '#C8A97E' : '#111111',
+                    color: isActive(href) ? '#B58A4B' : '#1D1D1D',
                     fontWeight: isActive(href) ? 600 : 400,
                   }}
                 >
                   {label}
-                  {isActive(href) && <span style={{ marginLeft: 'auto', width: 6, height: 6, borderRadius: '50%', backgroundColor: '#C8A97E' }} />}
+                  {isActive(href) && <span style={{ marginLeft: 'auto', width: 6, height: 6, borderRadius: '50%', backgroundColor: '#B58A4B' }} />}
                 </a>
               ))}
             </div>
 
             {/* Mobile auth section */}
-            <div className="px-4 pb-5 pt-3" style={{ borderTop: '1px solid #F5F1EB' }}>
+            <div className="px-4 pb-5 pt-3" style={{ borderTop: '1px solid #F3EEE5' }}>
               {isLoaded && isSignedIn ? (
                 <div className="space-y-1">
                   {isHost && (
                     <a
                       href="/dashboard"
                       className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors"
-                      style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', textDecoration: 'none', fontWeight: 500 }}
+                      style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#1D1D1D', textDecoration: 'none', fontWeight: 500 }}
                     >
                       <LayoutDashboard size={16} style={{ color: '#6F675C' }} />
                       Dashboard
@@ -261,7 +261,7 @@ export default function Navbar() {
                   <a
                     href="/wishlist"
                     className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors"
-                    style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', textDecoration: 'none' }}
+                    style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#1D1D1D', textDecoration: 'none' }}
                   >
                     <span style={{ fontSize: 16 }}>🤍</span>
                     Wishlist
@@ -269,7 +269,7 @@ export default function Navbar() {
                   <div className="flex items-center gap-3 px-4 py-3">
                     <UserButton
                           appearance={{
-                        variables: { colorPrimary: '#C8A97E' },
+                        variables: { colorPrimary: '#B58A4B' },
                         elements: { avatarBox: { width: 32, height: 32 } },
                       }}
                     />
@@ -280,10 +280,10 @@ export default function Navbar() {
                 </div>
               ) : (
                 <div className="flex gap-2">
-                  <a href="/sign-in" style={{ flex: 1, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #E8E4DE', borderRadius: 10, fontSize: 14, fontWeight: 500, color: '#111111', textDecoration: 'none', fontFamily: 'var(--font-inter)' }}>
+                  <a href="/sign-in" style={{ flex: 1, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #E8E4DE', borderRadius: 10, fontSize: 14, fontWeight: 500, color: '#1D1D1D', textDecoration: 'none', fontFamily: 'var(--font-inter)' }}>
                     Sign in
                   </a>
-                  <a href="/sign-up" style={{ flex: 1, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#111111', borderRadius: 10, fontSize: 14, fontWeight: 600, color: 'white', textDecoration: 'none', fontFamily: 'var(--font-inter)' }}>
+                  <a href="/sign-up" style={{ flex: 1, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#1D1D1D', borderRadius: 10, fontSize: 14, fontWeight: 600, color: 'white', textDecoration: 'none', fontFamily: 'var(--font-inter)' }}>
                     Sign up
                   </a>
                 </div>

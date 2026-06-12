@@ -31,8 +31,8 @@ export const MAP_EXPERIENCES = [
 const CATEGORIES = ['All', 'Art & Craft', 'Wellness', 'Culture', 'Culinary', 'Spiritual', 'Nature & Outdoors', 'Water Activities']
 
 const CAT_COLORS: Record<string, string> = {
-  'Art & Craft':     '#C8A97E',
-  'Wellness':        '#4A7C59',
+  'Art & Craft':     '#B58A4B',
+  'Wellness':        '#2E4A35',
   'Culture':         '#8B6E9E',
   'Culinary':        '#B66A45',
   'Spiritual':       '#D4842A',
@@ -47,8 +47,8 @@ function fmtPrice(p: number) {
 }
 
 function markerHtml(exp: typeof MAP_EXPERIENCES[0], selected: boolean) {
-  const bg    = selected ? '#C8A97E' : '#111111'
-  const color = selected ? '#111111' : '#ffffff'
+  const bg    = selected ? '#B58A4B' : '#1D1D1D'
+  const color = selected ? '#1D1D1D' : '#ffffff'
   const scale = selected ? 'scale(1.15)' : 'scale(1)'
   const shadow = selected
     ? '0 4px 16px rgba(200,169,126,0.5)'
@@ -209,7 +209,7 @@ export default function BaliMapView() {
           {/* Header */}
           <div style={{ padding: '16px 20px 0', borderBottom: '1px solid #E8E4DE' }}>
             <div className="flex items-center justify-between mb-3">
-              <a href="/" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111', textDecoration: 'none', letterSpacing: '0.02em' }}>
+              <a href="/" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#1D1D1D', textDecoration: 'none', letterSpacing: '0.02em' }}>
                 BALIBLE
               </a>
               <div className="flex items-center gap-2">
@@ -236,7 +236,7 @@ export default function BaliMapView() {
                 placeholder="Search by name, area, or category..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                style={{ width: '100%', height: 38, borderRadius: 10, border: '1px solid #E8E4DE', paddingLeft: 34, paddingRight: search ? 34 : 14, fontSize: 13, color: '#111111', outline: 'none', backgroundColor: '#F9F9F7' }}
+                style={{ width: '100%', height: 38, borderRadius: 10, border: '1px solid #E8E4DE', paddingLeft: 34, paddingRight: search ? 34 : 14, fontSize: 13, color: '#1D1D1D', outline: 'none', backgroundColor: '#F9F9F7' }}
               />
               {search && (
                 <button onClick={() => setSearch('')} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
@@ -251,7 +251,7 @@ export default function BaliMapView() {
                 <button key={cat} onClick={() => setCategory(cat)}
                   style={{
                     padding: '5px 12px', borderRadius: 20, fontSize: 12, fontWeight: category === cat ? 600 : 400, flexShrink: 0, cursor: 'pointer',
-                    backgroundColor: category === cat ? '#111111' : '#F5F1EB',
+                    backgroundColor: category === cat ? '#1D1D1D' : '#F3EEE5',
                     color: category === cat ? 'white' : '#6F675C',
                     border: 'none', transition: 'all 0.15s',
                   }}>
@@ -282,7 +282,7 @@ export default function BaliMapView() {
                   onClick={() => setSelected(id => id === exp.id ? null : exp.id)}
                   style={{
                     borderRadius: 14, marginBottom: 10, cursor: 'pointer', overflow: 'hidden',
-                    border: isSelected ? '2px solid #C8A97E' : '1px solid #E8E4DE',
+                    border: isSelected ? '2px solid #B58A4B' : '1px solid #E8E4DE',
                     backgroundColor: isSelected ? '#FFFDF9' : 'white',
                     boxShadow: isSelected ? '0 2px 12px rgba(200,169,126,0.2)' : 'none',
                     transition: 'all 0.2s',
@@ -292,7 +292,7 @@ export default function BaliMapView() {
                     {/* Category chip */}
                     <span style={{
                       position: 'absolute', top: 10, left: 10,
-                      backgroundColor: CAT_COLORS[exp.category] ?? '#C8A97E',
+                      backgroundColor: CAT_COLORS[exp.category] ?? '#B58A4B',
                       color: 'white', fontSize: 10, fontWeight: 600, padding: '3px 9px', borderRadius: 20,
                     }}>
                       {exp.category}
@@ -304,8 +304,8 @@ export default function BaliMapView() {
                   </div>
                   <div style={{ padding: '10px 12px 12px' }}>
                     <div className="flex items-start justify-between gap-1">
-                      <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 14, fontWeight: 700, color: '#111111', lineHeight: 1.3 }}>{exp.title}</h3>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: '#111111', flexShrink: 0, paddingTop: 1 }}>
+                      <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 14, fontWeight: 700, color: '#1D1D1D', lineHeight: 1.3 }}>{exp.title}</h3>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: '#1D1D1D', flexShrink: 0, paddingTop: 1 }}>
                         {fmtPrice(exp.price)}
                       </span>
                     </div>
@@ -319,14 +319,14 @@ export default function BaliMapView() {
                     </div>
                     <div className="flex items-center justify-between mt-1.5">
                       <div className="flex items-center gap-1">
-                        <Star size={11} fill="#C8A97E" color="#C8A97E" />
-                        <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>{exp.rating}</span>
+                        <Star size={11} fill="#B58A4B" color="#B58A4B" />
+                        <span style={{ fontSize: 12, fontWeight: 600, color: '#1D1D1D' }}>{exp.rating}</span>
                         <span style={{ fontSize: 12, color: '#6F675C' }}>({exp.reviews})</span>
                       </div>
                       <a
                         href={`/experiences/${exp.slug}`}
                         onClick={e => e.stopPropagation()}
-                        style={{ fontSize: 12, fontWeight: 600, color: '#C8A97E', textDecoration: 'none' }}>
+                        style={{ fontSize: 12, fontWeight: 600, color: '#B58A4B', textDecoration: 'none' }}>
                         Book →
                       </a>
                     </div>
@@ -342,7 +342,7 @@ export default function BaliMapView() {
 
           {/* Mobile header */}
           <div className="lg:hidden flex items-center justify-between px-4 py-3 bg-white" style={{ borderBottom: '1px solid #E8E4DE', flexShrink: 0 }}>
-            <a href="/" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', textDecoration: 'none' }}>
+            <a href="/" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#1D1D1D', textDecoration: 'none' }}>
               BALIBLE
             </a>
             <div className="flex items-center gap-2">
@@ -354,7 +354,7 @@ export default function BaliMapView() {
               <div className="flex rounded-lg overflow-hidden" style={{ border: '1px solid #E8E4DE' }}>
                 {(['map', 'list'] as const).map(v => (
                   <button key={v} onClick={() => { setMobileView(v); if (v === 'map') setMapLocked(true) }}
-                    style={{ padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', border: 'none', backgroundColor: mobileView === v ? '#111111' : 'white', color: mobileView === v ? 'white' : '#6F675C', transition: 'all 0.15s', textTransform: 'capitalize' }}>
+                    style={{ padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', border: 'none', backgroundColor: mobileView === v ? '#1D1D1D' : 'white', color: mobileView === v ? 'white' : '#6F675C', transition: 'all 0.15s', textTransform: 'capitalize' }}>
                     {v}
                   </button>
                 ))}
@@ -368,12 +368,12 @@ export default function BaliMapView() {
               <div className="relative mb-2">
                 <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#6F675C' }} />
                 <input placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)}
-                  style={{ width: '100%', height: 36, borderRadius: 10, border: '1px solid #E8E4DE', paddingLeft: 30, fontSize: 13, color: '#111111', outline: 'none' }} />
+                  style={{ width: '100%', height: 36, borderRadius: 10, border: '1px solid #E8E4DE', paddingLeft: 30, fontSize: 13, color: '#1D1D1D', outline: 'none' }} />
               </div>
               <div className="flex gap-1.5 overflow-x-auto scrollbar-none">
                 {CATEGORIES.map(cat => (
                   <button key={cat} onClick={() => { setCategory(cat); setShowFilters(false) }}
-                    style={{ padding: '4px 11px', borderRadius: 20, fontSize: 11, fontWeight: category === cat ? 600 : 400, flexShrink: 0, cursor: 'pointer', backgroundColor: category === cat ? '#111111' : '#F5F1EB', color: category === cat ? 'white' : '#6F675C', border: 'none' }}>
+                    style={{ padding: '4px 11px', borderRadius: 20, fontSize: 11, fontWeight: category === cat ? 600 : 400, flexShrink: 0, cursor: 'pointer', backgroundColor: category === cat ? '#1D1D1D' : '#F3EEE5', color: category === cat ? 'white' : '#6F675C', border: 'none' }}>
                     {cat}
                   </button>
                 ))}
@@ -406,7 +406,7 @@ export default function BaliMapView() {
                   boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
                 }}>
                   <span style={{ fontSize: 22 }}>👆</span>
-                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111' }}>Tap to interact with map</span>
+                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#1D1D1D' }}>Tap to interact with map</span>
                   <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>Scroll page normally until tapped</span>
                 </div>
               </div>
@@ -415,7 +415,7 @@ export default function BaliMapView() {
 
           {/* Mobile: list view */}
           {mobileView === 'list' && (
-            <div className="lg:hidden flex-1 overflow-y-auto" style={{ backgroundColor: '#F5F1EB', padding: 12 }}>
+            <div className="lg:hidden flex-1 overflow-y-auto" style={{ backgroundColor: '#F3EEE5', padding: 12 }}>
               <p style={{ fontSize: 12, color: '#6F675C', marginBottom: 8 }}>{visible.length} experiences found</p>
               <div className="space-y-3">
                 {visible.map(exp => (
@@ -425,24 +425,24 @@ export default function BaliMapView() {
                     <div className="flex gap-3 p-3">
                       <img src={exp.image} alt={exp.title} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 10, flexShrink: 0 }} />
                       <div className="flex-1 min-w-0">
-                        <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 14, fontWeight: 700, color: '#111111', lineHeight: 1.3 }}>{exp.title}</h3>
+                        <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 14, fontWeight: 700, color: '#1D1D1D', lineHeight: 1.3 }}>{exp.title}</h3>
                         <div className="flex items-center gap-2 mt-1">
-                          <span style={{ fontSize: 10, color: 'white', backgroundColor: CAT_COLORS[exp.category] ?? '#C8A97E', padding: '2px 7px', borderRadius: 10, fontWeight: 600 }}>{exp.category}</span>
+                          <span style={{ fontSize: 10, color: 'white', backgroundColor: CAT_COLORS[exp.category] ?? '#B58A4B', padding: '2px 7px', borderRadius: 10, fontWeight: 600 }}>{exp.category}</span>
                         </div>
                         <div className="flex items-center justify-between mt-1.5">
                           <span className="flex items-center gap-1" style={{ fontSize: 11, color: '#6F675C' }}><MapPin size={10} />{exp.area}</span>
-                          <span style={{ fontSize: 13, fontWeight: 700, color: '#111111' }}>{fmtPrice(exp.price)}</span>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: '#1D1D1D' }}>{fmtPrice(exp.price)}</span>
                         </div>
                         <div className="flex items-center justify-between mt-0.5">
                           <div className="flex items-center gap-1">
-                            <Star size={10} fill="#C8A97E" color="#C8A97E" />
-                            <span style={{ fontSize: 11, fontWeight: 600, color: '#111111' }}>{exp.rating}</span>
+                            <Star size={10} fill="#B58A4B" color="#B58A4B" />
+                            <span style={{ fontSize: 11, fontWeight: 600, color: '#1D1D1D' }}>{exp.rating}</span>
                             <span style={{ fontSize: 11, color: '#6F675C' }}>({exp.reviews})</span>
                           </div>
                           <a
                             href={`/experiences/${exp.slug}`}
                             onClick={e => e.stopPropagation()}
-                            style={{ fontSize: 12, fontWeight: 600, color: '#C8A97E', textDecoration: 'none' }}>
+                            style={{ fontSize: 12, fontWeight: 600, color: '#B58A4B', textDecoration: 'none' }}>
                             Book →
                           </a>
                         </div>
@@ -467,20 +467,20 @@ export default function BaliMapView() {
                 <img src={selectedExp.image} alt={selectedExp.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 <button onClick={() => setSelected(null)}
                   style={{ position: 'absolute', top: 8, right: 8, width: 26, height: 26, borderRadius: '50%', backgroundColor: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <X size={13} style={{ color: '#111111' }} />
+                  <X size={13} style={{ color: '#1D1D1D' }} />
                 </button>
               </div>
               <div style={{ padding: '10px 14px 14px' }}>
                 <div className="flex items-start justify-between">
-                  <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: '#111111', flex: 1, lineHeight: 1.3 }}>{selectedExp.title}</h3>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: '#111111', flexShrink: 0, paddingLeft: 8 }}>{fmtPrice(selectedExp.price)}</span>
+                  <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: '#1D1D1D', flex: 1, lineHeight: 1.3 }}>{selectedExp.title}</h3>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: '#1D1D1D', flexShrink: 0, paddingLeft: 8 }}>{fmtPrice(selectedExp.price)}</span>
                 </div>
                 <div className="flex items-center gap-3 mt-1">
                   <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#6F675C' }}><MapPin size={11} />{selectedExp.area}</span>
-                  <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#6F675C' }}><Star size={11} fill="#C8A97E" color="#C8A97E" />{selectedExp.rating} ({selectedExp.reviews})</span>
+                  <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#6F675C' }}><Star size={11} fill="#B58A4B" color="#B58A4B" />{selectedExp.rating} ({selectedExp.reviews})</span>
                 </div>
                 <a href={`/experiences/${selectedExp.slug}`}
-                  style={{ display: 'block', marginTop: 10, textAlign: 'center', backgroundColor: '#111111', color: 'white', borderRadius: 10, padding: '10px', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
+                  style={{ display: 'block', marginTop: 10, textAlign: 'center', backgroundColor: '#1D1D1D', color: 'white', borderRadius: 10, padding: '10px', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
                   View Experience
                 </a>
               </div>
@@ -501,21 +501,21 @@ export default function BaliMapView() {
                 <img src={selectedExp.image} alt={selectedExp.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 <span style={{
                   position: 'absolute', top: 12, left: 12,
-                  backgroundColor: CAT_COLORS[selectedExp.category] ?? '#C8A97E',
+                  backgroundColor: CAT_COLORS[selectedExp.category] ?? '#B58A4B',
                   color: 'white', fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20,
                 }}>
                   {selectedExp.category}
                 </span>
                 <button onClick={() => setSelected(null)}
                   style={{ position: 'absolute', top: 10, right: 10, width: 28, height: 28, borderRadius: '50%', backgroundColor: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 6px rgba(0,0,0,0.2)' }}>
-                  <X size={14} style={{ color: '#111111' }} />
+                  <X size={14} style={{ color: '#1D1D1D' }} />
                 </button>
               </div>
               <div style={{ padding: '14px 16px 16px' }}>
                 <div className="flex items-start justify-between gap-2">
-                  <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', lineHeight: 1.3 }}>{selectedExp.title}</h3>
+                  <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#1D1D1D', lineHeight: 1.3 }}>{selectedExp.title}</h3>
                   <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <p style={{ fontSize: 15, fontWeight: 700, color: '#111111' }}>{fmtPrice(selectedExp.price)}</p>
+                    <p style={{ fontSize: 15, fontWeight: 700, color: '#1D1D1D' }}>{fmtPrice(selectedExp.price)}</p>
                     <p style={{ fontSize: 11, color: '#6F675C', marginTop: 1 }}>per person</p>
                   </div>
                 </div>
@@ -524,12 +524,12 @@ export default function BaliMapView() {
                   <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#6F675C' }}><Clock size={12} />{selectedExp.duration}</span>
                 </div>
                 <div className="flex items-center gap-1 mt-1.5">
-                  <Star size={12} fill="#C8A97E" color="#C8A97E" />
-                  <span style={{ fontSize: 13, fontWeight: 600, color: '#111111' }}>{selectedExp.rating}</span>
+                  <Star size={12} fill="#B58A4B" color="#B58A4B" />
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#1D1D1D' }}>{selectedExp.rating}</span>
                   <span style={{ fontSize: 13, color: '#6F675C' }}>({selectedExp.reviews} reviews)</span>
                 </div>
                 <a href={`/experiences/${selectedExp.slug}`}
-                  style={{ display: 'block', marginTop: 12, textAlign: 'center', backgroundColor: '#111111', color: 'white', borderRadius: 10, padding: '11px', fontSize: 14, fontWeight: 600, textDecoration: 'none', transition: 'opacity 0.15s' }}>
+                  style={{ display: 'block', marginTop: 12, textAlign: 'center', backgroundColor: '#1D1D1D', color: 'white', borderRadius: 10, padding: '11px', fontSize: 14, fontWeight: 600, textDecoration: 'none', transition: 'opacity 0.15s' }}>
                   Book this experience →
                 </a>
               </div>
@@ -543,7 +543,7 @@ export default function BaliMapView() {
               position: 'absolute', top: 16, left: '50%', transform: 'translateX(-50%)',
               backgroundColor: 'white', borderRadius: 20, padding: '6px 16px',
               boxShadow: '0 2px 12px rgba(0,0,0,0.15)', border: '1px solid #E8E4DE',
-              fontSize: 13, fontWeight: 500, color: '#111111', zIndex: 999, pointerEvents: 'none',
+              fontSize: 13, fontWeight: 500, color: '#1D1D1D', zIndex: 999, pointerEvents: 'none',
             }}>
             {visible.length} experience{visible.length !== 1 ? 's' : ''} in this area
           </div>
@@ -558,7 +558,7 @@ export default function BaliMapView() {
                   backgroundColor: 'white', border: '1px solid #E8E4DE',
                   borderRadius: 10, padding: '8px 14px',
                   cursor: 'pointer', boxShadow: '0 2px 10px rgba(0,0,0,0.12)',
-                  fontSize: 13, fontWeight: 600, color: '#111111',
+                  fontSize: 13, fontWeight: 600, color: '#1D1D1D',
                   fontFamily: 'var(--font-inter)',
                 }}
                 className="hover:bg-stone-50 transition-colors"

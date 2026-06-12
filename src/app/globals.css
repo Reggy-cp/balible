@@ -3,12 +3,13 @@
 @tailwind utilities;
 
 :root {
-  --ivory:      #F5F1EB;
+  --ivory:      #F3EEE5;
   --sand:       #E8E4DE;
   --coconut:    #6F675C;
-  --charcoal:   #111111;
-  --gold:       #C8A97E;
-  --forest:     #4A7C59;
+  --charcoal:   #1D1D1D;
+  --gold:       #B58A4B;
+  --forest:     #2E4A35;
+  --moss:       #1E2F23;
   --terracotta: #B66A45;
 }
 
@@ -22,7 +23,7 @@ html {
 
 body {
   font-family: var(--font-inter), 'Inter', sans-serif;
-  color: #111111;
+  color: #1D1D1D;
   background-color: #ffffff;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -49,7 +50,7 @@ body {
 .range-fill {
   position: absolute;
   height: 100%;
-  background: #C8A97E;
+  background: #B58A4B;
   border-radius: 2px;
   pointer-events: none;
 }
@@ -69,7 +70,7 @@ input[type="range"].price-range::-webkit-slider-thumb {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #C8A97E;
+  background: #B58A4B;
   border: 2px solid white;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   cursor: pointer;
@@ -80,7 +81,7 @@ input[type="range"].price-range::-moz-range-thumb {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #C8A97E;
+  background: #B58A4B;
   border: 2px solid white;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   cursor: pointer;

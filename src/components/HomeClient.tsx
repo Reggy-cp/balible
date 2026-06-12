@@ -61,7 +61,7 @@ function ExperienceCard({ exp }: { exp: ExperienceCard }) {
         <img src={exp.photo} alt={exp.title} className="w-full h-full object-cover" />
         {exp.badge && (
           <span className="absolute top-3 left-3 px-2 py-0.5 rounded-full text-white"
-            style={{ fontSize: 11, fontWeight: 600, backgroundColor: '#C8A97E', fontFamily: 'var(--font-inter)' }}>
+            style={{ fontSize: 11, fontWeight: 600, backgroundColor: '#B58A4B', fontFamily: 'var(--font-inter)' }}>
             {exp.badge}
           </span>
         )}
@@ -74,16 +74,16 @@ function ExperienceCard({ exp }: { exp: ExperienceCard }) {
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>{exp.area}</p>
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#9E9A94' }}>{exp.duration}</p>
         </div>
-        <h3 className="line-clamp-2 leading-snug" style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, color: '#111111', fontWeight: 600 }}>
+        <h3 className="line-clamp-2 leading-snug" style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, color: '#1D1D1D', fontWeight: 600 }}>
           {exp.title}
         </h3>
         <div className="flex items-center gap-1 mt-2">
-          <Star size={11} fill="#C8A97E" color="#C8A97E" />
-          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 700, color: '#111111' }}>{exp.rating}</span>
+          <Star size={11} fill="#B58A4B" color="#B58A4B" />
+          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 700, color: '#1D1D1D' }}>{exp.rating}</span>
           <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>({exp.reviews})</span>
         </div>
-        <p className="mt-2" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>
-          From <span style={{ color: '#C8A97E' }}>IDR</span> {exp.price.toLocaleString('id-ID')}
+        <p className="mt-2" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#1D1D1D' }}>
+          From <span style={{ color: '#B58A4B' }}>IDR</span> {exp.price.toLocaleString('id-ID')}
         </p>
       </div>
     </a>
@@ -96,12 +96,12 @@ function HostCard({ host }: { host: typeof HOSTS[0] }) {
       <div className="relative overflow-hidden rounded-xl" style={{ height: 200 }}>
         <img src={host.photo} alt={host.name} className="w-full h-full object-cover" />
       </div>
-      <h3 className="mt-3" style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111' }}>{host.name}</h3>
+      <h3 className="mt-3" style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#1D1D1D' }}>{host.name}</h3>
       <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>{host.role}, {host.location}</p>
       <p className="mt-2 line-clamp-2" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.6, fontStyle: 'italic' }}>
         &ldquo;{host.quote}&rdquo;
       </p>
-      <a href={`/hosts/${host.slug}`} className="mt-2 inline-block underline hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>
+      <a href={`/hosts/${host.slug}`} className="mt-2 inline-block underline hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#1D1D1D' }}>
         Read {host.pronoun} story →
       </a>
     </div>
@@ -240,8 +240,8 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
               style={{ cursor: 'pointer', position: 'relative' }}
               onClick={openDatePicker}
             >
-              <CalendarDays size={14} style={{ color: date ? '#111111' : '#6F675C', flexShrink: 0 }} />
-              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: date ? '#111111' : '#6F675C', whiteSpace: 'nowrap' }}>
+              <CalendarDays size={14} style={{ color: date ? '#1D1D1D' : '#6F675C', flexShrink: 0 }} />
+              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: date ? '#1D1D1D' : '#6F675C', whiteSpace: 'nowrap' }}>
                 {date ? new Date(date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Add date'}
               </span>
               <input
@@ -258,7 +258,7 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
             <button
               type="submit"
               className="mx-2 flex-shrink-0 text-white rounded-md hover:opacity-90 transition-opacity flex items-center justify-center sm:hidden"
-              style={{ backgroundColor: '#111111', border: 'none', cursor: 'pointer', width: 36, height: 36 }}
+              style={{ backgroundColor: '#1D1D1D', border: 'none', cursor: 'pointer', width: 36, height: 36 }}
               aria-label="Search"
             >
               <Search size={15} color="white" />
@@ -266,7 +266,7 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
             <button
               type="submit"
               className="mx-2 flex-shrink-0 text-white rounded-md px-6 py-2 hover:opacity-90 transition-opacity hidden sm:flex items-center"
-              style={{ backgroundColor: '#111111', fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500, border: 'none', cursor: 'pointer' }}
+              style={{ backgroundColor: '#1D1D1D', fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500, border: 'none', cursor: 'pointer' }}
             >
               Search
             </button>
@@ -282,13 +282,13 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
             <div>
               {nearbyArea && (
                 <div className="flex items-center gap-1.5 mb-1">
-                  <MapPin size={14} style={{ color: '#C8A97E' }} />
-                  <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#C8A97E', fontWeight: 500 }}>
+                  <MapPin size={14} style={{ color: '#B58A4B' }} />
+                  <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#B58A4B', fontWeight: 500 }}>
                     You&apos;re in Bali
                   </p>
                 </div>
               )}
-              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#111111', fontWeight: 700 }}>
+              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#1D1D1D', fontWeight: 700 }}>
                 {nearbyArea ? `Experiences in ${nearbyArea}` : 'All Experiences'}
               </h2>
               <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -301,7 +301,7 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
                   <button
                     onClick={() => setNearbyArea(null)}
                     className="flex items-center gap-1 px-2.5 py-0.5 rounded-full transition-colors hover:bg-stone-200"
-                    style={{ backgroundColor: '#F5F1EB', border: '1px solid #E8E4DE', fontSize: 12, color: '#6F675C', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}
+                    style={{ backgroundColor: '#F3EEE5', border: '1px solid #E8E4DE', fontSize: 12, color: '#6F675C', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}
                   >
                     {nearbyArea}
                     <X size={10} />
@@ -324,9 +324,9 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
                   borderRadius: 20,
                   fontSize: 13,
                   fontWeight: activeCategory === cat ? 600 : 400,
-                  backgroundColor: activeCategory === cat ? '#111111' : 'transparent',
+                  backgroundColor: activeCategory === cat ? '#1D1D1D' : 'transparent',
                   color: activeCategory === cat ? 'white' : '#6F675C',
-                  border: `1px solid ${activeCategory === cat ? '#111111' : '#E8E4DE'}`,
+                  border: `1px solid ${activeCategory === cat ? '#1D1D1D' : '#E8E4DE'}`,
                   cursor: 'pointer',
                   whiteSpace: 'nowrap',
                   fontFamily: 'var(--font-inter)',
@@ -345,7 +345,7 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
             <div className="mt-8 text-center">
               <a
                 href={`/categories/${experiences.find(e => e.category === activeCategory)?.categorySlug ?? 'culture'}`}
-                style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#C8A97E', textDecoration: 'underline' }}
+                style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#B58A4B', textDecoration: 'underline' }}
                 className="hover:opacity-70 transition-opacity"
               >
                 See all {activeCategory} experiences →
@@ -355,7 +355,7 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
             <div className="mt-8 text-center">
               <a
                 href="/search"
-                style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#C8A97E', textDecoration: 'underline' }}
+                style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#B58A4B', textDecoration: 'underline' }}
                 className="hover:opacity-70 transition-opacity"
               >
                 See all {experiences.length} experiences →
@@ -366,11 +366,11 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
       </section>
 
       {/* ── DESTINATIONS ── */}
-      <section className="py-12 px-6 lg:px-16" style={{ backgroundColor: '#F5F1EB' }}>
+      <section className="py-12 px-6 lg:px-16" style={{ backgroundColor: '#F3EEE5' }}>
         <div className="max-w-[1440px] mx-auto">
           <div className="flex items-start justify-between mb-8">
             <div>
-              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#111111', fontWeight: 700 }}>
+              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#1D1D1D', fontWeight: 700 }}>
                 Explore by Destination
               </h2>
               <p className="mt-1" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
@@ -422,14 +422,14 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
           <div className="max-w-[1440px] mx-auto">
             <div className="flex items-start justify-between mb-8">
               <div>
-                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#111111', fontWeight: 700 }}>
+                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#1D1D1D', fontWeight: 700 }}>
                   Upcoming Events
                 </h2>
                 <p className="mt-1" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
                   One-time experiences hosted by local operators.
                 </p>
               </div>
-              <a href="/events" className="flex-shrink-0 hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#C8A97E', textDecoration: 'underline' }}>
+              <a href="/events" className="flex-shrink-0 hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#B58A4B', textDecoration: 'underline' }}>
                 View all →
               </a>
             </div>
@@ -454,11 +454,11 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
                         </div>
                       </div>
                       <div style={{ padding: '14px 16px' }}>
-                        <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 4 }}>{ev.title}</p>
+                        <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#1D1D1D', marginBottom: 4 }}>{ev.title}</p>
                         <p style={{ fontSize: 12, color: '#6F675C', marginBottom: 10 }}>⏰ {timeStr} · 📍 {ev.location.split(',')[0]}</p>
                         <div className="flex items-center justify-between">
                           <span style={{ fontSize: 13, color: '#6F675C' }}>👥 Up to {ev.capacity}</span>
-                          <span style={{ fontSize: 14, fontWeight: 700, color: '#111111' }}>
+                          <span style={{ fontSize: 14, fontWeight: 700, color: '#1D1D1D' }}>
                             {ev.price === 0 ? 'Free' : `IDR ${ev.price.toLocaleString('id-ID')}`}
                           </span>
                         </div>
@@ -478,14 +478,14 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
           <div className="max-w-[1440px] mx-auto">
             <div className="flex items-start justify-between mb-8">
               <div>
-                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#111111', fontWeight: 700 }}>
+                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#1D1D1D', fontWeight: 700 }}>
                   Trusted Services in Bali
                 </h2>
                 <p className="mt-1" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
                   From massages to private drivers — delivered to your villa.
                 </p>
               </div>
-              <a href="/services" className="flex-shrink-0 hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#C8A97E', textDecoration: 'underline' }}>
+              <a href="/services" className="flex-shrink-0 hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#B58A4B', textDecoration: 'underline' }}>
                 View all →
               </a>
             </div>
@@ -513,18 +513,18 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
                     </div>
                     <h3
                       className="line-clamp-2 leading-snug"
-                      style={{ fontFamily: 'var(--font-playfair)', fontSize: 14, color: '#111111', fontWeight: 600 }}
+                      style={{ fontFamily: 'var(--font-playfair)', fontSize: 14, color: '#1D1D1D', fontWeight: 600 }}
                     >
                       {s.title}
                     </h3>
                     <p className="mt-0.5" style={{ fontSize: 11, color: '#9E9A94' }}>{s.category}</p>
                     <div className="flex items-center gap-1 mt-2">
-                      <Star size={11} fill="#C8A97E" color="#C8A97E" />
-                      <span style={{ fontSize: 12, fontWeight: 700, color: '#111111' }}>{s.rating.toFixed(1)}</span>
+                      <Star size={11} fill="#B58A4B" color="#B58A4B" />
+                      <span style={{ fontSize: 12, fontWeight: 700, color: '#1D1D1D' }}>{s.rating.toFixed(1)}</span>
                       <span style={{ fontSize: 12, color: '#6F675C' }}>({s.totalReviews})</span>
                     </div>
-                    <p className="mt-2" style={{ fontSize: 13, color: '#111111' }}>
-                      From <span style={{ color: '#C8A97E' }}>IDR</span> {s.price.toLocaleString('id-ID')}
+                    <p className="mt-2" style={{ fontSize: 13, color: '#1D1D1D' }}>
+                      From <span style={{ color: '#B58A4B' }}>IDR</span> {s.price.toLocaleString('id-ID')}
                       {s.priceTypeKey !== 'FIXED' && (
                         <span style={{ color: '#6F675C', fontSize: 11 }}> {s.priceType}</span>
                       )}
@@ -538,9 +538,9 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
       )}
 
       {/* ── EXPLORE BY CATEGORY ── */}
-      <section className="py-12 px-6 lg:px-16" style={{ backgroundColor: '#F5F1EB' }}>
+      <section className="py-12 px-6 lg:px-16" style={{ backgroundColor: '#F3EEE5' }}>
         <div className="max-w-[1440px] mx-auto">
-          <h2 className="mb-8" style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#111111', fontWeight: 700 }}>
+          <h2 className="mb-8" style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#1D1D1D', fontWeight: 700 }}>
             Explore by Category
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -566,14 +566,14 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
       {/* ── WHY BALIBLE ── */}
       <section className="bg-white py-12 px-6 lg:px-16">
         <div className="max-w-[1440px] mx-auto">
-          <h2 className="mb-10" style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#111111', fontWeight: 700 }}>
+          <h2 className="mb-10" style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#1D1D1D', fontWeight: 700 }}>
             Why Balible?
           </h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
             {WHY_ITEMS.map(({ Icon, title, body }) => (
               <div key={title}>
-                <Icon size={28} style={{ color: '#111111' }} strokeWidth={1.5} />
-                <h3 className="mt-3" style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 600, color: '#111111' }}>{title}</h3>
+                <Icon size={28} style={{ color: '#1D1D1D' }} strokeWidth={1.5} />
+                <h3 className="mt-3" style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 600, color: '#1D1D1D' }}>{title}</h3>
                 <p className="mt-1.5" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.6 }}>{body}</p>
               </div>
             ))}
@@ -582,18 +582,18 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
       </section>
 
       {/* ── HOST STORIES ── */}
-      <section className="py-12 px-6 lg:px-16" style={{ backgroundColor: '#F5F1EB' }}>
+      <section className="py-12 px-6 lg:px-16" style={{ backgroundColor: '#F3EEE5' }}>
         <div className="max-w-[1440px] mx-auto">
           <div className="flex items-start justify-between mb-8">
             <div>
-              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#111111', fontWeight: 700 }}>
+              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#1D1D1D', fontWeight: 700 }}>
                 Stories from Our Hosts
               </h2>
               <p className="mt-1" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
                 Meet the people behind the experiences.
               </p>
             </div>
-            <a href="/hosts" className="flex-shrink-0 hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#C8A97E', textDecoration: 'underline' }}>
+            <a href="/hosts" className="flex-shrink-0 hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#B58A4B', textDecoration: 'underline' }}>
               View all →
             </a>
           </div>
@@ -604,7 +604,7 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
       </section>
 
       {/* ── NEWSLETTER CTA ── */}
-      <section className="py-12 px-6 lg:px-16 text-center" style={{ backgroundColor: '#111111' }}>
+      <section className="py-12 px-6 lg:px-16 text-center" style={{ backgroundColor: '#1E2F23' }}>
         <div className="max-w-[1440px] mx-auto">
           <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: 'white', fontWeight: 700 }}>
             Be the first to discover new experiences in Bali
@@ -614,7 +614,7 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
           </p>
           <div className="flex items-center justify-center flex-wrap gap-2 mt-8">
             {subscribed ? (
-              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: '#C8A97E', fontWeight: 500 }}>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: '#B58A4B', fontWeight: 500 }}>
                 ✓ You&apos;re on the list! We&apos;ll be in touch soon.
               </p>
             ) : (
@@ -631,7 +631,7 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
                 <button
                   onClick={handleSubscribe}
                   className="font-medium hover:opacity-90 transition-opacity px-6"
-                  style={{ height: 44, backgroundColor: '#C8A97E', color: '#111111', borderRadius: 6, fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500, border: 'none', cursor: 'pointer' }}
+                  style={{ height: 44, backgroundColor: '#B58A4B', color: '#1D1D1D', borderRadius: 6, fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500, border: 'none', cursor: 'pointer' }}
                 >
                   Subscribe
                 </button>
@@ -642,7 +642,7 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
       </section>
 
       {/* ── FOOTER ── */}
-      <footer style={{ backgroundColor: '#111111' }} className="px-6 lg:px-16 pt-12 pb-24 md:pb-8">
+      <footer style={{ backgroundColor: '#1E2F23' }} className="px-6 lg:px-16 pt-12 pb-24 md:pb-8">
         <div className="max-w-[1440px] mx-auto">
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-10 pb-8" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
             <div className="col-span-2 lg:col-span-1">

@@ -39,7 +39,7 @@ function PriceRange({ value, onChange }: { value: [number, number]; onChange: (v
     <div className="mt-3">
       <div className="relative" style={{ height: 4, marginTop: 12, marginBottom: 12 }}>
         <div className="absolute inset-0 rounded-full" style={{ backgroundColor: '#E8E4DE' }} />
-        <div className="absolute h-full rounded-full" style={{ left: `${leftPct}%`, width: `${rightPct - leftPct}%`, backgroundColor: '#C8A97E' }} />
+        <div className="absolute h-full rounded-full" style={{ left: `${leftPct}%`, width: `${rightPct - leftPct}%`, backgroundColor: '#B58A4B' }} />
         <input type="range" min={MIN} max={MAX} step={50000} value={value[0]} onChange={e => { const v = +e.target.value; if (v <= value[1] - 50000) onChange([v, value[1]]) }} className="price-range" style={{ zIndex: 1 }} />
         <input type="range" min={MIN} max={MAX} step={50000} value={value[1]} onChange={e => { const v = +e.target.value; if (v >= value[0] + 50000) onChange([value[0], v]) }} className="price-range" />
       </div>
@@ -60,7 +60,7 @@ type Filters = {
 
 function FilterLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 600, color: '#111111', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 6 }}>
+    <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 600, color: '#1D1D1D', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 6 }}>
       {children}
     </p>
   )
@@ -68,7 +68,7 @@ function FilterLabel({ children }: { children: React.ReactNode }) {
 
 function FilterSelect({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: string[] }) {
   return (
-    <select value={value} onChange={e => onChange(e.target.value)} className="w-full px-3 py-2 rounded-md outline-none appearance-none cursor-pointer" style={{ border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111', backgroundColor: 'white' }}>
+    <select value={value} onChange={e => onChange(e.target.value)} className="w-full px-3 py-2 rounded-md outline-none appearance-none cursor-pointer" style={{ border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 13, color: '#1D1D1D', backgroundColor: 'white' }}>
       {options.map(o => <option key={o}>{o}</option>)}
     </select>
   )
@@ -80,13 +80,13 @@ function FilterPanel({ filters, onChange, mobile = false, onClose }: { filters: 
     <div className={mobile ? 'p-5' : 'p-0'}>
       {mobile && (
         <div className="flex items-center justify-between mb-5">
-          <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111' }}>Filters</span>
-          <button onClick={onClose}><X size={20} style={{ color: '#111111' }} /></button>
+          <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#1D1D1D' }}>Filters</span>
+          <button onClick={onClose}><X size={20} style={{ color: '#1D1D1D' }} /></button>
         </div>
       )}
       {!mobile && (
         <div className="flex items-center justify-between mb-5">
-          <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111' }}>Filters</h3>
+          <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#1D1D1D' }}>Filters</h3>
           {hasActive && (
             <button onClick={() => onChange({ category: 'All Categories', location: 'All Locations', duration: 'Any duration', priceRange: [0, 700000], date: '', guests: 1 })} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter)', fontSize: 12, color: '#B66A45' }}>
               Clear all
@@ -105,7 +105,7 @@ function FilterPanel({ filters, onChange, mobile = false, onClose }: { filters: 
         </div>
         <div>
           <FilterLabel>Date</FilterLabel>
-          <input type="date" value={filters.date} onChange={e => onChange({ date: e.target.value })} className="w-full px-3 py-2 rounded-md outline-none" style={{ border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }} />
+          <input type="date" value={filters.date} onChange={e => onChange({ date: e.target.value })} className="w-full px-3 py-2 rounded-md outline-none" style={{ border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 13, color: '#1D1D1D' }} />
         </div>
         <div>
           <FilterLabel>Price range</FilterLabel>
@@ -119,11 +119,11 @@ function FilterPanel({ filters, onChange, mobile = false, onClose }: { filters: 
       {mobile && (
         <div className="mt-6 flex gap-3">
           {hasActive && (
-            <button className="flex-1 py-3 rounded-lg" style={{ border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500, color: '#111111', backgroundColor: 'white', cursor: 'pointer' }} onClick={() => onChange({ category: 'All Categories', location: 'All Locations', duration: 'Any duration', priceRange: [0, 700000], date: '', guests: 1 })}>
+            <button className="flex-1 py-3 rounded-lg" style={{ border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500, color: '#1D1D1D', backgroundColor: 'white', cursor: 'pointer' }} onClick={() => onChange({ category: 'All Categories', location: 'All Locations', duration: 'Any duration', priceRange: [0, 700000], date: '', guests: 1 })}>
               Clear
             </button>
           )}
-          <button className="flex-1 py-3 rounded-lg hover:opacity-90 transition-opacity" style={{ backgroundColor: '#111111', color: 'white', fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500, border: 'none', cursor: 'pointer' }} onClick={onClose}>
+          <button className="flex-1 py-3 rounded-lg hover:opacity-90 transition-opacity" style={{ backgroundColor: '#1D1D1D', color: 'white', fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500, border: 'none', cursor: 'pointer' }} onClick={onClose}>
             View results
           </button>
         </div>
@@ -179,7 +179,7 @@ function ResultCard({ r, date, guests }: { r: SearchResult; date: string; guests
       </div>
       <div className="flex flex-col justify-between flex-1 min-w-0 py-0.5">
         <div>
-          <h3 className="leading-snug" style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 600, color: '#111111' }}>
+          <h3 className="leading-snug" style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 600, color: '#1D1D1D' }}>
             {r.title}
           </h3>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1.5">
@@ -188,18 +188,18 @@ function ResultCard({ r, date, guests }: { r: SearchResult; date: string; guests
               <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>{r.area}</span>
             </div>
             <div className="flex items-center gap-1">
-              <Star size={11} fill="#C8A97E" color="#C8A97E" />
-              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 700, color: '#111111' }}>{r.rating}</span>
+              <Star size={11} fill="#B58A4B" color="#B58A4B" />
+              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 700, color: '#1D1D1D' }}>{r.rating}</span>
               <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>({r.reviews})</span>
             </div>
             <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>⏱ {durationLabel}</span>
           </div>
         </div>
         <div className="flex items-center justify-between mt-2">
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>
-            From <span style={{ color: '#C8A97E', fontWeight: 600 }}>IDR</span> <span style={{ fontWeight: 600 }}>{r.price.toLocaleString('id-ID')}</span>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#1D1D1D' }}>
+            From <span style={{ color: '#B58A4B', fontWeight: 600 }}>IDR</span> <span style={{ fontWeight: 600 }}>{r.price.toLocaleString('id-ID')}</span>
           </p>
-          <span className="text-xs px-3 py-1 rounded-full" style={{ backgroundColor: '#111111', color: 'white', fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 500 }}>
+          <span className="text-xs px-3 py-1 rounded-full" style={{ backgroundColor: '#1D1D1D', color: 'white', fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 500 }}>
             Book →
           </span>
         </div>
@@ -255,7 +255,7 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
   ].filter(Boolean).length
 
   return (
-    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F3EEE5', minHeight: '100vh' }}>
 
       <Navbar />
 
@@ -272,7 +272,7 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
                 type="text" placeholder="Search experiences…"
                 value={search} onChange={e => setSearch(e.target.value)}
                 className="flex-1 outline-none bg-transparent min-w-0"
-                style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111' }}
+                style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#1D1D1D' }}
               />
               {search && <button onClick={() => setSearch('')}><X size={12} style={{ color: '#6F675C' }} /></button>}
             </div>
@@ -286,7 +286,7 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
                 value={filters.location}
                 onChange={e => updateFilters({ location: e.target.value })}
                 className="outline-none appearance-none cursor-pointer bg-transparent flex-1"
-                style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: filters.location === 'All Locations' ? '#9E9A94' : '#111111' }}
+                style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: filters.location === 'All Locations' ? '#9E9A94' : '#1D1D1D' }}
               >
                 <option value="All Locations">Anywhere</option>
                 {LOCATIONS.filter(l => l !== 'All Locations').map(l => <option key={l}>{l}</option>)}
@@ -302,7 +302,7 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
                 type="date" value={filters.date}
                 onChange={e => updateFilters({ date: e.target.value })}
                 className="outline-none bg-transparent flex-1"
-                style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: filters.date ? '#111111' : '#9E9A94' }}
+                style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: filters.date ? '#1D1D1D' : '#9E9A94' }}
               />
             </div>
 
@@ -315,7 +315,7 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
                 value={filters.guests}
                 onChange={e => updateFilters({ guests: Number(e.target.value) })}
                 className="outline-none appearance-none cursor-pointer bg-transparent"
-                style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}
+                style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#1D1D1D' }}
               >
                 {[1,2,3,4,5,6,7,8].map(n => <option key={n} value={n}>{n} {n === 1 ? 'guest' : 'guests'}</option>)}
               </select>
@@ -323,7 +323,7 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
 
             {/* Search button */}
             <div className="pr-2 pl-2 h-full flex items-center flex-shrink-0">
-              <div className="flex items-center gap-1.5 rounded-lg px-4 h-9" style={{ backgroundColor: '#111111', color: 'white', fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 500 }}>
+              <div className="flex items-center gap-1.5 rounded-lg px-4 h-9" style={{ backgroundColor: '#1D1D1D', color: 'white', fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 500 }}>
                 <Search size={13} />
                 Search
               </div>
@@ -338,7 +338,7 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
                 type="text" placeholder="Search experiences…"
                 value={search} onChange={e => setSearch(e.target.value)}
                 className="flex-1 outline-none bg-transparent"
-                style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111' }}
+                style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#1D1D1D' }}
               />
               {search && <button onClick={() => setSearch('')} className="mr-2"><X size={13} style={{ color: '#6F675C' }} /></button>}
             </div>
@@ -349,7 +349,7 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
                   value={filters.location}
                   onChange={e => updateFilters({ location: e.target.value })}
                   className="outline-none appearance-none cursor-pointer bg-transparent flex-1 min-w-0"
-                  style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: filters.location === 'All Locations' ? '#9E9A94' : '#111111' }}
+                  style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: filters.location === 'All Locations' ? '#9E9A94' : '#1D1D1D' }}
                 >
                   <option value="All Locations">Place</option>
                   {LOCATIONS.filter(l => l !== 'All Locations').map(l => <option key={l}>{l}</option>)}
@@ -361,7 +361,7 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
                   type="date" value={filters.date}
                   onChange={e => updateFilters({ date: e.target.value })}
                   className="outline-none bg-transparent flex-1 min-w-0"
-                  style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: filters.date ? '#111111' : '#9E9A94' }}
+                  style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: filters.date ? '#1D1D1D' : '#9E9A94' }}
                 />
               </div>
               <div className="flex items-center gap-1.5 bg-white rounded-lg px-2.5" style={{ border: '1px solid #E8E4DE', height: 40 }}>
@@ -370,7 +370,7 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
                   value={filters.guests}
                   onChange={e => updateFilters({ guests: Number(e.target.value) })}
                   className="outline-none appearance-none cursor-pointer bg-transparent flex-1 min-w-0"
-                  style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#111111' }}
+                  style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#1D1D1D' }}
                 >
                   {[1,2,3,4,5,6,7,8].map(n => <option key={n} value={n}>{n === 1 ? '1 guest' : `${n} guests`}</option>)}
                 </select>
@@ -393,7 +393,7 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
             <div>
-              <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#111111' }}>
+              <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#1D1D1D' }}>
                 {search ? `Results for "${search}"` : 'All Experiences'}
               </h1>
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', marginTop: 2 }}>
@@ -409,7 +409,7 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
                   value={sort}
                   onChange={e => setSort(e.target.value)}
                   className="appearance-none pl-3 pr-8 py-2 rounded-lg outline-none cursor-pointer"
-                  style={{ border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111', backgroundColor: 'white' }}
+                  style={{ border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 13, color: '#1D1D1D', backgroundColor: 'white' }}
                 >
                   {SORT_OPTIONS.map(o => <option key={o}>{o}</option>)}
                 </select>
@@ -419,12 +419,12 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
               <button
                 onClick={() => setFilterOpen(true)}
                 className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg lg:hidden hover:opacity-80 transition-opacity"
-                style={{ border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}
+                style={{ border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 13, color: '#1D1D1D' }}
               >
                 <SlidersHorizontal size={14} />
                 Filters
                 {activeFilterCount > 0 && (
-                  <span className="w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: '#C8A97E', color: 'white', fontSize: 10, fontWeight: 700 }}>
+                  <span className="w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: '#B58A4B', color: 'white', fontSize: 10, fontWeight: 700 }}>
                     {activeFilterCount}
                   </span>
                 )}
@@ -436,22 +436,22 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
           {activeFilterCount > 0 && (
             <div className="flex flex-wrap gap-2 mb-4">
               {filters.category !== 'All Categories' && (
-                <button onClick={() => updateFilters({ category: 'All Categories' })} className="flex items-center gap-1 px-3 py-1 rounded-full" style={{ backgroundColor: '#111111', color: 'white', fontSize: 12, fontFamily: 'var(--font-inter)', border: 'none', cursor: 'pointer' }}>
+                <button onClick={() => updateFilters({ category: 'All Categories' })} className="flex items-center gap-1 px-3 py-1 rounded-full" style={{ backgroundColor: '#1D1D1D', color: 'white', fontSize: 12, fontFamily: 'var(--font-inter)', border: 'none', cursor: 'pointer' }}>
                   {filters.category} <X size={10} />
                 </button>
               )}
               {filters.location !== 'All Locations' && (
-                <button onClick={() => updateFilters({ location: 'All Locations' })} className="flex items-center gap-1 px-3 py-1 rounded-full" style={{ backgroundColor: '#111111', color: 'white', fontSize: 12, fontFamily: 'var(--font-inter)', border: 'none', cursor: 'pointer' }}>
+                <button onClick={() => updateFilters({ location: 'All Locations' })} className="flex items-center gap-1 px-3 py-1 rounded-full" style={{ backgroundColor: '#1D1D1D', color: 'white', fontSize: 12, fontFamily: 'var(--font-inter)', border: 'none', cursor: 'pointer' }}>
                   {filters.location} <X size={10} />
                 </button>
               )}
               {filters.duration !== 'Any duration' && (
-                <button onClick={() => updateFilters({ duration: 'Any duration' })} className="flex items-center gap-1 px-3 py-1 rounded-full" style={{ backgroundColor: '#111111', color: 'white', fontSize: 12, fontFamily: 'var(--font-inter)', border: 'none', cursor: 'pointer' }}>
+                <button onClick={() => updateFilters({ duration: 'Any duration' })} className="flex items-center gap-1 px-3 py-1 rounded-full" style={{ backgroundColor: '#1D1D1D', color: 'white', fontSize: 12, fontFamily: 'var(--font-inter)', border: 'none', cursor: 'pointer' }}>
                   {filters.duration} <X size={10} />
                 </button>
               )}
               {(filters.priceRange[0] > 0 || filters.priceRange[1] < 700000) && (
-                <button onClick={() => updateFilters({ priceRange: [0, 700000] })} className="flex items-center gap-1 px-3 py-1 rounded-full" style={{ backgroundColor: '#111111', color: 'white', fontSize: 12, fontFamily: 'var(--font-inter)', border: 'none', cursor: 'pointer' }}>
+                <button onClick={() => updateFilters({ priceRange: [0, 700000] })} className="flex items-center gap-1 px-3 py-1 rounded-full" style={{ backgroundColor: '#1D1D1D', color: 'white', fontSize: 12, fontFamily: 'var(--font-inter)', border: 'none', cursor: 'pointer' }}>
                   IDR {(filters.priceRange[0]/1000).toFixed(0)}K–{(filters.priceRange[1]/1000).toFixed(0)}K <X size={10} />
                 </button>
               )}
@@ -464,9 +464,9 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
             </div>
           ) : results.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-center">
-              <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#111111', marginBottom: 8 }}>No results found</p>
+              <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#1D1D1D', marginBottom: 8 }}>No results found</p>
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', marginBottom: 20 }}>Try adjusting your filters or search term.</p>
-              <button onClick={() => { setSearch(''); setFilters(DEFAULT_FILTERS) }} style={{ height: 40, padding: '0 20px', backgroundColor: '#111111', color: 'white', borderRadius: 8, fontSize: 13, fontWeight: 500, border: 'none', cursor: 'pointer' }}>
+              <button onClick={() => { setSearch(''); setFilters(DEFAULT_FILTERS) }} style={{ height: 40, padding: '0 20px', backgroundColor: '#1D1D1D', color: 'white', borderRadius: 8, fontSize: 13, fontWeight: 500, border: 'none', cursor: 'pointer' }}>
                 Clear all filters
               </button>
             </div>

@@ -38,7 +38,7 @@ export default function ExperienceGallery({ images, title }: { images: string[];
                 cursor: 'pointer',
                 outline: 'none',
                 overflow: 'hidden',
-                border: active === i ? '2.5px solid #C8A97E' : '2.5px solid transparent',
+                border: active === i ? '2.5px solid #B58A4B' : '2.5px solid transparent',
                 opacity: active === i ? 1 : 0.65,
                 transition: 'border-color 0.15s, opacity 0.15s',
               }}

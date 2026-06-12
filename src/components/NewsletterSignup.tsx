@@ -16,7 +16,7 @@ export default function NewsletterSignup({ dark = false }: { dark?: boolean }) {
 
   if (subscribed) {
     return (
-      <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 500, color: '#C8A97E', textAlign: 'center' }}>
+      <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 500, color: '#B58A4B', textAlign: 'center' }}>
         ✓ You&apos;re on the list! We&apos;ll be in touch soon.
       </p>
     )
@@ -33,7 +33,7 @@ export default function NewsletterSignup({ dark = false }: { dark?: boolean }) {
         className="flex-1 outline-none"
         style={{
           height: 46, borderRadius: 8, padding: '0 16px', fontSize: 14,
-          color: '#111111', border: dark ? 'none' : '1px solid #E8E4DE',
+          color: '#1D1D1D', border: dark ? 'none' : '1px solid #E8E4DE',
           fontFamily: 'var(--font-inter)',
         }}
       />
@@ -41,7 +41,7 @@ export default function NewsletterSignup({ dark = false }: { dark?: boolean }) {
         onClick={submit}
         className="flex items-center justify-center gap-2 hover:opacity-90 transition-opacity flex-shrink-0"
         style={{
-          height: 46, padding: '0 24px', backgroundColor: '#C8A97E', color: 'white',
+          height: 46, padding: '0 24px', backgroundColor: '#B58A4B', color: 'white',
           borderRadius: 8, fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer',
           whiteSpace: 'nowrap', fontFamily: 'var(--font-inter)',
         }}

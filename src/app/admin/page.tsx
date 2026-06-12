@@ -13,12 +13,12 @@ import { getPendingListingsAction, approveListingAction, rejectListingAction, ty
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 
-const GOLD = '#C8A97E'
-const CHARCOAL = '#111111'
+const GOLD = '#B58A4B'
+const CHARCOAL = '#1D1D1D'
 const COCONUT = '#6F675C'
-const IVORY = '#F5F1EB'
+const IVORY = '#F3EEE5'
 const SAND = '#E8E4DE'
-const FOREST = '#4A7C59'
+const FOREST = '#2E4A35'
 const TERRACOTTA = '#B66A45'
 
 // ── Mock data ─────────────────────────────────────────────────────────────────
@@ -1348,10 +1348,10 @@ function AdminNotifBell({ onNavigate, align = 'left', dark = false }: { onNaviga
   const adminNotifs = [
     ...(pendingHosts > 0   ? [{ id: 'hosts',   title: `${pendingHosts} host application${pendingHosts > 1 ? 's' : ''} pending`, body: 'New hosts are waiting for approval',    action: 'hosts',    dot: TERRACOTTA }] : []),
     ...(flaggedReviews > 0 ? [{ id: 'reviews', title: `${flaggedReviews} review${flaggedReviews > 1 ? 's' : ''} flagged`,       body: 'Flagged content needs your attention', action: 'reviews',  dot: TERRACOTTA }] : []),
-    { id: 'sys', title: 'Platform running normally', body: 'No critical issues detected', action: 'overview', dot: '#4A7C59' },
+    { id: 'sys', title: 'Platform running normally', body: 'No critical issues detected', action: 'overview', dot: '#2E4A35' },
   ]
 
-  const bellColor = dark ? (unreadCount > 0 ? '#111111' : '#6F675C') : (unreadCount > 0 ? 'white' : 'rgba(255,255,255,0.55)')
+  const bellColor = dark ? (unreadCount > 0 ? '#1D1D1D' : '#6F675C') : (unreadCount > 0 ? 'white' : 'rgba(255,255,255,0.55)')
 
   return (
     <div className="relative">
@@ -1369,17 +1369,17 @@ function AdminNotifBell({ onNavigate, align = 'left', dark = false }: { onNaviga
           <div className="absolute top-9 z-50 bg-white rounded-xl shadow-2xl overflow-hidden"
             style={{ [align === 'right' ? 'right' : 'left']: 0, width: 'min(300px, calc(100vw - 32px))', border: '1px solid #E8E4DE' }}>
             <div className="px-4 py-3" style={{ borderBottom: '1px solid #E8E4DE' }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: '#111111' }}>Admin Notifications</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: '#1D1D1D' }}>Admin Notifications</span>
             </div>
             <div>
               {adminNotifs.map(n => (
                 <div key={n.id} onClick={() => { onNavigate(n.action); setNotifOpen(false) }}
                   className="px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors"
-                  style={{ borderBottom: '1px solid #F5F1EB' }}>
+                  style={{ borderBottom: '1px solid #F3EEE5' }}>
                   <div className="flex items-start gap-2">
                     <span className="mt-1.5 flex-shrink-0 w-2 h-2 rounded-full" style={{ backgroundColor: n.dot }} />
                     <div>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: '#111111', marginBottom: 2 }}>{n.title}</p>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: '#1D1D1D', marginBottom: 2 }}>{n.title}</p>
                       <p style={{ fontSize: 12, color: '#6F675C' }}>{n.body}</p>
                     </div>
                   </div>

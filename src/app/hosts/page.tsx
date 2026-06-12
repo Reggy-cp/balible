@@ -26,24 +26,24 @@ const HOSTS = [
 ]
 
 const CATEGORY_COLORS: Record<string, string> = {
-  'Art & Craft':       '#C8A97E',
+  'Art & Craft':       '#B58A4B',
   'Wellness':          '#7EB5A6',
   'Culture':           '#A97EB5',
   'Culinary':          '#B5A07E',
-  'Spiritual':         '#C8A97E',
+  'Spiritual':         '#B58A4B',
   'Nature & Outdoors': '#7EA67E',
   'Water Activities':  '#7E9EB5',
 }
 
 export default function HostsPage() {
   return (
-    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F3EEE5', minHeight: '100vh' }}>
       <Navbar />
 
       {/* Hero */}
-      <div style={{ backgroundColor: '#111111', paddingTop: 64, paddingBottom: 64 }}>
+      <div style={{ backgroundColor: '#1D1D1D', paddingTop: 64, paddingBottom: 64 }}>
         <div className="max-w-[1100px] mx-auto px-6 lg:px-16 text-center">
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#C8A97E', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#B58A4B', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>
             The people behind Balible
           </p>
           <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, color: 'white', lineHeight: 1.2, marginBottom: 16 }}>
@@ -60,7 +60,7 @@ export default function HostsPage() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {HOSTS.map(host => {
             const initials = host.name.split(' ').map((w: string) => w[0]).join('').slice(0, 2)
-            const catColor = CATEGORY_COLORS[host.category] ?? '#C8A97E'
+            const catColor = CATEGORY_COLORS[host.category] ?? '#B58A4B'
             return (
               <a
                 key={host.slug}
@@ -77,7 +77,7 @@ export default function HostsPage() {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: '#2A2A2A' }}>
-                      <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 48, fontWeight: 700, color: '#C8A97E' }}>{initials}</span>
+                      <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 48, fontWeight: 700, color: '#B58A4B' }}>{initials}</span>
                     </div>
                   )}
                   <div className="absolute top-3 left-3">
@@ -89,7 +89,7 @@ export default function HostsPage() {
 
                 {/* Info */}
                 <div style={{ padding: '16px 18px 18px' }}>
-                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111', marginBottom: 2 }}>
+                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#1D1D1D', marginBottom: 2 }}>
                     {host.name}
                   </h2>
                   <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', marginBottom: 10 }}>
@@ -101,15 +101,15 @@ export default function HostsPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#6F675C' }}>
-                        <MapPin size={11} style={{ color: '#C8A97E' }} />{host.area}
+                        <MapPin size={11} style={{ color: '#B58A4B' }} />{host.area}
                       </span>
                       <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#6F675C' }}>
-                        <Star size={11} fill="#C8A97E" color="#C8A97E" />
-                        <strong style={{ color: '#111111', fontSize: 12 }}>{host.rating}</strong>
+                        <Star size={11} fill="#B58A4B" color="#B58A4B" />
+                        <strong style={{ color: '#1D1D1D', fontSize: 12 }}>{host.rating}</strong>
                         <span>({host.reviews})</span>
                       </span>
                     </div>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: '#C8A97E' }}>View profile →</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: '#B58A4B' }}>View profile →</span>
                   </div>
                 </div>
               </a>
@@ -118,8 +118,8 @@ export default function HostsPage() {
         </div>
 
         {/* Become a host CTA */}
-        <div className="mt-16 text-center rounded-2xl py-14 px-8" style={{ backgroundColor: '#111111' }}>
-          <Award size={32} style={{ color: '#C8A97E', margin: '0 auto 16px' }} />
+        <div className="mt-16 text-center rounded-2xl py-14 px-8" style={{ backgroundColor: '#1D1D1D' }}>
+          <Award size={32} style={{ color: '#B58A4B', margin: '0 auto 16px' }} />
           <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: 'white', marginBottom: 10 }}>
             Share your craft with the world
           </h2>
@@ -128,7 +128,7 @@ export default function HostsPage() {
           </p>
           <a
             href="/for-hosts"
-            style={{ display: 'inline-block', backgroundColor: '#C8A97E', color: 'white', fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, padding: '12px 28px', borderRadius: 10, textDecoration: 'none' }}
+            style={{ display: 'inline-block', backgroundColor: '#B58A4B', color: 'white', fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, padding: '12px 28px', borderRadius: 10, textDecoration: 'none' }}
           >
             Become A Host
           </a>

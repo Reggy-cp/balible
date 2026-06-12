@@ -2,12 +2,12 @@ import { Search, Map, Home } from 'lucide-react'
 
 export default function NotFound() {
   return (
-    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F3EEE5', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
 
       {/* Minimal nav */}
       <nav className="bg-white" style={{ height: 64, borderBottom: '1px solid #E8E4DE', flexShrink: 0 }}>
         <div className="flex items-center h-full px-6 max-w-[1440px] mx-auto">
-          <a href="/" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', textDecoration: 'none' }}>BALIBLE</a>
+          <a href="/" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#1D1D1D', textDecoration: 'none' }}>BALIBLE</a>
         </div>
       </nav>
 
@@ -26,13 +26,13 @@ export default function NotFound() {
           {/* Floating 404 badge */}
           <div
             className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-5 py-2 rounded-full"
-            style={{ backgroundColor: '#111111', boxShadow: '0 4px 16px rgba(0,0,0,0.2)' }}
+            style={{ backgroundColor: '#1D1D1D', boxShadow: '0 4px 16px rgba(0,0,0,0.2)' }}
           >
-            <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#C8A97E' }}>404</span>
+            <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#B58A4B' }}>404</span>
           </div>
         </div>
 
-        <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 4vw, 40px)', fontWeight: 700, color: '#111111', marginBottom: 12 }}>
+        <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 4vw, 40px)', fontWeight: 700, color: '#1D1D1D', marginBottom: 12 }}>
           Lost in Bali
         </h1>
         <p style={{ fontFamily: 'var(--font-inter)', fontSize: 16, color: '#6F675C', maxWidth: 400, lineHeight: 1.7, marginBottom: 10 }}>
@@ -47,21 +47,21 @@ export default function NotFound() {
           <a
             href="/"
             className="flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
-            style={{ height: 48, padding: '0 28px', backgroundColor: '#111111', color: 'white', borderRadius: 10, fontSize: 14, fontWeight: 600, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}
+            style={{ height: 48, padding: '0 28px', backgroundColor: '#1D1D1D', color: 'white', borderRadius: 10, fontSize: 14, fontWeight: 600, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}
           >
             <Home size={15} /> Back to Home
           </a>
           <a
             href="/search"
             className="flex items-center justify-center gap-2 hover:opacity-70 transition-opacity"
-            style={{ height: 48, padding: '0 28px', border: '1px solid #E8E4DE', color: '#111111', borderRadius: 10, fontSize: 14, fontWeight: 500, textDecoration: 'none', fontFamily: 'var(--font-inter)', backgroundColor: 'white' }}
+            style={{ height: 48, padding: '0 28px', border: '1px solid #E8E4DE', color: '#1D1D1D', borderRadius: 10, fontSize: 14, fontWeight: 500, textDecoration: 'none', fontFamily: 'var(--font-inter)', backgroundColor: 'white' }}
           >
             <Search size={15} /> Browse Experiences
           </a>
           <a
             href="/map"
             className="flex items-center justify-center gap-2 hover:opacity-70 transition-opacity"
-            style={{ height: 48, padding: '0 28px', border: '1px solid #E8E4DE', color: '#111111', borderRadius: 10, fontSize: 14, fontWeight: 500, textDecoration: 'none', fontFamily: 'var(--font-inter)', backgroundColor: 'white' }}
+            style={{ height: 48, padding: '0 28px', border: '1px solid #E8E4DE', color: '#1D1D1D', borderRadius: 10, fontSize: 14, fontWeight: 500, textDecoration: 'none', fontFamily: 'var(--font-inter)', backgroundColor: 'white' }}
           >
             <Map size={15} /> Open Map
           </a>
@@ -83,7 +83,7 @@ export default function NotFound() {
                 key={label}
                 href={href}
                 className="text-center py-2.5 rounded-xl hover:opacity-70 transition-opacity"
-                style={{ backgroundColor: 'white', border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111', textDecoration: 'none' }}
+                style={{ backgroundColor: 'white', border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 13, color: '#1D1D1D', textDecoration: 'none' }}
               >
                 {label}
               </a>
