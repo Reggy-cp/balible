@@ -115,6 +115,8 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
   const [date, setDate]             = useState('')
   const [email, setEmail]           = useState('')
   const [subscribed, setSubscribed] = useState(false)
+  const [subscribing, setSubscribing]     = useState(false)
+  const [subscribeError, setSubscribeError] = useState<string | null>(null)
   const [activeCategory, setActiveCategory] = useState('All')
   const [nearbyArea, setNearbyArea]         = useState<string | null>(null)
 
@@ -189,11 +191,28 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
     router.push(`/search${params.toString() ? `?${params.toString()}` : ''}`)
   }
 
-  const handleSubscribe = () => {
-    if (!email.trim()) return
-    setSubscribed(true)
-    setEmail('')
-    setTimeout(() => setSubscribed(false), 4000)
+  const handleSubscribe = async () => {
+    if (!email.trim() || subscribing) return
+    setSubscribing(true)
+    setSubscribeError(null)
+    try {
+      const res = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), source: 'homepage' }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        setSubscribeError(data?.error ?? 'Something went wrong. Please try again.')
+        return
+      }
+      setSubscribed(true)
+      setEmail('')
+    } catch {
+      setSubscribeError('Something went wrong. Please try again.')
+    } finally {
+      setSubscribing(false)
+    }
   }
 
 
@@ -630,14 +649,20 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
                 />
                 <button
                   onClick={handleSubscribe}
+                  disabled={subscribing}
                   className="font-medium hover:opacity-90 transition-opacity px-6"
-                  style={{ height: 44, backgroundColor: '#C8A97E', color: '#111111', borderRadius: 6, fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500, border: 'none', cursor: 'pointer' }}
+                  style={{ height: 44, backgroundColor: '#C8A97E', color: '#111111', borderRadius: 6, fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500, border: 'none', cursor: subscribing ? 'wait' : 'pointer', opacity: subscribing ? 0.7 : 1 }}
                 >
-                  Subscribe
+                  {subscribing ? 'Subscribing…' : 'Subscribe'}
                 </button>
               </>
             )}
           </div>
+          {subscribeError && (
+            <p className="mt-3" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#E8A0A0' }}>
+              {subscribeError}
+            </p>
+          )}
         </div>
       </section>
 

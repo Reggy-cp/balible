@@ -2,6 +2,7 @@
 
 import { prisma } from './prisma'
 import { getOrCreateNeonUser } from './user'
+import { sendBookingConfirmation } from './email'
 
 const AREA_DISPLAY: Record<string, string> = {
   UBUD: 'Ubud', CANGGU: 'Canggu', SEMINYAK: 'Seminyak', KUTA: 'Kuta',
@@ -89,6 +90,21 @@ export async function createBookingAction(
         status: 'CONFIRMED',
       },
     })
+
+    // Confirmation email is best-effort — a send failure must not fail the booking
+    await sendBookingConfirmation({
+      to: input.guestEmail,
+      guestName: input.guestName,
+      bookingRef: booking.bookingRef,
+      experienceTitle: exp.title,
+      area: AREA_DISPLAY[exp.area] ?? exp.area,
+      meetingPoint: exp.meetingPoint,
+      date: booking.date,
+      guests: booking.guests,
+      totalPrice: booking.totalPrice,
+      duration: exp.duration,
+    })
+
     return { ok: true, bookingRef: booking.bookingRef }
   } catch {
     return { ok: false }

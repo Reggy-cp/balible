@@ -272,3 +272,10 @@ enum EventStatus {
   PUBLISHED
   CANCELLED
 }
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  source    String   @default("homepage")
+  createdAt DateTime @default(now())
+}
