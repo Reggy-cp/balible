@@ -6,7 +6,14 @@ import { getOrCreateNeonUser } from './user'
 const AREA_DISPLAY: Record<string, string> = {
   UBUD: 'Ubud', CANGGU: 'Canggu', SEMINYAK: 'Seminyak', KUTA: 'Kuta',
   ULUWATU: 'Uluwatu', GIANYAR: 'Gianyar', KINTAMANI: 'Kintamani',
-  AMED: 'Amed', SIDEMEN: 'Sidemen',
+  AMED: 'Amed', SIDEMEN: 'Sidemen', SANUR: 'Sanur',
+  NUSA_DUA: 'Nusa Dua', JIMBARAN: 'Jimbaran', MEDEWI: 'Medewi',
+}
+
+const CATEGORY_DISPLAY: Record<string, string> = {
+  WELLNESS: 'Wellness', ART_CRAFT: 'Art & Craft', CULTURE: 'Culture',
+  FOOD_DRINK: 'Culinary', NATURE: 'Nature & Outdoors', ARCHITECTURE: 'Architecture',
+  SURF_WATER: 'Water Activities', DIVING: 'Diving', COOKING: 'Cooking',
 }
 
 // ── Wishlist ──────────────────────────────────────────────────────────────────
@@ -407,6 +414,171 @@ export async function getUserData(): Promise<UserData | null> {
         image: (r.experience.images as string[])[0] ?? '',
       })),
     }
+  } catch {
+    return null
+  }
+}
+
+// ── Checkout experience lookup ────────────────────────────────────────────────
+
+export type ExpCheckoutMeta = { title: string; area: string; price: number; image: string }
+
+export async function getExperienceForCheckout(slug: string): Promise<ExpCheckoutMeta | null> {
+  try {
+    const exp = await prisma.experience.findUnique({
+      where: { slug },
+      select: { title: true, area: true, price: true, images: true },
+    })
+    if (!exp) return null
+    return {
+      title: exp.title,
+      area: AREA_DISPLAY[String(exp.area)] ?? String(exp.area),
+      price: exp.price,
+      image: (exp.images as string[])[0] ?? '',
+    }
+  } catch {
+    return null
+  }
+}
+
+// ── Wishlist experience details ───────────────────────────────────────────────
+
+export type ExpWishlistMeta = {
+  slug: string; title: string; area: string; price: number
+  rating: number; totalReviews: number; category: string; duration: string; image: string
+}
+
+export async function getExperiencesForWishlist(slugs: string[]): Promise<ExpWishlistMeta[]> {
+  if (!slugs.length) return []
+  try {
+    const exps = await prisma.experience.findMany({
+      where: { slug: { in: slugs }, status: 'ACTIVE' as any },
+      select: { slug: true, title: true, area: true, price: true, rating: true, totalReviews: true, category: true, duration: true, images: true },
+    })
+    return exps.map(e => ({
+      slug: e.slug,
+      title: e.title,
+      area: AREA_DISPLAY[String(e.area)] ?? String(e.area),
+      price: e.price,
+      rating: e.rating,
+      totalReviews: e.totalReviews,
+      category: CATEGORY_DISPLAY[String(e.category)] ?? String(e.category),
+      duration: e.duration,
+      image: (e.images as string[])[0] ?? '',
+    }))
+  } catch {
+    return []
+  }
+}
+
+// ── Host dashboard data ───────────────────────────────────────────────────────
+
+export type DashExp = {
+  id: number; slug: string; title: string; category: string; area: string
+  price: number; duration: string; maxGuests: number
+  rating: number; totalReviews: number; bookings: number; status: string
+  image: string; earnings: number
+}
+
+export type DashBooking = {
+  id: string; ref: string; guest: string; email: string
+  experience: string; expImage: string
+  date: string; time: string; guests: number; total: number
+  status: string; bookedOn: string
+}
+
+export type DashReview = { id: string; guest: string; experience: string; rating: number; comment: string; date: string }
+
+export type HostDashboardData = {
+  hostName: string
+  experiences: DashExp[]
+  bookings: DashBooking[]
+  reviews: DashReview[]
+}
+
+export async function getHostDashboardData(): Promise<HostDashboardData | null> {
+  try {
+    const user = await getOrCreateNeonUser()
+    if (!user) return null
+
+    const operator = await prisma.operator.findUnique({
+      where: { userId: user.id },
+      include: { user: { select: { name: true } } },
+    })
+    if (!operator) return null
+
+    const [dbExps, dbBookings, dbReviews] = await Promise.all([
+      prisma.experience.findMany({
+        where: { operatorId: operator.id },
+        include: { bookings: { select: { totalPrice: true } }, _count: { select: { bookings: true } } },
+        orderBy: { createdAt: 'asc' },
+      }),
+      prisma.booking.findMany({
+        where: { experience: { operatorId: operator.id } },
+        include: { experience: { select: { title: true, images: true } } },
+        orderBy: { createdAt: 'desc' },
+        take: 100,
+      }),
+      prisma.review.findMany({
+        where: { experience: { operatorId: operator.id } },
+        include: {
+          user: { select: { name: true } },
+          experience: { select: { title: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 100,
+      }),
+    ])
+
+    const expStatusDisplay: Record<string, string> = {
+      ACTIVE: 'Active', DRAFT: 'Draft', PENDING_REVIEW: 'Pending Review', PAUSED: 'Paused',
+    }
+    const bookingStatusDisplay: Record<string, string> = {
+      CONFIRMED: 'Confirmed', PENDING: 'Pending', COMPLETED: 'Completed', CANCELLED: 'Cancelled',
+    }
+
+    const experiences: DashExp[] = dbExps.map((e, i) => ({
+      id: i + 1,
+      slug: e.slug,
+      title: e.title,
+      category: CATEGORY_DISPLAY[String(e.category)] ?? String(e.category),
+      area: AREA_DISPLAY[String(e.area)] ?? String(e.area),
+      price: e.price,
+      duration: e.duration,
+      maxGuests: e.maxGuests,
+      rating: e.rating,
+      totalReviews: e.totalReviews,
+      bookings: e._count.bookings,
+      status: expStatusDisplay[String(e.status)] ?? 'Draft',
+      image: (e.images as string[])[0] ?? '',
+      earnings: (e.bookings as { totalPrice: number }[]).reduce((a, b) => a + b.totalPrice, 0),
+    }))
+
+    const bookings: DashBooking[] = dbBookings.map((b, i) => ({
+      id: `B${String(i + 1).padStart(3, '0')}`,
+      ref: b.bookingRef,
+      guest: b.guestName,
+      email: b.guestEmail,
+      experience: b.experience.title,
+      expImage: (b.experience.images as string[])[0] ?? '',
+      date: b.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      time: '',
+      guests: b.guests,
+      total: b.totalPrice,
+      status: bookingStatusDisplay[String(b.status)] ?? 'Confirmed',
+      bookedOn: b.createdAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    }))
+
+    const reviews: DashReview[] = dbReviews.map((r, i) => ({
+      id: `R${i + 1}`,
+      guest: r.user.name,
+      experience: r.experience.title,
+      rating: r.rating,
+      comment: r.comment,
+      date: r.createdAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    }))
+
+    return { hostName: operator.user.name, experiences, bookings, reviews }
   } catch {
     return null
   }

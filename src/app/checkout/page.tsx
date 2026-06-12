@@ -4,35 +4,14 @@ import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { ChevronUp, Shield, Award, Clock, Edit2, Lock } from 'lucide-react'
 import MobileNav from '@/components/MobileNav'
-import { createBookingAction } from '@/lib/actions'
+import { createBookingAction, getExperienceForCheckout, type ExpCheckoutMeta } from '@/lib/actions'
 
 const STEPS = ['Experience & Date', 'Your Details', 'Payment', 'Confirmation']
 type Step = 0 | 1 | 2 | 3
 
-// ── Experience lookup ──────────────────────────────────────────────────────────
+// ── Experience lookup (loaded from DB) ────────────────────────────────────────
 
-type ExpMeta = { title: string; area: string; image: string; price: number }
-
-const EXPERIENCE_DB: Record<string, ExpMeta> = {
-  'pottery-making-class':      { title: 'Pottery Making Class',         area: 'Ubud',     price: 450000, image: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=200&auto=format&fit=crop&q=80' },
-  'silver-jewelry-workshop':   { title: 'Silver Jewelry Workshop',      area: 'Canggu',   price: 550000, image: 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=200&auto=format&fit=crop&q=80' },
-  'batik-painting-workshop':   { title: 'Batik Painting Workshop',      area: 'Ubud',     price: 380000, image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=200&auto=format&fit=crop&q=80' },
-  'traditional-batik-workshop':{ title: 'Traditional Batik Workshop',   area: 'Ubud',     price: 420000, image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=200&auto=format&fit=crop&q=80' },
-  'sound-healing-journey':     { title: 'Sound Healing Journey',        area: 'Ubud',     price: 350000, image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=200&auto=format&fit=crop&q=80' },
-  'sunrise-yoga-class':        { title: 'Sunrise Yoga & Meditation',    area: 'Canggu',   price: 250000, image: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=200&auto=format&fit=crop&q=80' },
-  'water-temple-purification': { title: 'Water Temple Purification',    area: 'Gianyar',  price: 600000, image: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=200&auto=format&fit=crop&q=80' },
-  'uluwatu-kecak-sunset':      { title: 'Uluwatu Sunset & Kecak Dance', area: 'Uluwatu',  price: 450000, image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=200&auto=format&fit=crop&q=80' },
-  'balinese-cooking-class':    { title: 'Balinese Cooking Class',       area: 'Seminyak', price: 480000, image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=200&auto=format&fit=crop&q=80' },
-  'jimbaran-seafood-sunset':   { title: 'Jimbaran Seafood & Sunset',    area: 'Jimbaran', price: 350000, image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=200&auto=format&fit=crop&q=80' },
-  'beginner-surf-lesson':      { title: 'Beginner Surf Lesson',         area: 'Kuta',     price: 320000, image: 'https://images.unsplash.com/photo-1530870110042-98b2cb110834?w=200&auto=format&fit=crop&q=80' },
-  'snorkeling-amed':           { title: 'Snorkeling at Amed Reef',      area: 'Amed',     price: 420000, image: 'https://images.unsplash.com/photo-1560275619-4662e36fa65c?w=200&auto=format&fit=crop&q=80' },
-  'rice-terrace-walk':         { title: 'Tegalalang Rice Terrace Walk', area: 'Ubud',     price: 280000, image: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=200&auto=format&fit=crop&q=80' },
-  'natural-dye-workshop':      { title: 'Natural Dye Workshop',         area: 'Sidemen',  price: 380000, image: 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=200&auto=format&fit=crop&q=80' },
-  'wood-carving-workshop':     { title: 'Wood Carving Workshop',        area: 'Ubud',     price: 500000, image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=200&auto=format&fit=crop&q=80' },
-  'rattan-weaving-class':      { title: 'Rattan Weaving Class',         area: 'Sidemen',  price: 350000, image: 'https://images.unsplash.com/photo-1519735777090-ec97162dc266?w=200&auto=format&fit=crop&q=80' },
-}
-
-const FALLBACK = EXPERIENCE_DB['pottery-making-class']
+const LOADING_META: ExpCheckoutMeta = { title: 'Loading…', area: '', price: 0, image: '' }
 
 function formatDate(s: string): string {
   if (!s) return 'Date not selected'
@@ -535,8 +514,7 @@ function CheckoutInner() {
   const maxGuests = Math.max(1, parseInt(params.get('maxGuests') || '8') || 8)
   const initGuests = Math.max(1, Math.min(maxGuests, parseInt(params.get('guests') || '1') || 1))
 
-  const baseExp = EXPERIENCE_DB[slug] || FALLBACK
-
+  const [expMeta, setExpMeta] = useState<ExpCheckoutMeta>(LOADING_META)
   const [step, setStep] = useState<Step>(0)
   const [guests, setGuests] = useState(initGuests)
   const [contact, setContact] = useState<ContactFields>({ fullName: '', email: '', phone: '', requests: '' })
@@ -544,7 +522,17 @@ function CheckoutInner() {
   const [schedule, setSchedule] = useState<ScheduleDay[] | null>(null)
   const [bookedGuests, setBookedGuests] = useState<Record<string, number>>({})
   const [serviceFeeRate, setServiceFeeRate] = useState(0.1)
-  const [expPrice, setExpPrice] = useState(baseExp.price)
+  const [expPrice, setExpPrice] = useState(0)
+
+  // Load experience from DB
+  useEffect(() => {
+    getExperienceForCheckout(slug).then(data => {
+      if (data) {
+        setExpMeta(data)
+        setExpPrice(data.price)
+      }
+    }).catch(() => {})
+  }, [slug])
 
   useEffect(() => {
     try {
@@ -553,6 +541,7 @@ function CheckoutInner() {
     } catch {}
   }, [])
 
+  // Allow admin price overrides via localStorage
   useEffect(() => {
     try {
       const stored = localStorage.getItem(`balible_exp_data_${slug}`)
@@ -593,9 +582,9 @@ function CheckoutInner() {
   })()
 
   const booking: BookingData = {
-    title: baseExp.title, area: baseExp.area, image: baseExp.image,
+    title: expMeta.title, area: expMeta.area, image: expMeta.image,
     date: formatDate(rawDate), time: formatTime(selectedRawTime), rawTime: selectedRawTime,
-    pricePerPerson: expPrice, serviceFeeRate,
+    pricePerPerson: expPrice || expMeta.price, serviceFeeRate,
     slug, rawDate, maxGuests,
   }
 

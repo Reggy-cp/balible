@@ -1,93 +1,22 @@
-import { MapPin, Star, ArrowRight } from 'lucide-react'
+import { Star, ArrowRight } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
 
 const AREAS = [
-  {
-    slug: 'ubud',
-    name: 'Ubud',
-    tagline: 'Cultural Heart of Bali',
-    description: 'Nestled among rice terraces and jungle, Ubud is Bali\'s artistic and spiritual centre. Expect world-class galleries, traditional dance performances, healing rituals, and an abundance of wellness retreats tucked down lush laneways.',
-    highlights: ['Tegalalang Rice Terraces', 'Monkey Forest', 'Ubud Palace', 'Campuhan Ridge Walk', 'Art Market'],
-    experienceCount: 7,
-    topCategory: 'Art & Craft',
-    rating: 4.85,
-    image: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=800&auto=format&fit=crop&q=80',
-    thumb: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&auto=format&fit=crop&q=80',
-    color: '#4A7C59',
-    bg: '#F0F7F2',
-  },
-  {
-    slug: 'canggu',
-    name: 'Canggu',
-    tagline: 'Surf, Soul & Slow Mornings',
-    description: 'Once a sleepy rice paddy village, Canggu has evolved into Bali\'s most vibrant creative district. Black-sand beaches, world-class surf breaks, sunrise yoga on rooftops, and specialty coffee at every turn.',
-    highlights: ['Echo Beach', 'Batu Bolong Temple', 'Berawa Beach', 'Pererenan Rice Fields', 'Tanah Lot (nearby)'],
-    experienceCount: 3,
-    topCategory: 'Wellness',
-    rating: 4.82,
-    image: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=800&auto=format&fit=crop&q=80',
-    thumb: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=400&auto=format&fit=crop&q=80',
-    color: '#B66A45',
-    bg: '#FDF8F4',
-  },
-  {
-    slug: 'uluwatu',
-    name: 'Uluwatu',
-    tagline: 'Clifftops, Kecak & Surf',
-    description: 'Perched on dramatic limestone cliffs above the Indian Ocean, Uluwatu is one of Bali\'s most awe-inspiring locations. Famous for the sacred temple, the mesmerising Kecak fire dance at sunset, and serious surf breaks below.',
-    highlights: ['Uluwatu Temple', 'Kecak Sunset Dance', 'Padang Padang Beach', 'Bingin Beach', 'Blue Point Bay'],
-    experienceCount: 2,
-    topCategory: 'Culture',
-    rating: 4.92,
-    image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&auto=format&fit=crop&q=80',
-    thumb: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=400&auto=format&fit=crop&q=80',
-    color: '#6F675C',
-    bg: '#F5F1EB',
-  },
-  {
-    slug: 'seminyak',
-    name: 'Seminyak',
-    tagline: 'Sunset Dining & Bali Chic',
-    description: 'Seminyak is Bali\'s most sophisticated beach destination — a refined strip of boutique hotels, acclaimed restaurants, rooftop bars, and beautiful shops. The sunsets here are legendary, best watched from a bean bag on the sand.',
-    highlights: ['Seminyak Beach', 'Potato Head Beach Club', 'Petitenget Temple', 'Eat Street', 'Sunset cocktails'],
-    experienceCount: 1,
-    topCategory: 'Culinary',
-    rating: 4.78,
-    image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&auto=format&fit=crop&q=80',
-    thumb: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&auto=format&fit=crop&q=80',
-    color: '#C8A97E',
-    bg: '#FFFDF9',
-  },
-  {
-    slug: 'jimbaran',
-    name: 'Jimbaran',
-    tagline: 'Fresh Catch & Firelit Tables',
-    description: 'A traditional fishing village turned seafood paradise, Jimbaran Bay is famed for its candlelit beach warungs serving the day\'s catch grilled over coconut husks. Watch the sun melt into the ocean while fishermen bring in their boats.',
-    highlights: ['Jimbaran Fish Market', 'Seafood Beach Warungs', 'Jimbaran Bay Sunset', 'Four Seasons Beach', 'Kedonganan Market'],
-    experienceCount: 1,
-    topCategory: 'Culinary',
-    rating: 4.62,
-    image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&auto=format&fit=crop&q=80',
-    thumb: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&auto=format&fit=crop&q=80',
-    color: '#4A7C59',
-    bg: '#F0F7F2',
-  },
-  {
-    slug: 'sidemen',
-    name: 'Sidemen & East Bali',
-    tagline: 'The Bali Fewer People Find',
-    description: 'Away from the tourist trail, East Bali is where the island breathes slowly. Sidemen valley, with Mount Agung as its backdrop, is a patchwork of emerald terraces, weaving villages, and morning mist. Amed\'s black-sand coast hides some of Bali\'s best snorkelling and dive sites.',
-    highlights: ['Sidemen Valley', 'Mount Agung views', 'Ikat weaving villages', 'Amed Reef snorkelling', 'Tirta Gangga Water Palace'],
-    experienceCount: 3,
-    topCategory: 'Art & Craft',
-    rating: 4.75,
-    image: 'https://images.unsplash.com/photo-1560275619-4662e36fa65c?w=800&auto=format&fit=crop&q=80',
-    thumb: 'https://images.unsplash.com/photo-1519735777090-ec97162dc266?w=400&auto=format&fit=crop&q=80',
-    color: '#B66A45',
-    bg: '#FDF8F4',
-  },
+  { slug: 'ubud',      name: 'Ubud',              tagline: 'Cultural Heart of Bali',        description: 'Nestled among rice terraces and jungle, Ubud is Bali\'s artistic and spiritual centre. Expect world-class galleries, traditional dance performances, healing rituals, and wellness retreats tucked down lush laneways.', highlights: ['Tegalalang Rice Terraces', 'Monkey Forest', 'Ubud Palace', 'Campuhan Ridge Walk', 'Art Market'], topCategory: 'Art & Craft', rating: 4.85, image: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=800&auto=format&fit=crop&q=80', color: '#4A7C59', bg: '#F0F7F2' },
+  { slug: 'canggu',    name: 'Canggu',             tagline: 'Surf, Soul & Slow Mornings',    description: 'Once a sleepy rice paddy village, Canggu has evolved into Bali\'s most vibrant creative district. Black-sand beaches, world-class surf breaks, sunrise yoga on rooftops, and specialty coffee at every turn.', highlights: ['Echo Beach', 'Batu Bolong Temple', 'Berawa Beach', 'Pererenan Rice Fields', 'Sunrise Yoga'], topCategory: 'Wellness', rating: 4.82, image: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=800&auto=format&fit=crop&q=80', color: '#B66A45', bg: '#FDF8F4' },
+  { slug: 'uluwatu',   name: 'Uluwatu',            tagline: 'Clifftops, Kecak & Surf',       description: 'Perched on dramatic limestone cliffs above the Indian Ocean, Uluwatu is one of Bali\'s most awe-inspiring locations. Famous for the sacred temple, the mesmerising Kecak fire dance at sunset, and serious surf breaks below.', highlights: ['Uluwatu Temple', 'Kecak Sunset Dance', 'Padang Padang Beach', 'Bingin Beach', 'Blue Point Bay'], topCategory: 'Culture', rating: 4.92, image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&auto=format&fit=crop&q=80', color: '#6F675C', bg: '#F5F1EB' },
+  { slug: 'seminyak',  name: 'Seminyak',           tagline: 'Sunset Dining & Bali Chic',     description: 'Seminyak is Bali\'s most sophisticated beach destination — a refined strip of boutique hotels, acclaimed restaurants, rooftop bars, and beautiful shops. The sunsets here are legendary, best watched from a bean bag on the sand.', highlights: ['Seminyak Beach', 'Petitenget Temple', 'Eat Street', 'Boutique Shopping', 'Sunset Cocktails'], topCategory: 'Culinary', rating: 4.78, image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&auto=format&fit=crop&q=80', color: '#C8A97E', bg: '#FFFDF9' },
+  { slug: 'jimbaran',  name: 'Jimbaran',           tagline: 'Fresh Catch & Firelit Tables',  description: 'A traditional fishing village turned seafood paradise, Jimbaran Bay is famed for its candlelit beach warungs serving the day\'s catch grilled over coconut husks. Watch the sun melt into the ocean while fishermen bring in their boats.', highlights: ['Jimbaran Fish Market', 'Seafood Beach Warungs', 'Jimbaran Bay Sunset', 'Four Seasons Beach', 'Kedonganan Market'], topCategory: 'Culinary', rating: 4.62, image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&auto=format&fit=crop&q=80', color: '#4A7C59', bg: '#F0F7F2' },
+  { slug: 'sidemen',   name: 'Sidemen & East Bali', tagline: 'The Bali Fewer People Find',   description: 'Away from the tourist trail, East Bali is where the island breathes slowly. Sidemen valley, with Mount Agung as its backdrop, is a patchwork of emerald terraces, weaving villages, and morning mist.', highlights: ['Sidemen Valley', 'Mount Agung Views', 'Ikat Weaving Villages', 'Amed Reef Snorkelling', 'Tirta Gangga'], topCategory: 'Art & Craft', rating: 4.75, image: 'https://images.unsplash.com/photo-1560275619-4662e36fa65c?w=800&auto=format&fit=crop&q=80', color: '#B66A45', bg: '#FDF8F4' },
+  { slug: 'kuta',      name: 'Kuta',               tagline: 'Where Bali Meets the Ocean',    description: 'Kuta is where most visitors first land in Bali — and its long surf beach, energetic streets, and legendary sunsets make it impossible to overlook. The original surf town still has magic beneath the noise.', highlights: ['Kuta Beach', 'Beginner Surf Breaks', 'Sunset Strip', 'Kuta Art Market', 'Poppies Lane'], topCategory: 'Water Activities', rating: 4.65, image: 'https://images.unsplash.com/photo-1530870110042-98b2cb110834?w=800&auto=format&fit=crop&q=80', color: '#1A6B8A', bg: '#EFF8FC' },
+  { slug: 'gianyar',   name: 'Gianyar',            tagline: 'Sacred Water & Living Temples', description: 'Gianyar regency is the spiritual and artistic heartland of Bali — home to sacred water temples, master weavers, wood carvers, and the famous purification ritual at Pura Tirta Empul.', highlights: ['Pura Tirta Empul', 'Batuan Painting Village', 'Celuk Silver Workshops', 'Goa Gajah', 'Blahbatuh Temple'], topCategory: 'Culture', rating: 4.80, image: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=800&auto=format&fit=crop&q=80', color: '#4A7C59', bg: '#F0F7F2' },
+  { slug: 'sanur',     name: 'Sanur',              tagline: 'Calm Shores & Sunrise Walks',   description: 'Sanur is Bali\'s original resort town — calm, tree-lined, and facing east for spectacular sunrises over the water. Its protected reef keeps the sea flat for swimming, and its 5km beach walk is the finest in South Bali.', highlights: ['Sanur Beach Promenade', 'Sunrise on the Beach', 'Museum Le Mayeur', 'Nusa Penida Boats', 'Kite Festival'], topCategory: 'Wellness', rating: 4.72, image: 'https://images.unsplash.com/photo-1544550285-f813152fb2fd?w=800&auto=format&fit=crop&q=80', color: '#1A6B8A', bg: '#EFF8FC' },
+  { slug: 'nusa-dua',  name: 'Nusa Dua',           tagline: 'Luxury Coast & Calm Waters',    description: 'Nusa Dua is Bali\'s purpose-built luxury enclave — a gated peninsula of world-class resorts, white-sand beaches, and calm turquoise water protected by an offshore reef. Quiet, polished, and utterly relaxing.', highlights: ['Nusa Dua Beach', 'Water Blow Blowhole', 'Snorkelling the Reef', 'Tanjung Benoa', 'BNDCC Cultural Square'], topCategory: 'Water Activities', rating: 4.68, image: 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=800&auto=format&fit=crop&q=80', color: '#1A6B8A', bg: '#EFF8FC' },
+  { slug: 'amed',      name: 'Amed',               tagline: 'Black Sand, Coral & Deep Quiet', description: 'Amed is a string of fishing villages on Bali\'s far east coast — volcanic black sand, excellent snorkelling directly off the beach, WWII shipwrecks for divers, and the kind of silence that only exists far from the tourist trail.', highlights: ['Jemeluk Bay Reef', 'Japanese Shipwreck', 'Mount Agung Views', 'Traditional Fishing Boats', 'Sunrise on Black Sand'], topCategory: 'Water Activities', rating: 4.83, image: 'https://images.unsplash.com/photo-1560275619-4662e36fa65c?w=800&auto=format&fit=crop&q=80', color: '#B66A45', bg: '#FDF8F4' },
+  { slug: 'medewi',    name: 'Medewi',             tagline: "West Bali's Long Left Wave",     description: 'Medewi is one of Bali\'s best-kept secrets — a quiet black-sand beach on the west coast known for its exceptionally long, slow left-hand surf break and the vast rice paddies that stretch back from the shore.', highlights: ['Medewi Point Break', 'Pura Rambut Siwi', 'West Bali Rice Paddies', 'Black Sand Beach', 'Tanah Lot Nearby'], topCategory: 'Water Activities', rating: 4.70, image: 'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=800&auto=format&fit=crop&q=80', color: '#4A7C59', bg: '#F0F7F2' },
+  { slug: 'kintamani', name: 'Kintamani',          tagline: 'Volcanoes, Caldera & Cool Air', description: 'Kintamani sits on the rim of an ancient volcanic caldera, with Lake Batur shimmering far below and the dark cone of Gunung Batur rising above the water. At 1,500 metres, the air is cool, the views are extraordinary.', highlights: ['Gunung Batur Sunrise Trek', 'Lake Batur', 'Caldera Rim Viewpoint', 'Trunyan Village', 'Coffee Plantations'], topCategory: 'Nature & Outdoors', rating: 4.88, image: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=800&auto=format&fit=crop&q=80', color: '#6F675C', bg: '#F5F1EB' },
 ]
 
 export const metadata = {
@@ -126,89 +55,63 @@ export default function DestinationsPage() {
       <div className="max-w-[1200px] mx-auto px-5 lg:px-8 py-16">
         <div className="text-center mb-12">
           <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 3vw, 36px)', fontWeight: 700, color: '#111111', marginBottom: 10 }}>
-            6 Destinations, Endless Experiences
+            13 Destinations, Endless Experiences
           </h2>
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 16, color: '#6F675C', maxWidth: 520, margin: '0 auto', lineHeight: 1.7 }}>
             We've handpicked experiences in each area so you can dive deep, wherever you land.
           </p>
         </div>
 
-        <div className="space-y-6">
-          {AREAS.map((area, i) => (
-            <div
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {AREAS.map(area => (
+            <a
               key={area.slug}
-              className="bg-white rounded-2xl overflow-hidden"
-              style={{ border: '1px solid #E8E4DE', display: 'grid', gridTemplateColumns: i % 2 === 0 ? '1fr 1.2fr' : '1.2fr 1fr' }}
+              href={`/destinations/${area.slug}`}
+              className="bg-white rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 block"
+              style={{ border: '1px solid #E8E4DE', textDecoration: 'none' }}
             >
-              {/* Image — left on even, right on odd */}
-              {i % 2 === 0 && (
-                <div className="relative" style={{ minHeight: 280 }}>
-                  <img src={area.image} alt={area.name} className="w-full h-full object-cover absolute inset-0" />
-                  <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0) 70%, rgba(0,0,0,0.05) 100%)' }} />
+              {/* Image */}
+              <div className="relative" style={{ height: 200, overflow: 'hidden' }}>
+                <img src={area.image} alt={area.name} className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
+                <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0,0.55) 100%)' }} />
+                <div className="absolute bottom-0 left-0 p-4">
+                  <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: 'rgba(255,255,255,0.75)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 2 }}>
+                    {area.tagline}
+                  </p>
+                  <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: 'white', lineHeight: 1.2 }}>
+                    {area.name}
+                  </h3>
                 </div>
-              )}
+              </div>
 
               {/* Content */}
-              <div className="p-8 lg:p-10 flex flex-col justify-center">
-                <div className="flex items-center gap-2 mb-3">
-                  <MapPin size={13} style={{ color: area.color }} />
-                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: area.color, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                    {area.name}
-                  </span>
-                </div>
-                <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(20px, 2.5vw, 28px)', fontWeight: 700, color: '#111111', lineHeight: 1.2, marginBottom: 12 }}>
-                  {area.tagline}
-                </h3>
-                <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.8, marginBottom: 16, maxWidth: 440 }}>
-                  {area.description}
+              <div className="p-5">
+                <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', lineHeight: 1.7, marginBottom: 14 }}>
+                  {area.description.length > 120 ? area.description.slice(0, 120) + '…' : area.description}
                 </p>
 
                 {/* Highlights */}
-                <div className="flex flex-wrap gap-2 mb-5">
-                  {area.highlights.map(h => (
-                    <span key={h} className="px-3 py-1 rounded-full" style={{ backgroundColor: area.bg, color: area.color, fontSize: 12, fontWeight: 500 }}>
+                <div className="flex flex-wrap gap-1.5 mb-4">
+                  {area.highlights.slice(0, 3).map(h => (
+                    <span key={h} className="px-2.5 py-0.5 rounded-full" style={{ backgroundColor: area.bg, color: area.color, fontSize: 11, fontWeight: 500 }}>
                       {h}
                     </span>
                   ))}
                 </div>
 
-                {/* Stats + CTA */}
-                <div className="flex items-center justify-between flex-wrap gap-3">
-                  <div className="flex items-center gap-4">
-                    <div>
-                      <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111' }}>{area.experienceCount}</p>
-                      <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>Experiences</p>
-                    </div>
-                    <div style={{ width: 1, height: 28, backgroundColor: '#E8E4DE' }} />
-                    <div className="flex items-center gap-1">
-                      <Star size={13} fill="#C8A97E" color="#C8A97E" />
-                      <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111' }}>{area.rating}</span>
-                      <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C', marginLeft: 2 }}>avg rating</span>
-                    </div>
-                    <div style={{ width: 1, height: 28, backgroundColor: '#E8E4DE' }} />
-                    <div>
-                      <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>Top category</p>
-                      <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 600, color: '#111111' }}>{area.topCategory}</p>
-                    </div>
+                {/* Footer */}
+                <div className="flex items-center justify-between pt-3" style={{ borderTop: '1px solid #F5F1EB' }}>
+                  <div className="flex items-center gap-1">
+                    <Star size={11} fill="#C8A97E" color="#C8A97E" />
+                    <span style={{ fontSize: 12, fontWeight: 700, color: '#111111' }}>{area.rating}</span>
+                    <span style={{ fontSize: 11, color: '#6F675C', marginLeft: 2 }}>{area.topCategory}</span>
                   </div>
-                  <a
-                    href={`/destinations/${area.slug}`}
-                    className="flex items-center gap-2 hover:opacity-90 transition-opacity"
-                    style={{ height: 40, paddingInline: 20, backgroundColor: '#111111', color: 'white', borderRadius: 8, fontSize: 13, fontWeight: 600, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}
-                  >
-                    Explore {area.name.split(' ')[0]} <ArrowRight size={13} />
-                  </a>
+                  <span className="flex items-center gap-1" style={{ fontSize: 12, color: area.color, fontWeight: 600 }}>
+                    Explore <ArrowRight size={11} />
+                  </span>
                 </div>
               </div>
-
-              {/* Image — right on odd */}
-              {i % 2 !== 0 && (
-                <div className="relative" style={{ minHeight: 280 }}>
-                  <img src={area.image} alt={area.name} className="w-full h-full object-cover absolute inset-0" />
-                  <div className="absolute inset-0" style={{ background: 'linear-gradient(to left, rgba(0,0,0,0) 70%, rgba(0,0,0,0.05) 100%)' }} />
-                </div>
-              )}
-            </div>
+            </a>
           ))}
         </div>
       </div>

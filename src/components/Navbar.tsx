@@ -20,16 +20,20 @@ const CATEGORIES = [
 
 const NAV_LINKS = [
   { label: 'Experiences',  href: '/search',       hasDropdown: true },
-  { label: 'Destinations', href: '/destinations',  hasDropdown: false },
-  { label: 'Events',       href: '/events',        hasDropdown: false },
-  { label: 'For Hosts',    href: '/for-hosts',     hasDropdown: false },
+  { label: 'Services',      href: '/services',       hasDropdown: false },
+  { label: 'Destinations',  href: '/destinations',   hasDropdown: false },
+  { label: 'Events',        href: '/events',         hasDropdown: false },
+  { label: 'For Hosts',     href: '/for-hosts',      hasDropdown: false },
+  { label: 'For Providers', href: '/for-providers',  hasDropdown: false },
 ]
 
 const MOBILE_LINKS = [
-  { label: 'Experiences',  href: '/search' },
-  { label: 'Destinations', href: '/destinations' },
-  { label: 'Events',       href: '/events' },
-  { label: 'For Hosts',    href: '/for-hosts' },
+  { label: 'Experiences',   href: '/search' },
+  { label: 'Services',      href: '/services' },
+  { label: 'Destinations',  href: '/destinations' },
+  { label: 'Events',        href: '/events' },
+  { label: 'For Hosts',     href: '/for-hosts' },
+  { label: 'For Providers', href: '/for-providers' },
 ]
 
 export default function Navbar() {

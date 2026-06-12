@@ -1,30 +1,22 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  Heart, Search, CalendarDays, ChevronDown,
+  Heart, Search, CalendarDays, MapPin, X,
   Leaf, Scissors, Landmark, ChefHat, Sun,
   Mountain, Waves, Grid3x3, Star, ShieldCheck, Users, Sparkles,
-  MapPin, Instagram, Facebook, Twitter,
+  Instagram, Facebook, Twitter,
 } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
+import WishlistHeart from '@/components/WishlistHeart'
 import type { ExperienceCard } from '@/lib/experiences'
 import type { EventRow } from '@/lib/event-actions'
+import type { ServiceCard } from '@/lib/service-actions'
 
 // ── Static data ───────────────────────────────────────────────────────────────
 
-const CAT_STRIP = [
-  { label: 'Wellness',      Icon: Leaf,      href: '/categories/wellness'   },
-  { label: 'Art & Craft',   Icon: Scissors,  href: '/categories/art-craft'  },
-  { label: 'Culture',       Icon: Landmark,  href: '/categories/culture'    },
-  { label: 'Culinary',      Icon: ChefHat,   href: '/categories/culinary'   },
-  { label: 'Spiritual',     Icon: Sun,       href: '/categories/spiritual'  },
-  { label: 'Nature & Outdoors', Icon: Mountain, href: '/categories/nature'  },
-  { label: 'Water Activities', Icon: Waves,   href: '/categories/water-activities' },
-  { label: 'All Categories',  Icon: Grid3x3, href: '/categories'            },
-]
 
 const CAT_GRID = [
   { label: 'Wellness',     Icon: Leaf,       href: '/categories/wellness',   photo: 'https://images.unsplash.com/photo-1600334129128-685c5582fd35?w=400&auto=format&fit=crop&q=80' },
@@ -59,7 +51,6 @@ const FOOTER_COLS = [
 // ── Sub-components ────────────────────────────────────────────────────────────
 
 function ExperienceCard({ exp }: { exp: ExperienceCard }) {
-  const [liked, setLiked] = useState(false)
   return (
     <a
       href={`/experiences/${exp.slug}`}
@@ -74,12 +65,9 @@ function ExperienceCard({ exp }: { exp: ExperienceCard }) {
             {exp.badge}
           </span>
         )}
-        <button
-          className="absolute top-3 right-3 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow hover:scale-110 transition-transform"
-          onClick={e => { e.preventDefault(); setLiked(!liked) }}
-        >
-          <Heart size={13} fill={liked ? '#ef4444' : 'none'} color={liked ? '#ef4444' : '#111111'} />
-        </button>
+        <div className="absolute top-3 right-3">
+          <WishlistHeart slug={exp.slug} size={13} compact />
+        </div>
       </div>
       <div className="p-4">
         <div className="flex items-center justify-between mb-1">
@@ -103,17 +91,10 @@ function ExperienceCard({ exp }: { exp: ExperienceCard }) {
 }
 
 function HostCard({ host }: { host: typeof HOSTS[0] }) {
-  const [liked, setLiked] = useState(false)
   return (
     <div>
       <div className="relative overflow-hidden rounded-xl" style={{ height: 200 }}>
         <img src={host.photo} alt={host.name} className="w-full h-full object-cover" />
-        <button
-          className="absolute top-3 right-3 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow hover:scale-110 transition-transform"
-          onClick={() => setLiked(!liked)}
-        >
-          <Heart size={13} fill={liked ? '#ef4444' : 'none'} color={liked ? '#ef4444' : '#111111'} />
-        </button>
       </div>
       <h3 className="mt-3" style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111' }}>{host.name}</h3>
       <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>{host.role}, {host.location}</p>
@@ -129,11 +110,65 @@ function HostCard({ host }: { host: typeof HOSTS[0] }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 
-export default function HomeClient({ experiences, upcomingEvents }: { experiences: ExperienceCard[]; upcomingEvents: EventRow[] }) {
+export default function HomeClient({ experiences, upcomingEvents, featuredServices = [] }: { experiences: ExperienceCard[]; upcomingEvents: EventRow[]; featuredServices?: ServiceCard[] }) {
   const [search, setSearch]         = useState('')
   const [date, setDate]             = useState('')
   const [email, setEmail]           = useState('')
   const [subscribed, setSubscribed] = useState(false)
+  const [activeCategory, setActiveCategory] = useState('All')
+  const [nearbyArea, setNearbyArea]         = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!navigator?.geolocation) return
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        const { latitude: lat, longitude: lng } = coords
+        if (lat < -8.95 || lat > -8.05 || lng < 114.4 || lng > 115.75) return
+        const AREAS = [
+          { display: 'Ubud',      lat: -8.5069, lng: 115.2624 },
+          { display: 'Canggu',    lat: -8.6482, lng: 115.1380 },
+          { display: 'Seminyak',  lat: -8.6910, lng: 115.1627 },
+          { display: 'Kuta',      lat: -8.7196, lng: 115.1686 },
+          { display: 'Uluwatu',   lat: -8.8290, lng: 115.0849 },
+          { display: 'Gianyar',   lat: -8.5384, lng: 115.3315 },
+          { display: 'Sanur',     lat: -8.7134, lng: 115.2626 },
+          { display: 'Nusa Dua',  lat: -8.7985, lng: 115.2326 },
+          { display: 'Amed',      lat: -8.3500, lng: 115.6580 },
+          { display: 'Jimbaran',  lat: -8.7815, lng: 115.1651 },
+          { display: 'Kintamani', lat: -8.2458, lng: 115.3652 },
+          { display: 'Medewi',    lat: -8.4770, lng: 114.8430 },
+          { display: 'Sidemen',   lat: -8.4800, lng: 115.4500 },
+        ]
+        const R = 6371
+        const toRad = (d: number) => d * Math.PI / 180
+        const nearest = AREAS.reduce((best, a) => {
+          const dLat = toRad(a.lat - lat), dLng = toRad(a.lng - lng)
+          const dist = R * 2 * Math.atan2(
+            Math.sqrt(Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat)) * Math.cos(toRad(a.lat)) * Math.sin(dLng / 2) ** 2),
+            Math.sqrt(1 - (Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat)) * Math.cos(toRad(a.lat)) * Math.sin(dLng / 2) ** 2)),
+          )
+          return dist < best.dist ? { area: a.display, dist } : best
+        }, { area: '', dist: Infinity })
+        if (experiences.some(e => e.area === nearest.area)) {
+          setNearbyArea(nearest.area)
+        }
+      },
+      () => {},
+      { timeout: 8000, maximumAge: 300_000 },
+    )
+  }, [experiences])
+
+  const categories = useMemo(() => {
+    const seen = new Set<string>()
+    experiences.forEach(e => { if (e.category) seen.add(e.category) })
+    return ['All', ...Array.from(seen).sort()]
+  }, [experiences])
+
+  const filteredExperiences = useMemo(() => {
+    let list = nearbyArea ? experiences.filter(e => e.area === nearbyArea) : experiences
+    if (activeCategory !== 'All') list = list.filter(e => e.category === activeCategory)
+    return nearbyArea || activeCategory !== 'All' ? list : list.slice(0, 12)
+  }, [activeCategory, nearbyArea, experiences])
   const dateInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
 
@@ -239,67 +274,268 @@ export default function HomeClient({ experiences, upcomingEvents }: { experience
         </div>
       </section>
 
-      {/* ── SOCIAL PROOF ── */}
-      <section style={{ backgroundColor: '#111111' }}>
-        <div className="max-w-[1440px] mx-auto px-6 lg:px-16 py-8 grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-0">
-          {[
-            { value: '4.9',    label: 'Average Rating',  suffix: '★' },
-            { value: '1,200+', label: 'Happy Travelers', suffix: '' },
-            { value: '150+',   label: 'Local Hosts',     suffix: '' },
-            { value: '25',     label: 'Villages',        suffix: '' },
-          ].map(({ value, label, suffix }, i) => (
-            <div
-              key={label}
-              className={`flex flex-col items-center text-center lg:py-2${i > 0 ? ' lg:border-l' : ''}`}
-              style={i > 0 ? { borderLeftColor: 'rgba(255,255,255,0.08)' } : {}}
-            >
-              <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px, 4vw, 40px)', fontWeight: 700, color: 'white', lineHeight: 1 }}>
-                {value}{suffix && <span style={{ color: '#C8A97E', marginLeft: 3 }}>{suffix}</span>}
-              </span>
-              <span className="mt-1.5" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.03em' }}>
-                {label}
-              </span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── CATEGORY STRIP ── */}
-      <section className="bg-white py-8 px-6 lg:px-16" style={{ borderBottom: '1px solid #E8E4DE' }}>
-        <div className="max-w-[1440px] mx-auto flex items-center justify-between overflow-x-auto scrollbar-none gap-4">
-          {CAT_STRIP.map(({ label, Icon, href }) => (
-            <a key={label} href={href} className="flex flex-col items-center gap-2 flex-shrink-0 group cursor-pointer" style={{ textDecoration: 'none' }}>
-              <Icon size={24} strokeWidth={1.5} className="group-hover:text-gold transition-colors" style={{ color: '#111111' }} />
-              <span className="group-hover:text-gold transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', whiteSpace: 'nowrap' }}>
-                {label}
-              </span>
-            </a>
-          ))}
-        </div>
-      </section>
 
       {/* ── HANDPICKED EXPERIENCES ── */}
       <section className="bg-white py-12 px-6 lg:px-16">
         <div className="max-w-[1440px] mx-auto">
-          <div className="flex items-start justify-between mb-8">
+          <div className="flex items-start justify-between mb-6">
             <div>
+              {nearbyArea && (
+                <div className="flex items-center gap-1.5 mb-1">
+                  <MapPin size={14} style={{ color: '#C8A97E' }} />
+                  <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#C8A97E', fontWeight: 500 }}>
+                    You&apos;re in Bali
+                  </p>
+                </div>
+              )}
               <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#111111', fontWeight: 700 }}>
-                All Experiences
+                {nearbyArea ? `Experiences in ${nearbyArea}` : 'All Experiences'}
               </h2>
-              <p className="mt-1" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
-                {experiences.length} curated experiences across Bali
-              </p>
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
+                  {nearbyArea
+                    ? `${filteredExperiences.length} experience${filteredExperiences.length !== 1 ? 's' : ''} near you`
+                    : `${experiences.length} curated experiences across Bali`}
+                </p>
+                {nearbyArea && (
+                  <button
+                    onClick={() => setNearbyArea(null)}
+                    className="flex items-center gap-1 px-2.5 py-0.5 rounded-full transition-colors hover:bg-stone-200"
+                    style={{ backgroundColor: '#F5F1EB', border: '1px solid #E8E4DE', fontSize: 12, color: '#6F675C', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}
+                  >
+                    {nearbyArea}
+                    <X size={10} />
+                  </button>
+                )}
+              </div>
             </div>
-            <a href="/search" className="flex-shrink-0 hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#C8A97E', textDecoration: 'underline' }}>
-              Filter & search →
-            </a>
+          </div>
+
+          {/* Category filter pills */}
+          <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+            {categories.map(cat => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className="flex-shrink-0 transition-all"
+                style={{
+                  height: 34,
+                  padding: '0 16px',
+                  borderRadius: 20,
+                  fontSize: 13,
+                  fontWeight: activeCategory === cat ? 600 : 400,
+                  backgroundColor: activeCategory === cat ? '#111111' : 'transparent',
+                  color: activeCategory === cat ? 'white' : '#6F675C',
+                  border: `1px solid ${activeCategory === cat ? '#111111' : '#E8E4DE'}`,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  fontFamily: 'var(--font-inter)',
+                }}
+              >
+                {cat}
+              </button>
+            ))}
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-5">
-            {experiences.map(exp => <ExperienceCard key={exp.slug} exp={exp} />)}
+            {filteredExperiences.map(exp => <ExperienceCard key={exp.slug} exp={exp} />)}
+          </div>
+
+          {activeCategory !== 'All' ? (
+            <div className="mt-8 text-center">
+              <a
+                href={`/categories/${experiences.find(e => e.category === activeCategory)?.categorySlug ?? 'culture'}`}
+                style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#C8A97E', textDecoration: 'underline' }}
+                className="hover:opacity-70 transition-opacity"
+              >
+                See all {activeCategory} experiences →
+              </a>
+            </div>
+          ) : !nearbyArea && experiences.length > filteredExperiences.length ? (
+            <div className="mt-8 text-center">
+              <a
+                href="/search"
+                style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#C8A97E', textDecoration: 'underline' }}
+                className="hover:opacity-70 transition-opacity"
+              >
+                See all {experiences.length} experiences →
+              </a>
+            </div>
+          ) : null}
+        </div>
+      </section>
+
+      {/* ── DESTINATIONS ── */}
+      <section className="py-12 px-6 lg:px-16" style={{ backgroundColor: '#F5F1EB' }}>
+        <div className="max-w-[1440px] mx-auto">
+          <div className="flex items-start justify-between mb-8">
+            <div>
+              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#111111', fontWeight: 700 }}>
+                Explore by Destination
+              </h2>
+              <p className="mt-1" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
+                13 distinct corners of Bali, each with its own character
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-4 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
+            {[
+              { slug: 'ubud',      name: 'Ubud',      tagline: 'Cultural Heart',       image: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=400&auto=format&fit=crop&q=80' },
+              { slug: 'canggu',    name: 'Canggu',    tagline: 'Surf & Soul',           image: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=400&auto=format&fit=crop&q=80' },
+              { slug: 'uluwatu',   name: 'Uluwatu',   tagline: 'Clifftops & Kecak',     image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=400&auto=format&fit=crop&q=80' },
+              { slug: 'seminyak',  name: 'Seminyak',  tagline: 'Sunset Dining',         image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&auto=format&fit=crop&q=80' },
+              { slug: 'jimbaran',  name: 'Jimbaran',  tagline: 'Seafood & Bay',         image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&auto=format&fit=crop&q=80' },
+              { slug: 'kintamani', name: 'Kintamani', tagline: 'Volcano & Caldera',     image: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=400&auto=format&fit=crop&q=80' },
+              { slug: 'sanur',     name: 'Sanur',     tagline: 'Calm Shores',           image: 'https://images.unsplash.com/photo-1544550285-f813152fb2fd?w=400&auto=format&fit=crop&q=80' },
+              { slug: 'amed',      name: 'Amed',      tagline: 'Reef & Quiet',          image: 'https://images.unsplash.com/photo-1560275619-4662e36fa65c?w=400&auto=format&fit=crop&q=80' },
+              { slug: 'kuta',      name: 'Kuta',      tagline: 'Surf Town',             image: 'https://images.unsplash.com/photo-1530870110042-98b2cb110834?w=400&auto=format&fit=crop&q=80' },
+              { slug: 'gianyar',   name: 'Gianyar',   tagline: 'Sacred Temples',        image: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=400&auto=format&fit=crop&q=80' },
+              { slug: 'sidemen',   name: 'Sidemen',   tagline: 'East Bali Valleys',     image: 'https://images.unsplash.com/photo-1519735777090-ec97162dc266?w=400&auto=format&fit=crop&q=80' },
+              { slug: 'nusa-dua',  name: 'Nusa Dua',  tagline: 'Luxury Coast',          image: 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=400&auto=format&fit=crop&q=80' },
+              { slug: 'medewi',    name: 'Medewi',    tagline: 'West Bali Surf',        image: 'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=400&auto=format&fit=crop&q=80' },
+            ].map(dest => (
+              <a
+                key={dest.slug}
+                href={`/destinations/${dest.slug}`}
+                className="flex-shrink-0 relative rounded-2xl overflow-hidden group"
+                style={{ width: 160, height: 200, textDecoration: 'none' }}
+              >
+                <img
+                  src={dest.image}
+                  alt={dest.name}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0) 40%, rgba(0,0,0,0.65) 100%)' }} />
+                <div className="absolute bottom-0 left-0 right-0 p-3">
+                  <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: 'white', lineHeight: 1.2 }}>{dest.name}</p>
+                  <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: 'rgba(255,255,255,0.75)', marginTop: 2 }}>{dest.tagline}</p>
+                </div>
+              </a>
+            ))}
           </div>
         </div>
       </section>
+
+      {/* ── UPCOMING EVENTS ── */}
+      {upcomingEvents.length > 0 && (
+        <section className="bg-white py-12 px-6 lg:px-16" style={{ borderTop: '1px solid #E8E4DE' }}>
+          <div className="max-w-[1440px] mx-auto">
+            <div className="flex items-start justify-between mb-8">
+              <div>
+                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#111111', fontWeight: 700 }}>
+                  Upcoming Events
+                </h2>
+                <p className="mt-1" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
+                  One-time experiences hosted by local operators.
+                </p>
+              </div>
+              <a href="/events" className="flex-shrink-0 hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#C8A97E', textDecoration: 'underline' }}>
+                View all →
+              </a>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {upcomingEvents.slice(0, 3).map(ev => {
+                const d = new Date(ev.date)
+                const dateStr = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+                const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+                return (
+                  <a key={ev.id} href={`/events/${ev.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
+                    <div className="rounded-xl overflow-hidden hover:shadow-md transition-shadow" style={{ border: '1px solid #E8E4DE' }}>
+                      <div style={{ height: 180, backgroundColor: '#F0EDE8', position: 'relative', overflow: 'hidden' }}>
+                        {ev.coverImage ? (
+                          <img src={ev.coverImage} alt={ev.title} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <span style={{ fontSize: 36 }}>🎟</span>
+                          </div>
+                        )}
+                        <div style={{ position: 'absolute', top: 10, left: 10, backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 8, padding: '4px 10px' }}>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: 'white' }}>{dateStr}</span>
+                        </div>
+                      </div>
+                      <div style={{ padding: '14px 16px' }}>
+                        <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 4 }}>{ev.title}</p>
+                        <p style={{ fontSize: 12, color: '#6F675C', marginBottom: 10 }}>⏰ {timeStr} · 📍 {ev.location.split(',')[0]}</p>
+                        <div className="flex items-center justify-between">
+                          <span style={{ fontSize: 13, color: '#6F675C' }}>👥 Up to {ev.capacity}</span>
+                          <span style={{ fontSize: 14, fontWeight: 700, color: '#111111' }}>
+                            {ev.price === 0 ? 'Free' : `IDR ${ev.price.toLocaleString('id-ID')}`}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </a>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── SERVICES ── */}
+      {featuredServices.length > 0 && (
+        <section className="bg-white py-12 px-6 lg:px-16" style={{ borderTop: '1px solid #E8E4DE' }}>
+          <div className="max-w-[1440px] mx-auto">
+            <div className="flex items-start justify-between mb-8">
+              <div>
+                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#111111', fontWeight: 700 }}>
+                  Trusted Services in Bali
+                </h2>
+                <p className="mt-1" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
+                  From massages to private drivers — delivered to your villa.
+                </p>
+              </div>
+              <a href="/services" className="flex-shrink-0 hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#C8A97E', textDecoration: 'underline' }}>
+                View all →
+              </a>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-5">
+              {featuredServices.map(s => (
+                <a
+                  key={s.slug}
+                  href={`/services/${s.slug}`}
+                  className="rounded-xl overflow-hidden border hover:shadow-md transition-shadow block bg-white"
+                  style={{ borderColor: '#E8E4DE', textDecoration: 'none' }}
+                >
+                  <div className="relative" style={{ height: 180 }}>
+                    {s.image && <img src={s.image} alt={s.title} className="w-full h-full object-cover" />}
+                    <span
+                      className="absolute bottom-3 left-3 px-2 py-0.5 rounded-full"
+                      style={{ fontSize: 11, fontWeight: 600, backgroundColor: 'rgba(0,0,0,0.55)', color: 'white' }}
+                    >
+                      {s.subcategory}
+                    </span>
+                  </div>
+                  <div className="p-4">
+                    <div className="flex items-center gap-1 mb-1">
+                      <MapPin size={11} style={{ color: '#6F675C' }} />
+                      <p style={{ fontSize: 11, color: '#6F675C' }}>{s.area}</p>
+                    </div>
+                    <h3
+                      className="line-clamp-2 leading-snug"
+                      style={{ fontFamily: 'var(--font-playfair)', fontSize: 14, color: '#111111', fontWeight: 600 }}
+                    >
+                      {s.title}
+                    </h3>
+                    <p className="mt-0.5" style={{ fontSize: 11, color: '#9E9A94' }}>{s.category}</p>
+                    <div className="flex items-center gap-1 mt-2">
+                      <Star size={11} fill="#C8A97E" color="#C8A97E" />
+                      <span style={{ fontSize: 12, fontWeight: 700, color: '#111111' }}>{s.rating.toFixed(1)}</span>
+                      <span style={{ fontSize: 12, color: '#6F675C' }}>({s.totalReviews})</span>
+                    </div>
+                    <p className="mt-2" style={{ fontSize: 13, color: '#111111' }}>
+                      From <span style={{ color: '#C8A97E' }}>IDR</span> {s.price.toLocaleString('id-ID')}
+                      {s.priceTypeKey !== 'FIXED' && (
+                        <span style={{ color: '#6F675C', fontSize: 11 }}> {s.priceType}</span>
+                      )}
+                    </p>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── EXPLORE BY CATEGORY ── */}
       <section className="py-12 px-6 lg:px-16" style={{ backgroundColor: '#F5F1EB' }}>
@@ -366,62 +602,6 @@ export default function HomeClient({ experiences, upcomingEvents }: { experience
           </div>
         </div>
       </section>
-
-      {/* ── UPCOMING EVENTS ── */}
-      {upcomingEvents.length > 0 && (
-        <section className="bg-white py-12 px-6 lg:px-16">
-          <div className="max-w-[1440px] mx-auto">
-            <div className="flex items-start justify-between mb-8">
-              <div>
-                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#111111', fontWeight: 700 }}>
-                  Upcoming Events
-                </h2>
-                <p className="mt-1" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
-                  One-time experiences hosted by local operators.
-                </p>
-              </div>
-              <a href="/events" className="flex-shrink-0 hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#C8A97E', textDecoration: 'underline' }}>
-                View all →
-              </a>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {upcomingEvents.slice(0, 3).map(ev => {
-                const d = new Date(ev.date)
-                const dateStr = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-                const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-                return (
-                  <a key={ev.id} href={`/events/${ev.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
-                    <div className="rounded-xl overflow-hidden hover:shadow-md transition-shadow" style={{ border: '1px solid #E8E4DE' }}>
-                      <div style={{ height: 180, backgroundColor: '#F0EDE8', position: 'relative', overflow: 'hidden' }}>
-                        {ev.coverImage ? (
-                          <img src={ev.coverImage} alt={ev.title} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <span style={{ fontSize: 36 }}>🎟</span>
-                          </div>
-                        )}
-                        <div style={{ position: 'absolute', top: 10, left: 10, backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 8, padding: '4px 10px' }}>
-                          <span style={{ fontSize: 12, fontWeight: 600, color: 'white' }}>{dateStr}</span>
-                        </div>
-                      </div>
-                      <div style={{ padding: '14px 16px' }}>
-                        <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 4 }}>{ev.title}</p>
-                        <p style={{ fontSize: 12, color: '#6F675C', marginBottom: 10 }}>⏰ {timeStr} · 📍 {ev.location.split(',')[0]}</p>
-                        <div className="flex items-center justify-between">
-                          <span style={{ fontSize: 13, color: '#6F675C' }}>👥 Up to {ev.capacity}</span>
-                          <span style={{ fontSize: 14, fontWeight: 700, color: '#111111' }}>
-                            {ev.price === 0 ? 'Free' : `IDR ${ev.price.toLocaleString('id-ID')}`}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </a>
-                )
-              })}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* ── NEWSLETTER CTA ── */}
       <section className="py-12 px-6 lg:px-16 text-center" style={{ backgroundColor: '#111111' }}>

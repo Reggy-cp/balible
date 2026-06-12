@@ -13,7 +13,10 @@ import {
   getHostEvents, createEvent, updateEvent, deleteEvent,
   type EventRow, type EventInput,
 } from '@/lib/event-actions'
-import { saveHostListingAction, submitHostListingAction, type HostListingInput } from '@/lib/actions'
+import {
+  saveHostListingAction, submitHostListingAction, type HostListingInput,
+  getHostDashboardData, type DashExp, type DashBooking, type DashReview,
+} from '@/lib/actions'
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
@@ -196,10 +199,11 @@ const UPCOMING = [
   { title: 'Clay Sculpture Session',  date: 'Jun 12, 2024 · 10:00 AM', guests: 2, status: 'Confirmed', image: 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=120&auto=format&fit=crop&q=80' },
 ]
 
-function OverviewPanel({ onNav, commissionRate }: { onNav: (id: string) => void; commissionRate: number }) {
+function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences }: { onNav: (id: string) => void; commissionRate: number; experiences?: DashExp[] }) {
   const [period, setPeriod] = useState('This Month')
   const netMult = (100 - commissionRate) / 100
-  const totalNetEarnings = EXPERIENCES.reduce((a, e) => a + e.earnings, 0) * netMult
+  const expSource = liveExperiences ?? EXPERIENCES
+  const totalNetEarnings = expSource.reduce((a, e) => a + e.earnings, 0) * netMult
   const lastMonthNet = MONTHLY_EARNINGS[MONTHLY_EARNINGS.length - 1] * netMult
 
   const stats = OVERVIEW_STATS.map(s =>
@@ -309,11 +313,11 @@ function OverviewPanel({ onNav, commissionRate }: { onNav: (id: string) => void;
 
 // ── Experiences Panel ─────────────────────────────────────────────────────────
 
-function ExperiencesPanel({ commissionRate }: { commissionRate: number }) {
+function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRate: number; initialExperiences?: DashExp[] }) {
   const [filter, setFilter]   = useState('All')
-  const [exps, setExps]       = useState(EXPERIENCES)
+  const [exps, setExps]       = useState<DashExp[]>(initialExperiences ?? EXPERIENCES)
   const [showForm, setShowForm] = useState(false)
-  const [editingExp, setEditingExp] = useState<typeof EXPERIENCES[0] | null>(null)
+  const [editingExp, setEditingExp] = useState<DashExp | null>(null)
   const [menuOpen, setMenuOpen] = useState<number | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [imageDragging, setImageDragging] = useState(false)
@@ -859,10 +863,10 @@ function ExperiencesPanel({ commissionRate }: { commissionRate: number }) {
 
 // ── Bookings Panel ────────────────────────────────────────────────────────────
 
-function BookingsPanel() {
+function BookingsPanel({ initialBookings }: { initialBookings?: DashBooking[] }) {
   const [statusFilter, setStatusFilter] = useState('All')
   const [search, setSearch]             = useState('')
-  const [bookings, setBookings]         = useState(BOOKINGS_DATA)
+  const [bookings, setBookings]         = useState<DashBooking[]>(initialBookings ?? BOOKINGS_DATA)
 
   const statuses = ['All', 'Pending', 'Confirmed', 'Completed', 'Cancelled']
   const filtered = bookings.filter(b => {
@@ -1084,27 +1088,28 @@ function EarningsPanel({ commissionRate }: { commissionRate: number }) {
 
 // ── Reviews Panel ─────────────────────────────────────────────────────────────
 
-function ReviewsPanel() {
+function ReviewsPanel({ initialReviews }: { initialReviews?: DashReview[] }) {
   const [starFilter, setStarFilter] = useState(0)
+  const reviews = initialReviews ?? REVIEWS_DATA
 
-  const avg     = (REVIEWS_DATA.reduce((a, r) => a + r.rating, 0) / REVIEWS_DATA.length).toFixed(1)
-  const visible = starFilter === 0 ? REVIEWS_DATA : REVIEWS_DATA.filter(r => r.rating === starFilter)
+  const avg     = reviews.length > 0 ? (reviews.reduce((a, r) => a + r.rating, 0) / reviews.length).toFixed(1) : '0.0'
+  const visible = starFilter === 0 ? reviews : reviews.filter(r => r.rating === starFilter)
   const dist    = [5, 4, 3, 2, 1].map(s => ({
     star: s,
-    count: REVIEWS_DATA.filter(r => r.rating === s).length,
-    pct: (REVIEWS_DATA.filter(r => r.rating === s).length / REVIEWS_DATA.length) * 100,
+    count: reviews.filter(r => r.rating === s).length,
+    pct: reviews.length > 0 ? (reviews.filter(r => r.rating === s).length / reviews.length) * 100 : 0,
   }))
 
   return (
     <div>
-      <PageHeader title="Reviews" subtitle={`${REVIEWS_DATA.length} reviews across all experiences`} />
+      <PageHeader title="Reviews" subtitle={`${reviews.length} reviews across all experiences`} />
 
       {/* Summary */}
       <div className="bg-white rounded-xl p-5 mb-5 flex flex-col sm:flex-row gap-6 items-start" style={{ border: '1px solid #E8E4DE' }}>
         <div className="text-center flex-shrink-0">
           <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 52, fontWeight: 700, color: '#111111', lineHeight: 1 }}>{avg}</p>
           <Stars n={Math.round(Number(avg))} />
-          <p style={{ fontSize: 12, color: '#6F675C', marginTop: 4 }}>{REVIEWS_DATA.length} reviews</p>
+          <p style={{ fontSize: 12, color: '#6F675C', marginTop: 4 }}>{reviews.length} reviews</p>
         </div>
         <div className="flex-1 w-full space-y-2">
           {dist.map(d => (
@@ -1885,19 +1890,31 @@ function SidebarInner({ activeNav, setActiveNav }: { activeNav: string; setActiv
 export default function DashboardPage() {
   const [activeNav, setActiveNav]   = useState('overview')
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [liveExperiences, setLiveExperiences] = useState<DashExp[] | undefined>(undefined)
+  const [liveBookings, setLiveBookings]       = useState<DashBooking[] | undefined>(undefined)
+  const [liveReviews, setLiveReviews]         = useState<DashReview[] | undefined>(undefined)
   const commissionRate = Math.max(0, Math.min(100, parseInt(String(lsh('balible_commission', '10')), 10) || 10))
+
+  useEffect(() => {
+    getHostDashboardData().then(data => {
+      if (!data) return
+      setLiveExperiences(data.experiences)
+      setLiveBookings(data.bookings)
+      setLiveReviews(data.reviews)
+    }).catch(() => {})
+  }, [])
 
   const renderPanel = () => {
     switch (activeNav) {
-      case 'overview':    return <OverviewPanel onNav={setActiveNav} commissionRate={commissionRate} />
-      case 'experiences': return <ExperiencesPanel commissionRate={commissionRate} />
+      case 'overview':    return <OverviewPanel onNav={setActiveNav} commissionRate={commissionRate} experiences={liveExperiences} />
+      case 'experiences': return <ExperiencesPanel commissionRate={commissionRate} initialExperiences={liveExperiences} />
       case 'events':      return <EventsPanel />
-      case 'bookings':    return <BookingsPanel />
+      case 'bookings':    return <BookingsPanel initialBookings={liveBookings} />
       case 'earnings':    return <EarningsPanel commissionRate={commissionRate} />
-      case 'reviews':     return <ReviewsPanel />
+      case 'reviews':     return <ReviewsPanel initialReviews={liveReviews} />
       case 'profile':     return <ProfilePanel />
       case 'settings':    return <SettingsPanel />
-      default:            return <OverviewPanel onNav={setActiveNav} commissionRate={commissionRate} />
+      default:            return <OverviewPanel onNav={setActiveNav} commissionRate={commissionRate} experiences={liveExperiences} />
     }
   }
 

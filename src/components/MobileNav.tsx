@@ -1,14 +1,14 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { Home, Search, Map, MessageCircle, User } from 'lucide-react'
+import { Home, Search, Wrench, MessageCircle, User } from 'lucide-react'
 
 const NAV = [
-  { Icon: Home,          label: 'Home',    href: '/' },
-  { Icon: Search,        label: 'Explore', href: '/search' },
-  { Icon: Map,           label: 'Map',     href: '/map' },
-  { Icon: MessageCircle, label: 'Chat',    href: null },
-  { Icon: User,          label: 'Profile', href: '/profile' },
+  { Icon: Home,          label: 'Home',     href: '/' },
+  { Icon: Search,        label: 'Explore',  href: '/search' },
+  { Icon: Wrench,        label: 'Services', href: '/services' },
+  { Icon: MessageCircle, label: 'Chat',     href: null },
+  { Icon: User,          label: 'Profile',  href: '/profile' },
 ]
 
 export default function MobileNav() {

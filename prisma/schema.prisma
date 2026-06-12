@@ -17,10 +17,12 @@ model User {
   wishlistSlugs String[] @default([])
   createdAt     DateTime @default(now())
 
-  bookings  Booking[]
-  reviews   Review[]
-  wishlist  WishlistItem[]
-  operator  Operator?
+  bookings         Booking[]
+  reviews          Review[]
+  wishlist         WishlistItem[]
+  operator         Operator?
+  provider         Provider?
+  serviceBookings  ServiceBooking[]
 }
 
 model Operator {
@@ -110,6 +112,79 @@ model WishlistItem {
   @@unique([userId, experienceId])
 }
 
+model Provider {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id])
+  businessName String
+  description  String
+  avatar       String?
+  verified     Boolean  @default(false)
+  rating       Float    @default(0)
+  totalReviews Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  listings ServiceListing[]
+}
+
+model ServiceListing {
+  id           String          @id @default(cuid())
+  slug         String          @unique
+  providerId   String
+  provider     Provider        @relation(fields: [providerId], references: [id])
+  title        String
+  description  String
+  category     ServiceCategory
+  subcategory  String
+  area         Area
+  priceType    PriceType
+  price        Int
+  images       String[]
+  highlights   String[]
+  includes     String[]
+  excludes     String[]
+  available    Boolean         @default(true)
+  instantConfirm Boolean       @default(false)
+  rating       Float           @default(0)
+  totalReviews Int             @default(0)
+  featured     Boolean         @default(false)
+  status       Status          @default(ACTIVE)
+  createdAt    DateTime        @default(now())
+
+  bookings ServiceBooking[]
+  reviews  ServiceReview[]
+}
+
+model ServiceBooking {
+  id          String        @id @default(cuid())
+  bookingRef  String        @unique @default(cuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id])
+  listingId   String
+  listing     ServiceListing @relation(fields: [listingId], references: [id])
+  startDate   DateTime
+  endDate     DateTime?
+  duration    String?
+  guests      Int           @default(1)
+  totalPrice  Int
+  status      BookingStatus @default(PENDING)
+  guestName   String
+  guestEmail  String
+  guestPhone  String?
+  notes       String?
+  createdAt   DateTime      @default(now())
+}
+
+model ServiceReview {
+  id        String         @id @default(cuid())
+  userId    String
+  listingId String
+  listing   ServiceListing @relation(fields: [listingId], references: [id])
+  rating    Int
+  comment   String
+  createdAt DateTime       @default(now())
+}
+
 model Event {
   id          String      @id @default(cuid())
   slug        String      @unique
@@ -129,7 +204,25 @@ model Event {
 enum Role {
   TOURIST
   OPERATOR
+  PROVIDER
   ADMIN
+}
+
+enum ServiceCategory {
+  WELLNESS_BEAUTY
+  PHOTOGRAPHY_CONTENT
+  TRANSPORTATION
+  FOOD_DINING
+  EVENT_WEDDING
+  FITNESS_COACHING
+  VILLA_SERVICE
+  PET_SERVICE
+}
+
+enum PriceType {
+  HOURLY
+  DAILY
+  FIXED
 }
 
 enum Category {
@@ -157,6 +250,7 @@ enum Area {
   MEDEWI
   JIMBARAN
   KINTAMANI
+  SIDEMEN
 }
 
 enum Status {
