@@ -7,6 +7,7 @@ import {
   Menu, X, ChevronDown, LayoutDashboard,
   Leaf, Scissors, Landmark, Mountain, Waves, ChefHat, Sun,
 } from 'lucide-react'
+import NotificationBell from '@/components/NotificationBell'
 
 const CATEGORIES = [
   { label: 'Wellness',          Icon: Leaf,      slug: 'wellness' },
@@ -155,6 +156,7 @@ export default function Navbar() {
 
           {/* Right side */}
           <div className="flex items-center gap-2">
+            {isLoaded && isSignedIn && <NotificationBell />}
             {!isLoaded ? (
               /* Skeleton while Clerk loads — prevents layout shift */
               <div className="hidden sm:flex items-center gap-2">

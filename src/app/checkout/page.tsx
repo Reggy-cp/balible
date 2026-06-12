@@ -11,7 +11,7 @@ type Step = 0 | 1 | 2 | 3
 
 // ── Experience lookup (loaded from DB) ────────────────────────────────────────
 
-const LOADING_META: ExpCheckoutMeta = { title: 'Loading…', area: '', price: 0, image: '' }
+const LOADING_META: ExpCheckoutMeta = { title: 'Loading…', area: '', price: 0, image: '', serviceFeeRate: 0.1 }
 
 function formatDate(s: string): string {
   if (!s) return 'Date not selected'
@@ -477,35 +477,13 @@ function CheckoutInner() {
   const [selectedRawTime, setSelectedRawTime] = useState(rawTime)
   const [schedule, setSchedule] = useState<ScheduleDay[] | null>(null)
   const [bookedGuests, setBookedGuests] = useState<Record<string, number>>({})
-  const [serviceFeeRate, setServiceFeeRate] = useState(0.1)
-  const [expPrice, setExpPrice] = useState(0)
 
-  // Load experience from DB
+  // Load experience from DB — price and fee rate shown here are display-only;
+  // the charged amount is recomputed server-side in createBookingAction
   useEffect(() => {
     getExperienceForCheckout(slug).then(data => {
-      if (data) {
-        setExpMeta(data)
-        setExpPrice(data.price)
-      }
+      if (data) setExpMeta(data)
     }).catch(() => {})
-  }, [slug])
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('balible_service_fee')
-      if (stored) setServiceFeeRate(parseFloat(JSON.parse(stored)) / 100)
-    } catch {}
-  }, [])
-
-  // Allow admin price overrides via localStorage
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(`balible_exp_data_${slug}`)
-      if (stored) {
-        const data = JSON.parse(stored)
-        if (data.price) setExpPrice(Number(data.price))
-      }
-    } catch {}
   }, [slug])
 
   useEffect(() => {
@@ -540,7 +518,7 @@ function CheckoutInner() {
   const booking: BookingData = {
     title: expMeta.title, area: expMeta.area, image: expMeta.image,
     date: formatDate(rawDate), time: formatTime(selectedRawTime), rawTime: selectedRawTime,
-    pricePerPerson: expPrice || expMeta.price, serviceFeeRate,
+    pricePerPerson: expMeta.price, serviceFeeRate: expMeta.serviceFeeRate,
     slug, rawDate, maxGuests,
   }
 
@@ -592,7 +570,6 @@ function CheckoutInner() {
         slug: booking.slug,
         rawDate: booking.rawDate,
         guests,
-        totalPrice: total,
         guestName: contact.fullName || 'Guest',
         guestEmail: contact.email || '',
         guestPhone: contact.phone || undefined,

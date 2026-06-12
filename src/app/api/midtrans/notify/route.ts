@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verifyNotificationSignature } from '@/lib/midtrans'
 import { sendBookingConfirmation } from '@/lib/email'
+import { createNotification } from '@/lib/notifications'
 
 const AREA_DISPLAY: Record<string, string> = {
   UBUD: 'Ubud', CANGGU: 'Canggu', SEMINYAK: 'Seminyak', KUTA: 'Kuta',
@@ -46,6 +47,13 @@ export async function POST(req: NextRequest) {
       where: { id: booking.id },
       data: { status: 'CONFIRMED', paymentId: transaction_id ?? null },
     })
+    await createNotification({
+      userId: booking.userId,
+      type: 'payment',
+      title: 'Booking confirmed 🎉',
+      body: `Payment received — you're all set for ${booking.experience.title}.`,
+      href: '/profile',
+    })
     // Best-effort — email failure must not make Midtrans retry the notification
     await sendBookingConfirmation({
       to: booking.guestEmail,
@@ -63,6 +71,13 @@ export async function POST(req: NextRequest) {
     await prisma.booking.update({
       where: { id: booking.id },
       data: { status: 'CANCELLED', paymentId: transaction_id ?? null },
+    })
+    await createNotification({
+      userId: booking.userId,
+      type: 'payment',
+      title: 'Payment unsuccessful',
+      body: `Your payment for ${booking.experience.title} ${transaction_status === 'expire' ? 'expired' : 'was not completed'}. You can book again anytime.`,
+      href: `/experiences/${booking.experience.slug}`,
     })
   }
 

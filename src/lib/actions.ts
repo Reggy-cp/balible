@@ -3,6 +3,8 @@
 import { prisma } from './prisma'
 import { getOrCreateNeonUser } from './user'
 import { createSnapTransaction } from './midtrans'
+import { SERVICE_FEE_RATE, computeBookingTotal } from './pricing'
+import { createNotification } from './notifications'
 
 const AREA_DISPLAY: Record<string, string> = {
   UBUD: 'Ubud', CANGGU: 'Canggu', SEMINYAK: 'Seminyak', KUTA: 'Kuta',
@@ -61,7 +63,6 @@ export type CreateBookingInput = {
   slug: string
   rawDate: string
   guests: number
-  totalPrice: number
   guestName: string
   guestEmail: string
   guestPhone?: string
@@ -77,6 +78,10 @@ export async function createBookingAction(
     const exp = await prisma.experience.findUnique({ where: { slug: input.slug } })
     if (!exp) return { ok: false, error: 'This experience is not available for online payment yet.' }
 
+    // Price is computed server-side from the DB; client-supplied totals are never trusted
+    const guests = Math.max(1, Math.min(exp.maxGuests, Math.trunc(input.guests) || 1))
+    const totalPrice = computeBookingTotal(exp.price, guests)
+
     // Booking starts PENDING; the Midtrans webhook flips it to CONFIRMED on
     // settlement and sends the confirmation email at that point.
     const booking = await prisma.booking.create({
@@ -84,8 +89,8 @@ export async function createBookingAction(
         userId: user.id,
         experienceId: exp.id,
         date: new Date(input.rawDate),
-        guests: input.guests,
-        totalPrice: input.totalPrice,
+        guests,
+        totalPrice,
         guestName: input.guestName,
         guestEmail: input.guestEmail,
         guestPhone: input.guestPhone ?? null,
@@ -95,13 +100,21 @@ export async function createBookingAction(
 
     const snap = await createSnapTransaction({
       orderId: booking.bookingRef,
-      grossAmount: input.totalPrice,
+      grossAmount: totalPrice,
       customerName: input.guestName,
       customerEmail: input.guestEmail,
       customerPhone: input.guestPhone,
       itemName: exp.title,
     })
     if ('error' in snap) return { ok: false, error: snap.error }
+
+    await createNotification({
+      userId: user.id,
+      type: 'booking',
+      title: 'Booking received',
+      body: `Your booking for ${exp.title} is awaiting payment.`,
+      href: '/profile',
+    })
 
     return { ok: true, bookingRef: booking.bookingRef, snapToken: snap.token }
   } catch {
@@ -435,7 +448,7 @@ export async function getUserData(): Promise<UserData | null> {
 
 // ── Checkout experience lookup ────────────────────────────────────────────────
 
-export type ExpCheckoutMeta = { title: string; area: string; price: number; image: string }
+export type ExpCheckoutMeta = { title: string; area: string; price: number; image: string; serviceFeeRate: number }
 
 export async function getExperienceForCheckout(slug: string): Promise<ExpCheckoutMeta | null> {
   try {
@@ -449,6 +462,7 @@ export async function getExperienceForCheckout(slug: string): Promise<ExpCheckou
       area: AREA_DISPLAY[String(exp.area)] ?? String(exp.area),
       price: exp.price,
       image: (exp.images as string[])[0] ?? '',
+      serviceFeeRate: SERVICE_FEE_RATE,
     }
   } catch {
     return null

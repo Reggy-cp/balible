@@ -2,6 +2,8 @@
 
 import { prisma } from './prisma'
 import { getOrCreateNeonUser } from './user'
+import { computeBookingTotal } from './pricing'
+import { createNotification } from './notifications'
 
 const AREA_DISPLAY: Record<string, string> = {
   UBUD: 'Ubud', CANGGU: 'Canggu', SEMINYAK: 'Seminyak', KUTA: 'Kuta',
@@ -215,8 +217,7 @@ export async function createServiceBookingAction(input: {
     // Price is computed server-side; client-supplied totals are never trusted
     const duration = Number.isFinite(input.duration) && input.duration > 0 ? input.duration : 1
     const units = String(listing.priceType) === 'FIXED' ? 1 : duration
-    const subtotal = Math.round(listing.price * units)
-    const totalPrice = subtotal + Math.round(subtotal * 0.1)
+    const totalPrice = computeBookingTotal(listing.price, units)
     const status = listing.instantConfirm ? 'CONFIRMED' : 'PENDING'
 
     const booking = await prisma.serviceBooking.create({
@@ -234,6 +235,16 @@ export async function createServiceBookingAction(input: {
         status,
       },
     })
+    await createNotification({
+      userId: user.id,
+      type: 'booking',
+      title: status === 'CONFIRMED' ? 'Service booked ✓' : 'Service request sent',
+      body: status === 'CONFIRMED'
+        ? 'Your service booking is confirmed.'
+        : 'Your request was sent to the provider — we\'ll notify you when it\'s confirmed.',
+      href: '/profile',
+    })
+
     return { ok: true, bookingRef: booking.bookingRef, status, total: totalPrice }
   } catch {
     return { ok: false }
