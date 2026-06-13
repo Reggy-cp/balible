@@ -47,6 +47,34 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
+    async signIn({ user, account }) {
+      if (account?.provider === 'google' && user.email) {
+        const existing = await prisma.user.findUnique({ where: { email: user.email } })
+        if (existing) {
+          const linked = await prisma.account.findFirst({
+            where: { userId: existing.id, provider: 'google' },
+          })
+          if (!linked) {
+            await prisma.account.create({
+              data: {
+                userId: existing.id,
+                type: account.type,
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+                access_token: account.access_token,
+                refresh_token: account.refresh_token,
+                expires_at: account.expires_at,
+                token_type: account.token_type,
+                scope: account.scope,
+                id_token: account.id_token,
+              },
+            })
+          }
+          return true
+        }
+      }
+      return true
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id

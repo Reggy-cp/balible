@@ -1,16 +1,26 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 
-export default function SignInPage() {
+const ERROR_MESSAGES: Record<string, string> = {
+  OAuthAccountNotLinked: 'This email is already registered. Sign in with your email and password instead.',
+  OAuthCallback: 'Google sign-in failed. Please try again.',
+  OAuthSignin: 'Could not start Google sign-in. Please try again.',
+  Callback: 'Something went wrong during sign-in. Please try again.',
+  Default: 'An error occurred. Please try again.',
+}
+
+function SignInContent() {
   const router = useRouter()
+  const params = useSearchParams()
+  const urlError = params.get('error')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const [error, setError] = useState(urlError ? (ERROR_MESSAGES[urlError] ?? ERROR_MESSAGES.Default) : '')
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
@@ -111,5 +121,13 @@ export default function SignInPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense>
+      <SignInContent />
+    </Suspense>
   )
 }
