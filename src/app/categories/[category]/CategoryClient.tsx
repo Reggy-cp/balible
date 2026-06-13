@@ -190,16 +190,11 @@ function ExperienceCard({
               <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>⏱ {exp.duration}</span>
             </div>
           </div>
-          <div className="flex items-center justify-between mt-2">
-            <div>
-              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>
-                From <span style={{ color: '#C8A97E', fontWeight: 600 }}>IDR</span> <span style={{ fontWeight: 600 }}>{exp.price.toLocaleString('id-ID')}</span>
-              </p>
-              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#4A7C59', marginTop: 1 }}>✓ Free cancellation</p>
-            </div>
-            <span className="px-3 py-1 rounded-full" style={{ backgroundColor: '#111111', color: 'white', fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 500 }}>
-              Book →
-            </span>
+          <div className="mt-2">
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>
+              From <span style={{ color: '#C8A97E', fontWeight: 600 }}>IDR</span> <span style={{ fontWeight: 600 }}>{exp.price.toLocaleString('id-ID')}</span>
+            </p>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#4A7C59', marginTop: 1 }}>✓ Free cancellation</p>
           </div>
         </div>
       </div>

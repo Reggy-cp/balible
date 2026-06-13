@@ -314,7 +314,6 @@ function ExpCard({ exp }: { exp: Experience }) {
               </p>
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#4A7C59', marginTop: 1 }}>✓ Free cancellation</p>
             </div>
-            <span className="px-3 py-1 rounded-full" style={{ backgroundColor: '#111111', color: 'white', fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 500 }}>Book →</span>
           </div>
         </div>
       </div>
