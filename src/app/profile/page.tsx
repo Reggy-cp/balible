@@ -249,18 +249,23 @@ function BookingsTab({ reviews, onReview, dbBookings }: { reviews: SubmittedRevi
   }, [])
 
   const savedIds = new Set(savedBookings.map(b => b.id))
-  const localAndMock = [...savedBookings, ...BOOKINGS.filter(b => !savedIds.has(b.id))]
-
-  // DB bookings take priority; merge in local/mock that aren't in DB
   const dbIds = new Set((dbBookings ?? []).map(b => b.id))
-  const allBookings = dbBookings
-    ? [...dbBookings, ...localAndMock.filter(b => !dbIds.has(b.id))]
-    : localAndMock
+  // Signed in (dbBookings defined): show DB + real checkout bookings only — no demo data
+  // Signed out (dbBookings undefined): show localStorage + demo data
+  const allBookings = dbBookings !== undefined
+    ? [...dbBookings, ...savedBookings.filter(b => !dbIds.has(b.id))]
+    : [...savedBookings, ...BOOKINGS.filter(b => !savedIds.has(b.id))]
 
   return (
     <div className="space-y-4">
       <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', marginBottom: 16 }}>My Bookings</h2>
-      {allBookings.map(b => {
+      {allBookings.length === 0 ? (
+        <div className="bg-white rounded-xl p-10 text-center" style={{ border: '1px solid #E8E4DE' }}>
+          <CalendarDays size={28} style={{ color: '#C8A97E', margin: '0 auto 12px' }} strokeWidth={1.5} />
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>No bookings yet.</p>
+          <a href="/search" style={{ display: 'inline-block', marginTop: 12, fontSize: 13, color: '#C8A97E', textDecoration: 'underline' }}>Browse experiences →</a>
+        </div>
+      ) : allBookings.map(b => {
         const isCancelled = cancelled.has(b.id)
         const effectiveStatus = isCancelled ? 'Cancelled' : b.status
         const submitted = reviews.find(r => r.bookingId === b.id)
@@ -439,7 +444,8 @@ function ReviewsTab({ reviews, dbReviews }: { reviews: SubmittedReview[]; dbRevi
     ...reviews
       .filter(r => !dbSlugs.has(r.slug))
       .map(r => ({ experience: r.experience, slug: r.slug, date: r.reviewDate, rating: r.rating, comment: r.comment, image: r.image })),
-    ...STATIC_REVIEWS.filter(r => !submittedSlugs.has(r.slug) && !dbSlugs.has(r.slug)),
+    // Only show demo reviews when not signed in (dbReviews is undefined until DB is fetched)
+    ...(dbReviews === undefined ? STATIC_REVIEWS.filter(r => !submittedSlugs.has(r.slug)) : []),
   ]
 
   return (

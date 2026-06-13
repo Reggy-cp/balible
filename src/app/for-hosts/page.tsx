@@ -251,7 +251,7 @@ export default function ForHostsPage() {
       </section>
 
       {/* HOST STORIES */}
-      <section className="py-16 px-6 lg:px-16" style={{ backgroundColor: '#111111' }}>
+      <section id="stories" className="py-16 px-6 lg:px-16" style={{ backgroundColor: '#111111' }}>
         <div className="max-w-[1440px] mx-auto">
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 600, color: '#C8A97E', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 10 }}>
             Host stories
@@ -287,7 +287,7 @@ export default function ForHostsPage() {
       </section>
 
       {/* EARNINGS CALCULATOR */}
-      <section className="py-16 px-6 lg:px-16" style={{ backgroundColor: '#F5F1EB' }}>
+      <section id="calculator" className="py-16 px-6 lg:px-16" style={{ backgroundColor: '#F5F1EB' }}>
         <div className="max-w-[1440px] mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-start">
             <div>

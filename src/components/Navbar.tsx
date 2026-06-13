@@ -18,26 +18,21 @@ const CATEGORIES = [
   { label: 'Nature & Outdoors', Icon: Mountain,  slug: 'nature' },
   { label: 'Water Activities',  Icon: Waves,     slug: 'water-activities' },
   { label: 'Local Experts',     Icon: Users,     slug: 'local-experts' },
-  { label: 'Rentals',           Icon: Bike,      slug: 'rentals' },
+  { label: 'Rentals',           Icon: Bike,      slug: 'rentals', href: '/rentals' },
 ]
 
 const NAV_LINKS = [
   { label: 'Experiences',  href: '/search',       hasDropdown: true },
-  // Services feature hidden — uncomment to re-enable (also see Footer, MobileNav, page.tsx, route layouts)
-  // { label: 'Services',      href: '/services',       hasDropdown: false },
   { label: 'Destinations',  href: '/destinations',   hasDropdown: false },
   { label: 'Events',        href: '/events',         hasDropdown: false },
   { label: 'For Hosts',     href: '/for-hosts',      hasDropdown: false },
-  // { label: 'For Providers', href: '/for-providers',  hasDropdown: false },
 ]
 
 const MOBILE_LINKS = [
   { label: 'Experiences',   href: '/search' },
-  // { label: 'Services',      href: '/services' },
   { label: 'Destinations',  href: '/destinations' },
   { label: 'Events',        href: '/events' },
   { label: 'For Hosts',     href: '/for-hosts' },
-  // { label: 'For Providers', href: '/for-providers' },
 ]
 
 export default function Navbar() {
@@ -124,10 +119,10 @@ export default function Navbar() {
                       <p style={{ fontFamily: 'var(--font-inter)', fontSize: 10, fontWeight: 700, color: '#6F675C', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '4px 12px 8px' }}>
                         Browse by category
                       </p>
-                      {CATEGORIES.map(({ label: catLabel, Icon, slug }) => (
+                      {CATEGORIES.map(({ label: catLabel, Icon, slug, href: catHref }) => (
                         <a
                           key={slug}
-                          href={`/categories/${slug}`}
+                          href={catHref ?? `/categories/${slug}`}
                           className="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-stone-50 transition-colors"
                           style={{ textDecoration: 'none' }}
                         >

@@ -13,7 +13,6 @@ import MobileNav from '@/components/MobileNav'
 import WishlistHeart from '@/components/WishlistHeart'
 import type { ExperienceCard } from '@/lib/experiences'
 import type { EventRow } from '@/lib/event-actions'
-import type { ServiceCard } from '@/lib/service-actions'
 
 // ── Static data ───────────────────────────────────────────────────────────────
 
@@ -27,7 +26,7 @@ const CAT_GRID = [
   { label: 'Spiritual',    Icon: Sun,        href: '/categories/spiritual',  photo: 'https://images.unsplash.com/photo-1516690561799-46d8f74f9abf?w=400&auto=format&fit=crop&q=80' },
   { label: 'Water Activities', Icon: Waves,  href: '/categories/water-activities', photo: 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=400&auto=format&fit=crop&q=80' },
   { label: 'Local Experts', Icon: Users,     href: '/categories/local-experts', photo: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&auto=format&fit=crop&q=80' },
-  { label: 'Rentals',       Icon: Bike,      href: '/categories/rentals',       photo: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&auto=format&fit=crop&q=80' },
+  { label: 'Rentals',       Icon: Bike,      href: '/rentals',                  photo: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&auto=format&fit=crop&q=80' },
 ]
 
 const WHY_ITEMS = [
@@ -113,7 +112,7 @@ function HostCard({ host }: { host: typeof HOSTS[0] }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 
-export default function HomeClient({ experiences, upcomingEvents, featuredServices = [] }: { experiences: ExperienceCard[]; upcomingEvents: EventRow[]; featuredServices?: ServiceCard[] }) {
+export default function HomeClient({ experiences, upcomingEvents }: { experiences: ExperienceCard[]; upcomingEvents: EventRow[] }) {
   const [search, setSearch]         = useState('')
   const [date, setDate]             = useState('')
   const [email, setEmail]           = useState('')
@@ -494,70 +493,6 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
         </section>
       )}
 
-      {/* ── SERVICES ── */}
-      {featuredServices.length > 0 && (
-        <section className="bg-white py-12 px-6 lg:px-16" style={{ borderTop: '1px solid #E8E4DE' }}>
-          <div className="max-w-[1440px] mx-auto">
-            <div className="flex items-start justify-between mb-8">
-              <div>
-                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#111111', fontWeight: 700 }}>
-                  Trusted Services in Bali
-                </h2>
-                <p className="mt-1" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
-                  From massages to private drivers — delivered to your villa.
-                </p>
-              </div>
-              <a href="/services" className="flex-shrink-0 hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#C8A97E', textDecoration: 'underline' }}>
-                View all →
-              </a>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-5">
-              {featuredServices.map(s => (
-                <a
-                  key={s.slug}
-                  href={`/services/${s.slug}`}
-                  className="rounded-xl overflow-hidden border hover:shadow-md transition-shadow block bg-white"
-                  style={{ borderColor: '#E8E4DE', textDecoration: 'none' }}
-                >
-                  <div className="relative" style={{ height: 180 }}>
-                    {s.image && <img src={s.image} alt={s.title} className="w-full h-full object-cover" />}
-                    <span
-                      className="absolute bottom-3 left-3 px-2 py-0.5 rounded-full"
-                      style={{ fontSize: 11, fontWeight: 600, backgroundColor: 'rgba(0,0,0,0.55)', color: 'white' }}
-                    >
-                      {s.subcategory}
-                    </span>
-                  </div>
-                  <div className="p-4">
-                    <div className="flex items-center gap-1 mb-1">
-                      <MapPin size={11} style={{ color: '#6F675C' }} />
-                      <p style={{ fontSize: 11, color: '#6F675C' }}>{s.area}</p>
-                    </div>
-                    <h3
-                      className="line-clamp-2 leading-snug"
-                      style={{ fontFamily: 'var(--font-playfair)', fontSize: 14, color: '#111111', fontWeight: 600 }}
-                    >
-                      {s.title}
-                    </h3>
-                    <p className="mt-0.5" style={{ fontSize: 11, color: '#9E9A94' }}>{s.category}</p>
-                    <div className="flex items-center gap-1 mt-2">
-                      <Star size={11} fill="#C8A97E" color="#C8A97E" />
-                      <span style={{ fontSize: 12, fontWeight: 700, color: '#111111' }}>{s.rating.toFixed(1)}</span>
-                      <span style={{ fontSize: 12, color: '#6F675C' }}>({s.totalReviews})</span>
-                    </div>
-                    <p className="mt-2" style={{ fontSize: 13, color: '#111111' }}>
-                      From <span style={{ color: '#C8A97E' }}>IDR</span> {s.price.toLocaleString('id-ID')}
-                      {s.priceTypeKey !== 'FIXED' && (
-                        <span style={{ color: '#6F675C', fontSize: 11 }}> {s.priceType}</span>
-                      )}
-                    </p>
-                  </div>
-                </a>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* ── EXPLORE BY CATEGORY ── */}
       <section className="py-12 px-6 lg:px-16" style={{ backgroundColor: '#F5F1EB' }}>

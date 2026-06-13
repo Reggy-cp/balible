@@ -1,13 +1,19 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ArrowRight } from 'lucide-react'
 
+const LS_KEY = 'balible_newsletter_subscribed'
+
 export default function NewsletterSignup({ dark = false, source = 'blog' }: { dark?: boolean; source?: string }) {
-  const [email, setEmail]         = useState('')
+  const [email, setEmail]           = useState('')
   const [subscribed, setSubscribed] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError]           = useState<string | null>(null)
+
+  useEffect(() => {
+    try { if (localStorage.getItem(LS_KEY)) setSubscribed(true) } catch {}
+  }, [])
 
   const submit = async () => {
     if (!email.trim() || submitting) return
@@ -24,6 +30,7 @@ export default function NewsletterSignup({ dark = false, source = 'blog' }: { da
         setError(data?.error ?? 'Something went wrong. Please try again.')
         return
       }
+      try { localStorage.setItem(LS_KEY, '1') } catch {}
       setSubscribed(true)
       setEmail('')
     } catch {

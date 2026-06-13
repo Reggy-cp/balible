@@ -24,15 +24,16 @@ export type SearchResult = {
   photo: string
 }
 
-const CATEGORIES  = ['All Categories', 'Art & Craft', 'Wellness & Healing', 'Culture', 'Culinary', 'Spiritual', 'Nature & Outdoors', 'Water Activities', 'Local Experts', 'Rentals']
-const LOCATIONS   = ['All Locations', 'Ubud', 'Canggu', 'Seminyak', 'Gianyar', 'Jimbaran', 'Kuta', 'Uluwatu', 'Amed', 'Sidemen']
+const CATEGORIES  = ['All', 'Art & Craft', 'Wellness & Healing', 'Culture', 'Culinary', 'Spiritual', 'Nature & Outdoors', 'Water Activities', 'Local Experts', 'Rentals']
+const LOCATIONS   = ['All Locations', 'Ubud', 'Canggu', 'Seminyak', 'Gianyar', 'Jimbaran', 'Kuta', 'Uluwatu', 'Amed', 'Sidemen', 'Kintamani', 'Sanur', 'Nusa Dua', 'Medewi']
 const DURATIONS   = ['Any duration', 'Under 2 hours', '2–4 hours', '4+ hours']
 const SORT_OPTIONS = ['Recommended', 'Price: Low to High', 'Price: High to Low', 'Top Rated', 'Most Reviews']
+const PRICE_MAX   = 2500000
 
 // ── Price Range Slider ────────────────────────────────────────────────────────
 
 function PriceRange({ value, onChange }: { value: [number, number]; onChange: (v: [number, number]) => void }) {
-  const MIN = 0, MAX = 700000
+  const MIN = 0, MAX = PRICE_MAX
   const leftPct  = ((value[0] - MIN) / (MAX - MIN)) * 100
   const rightPct = ((value[1] - MIN) / (MAX - MIN)) * 100
   return (
@@ -45,13 +46,13 @@ function PriceRange({ value, onChange }: { value: [number, number]; onChange: (v
       </div>
       <div className="flex justify-between">
         <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>IDR {value[0].toLocaleString('id-ID')}</span>
-        <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>IDR {value[1].toLocaleString('id-ID')}</span>
+        <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>{value[1] >= PRICE_MAX ? 'IDR 2.5M+' : `IDR ${value[1].toLocaleString('id-ID')}`}</span>
       </div>
     </div>
   )
 }
 
-// ── Filter Panel ──────────────────────────────────────────────────────────────
+// ── Filter Sidebar ─────────────────────────────────────────────────────────────
 
 type Filters = {
   category: string; location: string; duration: string
@@ -60,70 +61,108 @@ type Filters = {
 
 function FilterLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 600, color: '#111111', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 6 }}>
+    <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 600, color: '#6F675C', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>
       {children}
     </p>
   )
 }
 
-function FilterSelect({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: string[] }) {
-  return (
-    <select value={value} onChange={e => onChange(e.target.value)} className="w-full px-3 py-2 rounded-md outline-none appearance-none cursor-pointer" style={{ border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111', backgroundColor: 'white' }}>
-      {options.map(o => <option key={o}>{o}</option>)}
-    </select>
-  )
-}
+function FilterPanel({ filters, onChange, mobile = false, onClose }: {
+  filters: Filters; onChange: (f: Partial<Filters>) => void; mobile?: boolean; onClose?: () => void
+}) {
+  const hasActive = filters.location !== 'All Locations' || filters.duration !== 'Any duration' ||
+    filters.priceRange[0] > 0 || filters.priceRange[1] < PRICE_MAX || filters.guests > 1
 
-function FilterPanel({ filters, onChange, mobile = false, onClose }: { filters: Filters; onChange: (f: Partial<Filters>) => void; mobile?: boolean; onClose?: () => void }) {
-  const hasActive = filters.category !== 'All Categories' || filters.location !== 'All Locations' || filters.duration !== 'Any duration' || filters.priceRange[0] > 0 || filters.priceRange[1] < 700000 || filters.guests > 1
+  const clear = () => onChange({ location: 'All Locations', duration: 'Any duration', priceRange: [0, PRICE_MAX], date: '', guests: 1 })
+
   return (
     <div className={mobile ? 'p-5' : 'p-0'}>
-      {mobile && (
-        <div className="flex items-center justify-between mb-5">
-          <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111' }}>Filters</span>
-          <button onClick={onClose}><X size={20} style={{ color: '#111111' }} /></button>
-        </div>
-      )}
-      {!mobile && (
-        <div className="flex items-center justify-between mb-5">
-          <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111' }}>Filters</h3>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-5">
+        {mobile
+          ? <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111' }}>Filters</span>
+          : <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>Filters</h3>
+        }
+        <div className="flex items-center gap-3">
           {hasActive && (
-            <button onClick={() => onChange({ category: 'All Categories', location: 'All Locations', duration: 'Any duration', priceRange: [0, 700000], date: '', guests: 1 })} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter)', fontSize: 12, color: '#B66A45' }}>
+            <button onClick={clear} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter)', fontSize: 12, color: '#B66A45' }}>
               Clear all
             </button>
           )}
-        </div>
-      )}
-      <div className="space-y-5">
-        <div>
-          <FilterLabel>Category</FilterLabel>
-          <FilterSelect value={filters.category} onChange={v => onChange({ category: v })} options={CATEGORIES} />
-        </div>
-        <div>
-          <FilterLabel>Location</FilterLabel>
-          <FilterSelect value={filters.location} onChange={v => onChange({ location: v })} options={LOCATIONS} />
-        </div>
-        <div>
-          <FilterLabel>Date</FilterLabel>
-          <input type="date" value={filters.date} onChange={e => onChange({ date: e.target.value })} className="w-full px-3 py-2 rounded-md outline-none" style={{ border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }} />
-        </div>
-        <div>
-          <FilterLabel>Price range</FilterLabel>
-          <PriceRange value={filters.priceRange} onChange={v => onChange({ priceRange: v })} />
-        </div>
-        <div>
-          <FilterLabel>Duration</FilterLabel>
-          <FilterSelect value={filters.duration} onChange={v => onChange({ duration: v })} options={DURATIONS} />
+          {mobile && <button onClick={onClose}><X size={20} style={{ color: '#111111' }} /></button>}
         </div>
       </div>
+
+      <div className="space-y-6">
+        {/* Location */}
+        <div>
+          <FilterLabel>Location</FilterLabel>
+          <select
+            value={filters.location}
+            onChange={e => onChange({ location: e.target.value })}
+            className="w-full px-3 py-2 rounded-lg outline-none appearance-none cursor-pointer"
+            style={{ border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111', backgroundColor: 'white' }}
+          >
+            {LOCATIONS.map(o => <option key={o}>{o}</option>)}
+          </select>
+        </div>
+
+        {/* Price */}
+        <div>
+          <FilterLabel>Price per person</FilterLabel>
+          <PriceRange value={filters.priceRange} onChange={v => onChange({ priceRange: v })} />
+        </div>
+
+        {/* Duration */}
+        <div>
+          <FilterLabel>Duration</FilterLabel>
+          <div className="flex flex-col gap-2">
+            {DURATIONS.map(d => (
+              <button
+                key={d}
+                onClick={() => onChange({ duration: d })}
+                className="text-left px-3 py-2 rounded-lg transition-colors"
+                style={{
+                  fontFamily: 'var(--font-inter)', fontSize: 13, cursor: 'pointer', border: 'none',
+                  backgroundColor: filters.duration === d ? '#111111' : '#F5F1EB',
+                  color: filters.duration === d ? 'white' : '#111111',
+                }}
+              >
+                {d}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Guests */}
+        <div>
+          <FilterLabel>Guests</FilterLabel>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => onChange({ guests: Math.max(1, filters.guests - 1) })}
+              className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+              style={{ border: '1px solid #E8E4DE', backgroundColor: 'white', cursor: 'pointer', fontSize: 16, color: '#111111' }}
+            >−</button>
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111', minWidth: 60, textAlign: 'center' }}>
+              {filters.guests} {filters.guests === 1 ? 'guest' : 'guests'}
+            </span>
+            <button
+              onClick={() => onChange({ guests: Math.min(20, filters.guests + 1) })}
+              className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+              style={{ border: '1px solid #E8E4DE', backgroundColor: 'white', cursor: 'pointer', fontSize: 16, color: '#111111' }}
+            >+</button>
+          </div>
+        </div>
+      </div>
+
       {mobile && (
         <div className="mt-6 flex gap-3">
           {hasActive && (
-            <button className="flex-1 py-3 rounded-lg" style={{ border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500, color: '#111111', backgroundColor: 'white', cursor: 'pointer' }} onClick={() => onChange({ category: 'All Categories', location: 'All Locations', duration: 'Any duration', priceRange: [0, 700000], date: '', guests: 1 })}>
+            <button className="flex-1 py-3 rounded-lg" style={{ border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500, color: '#111111', backgroundColor: 'white', cursor: 'pointer' }} onClick={clear}>
               Clear
             </button>
           )}
-          <button className="flex-1 py-3 rounded-lg hover:opacity-90 transition-opacity" style={{ backgroundColor: '#111111', color: 'white', fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500, border: 'none', cursor: 'pointer' }} onClick={onClose}>
+          <button className="flex-1 py-3 rounded-lg" style={{ backgroundColor: '#111111', color: 'white', fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500, border: 'none', cursor: 'pointer' }} onClick={onClose}>
             View results
           </button>
         </div>
@@ -142,12 +181,12 @@ function SkeletonCard() {
       </div>
       <div className="flex flex-col justify-between flex-1 py-0.5">
         <div>
-          <div className="rounded mb-2" style={{ height: 16, width: '70%', backgroundColor: '#E8E4DE', background: 'linear-gradient(90deg, #E8E4DE 25%, #F0EDE8 50%, #E8E4DE 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.4s infinite' }} />
-          <div className="rounded" style={{ height: 12, width: '45%', backgroundColor: '#E8E4DE', background: 'linear-gradient(90deg, #E8E4DE 25%, #F0EDE8 50%, #E8E4DE 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.4s 0.1s infinite' }} />
+          <div className="rounded mb-2" style={{ height: 16, width: '70%', background: 'linear-gradient(90deg, #E8E4DE 25%, #F0EDE8 50%, #E8E4DE 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.4s infinite' }} />
+          <div className="rounded" style={{ height: 12, width: '45%', background: 'linear-gradient(90deg, #E8E4DE 25%, #F0EDE8 50%, #E8E4DE 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.4s 0.1s infinite' }} />
         </div>
         <div className="flex items-center justify-between">
-          <div className="rounded" style={{ height: 14, width: '35%', backgroundColor: '#E8E4DE', background: 'linear-gradient(90deg, #E8E4DE 25%, #F0EDE8 50%, #E8E4DE 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.4s 0.2s infinite' }} />
-          <div className="rounded-full" style={{ height: 26, width: 64, backgroundColor: '#E8E4DE', background: 'linear-gradient(90deg, #E8E4DE 25%, #F0EDE8 50%, #E8E4DE 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.4s 0.15s infinite' }} />
+          <div className="rounded" style={{ height: 14, width: '35%', background: 'linear-gradient(90deg, #E8E4DE 25%, #F0EDE8 50%, #E8E4DE 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.4s 0.2s infinite' }} />
+          <div className="rounded-full" style={{ height: 26, width: 64, background: 'linear-gradient(90deg, #E8E4DE 25%, #F0EDE8 50%, #E8E4DE 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.4s 0.15s infinite' }} />
         </div>
       </div>
       <style>{`@keyframes shimmer { to { background-position: -200% 0 } }`}</style>
@@ -211,11 +250,13 @@ function ResultCard({ r, date, guests }: { r: SearchResult; date: string; guests
 // ── Component ─────────────────────────────────────────────────────────────────
 
 const DEFAULT_FILTERS: Filters = {
-  category: 'All Categories', location: 'All Locations',
-  duration: 'Any duration', priceRange: [0, 700000], date: '', guests: 1,
+  category: 'All', location: 'All Locations',
+  duration: 'Any duration', priceRange: [0, PRICE_MAX], date: '', guests: 1,
 }
 
-export default function SearchClient({ initialResults, initialQuery = '', initialDate = '' }: { initialResults: SearchResult[]; initialQuery?: string; initialDate?: string }) {
+export default function SearchClient({ initialResults, initialQuery = '', initialDate = '' }: {
+  initialResults: SearchResult[]; initialQuery?: string; initialDate?: string
+}) {
   const [filterOpen, setFilterOpen] = useState(false)
   const [search, setSearch]         = useState(initialQuery)
   const [sort, setSort]             = useState('Recommended')
@@ -228,8 +269,8 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
   const results = useMemo(() => {
     let list = initialResults.filter(r => {
       if (search && !r.title.toLowerCase().includes(search.toLowerCase()) && !r.area.toLowerCase().includes(search.toLowerCase())) return false
-      if (filters.category !== 'All Categories' && r.category !== filters.category) return false
-      if (filters.location !== 'All Locations'  && r.area     !== filters.location) return false
+      if (filters.category !== 'All' && r.category !== filters.category) return false
+      if (filters.location !== 'All Locations' && r.area !== filters.location) return false
       if (r.price < filters.priceRange[0] || r.price > filters.priceRange[1]) return false
       if (filters.duration === 'Under 2 hours' && r.durationMins >= 120) return false
       if (filters.duration === '2–4 hours'     && (r.durationMins < 120 || r.durationMins > 240)) return false
@@ -245,58 +286,35 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
     return list
   }, [search, filters, sort, initialResults])
 
-  const activeFilterCount = [
-    filters.category !== 'All Categories',
+  const activeSidebarCount = [
     filters.location !== 'All Locations',
     filters.duration !== 'Any duration',
-    filters.priceRange[0] > 0 || filters.priceRange[1] < 700000,
-    !!filters.date,
+    filters.priceRange[0] > 0 || filters.priceRange[1] < PRICE_MAX,
     filters.guests > 1,
   ].filter(Boolean).length
 
   return (
     <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
-
       <Navbar />
 
       {/* ── SEARCH BAR ── */}
       <div className="bg-white sticky top-16 z-40" style={{ borderBottom: '1px solid #E8E4DE' }}>
         <div className="px-4 py-3 max-w-[1440px] mx-auto">
 
-          {/* Desktop: single pill with 4 sections */}
+          {/* Desktop */}
           <div className="hidden sm:flex items-center bg-white rounded-xl overflow-hidden" style={{ border: '1px solid #E8E4DE', height: 52 }}>
-            {/* What */}
             <div className="flex items-center gap-2 px-4 h-full flex-1 min-w-0">
               <Search size={14} style={{ color: '#6F675C', flexShrink: 0 }} />
               <input
-                type="text" placeholder="Search experiences…"
+                type="text" placeholder="Search experiences, locations…"
                 value={search} onChange={e => setSearch(e.target.value)}
                 className="flex-1 outline-none bg-transparent min-w-0"
                 style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111' }}
               />
               {search && <button onClick={() => setSearch('')}><X size={12} style={{ color: '#6F675C' }} /></button>}
             </div>
-
             <div style={{ width: 1, height: 28, backgroundColor: '#E8E4DE', flexShrink: 0 }} />
-
-            {/* Place */}
             <div className="flex items-center gap-2 px-4 h-full" style={{ minWidth: 148 }}>
-              <MapPin size={13} style={{ color: '#6F675C', flexShrink: 0 }} />
-              <select
-                value={filters.location}
-                onChange={e => updateFilters({ location: e.target.value })}
-                className="outline-none appearance-none cursor-pointer bg-transparent flex-1"
-                style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: filters.location === 'All Locations' ? '#9E9A94' : '#111111' }}
-              >
-                <option value="All Locations">Anywhere</option>
-                {LOCATIONS.filter(l => l !== 'All Locations').map(l => <option key={l}>{l}</option>)}
-              </select>
-            </div>
-
-            <div style={{ width: 1, height: 28, backgroundColor: '#E8E4DE', flexShrink: 0 }} />
-
-            {/* Date */}
-            <div className="flex items-center gap-2 px-4 h-full" style={{ minWidth: 160 }}>
               <CalendarDays size={13} style={{ color: '#6F675C', flexShrink: 0 }} />
               <input
                 type="date" value={filters.date}
@@ -305,10 +323,7 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
                 style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: filters.date ? '#111111' : '#9E9A94' }}
               />
             </div>
-
             <div style={{ width: 1, height: 28, backgroundColor: '#E8E4DE', flexShrink: 0 }} />
-
-            {/* Guests */}
             <div className="flex items-center gap-2 px-4 h-full" style={{ minWidth: 140 }}>
               <User size={13} style={{ color: '#6F675C', flexShrink: 0 }} />
               <select
@@ -317,11 +332,9 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
                 className="outline-none appearance-none cursor-pointer bg-transparent"
                 style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}
               >
-                {[1,2,3,4,5,6,7,8].map(n => <option key={n} value={n}>{n} {n === 1 ? 'guest' : 'guests'}</option>)}
+                {[1,2,3,4,5,6,7,8,9,10].map(n => <option key={n} value={n}>{n} {n === 1 ? 'guest' : 'guests'}</option>)}
               </select>
             </div>
-
-            {/* Search button */}
             <div className="pr-2 pl-2 h-full flex items-center flex-shrink-0">
               <div className="flex items-center gap-1.5 rounded-lg px-4 h-9" style={{ backgroundColor: '#111111', color: 'white', fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 500 }}>
                 <Search size={13} />
@@ -330,7 +343,7 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
             </div>
           </div>
 
-          {/* Mobile: stacked rows */}
+          {/* Mobile */}
           <div className="sm:hidden space-y-2">
             <div className="flex items-center bg-white rounded-xl gap-2" style={{ border: '1px solid #E8E4DE', height: 44 }}>
               <Search size={14} className="ml-3 flex-shrink-0" style={{ color: '#6F675C' }} />
@@ -342,19 +355,7 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
               />
               {search && <button onClick={() => setSearch('')} className="mr-2"><X size={13} style={{ color: '#6F675C' }} /></button>}
             </div>
-            <div className="grid grid-cols-3 gap-2">
-              <div className="flex items-center gap-1.5 bg-white rounded-lg px-2.5" style={{ border: '1px solid #E8E4DE', height: 40 }}>
-                <MapPin size={12} style={{ color: '#6F675C', flexShrink: 0 }} />
-                <select
-                  value={filters.location}
-                  onChange={e => updateFilters({ location: e.target.value })}
-                  className="outline-none appearance-none cursor-pointer bg-transparent flex-1 min-w-0"
-                  style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: filters.location === 'All Locations' ? '#9E9A94' : '#111111' }}
-                >
-                  <option value="All Locations">Place</option>
-                  {LOCATIONS.filter(l => l !== 'All Locations').map(l => <option key={l}>{l}</option>)}
-                </select>
-              </div>
+            <div className="grid grid-cols-2 gap-2">
               <div className="flex items-center gap-1.5 bg-white rounded-lg px-2.5" style={{ border: '1px solid #E8E4DE', height: 40 }}>
                 <CalendarDays size={12} style={{ color: '#6F675C', flexShrink: 0 }} />
                 <input
@@ -372,12 +373,37 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
                   className="outline-none appearance-none cursor-pointer bg-transparent flex-1 min-w-0"
                   style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#111111' }}
                 >
-                  {[1,2,3,4,5,6,7,8].map(n => <option key={n} value={n}>{n === 1 ? '1 guest' : `${n} guests`}</option>)}
+                  {[1,2,3,4,5,6,7,8,9,10].map(n => <option key={n} value={n}>{n === 1 ? '1 guest' : `${n} guests`}</option>)}
                 </select>
               </div>
             </div>
           </div>
+        </div>
 
+        {/* ── CATEGORY PILLS ── */}
+        <div style={{ borderTop: '1px solid #E8E4DE' }}>
+          <div className="max-w-[1440px] mx-auto px-4 lg:px-16">
+            <div className="flex items-center gap-2 py-2.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+              {CATEGORIES.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => updateFilters({ category: cat })}
+                  className="flex-shrink-0 transition-all"
+                  style={{
+                    height: 32, padding: '0 14px', borderRadius: 20,
+                    fontSize: 13, fontFamily: 'var(--font-inter)',
+                    fontWeight: filters.category === cat ? 600 : 400,
+                    backgroundColor: filters.category === cat ? '#111111' : 'transparent',
+                    color: filters.category === cat ? 'white' : '#6F675C',
+                    border: `1px solid ${filters.category === cat ? '#111111' : '#E8E4DE'}`,
+                    cursor: 'pointer', whiteSpace: 'nowrap',
+                  }}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -385,25 +411,25 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
       <div className="max-w-[1440px] mx-auto flex gap-6 px-4 lg:px-16 py-6">
 
         {/* ── FILTER SIDEBAR (desktop) ── */}
-        <aside className="hidden lg:block flex-shrink-0 bg-white rounded-xl p-5" style={{ width: 240, border: '1px solid #E8E4DE', alignSelf: 'flex-start', position: 'sticky', top: 132 }}>
+        <aside className="hidden lg:block flex-shrink-0 bg-white rounded-xl p-5" style={{ width: 240, border: '1px solid #E8E4DE', alignSelf: 'flex-start', position: 'sticky', top: 172 }}>
           <FilterPanel filters={filters} onChange={updateFilters} />
         </aside>
 
         {/* ── RESULTS ── */}
         <div className="flex-1 min-w-0">
+
+          {/* Toolbar */}
           <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
             <div>
               <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#111111' }}>
-                {search ? `Results for "${search}"` : 'All Experiences'}
+                {filters.category !== 'All' ? filters.category : search ? `Results for "${search}"` : 'All Listings'}
               </h1>
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', marginTop: 2 }}>
-                {search
-                  ? `${results.length} experience${results.length !== 1 ? 's' : ''} found`
-                  : `${results.length} curated experiences across the island`}
+                {results.length} {results.length === 1 ? 'listing' : 'listings'} found
               </p>
             </div>
             <div className="flex items-center gap-2">
-              {/* Sort dropdown */}
+              {/* Sort */}
               <div className="relative hidden sm:block">
                 <select
                   value={sort}
@@ -418,14 +444,14 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
               {/* Mobile filter button */}
               <button
                 onClick={() => setFilterOpen(true)}
-                className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg lg:hidden hover:opacity-80 transition-opacity"
-                style={{ border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}
+                className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg lg:hidden"
+                style={{ border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111', cursor: 'pointer' }}
               >
                 <SlidersHorizontal size={14} />
                 Filters
-                {activeFilterCount > 0 && (
+                {activeSidebarCount > 0 && (
                   <span className="w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: '#C8A97E', color: 'white', fontSize: 10, fontWeight: 700 }}>
-                    {activeFilterCount}
+                    {activeSidebarCount}
                   </span>
                 )}
               </button>
@@ -433,13 +459,8 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
           </div>
 
           {/* Active filter chips */}
-          {activeFilterCount > 0 && (
+          {(activeSidebarCount > 0 || !!filters.date) && (
             <div className="flex flex-wrap gap-2 mb-4">
-              {filters.category !== 'All Categories' && (
-                <button onClick={() => updateFilters({ category: 'All Categories' })} className="flex items-center gap-1 px-3 py-1 rounded-full" style={{ backgroundColor: '#111111', color: 'white', fontSize: 12, fontFamily: 'var(--font-inter)', border: 'none', cursor: 'pointer' }}>
-                  {filters.category} <X size={10} />
-                </button>
-              )}
               {filters.location !== 'All Locations' && (
                 <button onClick={() => updateFilters({ location: 'All Locations' })} className="flex items-center gap-1 px-3 py-1 rounded-full" style={{ backgroundColor: '#111111', color: 'white', fontSize: 12, fontFamily: 'var(--font-inter)', border: 'none', cursor: 'pointer' }}>
                   {filters.location} <X size={10} />
@@ -450,9 +471,19 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
                   {filters.duration} <X size={10} />
                 </button>
               )}
-              {(filters.priceRange[0] > 0 || filters.priceRange[1] < 700000) && (
-                <button onClick={() => updateFilters({ priceRange: [0, 700000] })} className="flex items-center gap-1 px-3 py-1 rounded-full" style={{ backgroundColor: '#111111', color: 'white', fontSize: 12, fontFamily: 'var(--font-inter)', border: 'none', cursor: 'pointer' }}>
-                  IDR {(filters.priceRange[0]/1000).toFixed(0)}K–{(filters.priceRange[1]/1000).toFixed(0)}K <X size={10} />
+              {(filters.priceRange[0] > 0 || filters.priceRange[1] < PRICE_MAX) && (
+                <button onClick={() => updateFilters({ priceRange: [0, PRICE_MAX] })} className="flex items-center gap-1 px-3 py-1 rounded-full" style={{ backgroundColor: '#111111', color: 'white', fontSize: 12, fontFamily: 'var(--font-inter)', border: 'none', cursor: 'pointer' }}>
+                  IDR {(filters.priceRange[0]/1000).toFixed(0)}K–{filters.priceRange[1] >= PRICE_MAX ? '2.5M+' : `${(filters.priceRange[1]/1000).toFixed(0)}K`} <X size={10} />
+                </button>
+              )}
+              {filters.guests > 1 && (
+                <button onClick={() => updateFilters({ guests: 1 })} className="flex items-center gap-1 px-3 py-1 rounded-full" style={{ backgroundColor: '#111111', color: 'white', fontSize: 12, fontFamily: 'var(--font-inter)', border: 'none', cursor: 'pointer' }}>
+                  {filters.guests} guests <X size={10} />
+                </button>
+              )}
+              {!!filters.date && (
+                <button onClick={() => updateFilters({ date: '' })} className="flex items-center gap-1 px-3 py-1 rounded-full" style={{ backgroundColor: '#111111', color: 'white', fontSize: 12, fontFamily: 'var(--font-inter)', border: 'none', cursor: 'pointer' }}>
+                  {filters.date} <X size={10} />
                 </button>
               )}
             </div>
