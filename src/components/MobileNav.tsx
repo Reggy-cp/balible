@@ -1,12 +1,13 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { Home, Search, Wrench, MessageCircle, User } from 'lucide-react'
+import { Home, Search, MessageCircle, User } from 'lucide-react'
 
 const NAV = [
   { Icon: Home,          label: 'Home',     href: '/' },
   { Icon: Search,        label: 'Explore',  href: '/search' },
-  { Icon: Wrench,        label: 'Services', href: '/services' },
+  // Services feature hidden
+  // { Icon: Wrench,        label: 'Services', href: '/services' },
   { Icon: MessageCircle, label: 'Chat',     href: null },
   { Icon: User,          label: 'Profile',  href: '/profile' },
 ]

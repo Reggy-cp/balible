@@ -1,10 +1,11 @@
 const LINKS = [
   { label: 'Experiences',   href: '/search' },
-  { label: 'Services',      href: '/services' },
+  // Services feature hidden
+  // { label: 'Services',      href: '/services' },
   { label: 'Destinations',  href: '/destinations' },
   { label: 'Meet Our Hosts',  href: '/hosts' },
   { label: 'For Hosts',       href: '/for-hosts' },
-  { label: 'For Providers',   href: '/for-providers' },
+  // { label: 'For Providers',   href: '/for-providers' },
 ]
 
 export default function Footer() {

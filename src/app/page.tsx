@@ -2,7 +2,8 @@ import HomeClient from '@/components/HomeClient'
 import { getExperienceCards } from '@/lib/experiences'
 import type { ExperienceCard } from '@/lib/experiences'
 import { getPublishedEvents } from '@/lib/event-actions'
-import { getAllServices } from '@/lib/service-actions'
+// Services feature hidden
+// import { getAllServices } from '@/lib/service-actions'
 
 const STATIC_EXPERIENCES: ExperienceCard[] = [
   { slug: 'pottery-making-class',      title: 'Pottery Making Class',         area: 'Ubud',     rating: 4.9, reviews: 128, price: 450000, durationMins: 150, duration: '2.5 hours', maxGuests: 8,  category: 'Art & Craft',       categorySlug: 'art-craft',       photo: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=480&auto=format&fit=crop&q=80', featured: true,  badge: 'Bestseller', subcategory: null, level: 'All levels' },
@@ -12,12 +13,10 @@ const STATIC_EXPERIENCES: ExperienceCard[] = [
 ]
 
 export default async function HomePage() {
-  const [dbExperiences, upcomingEvents, allServices] = await Promise.all([
+  const [dbExperiences, upcomingEvents] = await Promise.all([
     getExperienceCards(),
     getPublishedEvents(),
-    getAllServices(),
   ])
   const experiences = dbExperiences.length > 0 ? dbExperiences : STATIC_EXPERIENCES
-  const featuredServices = allServices.filter(s => s.featured).slice(0, 8)
-  return <HomeClient experiences={experiences} upcomingEvents={upcomingEvents} featuredServices={featuredServices} />
+  return <HomeClient experiences={experiences} upcomingEvents={upcomingEvents} />
 }
