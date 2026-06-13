@@ -5,6 +5,15 @@ export default withAuth(
   function middleware(req) {
     const token = req.nextauth.token
     const { pathname } = req.nextUrl
+    const host = req.headers.get('host') ?? ''
+    const isHostSubdomain = host.startsWith('host.')
+
+    // host.balible.com root → redirect to /dashboard
+    if (isHostSubdomain && pathname === '/') {
+      const url = req.nextUrl.clone()
+      url.pathname = '/dashboard'
+      return NextResponse.redirect(url)
+    }
 
     // Dashboard requires OPERATOR or ADMIN role
     if (pathname.startsWith('/dashboard') && token?.role !== 'OPERATOR' && token?.role !== 'ADMIN') {
@@ -22,6 +31,12 @@ export default withAuth(
     callbacks: {
       authorized({ token, req }) {
         const { pathname } = req.nextUrl
+        const host = req.headers.get('host') ?? ''
+        const isHostSubdomain = host.startsWith('host.')
+
+        // Require auth on host.balible.com root (middleware will redirect to /dashboard)
+        if (isHostSubdomain && pathname === '/') return !!token
+
         const protected_ = ['/dashboard', '/profile', '/admin', '/checkout']
         if (protected_.some(p => pathname.startsWith(p))) return !!token
         return true
@@ -31,5 +46,5 @@ export default withAuth(
 )
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/profile/:path*', '/admin/:path*', '/checkout/:path*'],
+  matcher: ['/', '/dashboard/:path*', '/profile/:path*', '/admin/:path*', '/checkout/:path*'],
 }
