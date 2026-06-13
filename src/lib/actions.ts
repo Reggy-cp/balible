@@ -14,9 +14,10 @@ const AREA_DISPLAY: Record<string, string> = {
 }
 
 const CATEGORY_DISPLAY: Record<string, string> = {
-  WELLNESS: 'Wellness', ART_CRAFT: 'Art & Craft', CULTURE: 'Culture',
+  WELLNESS: 'Wellness & Healing', ART_CRAFT: 'Art & Craft', CULTURE: 'Culture',
   FOOD_DRINK: 'Culinary', NATURE: 'Nature & Outdoors', ARCHITECTURE: 'Architecture',
   SURF_WATER: 'Water Activities', DIVING: 'Diving', COOKING: 'Cooking',
+  LOCAL_EXPERTS: 'Local Experts',
 }
 
 // ── Wishlist ──────────────────────────────────────────────────────────────────
@@ -166,13 +167,14 @@ export async function createReviewAction(input: {
 
 const CATEGORY_TO_ENUM: Record<string, string> = {
   'Art & Craft': 'ART_CRAFT',
-  'Wellness': 'WELLNESS',
+  'Wellness & Healing': 'WELLNESS',
   'Culture': 'CULTURE',
   'Culinary': 'FOOD_DRINK',
   'Cooking': 'COOKING',
   'Nature & Outdoors': 'NATURE',
   'Water Activities': 'SURF_WATER',
   'Spiritual': 'CULTURE',
+  'Local Experts': 'LOCAL_EXPERTS',
 }
 
 const AREA_TO_ENUM: Record<string, string> = {

@@ -42,7 +42,7 @@ const CATEGORY_META: Record<string, {
     subcategories: ['All', 'Pottery', 'Jewelry', 'Painting', 'Wood Carving', 'Textile', 'Weaving'],
   },
   wellness: {
-    label: 'Wellness',
+    label: 'Wellness & Healing',
     tagline: 'Restore mind, body and spirit',
     description: 'Restore your mind, body and soul with authentic Balinese healing practices — from sound healing bowls to traditional jamu rituals, guided by healers with decades of experience.',
     image: 'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=1200&auto=format&fit=crop&q=80',
@@ -105,9 +105,17 @@ const CATEGORY_META: Record<string, {
     color: '#C8A97E',
     subcategories: ['All', 'Cooking Class', 'Spice & Herb', 'Market Tour', 'Coffee & Tea', 'Fermentation', 'Dessert & Sweets', 'Farm to Table'],
   },
+  'local-experts': {
+    label: 'Local Experts',
+    tagline: 'Trusted locals, at your side',
+    description: "Book trusted local professionals for the practical side of your trip — photographers who know the light, guides who know the back roads, childcare and pet care you can rely on, and drivers who make the island easy.",
+    image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=1200&auto=format&fit=crop&q=80',
+    color: '#34657F',
+    subcategories: ['All', 'Photographers', 'Guides', 'Wellness Practitioners', 'Childcare', 'Pet Care', 'Creative Mentors', 'Drivers'],
+  },
 }
 
-const ALL_CATEGORY_SLUGS = ['art-craft', 'wellness', 'culture', 'nature', 'surf-water', 'diving', 'water-activities', 'culinary', 'spiritual'] as const
+const ALL_CATEGORY_SLUGS = ['art-craft', 'wellness', 'culture', 'nature', 'surf-water', 'diving', 'water-activities', 'culinary', 'spiritual', 'local-experts'] as const
 // These are sub-categories hidden from the "Explore other categories" strip
 const SUB_CATEGORY_SLUGS = new Set(['surf-water', 'diving'])
 const SORT_OPTIONS = ['Most popular', 'Highest rated', 'Price: Low to High', 'Price: High to Low']

@@ -236,6 +236,7 @@ enum Category {
   SURF_WATER
   DIVING
   COOKING
+  LOCAL_EXPERTS
 }
 
 enum Area {

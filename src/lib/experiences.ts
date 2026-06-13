@@ -32,7 +32,7 @@ export type FeaturedExp = {
 }
 
 const CATEGORY_DISPLAY: Record<string, string> = {
-  WELLNESS: 'Wellness',
+  WELLNESS: 'Wellness & Healing',
   ART_CRAFT: 'Art & Craft',
   CULTURE: 'Culture',
   FOOD_DRINK: 'Culinary',
@@ -41,6 +41,7 @@ const CATEGORY_DISPLAY: Record<string, string> = {
   ARCHITECTURE: 'Nature & Outdoors',
   DIVING: 'Water Activities',
   COOKING: 'Culinary',
+  LOCAL_EXPERTS: 'Local Experts',
 }
 
 const CATEGORY_SLUG: Record<string, string> = {
@@ -53,6 +54,7 @@ const CATEGORY_SLUG: Record<string, string> = {
   ARCHITECTURE: 'nature',
   DIVING: 'water-activities',
   COOKING: 'culinary',
+  LOCAL_EXPERTS: 'local-experts',
 }
 
 const AREA_DISPLAY: Record<string, string> = {

@@ -13,8 +13,8 @@ const HOSTS = [
   { slug: 'made-sari',       name: 'Made Sari',       businessName: 'Made Sari Pottery Studio',   area: 'Ubud',     category: 'Art & Craft',   rating: 4.9, reviews: 128, avatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&auto=format&fit=crop&q=80', tagline: 'Third-generation Balinese potter sharing the ancient art of wheel-throwing.' },
   { slug: 'ketut-suardana',  name: 'Ketut Suardana',  businessName: 'Ketut Silver Artistry',       area: 'Canggu',   category: 'Art & Craft',   rating: 4.8, reviews: 94,  avatar: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&auto=format&fit=crop&q=80', tagline: 'Master silversmith blending traditional Balinese craft with contemporary design.' },
   { slug: 'ni-wayan-artini', name: 'Ni Wayan Artini', businessName: 'Ubud Batik Studio',           area: 'Ubud',     category: 'Art & Craft',   rating: 4.7, reviews: 148, avatar: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=400&auto=format&fit=crop&q=80', tagline: 'Sharing the UNESCO-recognised art of batik with visitors from around the world.' },
-  { slug: 'nina-putri',      name: 'Nina Putri',      businessName: 'Sukha Healing Space',         area: 'Ubud',     category: 'Wellness',      rating: 4.9, reviews: 390, avatar: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&auto=format&fit=crop&q=80', tagline: 'Sound healing, breathwork and somatic therapies from the heart of Ubud.' },
-  { slug: 'komang-dewi',     name: 'Komang Dewi',     businessName: 'Jiwa Yoga Canggu',            area: 'Canggu',   category: 'Wellness',      rating: 4.9, reviews: 203, avatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&auto=format&fit=crop&q=80', tagline: 'Rooftop sunrise yoga and breathwork for the wandering soul in Canggu.' },
+  { slug: 'nina-putri',      name: 'Nina Putri',      businessName: 'Sukha Healing Space',         area: 'Ubud',     category: 'Wellness & Healing',      rating: 4.9, reviews: 390, avatar: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&auto=format&fit=crop&q=80', tagline: 'Sound healing, breathwork and somatic therapies from the heart of Ubud.' },
+  { slug: 'komang-dewi',     name: 'Komang Dewi',     businessName: 'Jiwa Yoga Canggu',            area: 'Canggu',   category: 'Wellness & Healing',      rating: 4.9, reviews: 203, avatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&auto=format&fit=crop&q=80', tagline: 'Rooftop sunrise yoga and breathwork for the wandering soul in Canggu.' },
   { slug: 'wayan-gede',      name: 'Wayan Gede',      businessName: 'Sacred Bali Ceremonies',      area: 'Ubud',     category: 'Culture',       rating: 4.8, reviews: 78,  avatar: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=400&auto=format&fit=crop&q=80', tagline: 'Third-generation temple guide opening the sacred world of Balinese ceremony.' },
   { slug: 'i-nyoman-arta',   name: 'I Nyoman Arta',   businessName: 'Bali Culture Tours',          area: 'Uluwatu', category: 'Culture',       rating: 4.9, reviews: 312, avatar: null, tagline: 'Specialist in Balinese cultural experiences with 18 years guiding guests.' },
   { slug: 'putu-sari',       name: 'Putu Sari',       businessName: 'Warung Dapur Bali',           area: 'Seminyak', category: 'Culinary',          rating: 4.8, reviews: 156, avatar: null, tagline: 'Family-run cooking school teaching traditional Balinese cuisine for a decade.' },
@@ -27,7 +27,7 @@ const HOSTS = [
 
 const CATEGORY_COLORS: Record<string, string> = {
   'Art & Craft':       '#C8A97E',
-  'Wellness':          '#7EB5A6',
+  'Wellness & Healing':'#7EB5A6',
   'Culture':           '#A97EB5',
   'Culinary':          '#B5A07E',
   'Spiritual':         '#C8A97E',

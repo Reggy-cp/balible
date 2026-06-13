@@ -70,8 +70,8 @@ const HOST_DB: Record<string, Host> = {
     languages: ['Balinese', 'Indonesian', 'English'],
     events: [],
     experiences: [
-      { slug: 'sound-healing-journey', title: 'Sound Healing Journey', area: 'Ubud', price: 350000, duration: '90 min', rating: 4.8, reviews: 178, category: 'Wellness', image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600&auto=format&fit=crop&q=80' },
-      { slug: 'breathwork-and-meditation', title: 'Breathwork & Meditation', area: 'Ubud', price: 280000, duration: '75 min', rating: 4.9, reviews: 212, category: 'Wellness', image: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=600&auto=format&fit=crop&q=80' },
+      { slug: 'sound-healing-journey', title: 'Sound Healing Journey', area: 'Ubud', price: 350000, duration: '90 min', rating: 4.8, reviews: 178, category: 'Wellness & Healing', image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600&auto=format&fit=crop&q=80' },
+      { slug: 'breathwork-and-meditation', title: 'Breathwork & Meditation', area: 'Ubud', price: 280000, duration: '75 min', rating: 4.9, reviews: 212, category: 'Wellness & Healing', image: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=600&auto=format&fit=crop&q=80' },
     ],
   },
   'komang-dewi': {
@@ -82,8 +82,8 @@ const HOST_DB: Record<string, Host> = {
     languages: ['Balinese', 'Indonesian', 'English'],
     events: [],
     experiences: [
-      { slug: 'sunrise-yoga-class', title: 'Sunrise Yoga & Meditation', area: 'Canggu', price: 250000, duration: '75 min', rating: 4.9, reviews: 203, category: 'Wellness', image: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=600&auto=format&fit=crop&q=80' },
-      { slug: 'yoga-philosophy-workshop', title: 'Yoga Philosophy Workshop', area: 'Canggu', price: 320000, duration: '2 hrs', rating: 4.8, reviews: 67, category: 'Wellness', image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600&auto=format&fit=crop&q=80' },
+      { slug: 'sunrise-yoga-class', title: 'Sunrise Yoga & Meditation', area: 'Canggu', price: 250000, duration: '75 min', rating: 4.9, reviews: 203, category: 'Wellness & Healing', image: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=600&auto=format&fit=crop&q=80' },
+      { slug: 'yoga-philosophy-workshop', title: 'Yoga Philosophy Workshop', area: 'Canggu', price: 320000, duration: '2 hrs', rating: 4.8, reviews: 67, category: 'Wellness & Healing', image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600&auto=format&fit=crop&q=80' },
     ],
   },
   'wayan-gede': {
@@ -198,7 +198,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 async function getHostFromDB(slug: string): Promise<Host | null> {
   try {
     const CATEGORY_DISPLAY: Record<string, string> = {
-      WELLNESS: 'Wellness', ART_CRAFT: 'Art & Craft', CULTURE: 'Culture',
+      WELLNESS: 'Wellness & Healing', ART_CRAFT: 'Art & Craft', CULTURE: 'Culture',
       FOOD_DRINK: 'Culinary', COOKING: 'Culinary', NATURE: 'Nature & Outdoors',
       SURF_WATER: 'Water Activities', DIVING: 'Water Activities', SPIRITUAL: 'Spiritual',
     }

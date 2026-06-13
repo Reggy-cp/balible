@@ -5,7 +5,7 @@ import Footer from '@/components/Footer'
 
 export const metadata = {
   title: 'Browse by Category — Balible',
-  description: 'Explore Bali through 6 categories of curated experiences — art & craft, wellness, culture, food, nature, and surf.',
+  description: 'Explore Bali through 8 categories of curated experiences — art & craft, wellness, culture, spiritual, food, nature, water activities, and local experts.',
 }
 
 const CATEGORIES = [
@@ -24,7 +24,7 @@ const CATEGORIES = [
   },
   {
     slug: 'wellness',
-    label: 'Wellness',
+    label: 'Wellness & Healing',
     tagline: 'Restore mind, body and spirit',
     description: 'Sound healing, yoga at sunrise, traditional jamu rituals — guided by healers with decades of experience.',
     image: 'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=800&auto=format&fit=crop&q=80',
@@ -100,6 +100,19 @@ const CATEGORIES = [
     span: 'lg:col-span-2',
     imageHeight: 'h-48',
   },
+  {
+    slug: 'local-experts',
+    label: 'Local Experts',
+    tagline: 'Trusted locals, at your side',
+    description: 'Photographers, guides, wellness practitioners, childcare, pet care, creative mentors, and drivers — trusted local professionals for the practical side of your trip.',
+    image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&auto=format&fit=crop&q=80',
+    count: 7,
+    avgPrice: 547000,
+    featured: ['Vacation Photoshoot', 'Private Driver', 'Trusted Babysitter'],
+    accent: '#34657F',
+    span: 'lg:col-span-2',
+    imageHeight: 'h-48',
+  },
 ]
 
 function formatIDR(n: number) {
@@ -125,7 +138,7 @@ export default function CategoriesPage() {
               Every way to experience Bali
             </h1>
             <p style={{ fontFamily: 'var(--font-inter)', fontSize: 16, color: '#6F675C', marginTop: 16, lineHeight: 1.75, maxWidth: 520 }}>
-              {totalExperiences} handpicked experiences across 7 categories — art, wellness, culture, spiritual, culinary, nature, and water activities. Each one led by a local who knows their craft.
+              {totalExperiences} handpicked experiences across 8 categories — art, wellness, culture, spiritual, culinary, nature, water activities, and local experts. Each one led by a local who knows their craft.
             </p>
           </div>
 
@@ -146,7 +159,7 @@ export default function CategoriesPage() {
         <div className="flex flex-wrap gap-8 mt-10 pt-8" style={{ borderTop: '1px solid #E8E4DE' }}>
           {[
             { value: `${totalExperiences}+`, label: 'curated experiences' },
-            { value: '7',   label: 'categories' },
+            { value: '8',   label: 'categories' },
             { value: '4.8', label: 'average rating' },
             { value: '10+', label: 'areas of Bali' },
           ].map(({ value, label }) => (

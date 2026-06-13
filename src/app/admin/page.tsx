@@ -35,7 +35,7 @@ const REVENUE_CHART = [3200000, 2800000, 4100000, 3600000, 4800000, 5200000, 440
 const MONTHS = ['Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun']
 
 const CATEGORY_DIST = [
-  { name: 'Wellness',          pct: 32, color: FOREST },
+  { name: 'Wellness & Healing', pct: 32, color: FOREST },
   { name: 'Art & Craft',       pct: 28, color: GOLD   },
   { name: 'Culture',           pct: 16, color: TERRACOTTA },
   { name: 'Nature & Outdoors', pct: 11, color: COCONUT },

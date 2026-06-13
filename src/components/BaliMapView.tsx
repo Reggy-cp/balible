@@ -12,8 +12,8 @@ export const MAP_EXPERIENCES = [
   { id: 2,  slug: 'silver-jewelry-workshop',    title: 'Silver Jewelry Workshop',        category: 'Art & Craft',  area: 'Canggu',   lat: -8.6478,  lng: 115.1383, price: 550000, rating: 4.8, reviews: 94,  duration: '3 hrs',   image: 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=400&auto=format&fit=crop&q=80' },
   { id: 3,  slug: 'batik-painting-workshop',    title: 'Batik Painting Workshop',        category: 'Art & Craft',  area: 'Ubud',     lat: -8.5200,  lng: 115.2750, price: 380000, rating: 4.7, reviews: 64,  duration: '3 hrs',   image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400&auto=format&fit=crop&q=80' },
   // Wellness
-  { id: 4,  slug: 'sound-healing-journey',      title: 'Sound Healing Journey',          category: 'Wellness',     area: 'Ubud',     lat: -8.5150,  lng: 115.2580, price: 350000, rating: 4.8, reviews: 178, duration: '90 min',  image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&auto=format&fit=crop&q=80' },
-  { id: 5,  slug: 'sunrise-yoga-class',         title: 'Sunrise Yoga & Meditation',      category: 'Wellness',     area: 'Canggu',   lat: -8.6550,  lng: 115.1420, price: 250000, rating: 4.9, reviews: 203, duration: '75 min',  image: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=400&auto=format&fit=crop&q=80' },
+  { id: 4,  slug: 'sound-healing-journey',      title: 'Sound Healing Journey',          category: 'Wellness & Healing',     area: 'Ubud',     lat: -8.5150,  lng: 115.2580, price: 350000, rating: 4.8, reviews: 178, duration: '90 min',  image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&auto=format&fit=crop&q=80' },
+  { id: 5,  slug: 'sunrise-yoga-class',         title: 'Sunrise Yoga & Meditation',      category: 'Wellness & Healing',     area: 'Canggu',   lat: -8.6550,  lng: 115.1420, price: 250000, rating: 4.9, reviews: 203, duration: '75 min',  image: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=400&auto=format&fit=crop&q=80' },
   // Culture
   { id: 6,  slug: 'water-temple-purification',  title: 'Water Temple Purification',      category: 'Culture',      area: 'Gianyar',  lat: -8.5374,  lng: 115.3247, price: 600000, rating: 4.8, reviews: 78,  duration: '4 hrs',   image: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=400&auto=format&fit=crop&q=80' },
   { id: 7,  slug: 'uluwatu-kecak-sunset',       title: 'Uluwatu Sunset & Kecak Dance',   category: 'Culture',      area: 'Uluwatu',  lat: -8.8293,  lng: 115.0849, price: 450000, rating: 4.9, reviews: 312, duration: '3 hrs',   image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=400&auto=format&fit=crop&q=80' },
@@ -28,11 +28,11 @@ export const MAP_EXPERIENCES = [
   { id: 12, slug: 'rice-terrace-walk',          title: 'Tegalalang Rice Terrace Walk',   category: 'Nature & Outdoors', area: 'Ubud',    lat: -8.4316,  lng: 115.2791, price: 280000, rating: 4.8, reviews: 192, duration: '2.5 hrs', image: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=400&auto=format&fit=crop&q=80' },
 ]
 
-const CATEGORIES = ['All', 'Art & Craft', 'Wellness', 'Culture', 'Culinary', 'Spiritual', 'Nature & Outdoors', 'Water Activities']
+const CATEGORIES = ['All', 'Art & Craft', 'Wellness & Healing', 'Culture', 'Culinary', 'Spiritual', 'Nature & Outdoors', 'Water Activities']
 
 const CAT_COLORS: Record<string, string> = {
-  'Art & Craft':     '#C8A97E',
-  'Wellness':        '#4A7C59',
+  'Art & Craft':       '#C8A97E',
+  'Wellness & Healing':'#4A7C59',
   'Culture':         '#8B6E9E',
   'Culinary':        '#B66A45',
   'Spiritual':       '#D4842A',
