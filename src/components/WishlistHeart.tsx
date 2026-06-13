@@ -39,6 +39,7 @@ export default function WishlistHeart({
     const list = getList()
     const updated = next ? [...list, slug] : list.filter(s => s !== slug)
     localStorage.setItem(KEY, JSON.stringify(updated))
+    window.dispatchEvent(new CustomEvent('balible:wishlist', { detail: { slug, saved: next } }))
 
     // Persist to DB when signed in
     if (isSignedIn) {

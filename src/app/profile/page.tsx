@@ -10,6 +10,7 @@ import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
 import { getUserData, type UserData } from '@/lib/actions'
+import { STATIC_EXP_MAP } from '@/lib/static-experiences'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -340,21 +341,6 @@ function BookingsTab({ reviews, onReview, dbBookings }: { reviews: SubmittedRevi
 
 // ── Wishlist tab ───────────────────────────────────────────────────────────────
 
-const WISHLIST_LOOKUP = [
-  { slug: 'pottery-making-class',      title: 'Pottery Making Class',         area: 'Ubud',     price: 450000, rating: 4.9, image: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=300&auto=format&fit=crop&q=80' },
-  { slug: 'silver-jewelry-workshop',   title: 'Silver Jewelry Workshop',       area: 'Canggu',   price: 550000, rating: 4.8, image: 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=300&auto=format&fit=crop&q=80' },
-  { slug: 'batik-painting-workshop',   title: 'Batik Painting Workshop',       area: 'Ubud',     price: 380000, rating: 4.7, image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=300&auto=format&fit=crop&q=80' },
-  { slug: 'sound-healing-journey',     title: 'Sound Healing Journey',         area: 'Ubud',     price: 350000, rating: 4.8, image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=300&auto=format&fit=crop&q=80' },
-  { slug: 'sunrise-yoga-class',        title: 'Sunrise Yoga & Meditation',     area: 'Canggu',   price: 250000, rating: 4.9, image: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=300&auto=format&fit=crop&q=80' },
-  { slug: 'water-temple-purification', title: 'Water Temple Purification',     area: 'Gianyar',  price: 600000, rating: 4.8, image: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=300&auto=format&fit=crop&q=80' },
-  { slug: 'uluwatu-kecak-sunset',      title: 'Uluwatu Sunset & Kecak Dance',  area: 'Uluwatu',  price: 450000, rating: 4.9, image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=300&auto=format&fit=crop&q=80' },
-  { slug: 'balinese-cooking-class',    title: 'Balinese Cooking Class',        area: 'Seminyak', price: 480000, rating: 4.8, image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=300&auto=format&fit=crop&q=80' },
-  { slug: 'jimbaran-seafood-sunset',   title: 'Jimbaran Seafood & Sunset',     area: 'Jimbaran', price: 350000, rating: 4.6, image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=300&auto=format&fit=crop&q=80' },
-  { slug: 'beginner-surf-lesson',      title: 'Beginner Surf Lesson',          area: 'Kuta',     price: 320000, rating: 4.7, image: 'https://images.unsplash.com/photo-1530870110042-98b2cb110834?w=300&auto=format&fit=crop&q=80' },
-  { slug: 'snorkeling-amed',           title: 'Snorkeling at Amed Reef',       area: 'Amed',     price: 420000, rating: 4.8, image: 'https://images.unsplash.com/photo-1560275619-4662e36fa65c?w=300&auto=format&fit=crop&q=80' },
-  { slug: 'rice-terrace-walk',         title: 'Tegalalang Rice Terrace Walk',  area: 'Ubud',     price: 280000, rating: 4.8, image: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=300&auto=format&fit=crop&q=80' },
-]
-
 const DEFAULT_WISHLIST_SLUGS = ['pottery-making-class', 'sound-healing-journey', 'uluwatu-kecak-sunset']
 
 function WishlistTab({ dbSlugs }: { dbSlugs?: string[] }) {
@@ -363,7 +349,7 @@ function WishlistTab({ dbSlugs }: { dbSlugs?: string[] }) {
   // Merge DB slugs with local (DB takes precedence when signed in)
   const slugSet = new Set([...(dbSlugs ?? localSlugs)])
   const slugs = Array.from(slugSet)
-  const items = WISHLIST_LOOKUP.filter(e => slugs.includes(e.slug))
+  const items = slugs.map(s => STATIC_EXP_MAP.get(s)).filter(Boolean) as NonNullable<ReturnType<typeof STATIC_EXP_MAP.get>>[]
 
   return (
     <div>

@@ -104,7 +104,11 @@ export default function WishlistPage() {
       try { setSlugs(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]')) } catch {}
     }
     window.addEventListener('storage', sync)
-    return () => window.removeEventListener('storage', sync)
+    window.addEventListener('balible:wishlist', sync)
+    return () => {
+      window.removeEventListener('storage', sync)
+      window.removeEventListener('balible:wishlist', sync)
+    }
   }, [])
 
   const clearAll = () => {

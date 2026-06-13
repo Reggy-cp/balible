@@ -5,6 +5,7 @@ import { getOrCreateNeonUser } from './user'
 import { createSnapTransaction } from './midtrans'
 import { SERVICE_FEE_RATE, computeBookingTotal } from './pricing'
 import { createNotification } from './notifications'
+import { STATIC_EXP_MAP } from './static-experiences'
 
 const AREA_DISPLAY: Record<string, string> = {
   UBUD: 'Ubud', CANGGU: 'Canggu', SEMINYAK: 'Seminyak', KUTA: 'Kuta',
@@ -487,7 +488,7 @@ export async function getExperiencesForWishlist(slugs: string[]): Promise<ExpWis
       where: { slug: { in: slugs }, status: 'ACTIVE' as any },
       select: { slug: true, title: true, area: true, price: true, rating: true, totalReviews: true, category: true, duration: true, images: true },
     })
-    return exps.map(e => ({
+    const dbResults: ExpWishlistMeta[] = exps.map(e => ({
       slug: e.slug,
       title: e.title,
       area: AREA_DISPLAY[String(e.area)] ?? String(e.area),
@@ -498,8 +499,14 @@ export async function getExperiencesForWishlist(slugs: string[]): Promise<ExpWis
       duration: e.duration,
       image: (e.images as string[])[0] ?? '',
     }))
+    const dbSlugs = new Set(exps.map(e => e.slug))
+    const staticResults = slugs
+      .filter(s => !dbSlugs.has(s))
+      .map(s => STATIC_EXP_MAP.get(s))
+      .filter((e): e is ExpWishlistMeta => e !== undefined)
+    return [...dbResults, ...staticResults]
   } catch {
-    return []
+    return slugs.map(s => STATIC_EXP_MAP.get(s)).filter((e): e is ExpWishlistMeta => e !== undefined)
   }
 }
 
