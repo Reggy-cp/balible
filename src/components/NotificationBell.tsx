@@ -86,11 +86,23 @@ export default function NotificationBell() {
 
       {open && (
         <div
-          className="absolute top-full right-0 mt-2 bg-white rounded-2xl shadow-xl overflow-hidden"
-          style={{ width: 340, maxWidth: 'calc(100vw - 32px)', border: '1px solid #E8E4DE', zIndex: 110 }}
+          className="
+            fixed left-4 right-4 top-16
+            sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[340px]
+            bg-white rounded-2xl shadow-xl overflow-hidden
+          "
+          style={{ border: '1px solid #E8E4DE', zIndex: 200 }}
         >
-          <div className="px-4 py-3" style={{ borderBottom: '1px solid #F5F1EB' }}>
+          <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid #F5F1EB' }}>
             <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 700, color: '#111111' }}>Notifications</p>
+            <button
+              onClick={() => setOpen(false)}
+              className="sm:hidden flex items-center justify-center w-7 h-7 rounded-full hover:bg-stone-100 transition-colors"
+              style={{ border: 'none', background: 'none', cursor: 'pointer' }}
+              aria-label="Close notifications"
+            >
+              <span style={{ fontSize: 16, color: '#6F675C', lineHeight: 1 }}>×</span>
+            </button>
           </div>
           <div style={{ maxHeight: 380, overflowY: 'auto' }}>
             {!loaded ? (
