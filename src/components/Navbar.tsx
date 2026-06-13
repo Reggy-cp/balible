@@ -46,6 +46,7 @@ export default function Navbar() {
   const isSignedIn = status === 'authenticated'
   const user = session?.user
   const isHost = user?.role === 'OPERATOR' || user?.role === 'ADMIN'
+  const dashboardHref = user?.role === 'ADMIN' ? '/admin' : '/dashboard'
   const [accountOpen, setAccountOpen] = useState(false)
   const accountRef = useRef<HTMLDivElement>(null)
 
@@ -166,11 +167,11 @@ export default function Navbar() {
               <div className="hidden sm:flex items-center gap-3">
                 {isHost && (
                   <a
-                    href="/dashboard"
+                    href={dashboardHref}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors hover:bg-stone-50"
                     style={{
                       fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 500,
-                      color: isActive('/dashboard') ? '#C8A97E' : '#6F675C', textDecoration: 'none',
+                      color: isActive(dashboardHref) ? '#C8A97E' : '#6F675C', textDecoration: 'none',
                     }}
                   >
                     <LayoutDashboard size={14} />
@@ -192,7 +193,7 @@ export default function Navbar() {
                         <User size={14} style={{ color: '#6F675C' }} /> Profile
                       </a>
                       {isHost && (
-                        <a href="/dashboard" className="flex items-center gap-2.5 px-4 py-2.5 hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111', textDecoration: 'none' }}>
+                        <a href={dashboardHref} className="flex items-center gap-2.5 px-4 py-2.5 hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111', textDecoration: 'none' }}>
                           <LayoutDashboard size={14} style={{ color: '#6F675C' }} /> Dashboard
                         </a>
                       )}
@@ -274,7 +275,7 @@ export default function Navbar() {
               {isLoaded && isSignedIn ? (
                 <div className="space-y-1">
                   {isHost && (
-                    <a href="/dashboard" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', textDecoration: 'none', fontWeight: 500 }}>
+                    <a href={dashboardHref} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', textDecoration: 'none', fontWeight: 500 }}>
                       <LayoutDashboard size={16} style={{ color: '#6F675C' }} /> Dashboard
                     </a>
                   )}
