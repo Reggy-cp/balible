@@ -202,18 +202,29 @@ const UPCOMING = [
   { title: 'Clay Sculpture Session',  date: 'Jun 12, 2024 · 10:00 AM', guests: 2, status: 'Confirmed', image: 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=120&auto=format&fit=crop&q=80' },
 ]
 
-function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences }: { onNav: (id: string) => void; commissionRate: number; experiences?: DashExp[] }) {
+function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences, bookings: liveBookings, reviews: liveReviews, hostName }: {
+  onNav: (id: string) => void; commissionRate: number
+  experiences?: DashExp[]; bookings?: DashBooking[]; reviews?: DashReview[]; hostName?: string
+}) {
   const [period, setPeriod] = useState('This Month')
   const netMult = (100 - commissionRate) / 100
   const expSource = liveExperiences ?? EXPERIENCES
   const totalNetEarnings = expSource.reduce((a, e) => a + e.earnings, 0) * netMult
   const lastMonthNet = MONTHLY_EARNINGS[MONTHLY_EARNINGS.length - 1] * netMult
 
-  const stats = OVERVIEW_STATS.map(s =>
-    s.label === 'Total Earnings'
-      ? { ...s, value: fmt(totalNetEarnings), change: `After ${commissionRate}% commission` }
-      : s
-  )
+  const totalBookings  = liveBookings !== undefined ? liveBookings.length : null
+  const activeBookings = liveBookings !== undefined ? liveBookings.filter(b => b.status === 'Confirmed' || b.status === 'Pending').length : null
+  const avgRating      = liveReviews !== undefined && liveReviews.length > 0
+    ? (liveReviews.reduce((a, r) => a + r.rating, 0) / liveReviews.length).toFixed(1) : null
+  const reviewCount    = liveReviews !== undefined ? liveReviews.length : null
+
+  const stats = OVERVIEW_STATS.map(s => {
+    if (s.label === 'Total Earnings')    return { ...s, value: fmt(totalNetEarnings), change: `After ${commissionRate}% commission` }
+    if (s.label === 'Total Bookings'    && totalBookings  !== null) return { ...s, value: String(totalBookings),  change: totalBookings  === 0 ? 'No bookings yet'  : s.change }
+    if (s.label === 'Upcoming Bookings' && activeBookings !== null) return { ...s, value: String(activeBookings), change: 'Confirmed & pending' }
+    if (s.label === 'Average Rating'    && avgRating      !== null) return { ...s, value: avgRating, change: reviewCount === 0 ? 'No reviews yet' : `From ${reviewCount} review${reviewCount !== 1 ? 's' : ''}` }
+    return s
+  })
 
   const slice  = period === 'This Month' ? MONTHLY_EARNINGS.slice(6)    : MONTHLY_EARNINGS.slice(0, 6)
   const labels = period === 'This Month' ? MONTHS_SHORT.slice(6)        : MONTHS_SHORT.slice(0, 6)
@@ -223,7 +234,7 @@ function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences }: 
       <div className="flex items-start justify-between mb-6">
         <div>
           <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(20px,2.5vw,26px)', fontWeight: 700, color: '#111111' }}>
-            Welcome back, Made Sari
+            Welcome back, {hostName ?? 'Made Sari'}
           </h1>
           <p style={{ fontSize: 14, color: '#6F675C', marginTop: 3 }}>Here's what's happening with your experiences.</p>
         </div>
@@ -1867,7 +1878,9 @@ function HostNotifBell({ onSettings, align = 'left', dark = false }: { onSetting
   )
 }
 
-function SidebarInner({ activeNav, setActiveNav }: { activeNav: string; setActiveNav: (id: string) => void }) {
+function SidebarInner({ activeNav, setActiveNav, hostName }: { activeNav: string; setActiveNav: (id: string) => void; hostName?: string }) {
+  const displayName = hostName ?? 'Made Sari'
+  const initial = displayName.charAt(0).toUpperCase()
   return (
     <>
       <div className="flex items-center justify-between px-5 pt-6 pb-4">
@@ -1879,10 +1892,10 @@ function SidebarInner({ activeNav, setActiveNav }: { activeNav: string; setActiv
 
       <div className="flex items-center gap-3 mx-3 px-3 py-3 rounded-xl mb-3" style={{ backgroundColor: 'rgba(255,255,255,0.06)' }}>
         <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#C8A97E' }}>
-          <span style={{ fontSize: 16, fontWeight: 700, color: 'white' }}>M</span>
+          <span style={{ fontSize: 16, fontWeight: 700, color: 'white' }}>{initial}</span>
         </div>
         <div className="min-w-0">
-          <p style={{ fontSize: 13, fontWeight: 600, color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Made Sari</p>
+          <p style={{ fontSize: 13, fontWeight: 600, color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName}</p>
           <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>Operator · Verified</p>
         </div>
       </div>
@@ -1918,6 +1931,7 @@ export default function DashboardPage() {
   const [liveExperiences, setLiveExperiences] = useState<DashExp[] | undefined>(undefined)
   const [liveBookings, setLiveBookings]       = useState<DashBooking[] | undefined>(undefined)
   const [liveReviews, setLiveReviews]         = useState<DashReview[] | undefined>(undefined)
+  const [liveHostName, setLiveHostName]       = useState<string | undefined>(undefined)
   const commissionRate = Math.max(0, Math.min(100, parseInt(String(lsh('balible_commission', '10')), 10) || 10))
 
   useEffect(() => {
@@ -1926,12 +1940,13 @@ export default function DashboardPage() {
       setLiveExperiences(data.experiences)
       setLiveBookings(data.bookings)
       setLiveReviews(data.reviews)
+      setLiveHostName(data.hostName)
     }).catch(() => {})
   }, [])
 
   const renderPanel = () => {
     switch (activeNav) {
-      case 'overview':    return <OverviewPanel onNav={setActiveNav} commissionRate={commissionRate} experiences={liveExperiences} />
+      case 'overview':    return <OverviewPanel onNav={setActiveNav} commissionRate={commissionRate} experiences={liveExperiences} bookings={liveBookings} reviews={liveReviews} hostName={liveHostName} />
       case 'experiences': return <ExperiencesPanel commissionRate={commissionRate} initialExperiences={liveExperiences} />
       case 'events':      return <EventsPanel />
       case 'bookings':    return <BookingsPanel initialBookings={liveBookings} />
@@ -1939,7 +1954,7 @@ export default function DashboardPage() {
       case 'reviews':     return <ReviewsPanel initialReviews={liveReviews} />
       case 'profile':     return <ProfilePanel />
       case 'settings':    return <SettingsPanel />
-      default:            return <OverviewPanel onNav={setActiveNav} commissionRate={commissionRate} experiences={liveExperiences} />
+      default:            return <OverviewPanel onNav={setActiveNav} commissionRate={commissionRate} experiences={liveExperiences} bookings={liveBookings} reviews={liveReviews} hostName={liveHostName} />
     }
   }
 
@@ -1955,7 +1970,7 @@ export default function DashboardPage() {
               style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
               <X size={18} style={{ color: 'rgba(255,255,255,0.6)' }} />
             </button>
-            <SidebarInner activeNav={activeNav} setActiveNav={id => { setActiveNav(id); setSidebarOpen(false) }} />
+            <SidebarInner activeNav={activeNav} setActiveNav={id => { setActiveNav(id); setSidebarOpen(false) }} hostName={liveHostName} />
           </aside>
         </div>
       )}
@@ -1963,7 +1978,7 @@ export default function DashboardPage() {
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex flex-col flex-shrink-0"
         style={{ width: 240, backgroundColor: '#111111', minHeight: '100vh', position: 'sticky', top: 0, height: '100vh' }}>
-        <SidebarInner activeNav={activeNav} setActiveNav={setActiveNav} />
+        <SidebarInner activeNav={activeNav} setActiveNav={setActiveNav} hostName={liveHostName} />
       </aside>
 
       {/* Main content */}
