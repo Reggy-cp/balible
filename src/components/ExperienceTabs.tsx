@@ -217,8 +217,14 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
             {/* Host card */}
             <div className="flex-shrink-0 hidden lg:block" style={{ width: 200 }}>
               <div className="p-4 rounded-xl" style={{ border: '1px solid #E8E4DE' }}>
-                <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>Your host</p>
-                <div className="flex items-center gap-3 mt-2">
+                <div className="flex items-center justify-between mb-2">
+                  <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>Your host</p>
+                  <span className="flex items-center gap-1" style={{ backgroundColor: '#F0F7F2', border: '1px solid #C6DFD0', borderRadius: 20, padding: '2px 8px' }}>
+                    <CheckCircle2 size={10} style={{ color: '#4A7C59' }} />
+                    <span style={{ fontFamily: 'var(--font-inter)', fontSize: 10, fontWeight: 600, color: '#4A7C59', letterSpacing: '0.03em' }}>Verified</span>
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 mt-1">
                   {exp.operator.avatar || exp.operator.user.image ? (
                     <img
                       src={(exp.operator.avatar || exp.operator.user.image)!}

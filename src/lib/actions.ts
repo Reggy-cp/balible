@@ -358,6 +358,147 @@ export async function rejectListingAction(id: string): Promise<{ ok: boolean }> 
   }
 }
 
+// ── Host: status update, delete, experience list ──────────────────────────────
+
+export async function updateExperienceStatusAction(
+  slug: string,
+  status: 'ACTIVE' | 'PAUSED' | 'DRAFT' | 'PENDING_REVIEW',
+): Promise<{ ok: boolean }> {
+  try {
+    const user = await getOrCreateNeonUser()
+    if (!user) return { ok: false }
+    const operator = await prisma.operator.findUnique({ where: { userId: user.id } })
+    if (!operator) return { ok: false }
+    await prisma.experience.updateMany({
+      where: { slug, operatorId: operator.id },
+      data: { status: status as any },
+    })
+    return { ok: true }
+  } catch { return { ok: false } }
+}
+
+export async function deleteExperienceAction(slug: string): Promise<{ ok: boolean }> {
+  try {
+    const user = await getOrCreateNeonUser()
+    if (!user) return { ok: false }
+    const operator = await prisma.operator.findUnique({ where: { userId: user.id } })
+    if (!operator) return { ok: false }
+    await prisma.experience.deleteMany({ where: { slug, operatorId: operator.id } })
+    return { ok: true }
+  } catch { return { ok: false } }
+}
+
+export async function getHostExperiencesAction(): Promise<DashExp[] | null> {
+  try {
+    const user = await getOrCreateNeonUser()
+    if (!user) return null
+    const operator = await prisma.operator.findUnique({ where: { userId: user.id } })
+    if (!operator) return null
+    const rows = await prisma.experience.findMany({
+      where: { operatorId: operator.id },
+      include: { bookings: { select: { totalPrice: true } }, _count: { select: { bookings: true } } },
+      orderBy: { createdAt: 'asc' },
+    })
+    const statusDisplay: Record<string, string> = { ACTIVE: 'Active', DRAFT: 'Draft', PENDING_REVIEW: 'Pending Review', PAUSED: 'Paused' }
+    return rows.map((e, i) => ({
+      id: i + 1,
+      slug: e.slug,
+      title: e.title,
+      category: CATEGORY_DISPLAY[String(e.category)] ?? String(e.category),
+      area: AREA_DISPLAY[String(e.area)] ?? String(e.area),
+      price: e.price,
+      duration: e.duration,
+      maxGuests: e.maxGuests,
+      rating: e.rating,
+      totalReviews: e.totalReviews,
+      bookings: e._count.bookings,
+      status: statusDisplay[String(e.status)] ?? 'Draft',
+      image: (e.images as string[])[0] ?? '',
+      earnings: (e.bookings as { totalPrice: number }[]).reduce((a, b) => a + b.totalPrice, 0),
+    }))
+  } catch { return null }
+}
+
+// ── Admin: create experience ──────────────────────────────────────────────────
+
+export type CreateExperienceInput = {
+  title: string
+  description: string
+  category: string
+  area: string
+  price: number
+  duration: string
+  level: string
+  language: string
+  maxGuests: number
+  meetingPoint: string
+  latitude: number
+  longitude: number
+  images: string[]
+  highlights: string[]
+  includes: string[]
+  excludes: string[]
+  instantConfirm: boolean
+  ecoLabel: boolean
+  featured: boolean
+  status: string
+  operatorId: string
+}
+
+export async function createExperienceAction(
+  data: CreateExperienceInput,
+): Promise<{ ok: boolean; slug?: string; error?: string }> {
+  try {
+    const base = data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+    const existing = await prisma.experience.findUnique({ where: { slug: base } })
+    const slug = existing ? `${base}-${Date.now()}` : base
+
+    const exp = await prisma.experience.create({
+      data: {
+        slug,
+        title: data.title,
+        description: data.description,
+        category: data.category as any,
+        area: data.area as any,
+        price: data.price,
+        duration: data.duration,
+        level: data.level,
+        language: data.language || 'English',
+        maxGuests: data.maxGuests,
+        meetingPoint: data.meetingPoint,
+        latitude: data.latitude,
+        longitude: data.longitude,
+        images: data.images,
+        highlights: data.highlights,
+        includes: data.includes,
+        excludes: data.excludes,
+        instantConfirm: data.instantConfirm,
+        ecoLabel: data.ecoLabel,
+        featured: data.featured,
+        status: data.status as any,
+        operatorId: data.operatorId,
+      },
+    })
+    return { ok: true, slug: exp.slug }
+  } catch (e: any) {
+    return { ok: false, error: e?.message ?? 'Unknown error' }
+  }
+}
+
+export async function getOperatorsAction(): Promise<
+  { id: string; name: string; businessName: string }[]
+> {
+  try {
+    const ops = await prisma.operator.findMany({
+      select: { id: true, businessName: true, user: { select: { name: true } } },
+      orderBy: { businessName: 'asc' },
+    })
+    return ops.map(o => ({ id: o.id, name: o.user.name, businessName: o.businessName }))
+  } catch {
+    return []
+  }
+}
+
 // ── User data (profile + wishlist pages) ─────────────────────────────────────
 
 export type UserData = {

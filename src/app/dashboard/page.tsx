@@ -15,7 +15,9 @@ import {
 } from '@/lib/event-actions'
 import {
   saveHostListingAction, submitHostListingAction, type HostListingInput,
-  getHostDashboardData, type DashExp, type DashBooking, type DashReview,
+  getHostDashboardData, getHostExperiencesAction,
+  updateExperienceStatusAction, deleteExperienceAction,
+  type DashExp, type DashBooking, type DashReview,
 } from '@/lib/actions'
 
 // ── Data ──────────────────────────────────────────────────────────────────────
@@ -338,6 +340,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([])
   const [galleryDragging, setGalleryDragging] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [saveError, setSaveError]   = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const galleryInputRef = useRef<HTMLInputElement>(null)
 
@@ -412,73 +415,34 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
 
   const saveAndClose = async (action: 'draft' | 'submit' = 'draft') => {
     if (submitting) return
+    setSaveError('')
     setSubmitting(true)
     const slug = editingExp?.slug ?? (formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'new-experience')
     const toLines = (s: string) => s.split('\n').map(l => l.trim()).filter(Boolean)
-    const expData = {
+    const listingInput: HostListingInput = {
+      slug,
       title: formData.title || editingExp?.title || '',
+      description: formData.description || '',
       category: formData.category,
-      subcategory: formData.subcategory,
       area: formData.area,
       price: Number(formData.price) || editingExp?.price || 0,
       duration: formData.duration || editingExp?.duration || '',
       maxGuests: Number(formData.maxGuests) || editingExp?.maxGuests || 8,
-      minGuests: Number(formData.minGuests) || 1,
       meetingPoint: formData.meetingPoint || '',
-      description: formData.description || '',
       includes: toLines(formData.includes),
       excludes: toLines(formData.excludes),
-    }
-    try {
-      localStorage.setItem(`balible_exp_data_${slug}`, JSON.stringify(expData))
-      localStorage.setItem(`balible_schedule_${slug}`, JSON.stringify(schedule))
-    } catch {}
-    const newStatus = action === 'submit' ? 'Pending Review' : 'Draft'
-    if (editingExp) {
-      setExps(prev => prev.map(e => e.id === editingExp.id ? { ...e, ...expData, status: newStatus } : e))
-      // Update map entry if it exists
-      try {
-        const prev = JSON.parse(localStorage.getItem('balible_host_new_experiences') ?? '[]')
-        const idx = prev.findIndex((e: any) => e.slug === slug)
-        if (idx !== -1) {
-          prev[idx] = { ...prev[idx], ...expData }
-          localStorage.setItem('balible_host_new_experiences', JSON.stringify(prev))
-        }
-      } catch {}
-    } else {
-      const newId = Date.now()
-      setExps(prev => [...prev, { id: newId, slug, ...expData, rating: 0, totalReviews: 0, bookings: 0, status: newStatus, image: imagePreview ?? '', earnings: 0 }])
-      // Sync to map
-      try {
-        const [baseLat, baseLng] = AREA_COORDS[expData.area] ?? [-8.5069, 115.2625]
-        const mapEntry = {
-          id: newId, slug, title: expData.title, category: expData.category, area: expData.area,
-          lat: baseLat + (Math.random() - 0.5) * 0.012,
-          lng: baseLng + (Math.random() - 0.5) * 0.012,
-          price: expData.price, rating: 0, reviews: 0,
-          duration: expData.duration || '2 hrs',
-          meetingPoint: expData.meetingPoint,
-          image: imagePreview ?? 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&auto=format&fit=crop&q=80',
-        }
-        const prev = JSON.parse(localStorage.getItem('balible_host_new_experiences') ?? '[]')
-        localStorage.setItem('balible_host_new_experiences', JSON.stringify([...prev, mapEntry]))
-      } catch {}
-    }
-    // Persist to DB (best-effort)
-    const listingInput: HostListingInput = {
-      slug, title: expData.title, description: expData.description,
-      category: expData.category, area: expData.area,
-      price: expData.price, duration: expData.duration,
-      maxGuests: expData.maxGuests, meetingPoint: expData.meetingPoint,
-      includes: expData.includes, excludes: expData.excludes,
       imageUrl: imagePreview ?? undefined,
     }
-    if (action === 'submit') {
-      submitHostListingAction(listingInput).catch(() => {})
-    } else {
-      saveHostListingAction(listingInput).catch(() => {})
-    }
+    const res = action === 'submit'
+      ? await submitHostListingAction(listingInput)
+      : await saveHostListingAction(listingInput)
     setSubmitting(false)
+    if (!res.ok) {
+      setSaveError('Could not save. Check your connection and try again.')
+      return
+    }
+    // Refresh list from DB so UI reflects actual saved state
+    getHostExperiencesAction().then(rows => { if (rows) setExps(rows) })
     closeForm()
   }
 
@@ -496,7 +460,12 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
   const tabs    = ['All', 'Active', 'Pending Review', 'Draft', 'Paused']
   const visible = filter === 'All' ? exps : exps.filter(e => e.status === filter)
 
-  const setStatus = (id: number, s: string) => { setExps(prev => prev.map(e => e.id === id ? { ...e, status: s } : e)); setMenuOpen(null) }
+  const STATUS_TO_ENUM: Record<string, 'ACTIVE' | 'PAUSED' | 'DRAFT'> = { Active: 'ACTIVE', Paused: 'PAUSED', Draft: 'DRAFT' }
+  const setStatus = (exp: DashExp, s: string) => {
+    setExps(prev => prev.map(e => e.id === exp.id ? { ...e, status: s } : e))
+    setMenuOpen(null)
+    updateExperienceStatusAction(exp.slug, STATUS_TO_ENUM[s] ?? 'DRAFT').catch(() => {})
+  }
 
   return (
     <div>
@@ -566,14 +535,14 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                 <Edit2 size={11} /> Edit
               </button>
               {exp.status !== 'Active' && (
-                <button onClick={() => setStatus(exp.id, 'Active')}
+                <button onClick={() => setStatus(exp, 'Active')}
                   className="flex items-center gap-1.5 hover:opacity-90 transition-opacity"
                   style={{ height: 30, padding: '0 10px', borderRadius: 8, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
                   <Play size={11} /> {exp.status === 'Draft' ? 'Publish' : 'Activate'}
                 </button>
               )}
               {exp.status === 'Active' && (
-                <button onClick={() => setStatus(exp.id, 'Paused')}
+                <button onClick={() => setStatus(exp, 'Paused')}
                   className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
                   style={{ height: 30, padding: '0 10px', borderRadius: 8, border: '1px solid #E8E4DE', background: 'white', color: '#C8A97E', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
                   <Pause size={11} /> Pause
@@ -581,10 +550,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
               )}
               <button onClick={() => {
                   setExps(prev => prev.filter(e => e.id !== exp.id))
-                  try {
-                    const prev = JSON.parse(localStorage.getItem('balible_host_new_experiences') ?? '[]')
-                    localStorage.setItem('balible_host_new_experiences', JSON.stringify(prev.filter((e: any) => e.slug !== exp.slug)))
-                  } catch {}
+                  deleteExperienceAction(exp.slug).catch(() => {})
                 }}
                 className="flex items-center gap-1.5 hover:bg-red-50 transition-colors"
                 style={{ height: 30, padding: '0 10px', borderRadius: 8, border: '1px solid #E8E4DE', background: 'white', color: '#B66A45', fontSize: 12, cursor: 'pointer' }}>
@@ -877,9 +843,12 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                     style={{ flex: 2, height: 44, borderRadius: 10, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Next →</button>
                 ) : (
                   <>
+                    {saveError && (
+                      <p style={{ width: '100%', fontSize: 12, color: '#B66A45', textAlign: 'center', marginBottom: 4 }}>{saveError}</p>
+                    )}
                     <button onClick={() => saveAndClose('draft')} disabled={submitting}
                       style={{ flex: 1.4, height: 44, borderRadius: 10, border: '1px solid #E8E4DE', background: 'white', fontSize: 13, fontWeight: 600, color: '#6F675C', cursor: 'pointer', opacity: submitting ? 0.6 : 1 }}>
-                      Save Draft
+                      {submitting ? 'Saving…' : 'Save Draft'}
                     </button>
                     <button onClick={() => saveAndClose('submit')} disabled={submitting}
                       style={{ flex: 2, height: 44, borderRadius: 10, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: submitting ? 0.6 : 1 }}>

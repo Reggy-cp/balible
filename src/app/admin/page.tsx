@@ -9,7 +9,10 @@ import {
   MoreHorizontal, Bell, LogOut, TrendingUp, Globe, Shield,
   Check, AlertTriangle, Plus, RefreshCw, Flag, Ticket, MapPin, Clock,
 } from 'lucide-react'
-import { getPendingListingsAction, approveListingAction, rejectListingAction, type PendingListing } from '@/lib/actions'
+import {
+  getPendingListingsAction, approveListingAction, rejectListingAction, type PendingListing,
+  createExperienceAction, getOperatorsAction, type CreateExperienceInput,
+} from '@/lib/actions'
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 
@@ -356,6 +359,327 @@ function OverviewPanel({ onNav }: { onNav: (id: string) => void }) {
   )
 }
 
+// ── Add Experience Modal ──────────────────────────────────────────────────────
+
+const CATEGORIES = [
+  { value: 'WELLNESS',      label: 'Wellness & Healing' },
+  { value: 'ART_CRAFT',     label: 'Art & Craft' },
+  { value: 'CULTURE',       label: 'Culture' },
+  { value: 'FOOD_DRINK',    label: 'Culinary' },
+  { value: 'NATURE',        label: 'Nature & Outdoors' },
+  { value: 'SURF_WATER',    label: 'Water Activities' },
+  { value: 'COOKING',       label: 'Cooking' },
+  { value: 'DIVING',        label: 'Diving' },
+  { value: 'LOCAL_EXPERTS', label: 'Local Experts' },
+  { value: 'RENTALS',       label: 'Rentals' },
+]
+
+const AREAS = [
+  { value: 'UBUD',      label: 'Ubud' },
+  { value: 'CANGGU',    label: 'Canggu' },
+  { value: 'SEMINYAK',  label: 'Seminyak' },
+  { value: 'KUTA',      label: 'Kuta' },
+  { value: 'ULUWATU',   label: 'Uluwatu' },
+  { value: 'GIANYAR',   label: 'Gianyar' },
+  { value: 'KINTAMANI', label: 'Kintamani' },
+  { value: 'AMED',      label: 'Amed' },
+  { value: 'SIDEMEN',   label: 'Sidemen' },
+  { value: 'SANUR',     label: 'Sanur' },
+  { value: 'NUSA_DUA',  label: 'Nusa Dua' },
+  { value: 'JIMBARAN',  label: 'Jimbaran' },
+  { value: 'MEDEWI',    label: 'Medewi' },
+]
+
+const EMPTY_FORM: CreateExperienceInput = {
+  title: '', description: '', category: 'CULTURE', area: 'UBUD',
+  price: 0, duration: '', level: 'All levels', language: 'English', maxGuests: 10,
+  meetingPoint: '', latitude: -8.5069, longitude: 115.2625,
+  images: [], highlights: [], includes: [], excludes: [],
+  instantConfirm: false, ecoLabel: false, featured: false,
+  status: 'ACTIVE', operatorId: '',
+}
+
+function AddExperienceModal({ onClose, onSaved }: { onClose: () => void; onSaved: (slug: string) => void }) {
+  const [form, setForm]           = useState<CreateExperienceInput>(EMPTY_FORM)
+  const [operators, setOperators] = useState<{ id: string; name: string; businessName: string }[]>([])
+  const [saving, setSaving]       = useState(false)
+  const [errors, setErrors]       = useState<Record<string, string>>({})
+
+  useEffect(() => {
+    getOperatorsAction().then(ops => {
+      setOperators(ops)
+      if (ops.length > 0) setForm(f => ({ ...f, operatorId: ops[0].id }))
+    })
+  }, [])
+
+  const set = (key: keyof CreateExperienceInput, value: any) => {
+    setForm(f => ({ ...f, [key]: value }))
+    setErrors(e => { const n = { ...e }; delete n[key]; return n })
+  }
+
+  const parseLines = (text: string) => text.split('\n').map(s => s.trim()).filter(Boolean)
+
+  const validate = () => {
+    const e: Record<string, string> = {}
+    if (!form.title.trim())       e.title       = 'Required'
+    if (!form.description.trim()) e.description = 'Required'
+    if (!form.duration.trim())    e.duration    = 'Required'
+    if (form.price <= 0)          e.price       = 'Must be > 0'
+    if (form.maxGuests <= 0)      e.maxGuests   = 'Must be > 0'
+    if (!form.meetingPoint.trim())e.meetingPoint= 'Required'
+    if (form.images.length === 0) e.images      = 'At least one image URL required'
+    if (!form.operatorId)         e.operatorId  = 'Select a host'
+    return e
+  }
+
+  const handleSave = async () => {
+    const e = validate()
+    if (Object.keys(e).length > 0) { setErrors(e); return }
+    setSaving(true)
+    const res = await createExperienceAction(form)
+    setSaving(false)
+    if (res.ok && res.slug) { onSaved(res.slug) }
+    else setErrors({ _: res.error ?? 'Save failed' })
+  }
+
+  const inputStyle = (field: string) => ({
+    width: '100%', padding: '8px 12px', borderRadius: 8, fontSize: 13,
+    fontFamily: 'var(--font-inter)', outline: 'none', backgroundColor: 'white',
+    border: `1px solid ${errors[field] ? '#B66A45' : SAND}`, color: CHARCOAL,
+    boxSizing: 'border-box' as const,
+  })
+
+  const labelStyle = { fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 600, color: COCONUT, marginBottom: 4, display: 'block' as const }
+  const errStyle   = { fontFamily: 'var(--font-inter)', fontSize: 11, color: TERRACOTTA, marginTop: 3 }
+
+  return (
+    <>
+      <div className="fixed inset-0 z-50" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={onClose} />
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ pointerEvents: 'none' }}>
+        <div
+          className="bg-white rounded-2xl shadow-2xl w-full overflow-hidden flex flex-col"
+          style={{ maxWidth: 700, maxHeight: '92vh', pointerEvents: 'auto' }}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: `1px solid ${SAND}`, flexShrink: 0 }}>
+            <div>
+              <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: CHARCOAL }}>Add Experience</p>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: COCONUT, marginTop: 1 }}>New listing will go live immediately (or saved as draft)</p>
+            </div>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, lineHeight: 0 }}>
+              <X size={20} style={{ color: COCONUT }} />
+            </button>
+          </div>
+
+          {/* Body */}
+          <div className="overflow-y-auto px-6 py-5 space-y-5" style={{ flexGrow: 1 }}>
+
+            {/* Basic */}
+            <div>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 700, color: COCONUT, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>Basic Info</p>
+              <div className="space-y-3">
+                <div>
+                  <label style={labelStyle}>Title *</label>
+                  <input value={form.title} onChange={e => set('title', e.target.value)} placeholder="e.g. Traditional Batik Workshop in Ubud" style={inputStyle('title')} />
+                  {errors.title && <p style={errStyle}>{errors.title}</p>}
+                </div>
+                <div>
+                  <label style={labelStyle}>Description *</label>
+                  <textarea value={form.description} onChange={e => set('description', e.target.value)} rows={4} placeholder="Describe the experience…" style={{ ...inputStyle('description'), resize: 'vertical' as const }} />
+                  {errors.description && <p style={errStyle}>{errors.description}</p>}
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label style={labelStyle}>Category *</label>
+                    <select value={form.category} onChange={e => set('category', e.target.value)} style={inputStyle('category')}>
+                      {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Area *</label>
+                    <select value={form.area} onChange={e => set('area', e.target.value)} style={inputStyle('area')}>
+                      {AREAS.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Pricing & Details */}
+            <div>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 700, color: COCONUT, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>Pricing & Details</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label style={labelStyle}>Price (IDR) *</label>
+                  <input type="number" value={form.price || ''} onChange={e => set('price', Number(e.target.value))} placeholder="450000" style={inputStyle('price')} />
+                  {errors.price && <p style={errStyle}>{errors.price}</p>}
+                </div>
+                <div>
+                  <label style={labelStyle}>Duration *</label>
+                  <input value={form.duration} onChange={e => set('duration', e.target.value)} placeholder="e.g. 3 hours" style={inputStyle('duration')} />
+                  {errors.duration && <p style={errStyle}>{errors.duration}</p>}
+                </div>
+                <div>
+                  <label style={labelStyle}>Level</label>
+                  <input value={form.level} onChange={e => set('level', e.target.value)} placeholder="All levels" style={inputStyle('level')} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Language</label>
+                  <input value={form.language} onChange={e => set('language', e.target.value)} placeholder="English" style={inputStyle('language')} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Max Guests *</label>
+                  <input type="number" value={form.maxGuests || ''} onChange={e => set('maxGuests', Number(e.target.value))} placeholder="10" style={inputStyle('maxGuests')} />
+                  {errors.maxGuests && <p style={errStyle}>{errors.maxGuests}</p>}
+                </div>
+                <div>
+                  <label style={labelStyle}>Status</label>
+                  <select value={form.status} onChange={e => set('status', e.target.value)} style={inputStyle('status')}>
+                    <option value="ACTIVE">Active (live)</option>
+                    <option value="DRAFT">Draft (hidden)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Location */}
+            <div>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 700, color: COCONUT, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>Location</p>
+              <div className="space-y-3">
+                <div>
+                  <label style={labelStyle}>Meeting Point *</label>
+                  <input value={form.meetingPoint} onChange={e => set('meetingPoint', e.target.value)} placeholder="e.g. Ubud Central Market main entrance" style={inputStyle('meetingPoint')} />
+                  {errors.meetingPoint && <p style={errStyle}>{errors.meetingPoint}</p>}
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label style={labelStyle}>Latitude</label>
+                    <input type="number" step="0.0001" value={form.latitude} onChange={e => set('latitude', Number(e.target.value))} style={inputStyle('latitude')} />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Longitude</label>
+                    <input type="number" step="0.0001" value={form.longitude} onChange={e => set('longitude', Number(e.target.value))} style={inputStyle('longitude')} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 700, color: COCONUT, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>Content</p>
+              <div className="space-y-3">
+                <div>
+                  <label style={labelStyle}>Image URLs * <span style={{ fontWeight: 400 }}>(one per line)</span></label>
+                  <textarea
+                    value={form.images.join('\n')}
+                    onChange={e => set('images', parseLines(e.target.value))}
+                    rows={3}
+                    placeholder="https://images.unsplash.com/photo-…"
+                    style={{ ...inputStyle('images'), resize: 'vertical' as const }}
+                  />
+                  {errors.images && <p style={errStyle}>{errors.images}</p>}
+                </div>
+                <div>
+                  <label style={labelStyle}>Highlights <span style={{ fontWeight: 400 }}>(one per line)</span></label>
+                  <textarea
+                    value={form.highlights.join('\n')}
+                    onChange={e => set('highlights', parseLines(e.target.value))}
+                    rows={3}
+                    placeholder="Learn traditional hand-stamping techniques&#10;Visit a working village studio&#10;Take home your creation"
+                    style={{ ...inputStyle('highlights'), resize: 'vertical' as const }}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label style={labelStyle}>Includes <span style={{ fontWeight: 400 }}>(one per line)</span></label>
+                    <textarea
+                      value={form.includes.join('\n')}
+                      onChange={e => set('includes', parseLines(e.target.value))}
+                      rows={3}
+                      placeholder="All materials&#10;Refreshments&#10;Hotel pickup"
+                      style={{ ...inputStyle('includes'), resize: 'vertical' as const }}
+                    />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Excludes <span style={{ fontWeight: 400 }}>(one per line)</span></label>
+                    <textarea
+                      value={form.excludes.join('\n')}
+                      onChange={e => set('excludes', parseLines(e.target.value))}
+                      rows={3}
+                      placeholder="Transport&#10;Meals&#10;Gratuities"
+                      style={{ ...inputStyle('excludes'), resize: 'vertical' as const }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Host */}
+            <div>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 700, color: COCONUT, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>Host</p>
+              <div>
+                <label style={labelStyle}>Assign to operator *</label>
+                {operators.length === 0 ? (
+                  <p style={{ fontSize: 13, color: COCONUT }}>Loading operators…</p>
+                ) : (
+                  <select value={form.operatorId} onChange={e => set('operatorId', e.target.value)} style={inputStyle('operatorId')}>
+                    {operators.map(o => (
+                      <option key={o.id} value={o.id}>{o.businessName} ({o.name})</option>
+                    ))}
+                  </select>
+                )}
+                {errors.operatorId && <p style={errStyle}>{errors.operatorId}</p>}
+              </div>
+            </div>
+
+            {/* Flags */}
+            <div>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 700, color: COCONUT, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>Options</p>
+              <div className="flex flex-wrap gap-5">
+                {([
+                  { key: 'featured',       label: 'Featured (homepage spotlight)' },
+                  { key: 'instantConfirm', label: 'Instant confirmation' },
+                  { key: 'ecoLabel',       label: 'Eco label' },
+                ] as { key: keyof CreateExperienceInput; label: string }[]).map(({ key, label }) => (
+                  <label key={key} className="flex items-center gap-2" style={{ cursor: 'pointer', fontFamily: 'var(--font-inter)', fontSize: 13, color: CHARCOAL }}>
+                    <input
+                      type="checkbox"
+                      checked={form[key] as boolean}
+                      onChange={e => set(key, e.target.checked)}
+                      style={{ width: 16, height: 16, accentColor: GOLD, cursor: 'pointer' }}
+                    />
+                    {label}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {errors._ && (
+              <div className="rounded-xl p-3" style={{ backgroundColor: '#FEF2F2', border: '1px solid #FECACA' }}>
+                <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: TERRACOTTA }}>{errors._}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="flex items-center justify-between px-6 py-4 gap-3" style={{ borderTop: `1px solid ${SAND}`, flexShrink: 0 }}>
+            <button onClick={onClose} style={{ height: 38, padding: '0 20px', borderRadius: 10, border: `1px solid ${SAND}`, background: 'white', fontSize: 13, color: COCONUT, cursor: 'pointer', fontFamily: 'var(--font-inter)' }}>
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              style={{ height: 38, padding: '0 24px', borderRadius: 10, border: 'none', backgroundColor: saving ? COCONUT : CHARCOAL, color: 'white', fontSize: 13, fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-inter)' }}
+            >
+              {saving ? 'Saving…' : 'Save Experience'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
+
 // ── Experiences Panel ─────────────────────────────────────────────────────────
 
 function ExperiencesPanel() {
@@ -365,6 +689,7 @@ function ExperiencesPanel() {
   const [menuOpen, setMenuOpen] = useState<number | null>(null)
   const [pending, setPending]   = useState<PendingListing[]>([])
   const [pendingLoaded, setPendingLoaded] = useState(false)
+  const [addOpen, setAddOpen]   = useState(false)
 
   useEffect(() => {
     if (filter === 'Pending Review' && !pendingLoaded) {
@@ -409,7 +734,23 @@ function ExperiencesPanel() {
           style={{ height: 38, border: `1px solid ${SAND}`, backgroundColor: 'white', fontSize: 13, color: COCONUT, cursor: 'pointer' }}>
           <Download size={13} /> Export
         </button>
+        <button
+          onClick={() => setAddOpen(true)}
+          className="flex items-center gap-2 px-4 rounded-xl flex-shrink-0 hover:opacity-90"
+          style={{ height: 38, border: 'none', backgroundColor: CHARCOAL, color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-inter)' }}>
+          <Plus size={14} /> Add Experience
+        </button>
       </div>
+
+      {addOpen && (
+        <AddExperienceModal
+          onClose={() => setAddOpen(false)}
+          onSaved={slug => {
+            setAddOpen(false)
+            window.open(`/experiences/${slug}`, '_blank')
+          }}
+        />
+      )}
 
       <div className="overflow-x-auto mb-5 scrollbar-none">
         <div className="inline-flex gap-1 bg-white rounded-xl p-1" style={{ border: `1px solid ${SAND}` }}>

@@ -202,11 +202,15 @@ function BookingSummary({ booking, guests, editing, onEdit }: { booking: Booking
         </div>
       </div>
 
-      <div className="mt-5 pt-4 space-y-2" style={{ borderTop: '1px solid #E8E4DE' }}>
-        {[{ Icon: Shield, text: 'Secure Payment' }, { Icon: Award, text: 'Best Price Guarantee' }, { Icon: Clock, text: '24/7 Support' }].map(({ Icon, text }) => (
+      <div className="mt-5 pt-4 space-y-2.5" style={{ borderTop: '1px solid #E8E4DE' }}>
+        {[
+          { Icon: Shield, text: 'Secure SSL payment' },
+          { Icon: Clock,  text: 'Free cancellation within 24h' },
+          { Icon: Award,  text: 'Instant booking confirmation' },
+        ].map(({ Icon, text }) => (
           <div key={text} className="flex items-center gap-2">
             <Icon size={13} style={{ color: '#4A7C59' }} />
-            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>{text}</span>
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#4A7C59', fontWeight: 500 }}>{text}</span>
           </div>
         ))}
       </div>
@@ -325,8 +329,20 @@ function StepExperience({ booking, guests, setGuests, onNext, slots, selectedRaw
 type ContactFields = { fullName: string; email: string; phone: string; requests: string }
 
 function StepDetails({ contact, setContact, onNext }: { contact: ContactFields; setContact: (c: ContactFields) => void; onNext: () => void }) {
-  const set = (k: keyof ContactFields) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+  const [errors, setErrors] = useState({ fullName: '', email: '' })
+  const set = (k: keyof ContactFields) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setContact({ ...contact, [k]: e.target.value })
+    if (k === 'fullName' || k === 'email') setErrors(prev => ({ ...prev, [k]: '' }))
+  }
+
+  const handleNext = () => {
+    const errs = { fullName: '', email: '' }
+    if (!contact.fullName.trim()) errs.fullName = 'Full name is required'
+    if (!contact.email.trim()) errs.email = 'Email address is required'
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email.trim())) errs.email = 'Enter a valid email address'
+    if (errs.fullName || errs.email) { setErrors(errs); return }
+    onNext()
+  }
 
   return (
     <div className="bg-white rounded-xl p-6" style={{ border: '1px solid #E8E4DE' }}>
@@ -355,16 +371,21 @@ function StepDetails({ contact, setContact, onNext }: { contact: ContactFields; 
               <input
                 type={f.type} value={contact[f.id]} onChange={set(f.id)}
                 placeholder={f.placeholder} className="w-full outline-none"
-                style={{ height: 44, border: '1px solid #E8E4DE', borderRadius: 8, padding: '0 14px', fontSize: 14, color: '#111111', backgroundColor: 'white' }}
-                onFocus={e => (e.target.style.borderColor = '#C8A97E')}
-                onBlur={e => (e.target.style.borderColor = '#E8E4DE')}
+                style={{ height: 44, border: `1px solid ${errors[f.id as 'fullName' | 'email'] ? '#C0504D' : '#E8E4DE'}`, borderRadius: 8, padding: '0 14px', fontSize: 14, color: '#111111', backgroundColor: 'white' }}
+                onFocus={e => (e.target.style.borderColor = errors[f.id as 'fullName' | 'email'] ? '#C0504D' : '#C8A97E')}
+                onBlur={e => (e.target.style.borderColor = errors[f.id as 'fullName' | 'email'] ? '#C0504D' : '#E8E4DE')}
               />
+            )}
+            {errors[f.id as 'fullName' | 'email'] && (
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#C0504D', marginTop: 4 }}>
+                {errors[f.id as 'fullName' | 'email']}
+              </p>
             )}
           </div>
         ))}
       </div>
       <button
-        onClick={onNext}
+        onClick={handleNext}
         className="w-full flex items-center justify-center hover:opacity-90 transition-opacity mt-6"
         style={{ height: 48, backgroundColor: '#111111', color: 'white', borderRadius: 10, fontSize: 15, fontWeight: 600, border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}
       >
@@ -384,11 +405,22 @@ function StepPayment({ total, onPay, paying, error }: { total: number; onPay: ()
         <ChevronUp size={18} style={{ color: '#6F675C' }} />
       </div>
 
-      <div className="p-4 rounded-lg mb-5" style={{ backgroundColor: '#F5F1EB' }}>
+      <div className="p-4 rounded-lg mb-4" style={{ backgroundColor: '#F5F1EB' }}>
         <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.6 }}>
-          You&apos;ll complete payment in a secure window powered by Midtrans —
-          choose from credit card, bank transfer, GoPay, OVO, QRIS and more.
+          You&apos;ll complete payment in a secure window powered by Midtrans.
         </p>
+        <div className="flex flex-wrap gap-2 mt-3">
+          {['Visa', 'Mastercard', 'GoPay', 'OVO', 'QRIS', 'Bank Transfer'].map(method => (
+            <span key={method} style={{
+              fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 600,
+              color: '#6F675C', backgroundColor: 'white',
+              border: '1px solid #E8E4DE', borderRadius: 6,
+              padding: '3px 8px', letterSpacing: '0.02em',
+            }}>
+              {method}
+            </span>
+          ))}
+        </div>
       </div>
 
       {error && (

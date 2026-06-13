@@ -67,10 +67,10 @@ export default function Navbar() {
 
           {/* Logo */}
           <a href="/" className="flex flex-col leading-none flex-shrink-0" style={{ textDecoration: 'none' }}>
-            <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', letterSpacing: '0.02em' }}>
+            <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', letterSpacing: '0.02em' }}>
               BALIBLE
             </span>
-            <span className="hidden sm:block" style={{ fontSize: 8, letterSpacing: '0.2em', color: '#6F675C', textTransform: 'uppercase' }}>
+            <span className="hidden sm:block" style={{ fontSize: 9, letterSpacing: '0.2em', color: '#6F675C', textTransform: 'uppercase' }}>
               CURATED EXPERIENCES IN BALI
             </span>
           </a>

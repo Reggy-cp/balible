@@ -130,7 +130,7 @@ function MiniCalendar({
   )
 }
 
-export default function BookingWidget({ price, slug, duration, maxGuests = 8, embedded = false }: { price: number; slug?: string; duration?: string; maxGuests?: number; embedded?: boolean }) {
+export default function BookingWidget({ price, slug, duration, maxGuests = 8, embedded = false, rating, totalReviews }: { price: number; slug?: string; duration?: string; maxGuests?: number; embedded?: boolean; rating?: number; totalReviews?: number }) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
   const [guests, setGuests] = useState(1)
@@ -250,6 +250,13 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
       <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: '#111111', marginTop: 2 }}>
         <span style={{ color: '#C8A97E' }}>IDR</span> {formatted}
       </p>
+      {rating !== undefined && totalReviews !== undefined && (
+        <div className="flex items-center gap-1 mt-1">
+          <span style={{ color: '#C8A97E', fontSize: 13, lineHeight: 1 }}>★</span>
+          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 700, color: '#111111' }}>{rating.toFixed(1)}</span>
+          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>({totalReviews} reviews)</span>
+        </div>
+      )}
 
       {hasSchedule && (
         <div className="mt-3 flex flex-wrap gap-1">
@@ -383,6 +390,10 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
         }}>
         {!selectedDate ? 'Select a date' : !selectedTime ? 'Select a time' : 'Book this experience'}
       </a>
+
+      <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#4A7C59', textAlign: 'center', marginTop: 10 }}>
+        ✓ Free cancellation up to 24 hours before
+      </p>
 
       <button className="w-full mt-3 flex items-center justify-center gap-1.5 hover:opacity-70 transition-opacity"
         onClick={() => setWishlisted(!wishlisted)}

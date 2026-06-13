@@ -212,13 +212,13 @@ function ResultCard({ r, date, guests }: { r: SearchResult; date: string; guests
         <div className="absolute top-1.5 right-1.5">
           <WishlistHeart slug={r.slug} size={11} compact />
         </div>
-        <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded" style={{ backgroundColor: 'rgba(0,0,0,0.55)', color: 'white', fontSize: 9, fontWeight: 600 }}>
+        <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded" style={{ backgroundColor: 'rgba(0,0,0,0.55)', color: 'white', fontSize: 11, fontWeight: 600 }}>
           {r.category}
         </span>
       </div>
       <div className="flex flex-col justify-between flex-1 min-w-0 py-0.5">
         <div>
-          <h3 className="leading-snug" style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 600, color: '#111111' }}>
+          <h3 className="leading-snug" style={{ fontFamily: 'var(--font-inter)', fontSize: 16, fontWeight: 600, color: '#111111' }}>
             {r.title}
           </h3>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1.5">
@@ -235,9 +235,14 @@ function ResultCard({ r, date, guests }: { r: SearchResult; date: string; guests
           </div>
         </div>
         <div className="flex items-center justify-between mt-2">
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>
-            From <span style={{ color: '#C8A97E', fontWeight: 600 }}>IDR</span> <span style={{ fontWeight: 600 }}>{r.price.toLocaleString('id-ID')}</span>
-          </p>
+          <div>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>
+              From <span style={{ color: '#C8A97E', fontWeight: 600 }}>IDR</span> <span style={{ fontWeight: 600 }}>{r.price.toLocaleString('id-ID')}</span>
+            </p>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#4A7C59', marginTop: 2 }}>
+              ✓ Free cancellation
+            </p>
+          </div>
           <span className="text-xs px-3 py-1 rounded-full" style={{ backgroundColor: '#111111', color: 'white', fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 500 }}>
             Book →
           </span>

@@ -1773,7 +1773,7 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
 
           {/* RIGHT — booking widget (client island) */}
           <div id="booking" className="hidden lg:block lg:w-[340px] flex-shrink-0">
-            <BookingWidget price={experience.price} slug={experience.slug} duration={experience.duration} maxGuests={experience.maxGuests} />
+            <BookingWidget price={experience.price} slug={experience.slug} duration={experience.duration} maxGuests={experience.maxGuests} rating={experience.rating} totalReviews={experience.totalReviews} />
           </div>
         </div>
       </div>
@@ -1788,6 +1788,8 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
         slug={experience.slug}
         duration={experience.duration}
         maxGuests={experience.maxGuests}
+        rating={experience.rating}
+        totalReviews={experience.totalReviews}
       />
 
       <MobileNav />

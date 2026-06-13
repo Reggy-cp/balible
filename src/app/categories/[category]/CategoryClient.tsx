@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Heart, Star, Clock, Users, ChevronDown, SlidersHorizontal, X, MapPin, ArrowRight } from 'lucide-react'
+import { Heart, Star, Clock, Users, ChevronDown, SlidersHorizontal, X, MapPin, ArrowRight, Search } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
@@ -227,6 +227,7 @@ export default function CategoryClient({
 
   const meta = CATEGORY_META[slug]
   const [activeSub, setActiveSub] = useState('All')
+  const [search, setSearch]       = useState('')
   const [sort, setSort] = useState('Most popular')
   const [sortOpen, setSortOpen] = useState(false)
   const [wishlist, setWishlist] = useState<Record<string, boolean>>({})
@@ -236,13 +237,21 @@ export default function CategoryClient({
   const results = useMemo(() => {
     let list = initialExperiences
     if (activeSub !== 'All') list = list.filter(e => e.subcategory === activeSub)
+    if (search.trim()) {
+      const q = search.trim().toLowerCase()
+      list = list.filter(e =>
+        e.title.toLowerCase().includes(q) ||
+        e.area.toLowerCase().includes(q) ||
+        (e.subcategory?.toLowerCase().includes(q) ?? false)
+      )
+    }
     switch (sort) {
       case 'Highest rated':       return [...list].sort((a, b) => b.rating - a.rating)
       case 'Price: Low to High':  return [...list].sort((a, b) => a.price - b.price)
       case 'Price: High to Low':  return [...list].sort((a, b) => b.price - a.price)
       default:                    return [...list].sort((a, b) => b.reviews - a.reviews)
     }
-  }, [activeSub, sort, initialExperiences])
+  }, [activeSub, search, sort, initialExperiences])
 
   const otherCategories = ALL_CATEGORY_SLUGS.filter(s => s !== slug && !SUB_CATEGORY_SLUGS.has(s))
 
@@ -335,6 +344,32 @@ export default function CategoryClient({
       {/* ── RESULTS ── */}
       <div className="max-w-[1440px] mx-auto px-6 lg:px-16 py-8">
 
+        {/* Search bar */}
+        <div className="relative mb-5">
+          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: '#6F675C' }} />
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder={`Search ${meta.label} experiences…`}
+            style={{
+              width: '100%', height: 46, paddingLeft: 44, paddingRight: search ? 40 : 16,
+              borderRadius: 12, border: '1px solid #E8E4DE', backgroundColor: 'white',
+              fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111',
+              outline: 'none', boxSizing: 'border-box',
+            }}
+          />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full hover:bg-stone-100 transition-colors"
+              style={{ border: 'none', background: 'none', cursor: 'pointer' }}
+            >
+              <X size={14} style={{ color: '#6F675C' }} />
+            </button>
+          )}
+        </div>
+
         <div className="flex items-center justify-between mb-6">
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
             <span style={{ fontWeight: 700, color: '#111111' }}>{results.length}</span> experience{results.length !== 1 ? 's' : ''} found
@@ -345,6 +380,15 @@ export default function CategoryClient({
                 style={{ backgroundColor: '#F5F1EB', border: '1px solid #E8E4DE', fontSize: 12, color: '#6F675C', cursor: 'pointer' }}
               >
                 {activeSub} <X size={11} />
+              </button>
+            )}
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="inline-flex items-center gap-1 ml-2 px-2.5 py-1 rounded-full"
+                style={{ backgroundColor: '#F5F1EB', border: '1px solid #E8E4DE', fontSize: 12, color: '#6F675C', cursor: 'pointer' }}
+              >
+                "{search}" <X size={11} />
               </button>
             )}
           </p>
@@ -402,10 +446,10 @@ export default function CategoryClient({
           <div className="text-center py-20 bg-white rounded-2xl" style={{ border: '1px solid #E8E4DE' }}>
             <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, color: '#111111', marginBottom: 8 }}>No experiences found</p>
             <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', marginBottom: 20 }}>
-              Try selecting a different subcategory.
+              {search ? `No ${meta.label} experiences match "${search}".` : 'Try selecting a different subcategory.'}
             </p>
             <button
-              onClick={() => setActiveSub('All')}
+              onClick={() => { setSearch(''); setActiveSub('All') }}
               style={{ height: 40, padding: '0 24px', backgroundColor: '#111111', color: 'white', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer', border: 'none', fontFamily: 'var(--font-inter)' }}
             >
               Show all {meta.label}

@@ -5,9 +5,10 @@ import { X } from 'lucide-react'
 import BookingWidget from './BookingWidget'
 
 export default function MobileBookingModal({
-  price, slug, duration, maxGuests,
+  price, slug, duration, maxGuests, rating, totalReviews,
 }: {
   price: number; slug: string; duration: string; maxGuests: number
+  rating?: number; totalReviews?: number
 }) {
   const [open, setOpen] = useState(false)
 
@@ -15,7 +16,7 @@ export default function MobileBookingModal({
     <>
       {/* Sticky bottom bar */}
       <div
-        className="fixed bottom-16 left-0 right-0 z-40 lg:hidden bg-white px-4 py-3"
+        className="fixed bottom-16 md:bottom-0 left-0 right-0 z-40 lg:hidden bg-white px-4 py-3"
         style={{ borderTop: '1px solid #E8E4DE', boxShadow: '0 -4px 16px rgba(0,0,0,0.08)' }}
       >
         <div className="flex items-center justify-between">
@@ -79,7 +80,7 @@ export default function MobileBookingModal({
 
         {/* Widget */}
         <div className="px-5 pt-4 pb-12">
-          <BookingWidget price={price} slug={slug} duration={duration} maxGuests={maxGuests} embedded />
+          <BookingWidget price={price} slug={slug} duration={duration} maxGuests={maxGuests} rating={rating} totalReviews={totalReviews} embedded />
         </div>
       </div>
     </>

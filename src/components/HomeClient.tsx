@@ -44,7 +44,7 @@ const HOSTS = [
 ]
 
 const FOOTER_COLS = [
-  { title: 'Explore',   links: [{ label: 'All Experiences', href: '/search' }, { label: 'Events', href: '/events' }, { label: 'By Destination', href: '/destinations' }, { label: 'Meet Our Hosts', href: '/hosts' }, { label: 'How It Works', href: '/how-it-works' }] },
+  { title: 'Explore',   links: [{ label: 'All Experiences', href: '/search' }, { label: 'Events', href: '/events' }, { label: 'By Destination', href: '/destinations' }, { label: 'Meet Our Hosts', href: '/hosts' }, { label: 'Journal', href: '/blog' }, { label: 'How It Works', href: '/how-it-works' }] },
   { title: 'For Hosts', links: [{ label: 'Become A Host', href: '/for-hosts' }, { label: 'Host Dashboard', href: '/dashboard' }, { label: 'How It Works', href: '/for-hosts#how-it-works' }, { label: 'Earnings Calculator', href: '/for-hosts#calculator' }, { label: 'Host Stories', href: '/for-hosts#stories' }] },
   { title: 'About',     links: [{ label: 'Our Story', href: '/about' }, { label: 'Destinations', href: '/destinations' }, { label: 'Sign In', href: '/sign-in' }, { label: 'Sign Up', href: '/sign-up' }] },
   { title: 'Support',   links: [{ label: 'Help Centre', href: '/help' }, { label: 'How It Works', href: '/how-it-works' }, { label: 'Wishlist', href: '/wishlist' }, { label: 'My Profile', href: '/profile' }, { label: 'My Bookings', href: '/profile' }] },
@@ -76,7 +76,7 @@ function ExperienceCard({ exp }: { exp: ExperienceCard }) {
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>{exp.area}</p>
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#9E9A94' }}>{exp.duration}</p>
         </div>
-        <h3 className="line-clamp-2 leading-snug" style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, color: '#111111', fontWeight: 600 }}>
+        <h3 className="line-clamp-2 leading-snug" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, color: '#111111', fontWeight: 600 }}>
           {exp.title}
         </h3>
         <div className="flex items-center gap-1 mt-2">
@@ -84,7 +84,7 @@ function ExperienceCard({ exp }: { exp: ExperienceCard }) {
           <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 700, color: '#111111' }}>{exp.rating}</span>
           <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>({exp.reviews})</span>
         </div>
-        <p className="mt-2" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>
+        <p className="mt-2" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 700, color: '#111111' }}>
           From <span style={{ color: '#C8A97E' }}>IDR</span> {exp.price.toLocaleString('id-ID')}
         </p>
       </div>
@@ -98,7 +98,7 @@ function HostCard({ host }: { host: typeof HOSTS[0] }) {
       <div className="relative overflow-hidden rounded-xl" style={{ height: 200 }}>
         <img src={host.photo} alt={host.name} className="w-full h-full object-cover" />
       </div>
-      <h3 className="mt-3" style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111' }}>{host.name}</h3>
+      <h3 className="mt-3" style={{ fontFamily: 'var(--font-inter)', fontSize: 16, fontWeight: 700, color: '#111111' }}>{host.name}</h3>
       <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>{host.role}, {host.location}</p>
       <p className="mt-2 line-clamp-2" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.6, fontStyle: 'italic' }}>
         &ldquo;{host.quote}&rdquo;
@@ -235,7 +235,7 @@ export default function HomeClient({ experiences, upcomingEvents }: { experience
         </div>
 
         <div className="absolute bottom-0 left-0 p-8 lg:p-16" style={{ maxWidth: 560 }}>
-          <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px, 4vw, 52px)', color: 'white', lineHeight: 1.1, fontWeight: 700, maxWidth: 420 }}>
+          <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px, 4vw, 58px)', color: 'white', lineHeight: 1.1, fontWeight: 700, maxWidth: 420 }}>
             Curated Experiences in Bali
           </h1>
           <p className="hidden sm:block mt-4" style={{ fontFamily: 'var(--font-inter)', fontSize: 16, color: 'rgba(255,255,255,0.8)', maxWidth: 380, lineHeight: 1.6 }}>
@@ -243,7 +243,7 @@ export default function HomeClient({ experiences, upcomingEvents }: { experience
           </p>
 
           {/* Search bar */}
-          <form onSubmit={handleSearch} className="flex items-center bg-white shadow-xl mt-6 lg:mt-8" style={{ maxWidth: 500, height: 52, borderRadius: 8 }}>
+          <form onSubmit={handleSearch} className="flex items-center bg-white shadow-xl mt-5 lg:mt-7" style={{ maxWidth: 500, height: 52, borderRadius: 8 }}>
             <div className="flex items-center gap-2 px-3 lg:px-4 flex-1 min-w-0">
               <Search size={15} style={{ color: '#6F675C', flexShrink: 0 }} />
               <input
@@ -292,6 +292,12 @@ export default function HomeClient({ experiences, upcomingEvents }: { experience
               Search
             </button>
           </form>
+          <p className="mt-3" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.65)' }}>
+            or{' '}
+            <a href="/search" style={{ color: 'rgba(255,255,255,0.9)', textDecoration: 'underline', textUnderlineOffset: 2 }}>
+              browse all experiences →
+            </a>
+          </p>
         </div>
       </section>
 
@@ -530,7 +536,7 @@ export default function HomeClient({ experiences, upcomingEvents }: { experience
             {WHY_ITEMS.map(({ Icon, title, body }) => (
               <div key={title}>
                 <Icon size={28} style={{ color: '#111111' }} strokeWidth={1.5} />
-                <h3 className="mt-3" style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 600, color: '#111111' }}>{title}</h3>
+                <h3 className="mt-3" style={{ fontFamily: 'var(--font-inter)', fontSize: 16, fontWeight: 600, color: '#111111' }}>{title}</h3>
                 <p className="mt-1.5" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.6 }}>{body}</p>
               </div>
             ))}
