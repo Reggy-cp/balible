@@ -592,6 +592,224 @@ export async function getUserData(): Promise<UserData | null> {
   }
 }
 
+// ── Admin panel data ──────────────────────────────────────────────────────────
+
+const COMMISSION_RATE = 0.10
+
+export type AdminStats = {
+  totalUsers: number; totalExperiences: number; totalBookings: number
+  totalRevenue: number; pendingListings: number; pendingHosts: number; activeHosts: number
+}
+
+export async function getAdminStatsAction(): Promise<AdminStats> {
+  try {
+    const [totalUsers, totalExperiences, totalBookings, rev, pendingListings, pendingHosts, activeHosts] = await Promise.all([
+      prisma.user.count({ where: { role: { not: 'ADMIN' as any } } }),
+      prisma.experience.count(),
+      prisma.booking.count(),
+      prisma.booking.aggregate({ _sum: { totalPrice: true } }),
+      prisma.experience.count({ where: { status: 'PENDING_REVIEW' as any } }),
+      prisma.operator.count({ where: { verified: false } }),
+      prisma.operator.count({ where: { verified: true } }),
+    ])
+    return { totalUsers, totalExperiences, totalBookings, totalRevenue: rev._sum.totalPrice ?? 0, pendingListings, pendingHosts, activeHosts }
+  } catch {
+    return { totalUsers: 0, totalExperiences: 0, totalBookings: 0, totalRevenue: 0, pendingListings: 0, pendingHosts: 0, activeHosts: 0 }
+  }
+}
+
+export type AdminExp = {
+  id: string; slug: string; title: string; host: string
+  area: string; category: string; price: number
+  rating: number; reviews: number; bookings: number; status: string; image: string
+}
+
+export async function getAdminExperiencesAction(): Promise<AdminExp[]> {
+  try {
+    const rows = await prisma.experience.findMany({
+      include: {
+        operator: { include: { user: { select: { name: true } } } },
+        _count: { select: { bookings: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    })
+    const statusDisplay: Record<string, string> = { ACTIVE: 'Active', DRAFT: 'Draft', PENDING_REVIEW: 'Pending Review', PAUSED: 'Paused' }
+    return rows.map(r => ({
+      id: r.id, slug: r.slug, title: r.title,
+      host: r.operator.user.name,
+      area: AREA_DISPLAY[String(r.area)] ?? String(r.area),
+      category: CATEGORY_DISPLAY[String(r.category)] ?? String(r.category),
+      price: r.price, rating: r.rating, reviews: r.totalReviews, bookings: r._count.bookings,
+      status: statusDisplay[String(r.status)] ?? 'Draft',
+      image: (r.images as string[])[0] ?? '',
+    }))
+  } catch { return [] }
+}
+
+export async function adminUpdateExperienceStatusAction(id: string, status: string): Promise<{ ok: boolean }> {
+  try { await prisma.experience.update({ where: { id }, data: { status: status as any } }); return { ok: true } }
+  catch { return { ok: false } }
+}
+
+export type AdminHost = {
+  id: string; name: string; business: string; area: string
+  experiences: number; totalBookings: number; totalEarnings: number
+  rating: number; status: string; joined: string
+}
+
+export async function getAdminHostsAction(): Promise<AdminHost[]> {
+  try {
+    const rows = await prisma.operator.findMany({
+      include: {
+        user: { select: { name: true, createdAt: true } },
+        experiences: {
+          include: { _count: { select: { bookings: true } }, bookings: { select: { totalPrice: true } } },
+        },
+      },
+      orderBy: { user: { createdAt: 'asc' } },
+    })
+    return rows.map(r => {
+      const totalBookings = r.experiences.reduce((a, e) => a + e._count.bookings, 0)
+      const totalEarnings = r.experiences.reduce((a, e) => a + (e.bookings as { totalPrice: number }[]).reduce((s, b) => s + b.totalPrice, 0), 0)
+      const area = r.experiences[0]?.area ? (AREA_DISPLAY[String(r.experiences[0].area)] ?? String(r.experiences[0].area)) : '—'
+      return {
+        id: r.id, name: r.user.name, business: r.businessName, area,
+        experiences: r.experiences.length, totalBookings, totalEarnings,
+        rating: r.rating, status: r.verified ? 'Verified' : 'Pending',
+        joined: r.user.createdAt.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+      }
+    })
+  } catch { return [] }
+}
+
+export async function approveHostAction(id: string): Promise<{ ok: boolean }> {
+  try { await prisma.operator.update({ where: { id }, data: { verified: true } }); return { ok: true } }
+  catch { return { ok: false } }
+}
+
+export async function suspendHostAction(id: string): Promise<{ ok: boolean }> {
+  try { await prisma.operator.update({ where: { id }, data: { verified: false } }); return { ok: true } }
+  catch { return { ok: false } }
+}
+
+export type AdminBooking = {
+  id: string; ref: string; guest: string; email: string
+  experience: string; host: string; date: string
+  guests: number; total: number; commission: number; status: string
+}
+
+export async function getAdminBookingsAction(): Promise<AdminBooking[]> {
+  try {
+    const rows = await prisma.booking.findMany({
+      include: {
+        experience: { include: { operator: { include: { user: { select: { name: true } } } } } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+    })
+    const statusDisplay: Record<string, string> = { CONFIRMED: 'Confirmed', PENDING: 'Pending', COMPLETED: 'Completed', CANCELLED: 'Cancelled' }
+    return rows.map((b, i) => ({
+      id: `B${String(i + 1).padStart(3, '0')}`,
+      ref: b.bookingRef,
+      guest: b.guestName, email: b.guestEmail,
+      experience: b.experience.title,
+      host: b.experience.operator.user.name,
+      date: b.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      guests: b.guests, total: b.totalPrice,
+      commission: Math.round(b.totalPrice * COMMISSION_RATE),
+      status: statusDisplay[String(b.status)] ?? 'Pending',
+    }))
+  } catch { return [] }
+}
+
+export async function adminUpdateBookingStatusAction(ref: string, status: string): Promise<{ ok: boolean }> {
+  try { await prisma.booking.update({ where: { bookingRef: ref }, data: { status: status as any } }); return { ok: true } }
+  catch { return { ok: false } }
+}
+
+export type AdminUser = {
+  id: string; name: string; email: string; role: string
+  bookings: number; totalSpend: number; joined: string; status: string
+}
+
+export async function getAdminUsersAction(): Promise<AdminUser[]> {
+  try {
+    const rows = await prisma.user.findMany({
+      where: { role: { not: 'ADMIN' as any } },
+      include: { bookings: { select: { totalPrice: true } }, _count: { select: { bookings: true } } },
+      orderBy: { createdAt: 'desc' },
+    })
+    return rows.map(u => ({
+      id: u.id, name: u.name, email: u.email, role: String(u.role),
+      bookings: u._count.bookings,
+      totalSpend: (u.bookings as { totalPrice: number }[]).reduce((a, b) => a + b.totalPrice, 0),
+      joined: u.createdAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      status: u.emailVerified ? 'Active' : 'Unverified',
+    }))
+  } catch { return [] }
+}
+
+export type AdminReview = {
+  id: string; guest: string; experience: string; host: string
+  rating: number; comment: string; date: string; status: string
+}
+
+export async function getAdminReviewsAction(): Promise<AdminReview[]> {
+  try {
+    const rows = await prisma.review.findMany({
+      include: {
+        user: { select: { name: true } },
+        experience: { include: { operator: { include: { user: { select: { name: true } } } } } },
+      },
+      orderBy: { createdAt: 'desc' },
+    })
+    return rows.map(r => ({
+      id: r.id, guest: r.user.name, experience: r.experience.title,
+      host: r.experience.operator.user.name,
+      rating: r.rating, comment: r.comment,
+      date: r.createdAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      status: 'Published',
+    }))
+  } catch { return [] }
+}
+
+export async function adminDeleteReviewAction(id: string): Promise<{ ok: boolean }> {
+  try { await prisma.review.delete({ where: { id } }); return { ok: true } }
+  catch { return { ok: false } }
+}
+
+export type AdminEvent = {
+  id: string; slug: string; title: string; host: string
+  date: string; location: string; price: number; capacity: number; status: string
+}
+
+export async function getAdminEventsAction(): Promise<AdminEvent[]> {
+  try {
+    const rows = await prisma.event.findMany({
+      include: { operator: { include: { user: { select: { name: true } } } } },
+      orderBy: { date: 'asc' },
+    })
+    const statusDisplay: Record<string, string> = { DRAFT: 'Draft', PUBLISHED: 'Published', CANCELLED: 'Cancelled' }
+    return rows.map(e => ({
+      id: e.id, slug: e.slug, title: e.title,
+      host: e.operator.user.name,
+      date: e.date.toISOString(),
+      location: e.location, price: e.price, capacity: e.capacity,
+      status: statusDisplay[String(e.status)] ?? 'Draft',
+    }))
+  } catch { return [] }
+}
+
+export async function adminUpdateEventStatusAction(id: string, status: string): Promise<{ ok: boolean }> {
+  try { await prisma.event.update({ where: { id }, data: { status: status as any } }); return { ok: true } }
+  catch { return { ok: false } }
+}
+
+export async function adminDeleteEventAction(id: string): Promise<{ ok: boolean }> {
+  try { await prisma.event.delete({ where: { id } }); return { ok: true } }
+  catch { return { ok: false } }
+}
+
 // ── Checkout experience lookup ────────────────────────────────────────────────
 
 export type ExpCheckoutMeta = { title: string; area: string; price: number; image: string; serviceFeeRate: number }

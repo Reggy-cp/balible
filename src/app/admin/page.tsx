@@ -12,6 +12,13 @@ import {
 import {
   getPendingListingsAction, approveListingAction, rejectListingAction, type PendingListing,
   createExperienceAction, getOperatorsAction, type CreateExperienceInput,
+  getAdminStatsAction, type AdminStats,
+  getAdminExperiencesAction, type AdminExp, adminUpdateExperienceStatusAction,
+  getAdminHostsAction, type AdminHost, approveHostAction, suspendHostAction,
+  getAdminBookingsAction, type AdminBooking, adminUpdateBookingStatusAction,
+  getAdminUsersAction, type AdminUser,
+  getAdminReviewsAction, type AdminReview, adminDeleteReviewAction,
+  getAdminEventsAction, type AdminEvent, adminUpdateEventStatusAction, adminDeleteEventAction,
 } from '@/lib/actions'
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
@@ -247,8 +254,23 @@ const RECENT_BOOKINGS = ALL_BOOKINGS.slice(0, 5)
 
 function OverviewPanel({ onNav }: { onNav: (id: string) => void }) {
   const [period, setPeriod] = useState('This Month')
+  const [stats, setStats]   = useState<AdminStats | null>(null)
+  const [recent, setRecent] = useState<AdminBooking[]>(RECENT_BOOKINGS)
+
+  useEffect(() => {
+    getAdminStatsAction().then(setStats)
+    getAdminBookingsAction().then(b => setRecent(b.slice(0, 5)))
+  }, [])
+
   const slice  = period === 'This Month' ? BOOKING_CHART.slice(6)  : BOOKING_CHART.slice(0, 6)
   const labels = period === 'This Month' ? MONTHS.slice(6)         : MONTHS.slice(0, 6)
+
+  const statCards = stats ? [
+    { label: 'Total Bookings',    value: stats.totalBookings.toLocaleString(),               change: '', up: true },
+    { label: 'Platform Revenue',  value: `IDR ${stats.totalRevenue.toLocaleString('id-ID')}`, change: '', up: true },
+    { label: 'Active Hosts',      value: stats.activeHosts.toString(),                        change: '', up: true },
+    { label: 'Total Experiences', value: stats.totalExperiences.toString(),                   change: '', up: true },
+  ] : PLATFORM_STATS
 
   return (
     <div>
@@ -268,14 +290,16 @@ function OverviewPanel({ onNav }: { onNav: (id: string) => void }) {
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-5">
-        {PLATFORM_STATS.map(s => (
+        {statCards.map(s => (
           <div key={s.label} className="bg-white rounded-xl p-4 lg:p-5" style={{ border: `1px solid ${SAND}` }}>
             <p style={{ fontSize: 12, color: COCONUT }}>{s.label}</p>
             <p className="mt-1" style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(14px,1.8vw,20px)', fontWeight: 700, color: CHARCOAL, lineHeight: 1.2 }}>{s.value}</p>
-            <p className="mt-1.5 flex items-center gap-1" style={{ fontSize: 11, color: s.up ? FOREST : TERRACOTTA }}>
-              {s.up ? <ArrowUpRight size={11} /> : <ArrowDownRight size={11} />}
-              {s.change} vs last month
-            </p>
+            {s.change && (
+              <p className="mt-1.5 flex items-center gap-1" style={{ fontSize: 11, color: s.up ? FOREST : TERRACOTTA }}>
+                {s.up ? <ArrowUpRight size={11} /> : <ArrowDownRight size={11} />}
+                {s.change} vs last month
+              </p>
+            )}
           </div>
         ))}
       </div>
@@ -323,8 +347,8 @@ function OverviewPanel({ onNav }: { onNav: (id: string) => void }) {
               </tr>
             </thead>
             <tbody>
-              {RECENT_BOOKINGS.map((b, i) => (
-                <tr key={b.id} style={{ borderBottom: i < RECENT_BOOKINGS.length - 1 ? `1px solid ${IVORY}` : 'none' }}>
+              {recent.map((b, i) => (
+                <tr key={b.id} style={{ borderBottom: i < recent.length - 1 ? `1px solid ${IVORY}` : 'none' }}>
                   <td style={{ padding: '12px 8px', fontSize: 12, color: COCONUT, fontFamily: 'var(--font-inter)' }}>{b.ref}</td>
                   <td style={{ padding: '12px 8px', fontSize: 13, fontWeight: 500, color: CHARCOAL }}>{b.guest}</td>
                   <td style={{ padding: '12px 8px', fontSize: 12, color: COCONUT, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.experience}</td>
@@ -339,12 +363,12 @@ function OverviewPanel({ onNav }: { onNav: (id: string) => void }) {
         </div>
       </div>
 
-      {/* Top experiences */}
+      {/* Action cards */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[
-          { label: 'Pending Approvals', value: '2', sub: 'Host applications', color: GOLD, action: () => onNav('hosts') },
-          { label: 'Flagged Reviews',   value: '1', sub: 'Needs moderation',   color: TERRACOTTA, action: () => onNav('reviews') },
-          { label: 'Pending Payouts',   value: fmt(PAYOUTS.filter(p => p.status === 'Pending').reduce((a, p) => a + p.net, 0)), sub: '2 hosts awaiting payout', color: FOREST, action: () => onNav('payments') },
+          { label: 'Pending Listings',  value: stats?.pendingListings.toString() ?? '—',  sub: 'Awaiting review', color: GOLD, action: () => onNav('experiences') },
+          { label: 'Pending Hosts',     value: stats?.pendingHosts.toString() ?? '—',     sub: 'Host applications', color: TERRACOTTA, action: () => onNav('hosts') },
+          { label: 'Pending Payouts',   value: fmt(PAYOUTS.filter(p => p.status === 'Pending').reduce((a, p) => a + p.net, 0)), sub: 'Awaiting payout', color: FOREST, action: () => onNav('payments') },
         ].map(card => (
           <button key={card.label} onClick={card.action}
             className="text-left bg-white rounded-xl p-4 hover:shadow-md transition-shadow cursor-pointer w-full"
@@ -685,11 +709,15 @@ function AddExperienceModal({ onClose, onSaved }: { onClose: () => void; onSaved
 function ExperiencesPanel() {
   const [filter, setFilter]     = useState('All')
   const [search, setSearch]     = useState('')
-  const [exps, setExps]         = useState(ALL_EXPERIENCES)
-  const [menuOpen, setMenuOpen] = useState<number | null>(null)
+  const [exps, setExps]         = useState<AdminExp[]>([])
+  const [menuOpen, setMenuOpen] = useState<string | null>(null)
   const [pending, setPending]   = useState<PendingListing[]>([])
   const [pendingLoaded, setPendingLoaded] = useState(false)
   const [addOpen, setAddOpen]   = useState(false)
+
+  useEffect(() => {
+    getAdminExperiencesAction().then(rows => setExps(rows.filter(e => e.status !== 'Pending Review')))
+  }, [])
 
   useEffect(() => {
     if (filter === 'Pending Review' && !pendingLoaded) {
@@ -700,6 +728,7 @@ function ExperiencesPanel() {
   const handleApprove = async (id: string) => {
     await approveListingAction(id)
     setPending(p => p.filter(x => x.id !== id))
+    getAdminExperiencesAction().then(rows => setExps(rows.filter(e => e.status !== 'Pending Review')))
   }
 
   const handleReject = async (id: string) => {
@@ -707,7 +736,12 @@ function ExperiencesPanel() {
     setPending(p => p.filter(x => x.id !== id))
   }
 
-  const setStatus = (id: number, s: string) => { setExps(p => p.map(e => e.id === id ? { ...e, status: s } : e)); setMenuOpen(null) }
+  const setStatus = async (id: string, s: string) => {
+    const toEnum: Record<string, string> = { Active: 'ACTIVE', Paused: 'PAUSED', Draft: 'DRAFT' }
+    await adminUpdateExperienceStatusAction(id, toEnum[s] ?? 'DRAFT')
+    setExps(p => p.map(e => e.id === id ? { ...e, status: s } : e))
+    setMenuOpen(null)
+  }
 
   const visible = useMemo(() => {
     if (filter === 'Pending Review') return []
@@ -901,10 +935,18 @@ function ExperiencesPanel() {
 function HostsPanel() {
   const [search, setSearch]   = useState('')
   const [filter, setFilter]   = useState('All')
-  const [hosts, setHosts]     = useState(ALL_HOSTS)
+  const [hosts, setHosts]     = useState<AdminHost[]>([])
 
-  const approve  = (id: number) => setHosts(h => h.map(x => x.id === id ? { ...x, status: 'Verified' } : x))
-  const suspend  = (id: number) => setHosts(h => h.map(x => x.id === id ? { ...x, status: 'Suspended' } : x))
+  useEffect(() => { getAdminHostsAction().then(setHosts) }, [])
+
+  const approve  = async (id: string) => {
+    await approveHostAction(id)
+    setHosts(h => h.map(x => x.id === id ? { ...x, status: 'Verified' } : x))
+  }
+  const suspend  = async (id: string) => {
+    await suspendHostAction(id)
+    setHosts(h => h.map(x => x.id === id ? { ...x, status: 'Pending' } : x))
+  }
 
   const visible = useMemo(() => {
     let list = filter === 'All' ? hosts : hosts.filter(h => h.status === filter)
@@ -1006,10 +1048,20 @@ function HostsPanel() {
 function BookingsPanel() {
   const [statusFilter, setStatusFilter] = useState('All')
   const [search, setSearch]             = useState('')
-  const [bookings, setBookings]         = useState(ALL_BOOKINGS)
+  const [bookings, setBookings]         = useState<AdminBooking[]>([])
 
-  const confirm = (id: string) => setBookings(p => p.map(b => b.id === id ? { ...b, status: 'Confirmed' } : b))
-  const cancel  = (id: string) => setBookings(p => p.map(b => b.id === id ? { ...b, status: 'Cancelled' } : b))
+  useEffect(() => { getAdminBookingsAction().then(setBookings) }, [])
+
+  const confirm = async (id: string) => {
+    const b = bookings.find(x => x.id === id)
+    if (b) await adminUpdateBookingStatusAction(b.ref, 'CONFIRMED')
+    setBookings(p => p.map(x => x.id === id ? { ...x, status: 'Confirmed' } : x))
+  }
+  const cancel  = async (id: string) => {
+    const b = bookings.find(x => x.id === id)
+    if (b) await adminUpdateBookingStatusAction(b.ref, 'CANCELLED')
+    setBookings(p => p.map(x => x.id === id ? { ...x, status: 'Cancelled' } : x))
+  }
 
   const visible = useMemo(() => {
     let list = statusFilter === 'All' ? bookings : bookings.filter(b => b.status === statusFilter)
@@ -1107,22 +1159,25 @@ function BookingsPanel() {
 
 function UsersPanel() {
   const [search, setSearch] = useState('')
+  const [users, setUsers]   = useState<AdminUser[]>([])
+
+  useEffect(() => { getAdminUsersAction().then(setUsers) }, [])
 
   const visible = useMemo(() => {
-    if (!search) return ALL_USERS
+    if (!search) return users
     const q = search.toLowerCase()
-    return ALL_USERS.filter(u => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.country.toLowerCase().includes(q))
-  }, [search])
+    return users.filter(u => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.role.toLowerCase().includes(q))
+  }, [users, search])
 
   return (
     <div>
-      <PageHeader title="Guests" sub={`${ALL_USERS.length} registered users`} />
+      <PageHeader title="Users" sub={`${users.length} registered users`} />
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
         {[
-          { label: 'Total Users', value: ALL_USERS.length.toString() },
-          { label: 'Active (booked)', value: ALL_USERS.filter(u => u.bookings > 0).length.toString() },
-          { label: 'Total Guest Spend', value: fmt(ALL_USERS.reduce((a, u) => a + u.totalSpend, 0)) },
+          { label: 'Total Users',      value: users.length.toString() },
+          { label: 'Active (booked)',  value: users.filter(u => u.bookings > 0).length.toString() },
+          { label: 'Total Guest Spend', value: fmt(users.reduce((a, u) => a + u.totalSpend, 0)) },
         ].map(s => (
           <div key={s.label} className="bg-white rounded-xl p-4" style={{ border: `1px solid ${SAND}` }}>
             <p style={{ fontSize: 11, color: COCONUT }}>{s.label}</p>
@@ -1140,7 +1195,7 @@ function UsersPanel() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead style={{ backgroundColor: IVORY }}>
               <tr>
-                {['Name', 'Email', 'Country', 'Bookings', 'Total Spent', 'Joined', 'Status'].map(h => (
+                {['Name', 'Email', 'Role', 'Bookings', 'Total Spent', 'Joined', 'Status'].map(h => (
                   <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: COCONUT, textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>{h}</th>
                 ))}
               </tr>
@@ -1157,7 +1212,7 @@ function UsersPanel() {
                     </div>
                   </td>
                   <td style={{ padding: '12px 16px', fontSize: 12, color: COCONUT }}>{u.email}</td>
-                  <td style={{ padding: '12px 16px', fontSize: 13, color: CHARCOAL }}>{u.country}</td>
+                  <td style={{ padding: '12px 16px', fontSize: 12, color: COCONUT, textTransform: 'capitalize' }}>{u.role.toLowerCase()}</td>
                   <td style={{ padding: '12px 16px', fontSize: 13, fontWeight: 600, color: CHARCOAL }}>{u.bookings}</td>
                   <td style={{ padding: '12px 16px', fontSize: 13, fontWeight: 600, color: u.totalSpend > 0 ? FOREST : COCONUT }}>{u.totalSpend > 0 ? fmt(u.totalSpend) : '—'}</td>
                   <td style={{ padding: '12px 16px', fontSize: 12, color: COCONUT }}>{u.joined}</td>
@@ -1176,9 +1231,14 @@ function UsersPanel() {
 
 function ReviewsPanel() {
   const [starFilter, setStarFilter] = useState(0)
-  const [reviews, setReviews]       = useState(ALL_REVIEWS)
+  const [reviews, setReviews]       = useState<AdminReview[]>([])
 
-  const remove = (id: string) => setReviews(r => r.filter(x => x.id !== id))
+  useEffect(() => { getAdminReviewsAction().then(setReviews) }, [])
+
+  const remove  = async (id: string) => {
+    await adminDeleteReviewAction(id)
+    setReviews(r => r.filter(x => x.id !== id))
+  }
   const approve = (id: string) => setReviews(r => r.map(x => x.id === id ? { ...x, status: 'Published' } : x))
 
   const flagged = reviews.filter(r => r.status === 'Flagged')
@@ -1411,10 +1471,19 @@ function AnalyticsPanel() {
 function EventsPanel() {
   const [filter, setFilter]   = useState('All')
   const [search, setSearch]   = useState('')
-  const [events, setEvents]   = useState(ALL_EVENTS)
+  const [events, setEvents]   = useState<AdminEvent[]>([])
 
-  const setStatus = (id: string, s: string) => setEvents(p => p.map(e => e.id === id ? { ...e, status: s } : e))
-  const remove    = (id: string) => setEvents(p => p.filter(e => e.id !== id))
+  useEffect(() => { getAdminEventsAction().then(setEvents) }, [])
+
+  const setStatus = async (id: string, s: string) => {
+    const toEnum: Record<string, string> = { Published: 'PUBLISHED', Draft: 'DRAFT', Cancelled: 'CANCELLED' }
+    await adminUpdateEventStatusAction(id, toEnum[s] ?? 'DRAFT')
+    setEvents(p => p.map(e => e.id === id ? { ...e, status: s } : e))
+  }
+  const remove    = async (id: string) => {
+    await adminDeleteEventAction(id)
+    setEvents(p => p.filter(e => e.id !== id))
+  }
 
   const visible = useMemo(() => {
     let list = filter === 'All' ? events : events.filter(e => e.status === filter)
@@ -1680,15 +1749,13 @@ function SettingsPanel() {
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 
-function AdminNotifBell({ onNavigate, align = 'left', dark = false }: { onNavigate: (section: string) => void; align?: 'left' | 'right'; dark?: boolean }) {
-  const pendingHosts   = ALL_HOSTS.filter(h => h.status === 'Pending').length
-  const flaggedReviews = ALL_REVIEWS.filter(r => r.status === 'Flagged').length
+function AdminNotifBell({ onNavigate, align = 'left', dark = false, pendingHosts = 0, pendingListings = 0 }: { onNavigate: (section: string) => void; align?: 'left' | 'right'; dark?: boolean; pendingHosts?: number; pendingListings?: number }) {
   const [notifOpen, setNotifOpen] = useState(false)
-  const unreadCount = pendingHosts + flaggedReviews
+  const unreadCount = pendingHosts + pendingListings
 
   const adminNotifs = [
-    ...(pendingHosts > 0   ? [{ id: 'hosts',   title: `${pendingHosts} host application${pendingHosts > 1 ? 's' : ''} pending`, body: 'New hosts are waiting for approval',    action: 'hosts',    dot: TERRACOTTA }] : []),
-    ...(flaggedReviews > 0 ? [{ id: 'reviews', title: `${flaggedReviews} review${flaggedReviews > 1 ? 's' : ''} flagged`,       body: 'Flagged content needs your attention', action: 'reviews',  dot: TERRACOTTA }] : []),
+    ...(pendingListings > 0 ? [{ id: 'listings', title: `${pendingListings} listing${pendingListings > 1 ? 's' : ''} pending review`, body: 'New listings need your approval', action: 'experiences', dot: GOLD }] : []),
+    ...(pendingHosts > 0    ? [{ id: 'hosts',    title: `${pendingHosts} host application${pendingHosts > 1 ? 's' : ''} pending`,     body: 'New hosts are waiting for approval', action: 'hosts', dot: TERRACOTTA }] : []),
     { id: 'sys', title: 'Platform running normally', body: 'No critical issues detected', action: 'overview', dot: '#4A7C59' },
   ]
 
@@ -1739,9 +1806,7 @@ function AdminNotifBell({ onNavigate, align = 'left', dark = false }: { onNaviga
   )
 }
 
-function Sidebar({ activeNav, setActiveNav }: { activeNav: string; setActiveNav: (id: string) => void }) {
-  const pendingHosts   = ALL_HOSTS.filter(h => h.status === 'Pending').length
-  const flaggedReviews = ALL_REVIEWS.filter(r => r.status === 'Flagged').length
+function Sidebar({ activeNav, setActiveNav, pendingHosts = 0, pendingListings = 0 }: { activeNav: string; setActiveNav: (id: string) => void; pendingHosts?: number; pendingListings?: number }) {
   return (
     <>
       <div className="flex items-center justify-between px-5 pt-6 pb-4">
@@ -1767,7 +1832,7 @@ function Sidebar({ activeNav, setActiveNav }: { activeNav: string; setActiveNav:
       <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
         {NAV_ITEMS.map(({ id, label, Icon }) => {
           const active = activeNav === id
-          const badge = id === 'hosts' ? pendingHosts : id === 'reviews' ? flaggedReviews : 0
+          const badge = id === 'hosts' ? pendingHosts : id === 'experiences' ? pendingListings : 0
           return (
             <button key={id} onClick={() => setActiveNav(id)}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all hover:bg-white/5"
@@ -1798,6 +1863,12 @@ function Sidebar({ activeNav, setActiveNav }: { activeNav: string; setActiveNav:
 export default function AdminPage() {
   const [activeNav, setActiveNav]     = useState('overview')
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [pendingHosts, setPendingHosts]         = useState(0)
+  const [pendingListings, setPendingListings]   = useState(0)
+
+  useEffect(() => {
+    getAdminStatsAction().then(s => { setPendingHosts(s.pendingHosts); setPendingListings(s.pendingListings) })
+  }, [])
 
   const renderPanel = () => {
     switch (activeNav) {
@@ -1828,7 +1899,7 @@ export default function AdminPage() {
               style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
               <X size={18} style={{ color: 'rgba(255,255,255,0.6)' }} />
             </button>
-            <Sidebar activeNav={activeNav} setActiveNav={id => { setActiveNav(id); setSidebarOpen(false) }} />
+            <Sidebar activeNav={activeNav} setActiveNav={id => { setActiveNav(id); setSidebarOpen(false) }} pendingHosts={pendingHosts} pendingListings={pendingListings} />
           </aside>
         </div>
       )}
@@ -1836,7 +1907,7 @@ export default function AdminPage() {
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex flex-col flex-shrink-0"
         style={{ width: 240, backgroundColor: CHARCOAL, minHeight: '100vh', position: 'sticky', top: 0, height: '100vh' }}>
-        <Sidebar activeNav={activeNav} setActiveNav={setActiveNav} />
+        <Sidebar activeNav={activeNav} setActiveNav={setActiveNav} pendingHosts={pendingHosts} pendingListings={pendingListings} />
       </aside>
 
       {/* Main */}
@@ -1849,7 +1920,7 @@ export default function AdminPage() {
           <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL }}>
             {NAV_ITEMS.find(n => n.id === activeNav)?.label ?? 'Dashboard'}
           </span>
-          <AdminNotifBell onNavigate={setActiveNav} align="right" dark />
+          <AdminNotifBell onNavigate={setActiveNav} align="right" dark pendingHosts={pendingHosts} pendingListings={pendingListings} />
         </div>
 
         {renderPanel()}
