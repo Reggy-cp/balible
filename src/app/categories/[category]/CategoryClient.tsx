@@ -340,16 +340,16 @@ export default function CategoryClient({
             ))}
           </div>
           {/* Search bar */}
-          <div className="relative pb-3">
-            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: '#6F675C' }} />
+          <div className="relative mb-3" style={{ height: 42 }}>
+            <Search size={15} className="absolute pointer-events-none" style={{ color: '#6F675C', left: 14, top: 13 }} />
             <input
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder={`Search ${meta.label} experiences…`}
               style={{
-                width: '100%', height: 42, paddingLeft: 44, paddingRight: search ? 40 : 16,
-                borderRadius: 10, border: '1px solid #E8E4DE', backgroundColor: '#F5F1EB',
+                width: '100%', height: 42, paddingLeft: 40, paddingRight: search ? 40 : 16,
+                borderRadius: 10, border: '1px solid #E8E4DE', backgroundColor: 'white',
                 fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111',
                 outline: 'none', boxSizing: 'border-box',
               }}
@@ -357,8 +357,8 @@ export default function CategoryClient({
             {search && (
               <button
                 onClick={() => setSearch('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full hover:bg-stone-200 transition-colors"
-                style={{ border: 'none', background: 'none', cursor: 'pointer' }}
+                className="absolute w-6 h-6 flex items-center justify-center rounded-full hover:bg-stone-100 transition-colors"
+                style={{ border: 'none', background: 'none', cursor: 'pointer', right: 10, top: 8 }}
               >
                 <X size={14} style={{ color: '#6F675C' }} />
               </button>
