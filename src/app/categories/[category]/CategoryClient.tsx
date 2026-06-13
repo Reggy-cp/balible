@@ -155,30 +155,52 @@ function ExperienceCard({
       className="group block bg-white overflow-hidden hover:shadow-lg transition-all duration-200"
       style={{ border: '1px solid #E8E4DE', textDecoration: 'none', borderRadius: 16 }}
     >
-      {/* ── Mobile layout (explore style, 2-col) ── */}
-      <div className="md:hidden">
-        <div className="relative overflow-hidden" style={{ height: 140, borderRadius: '16px 16px 0 0' }}>
-          <img src={exp.image} alt={exp.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-          {exp.badge && (
-            <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full" style={{ backgroundColor: '#C8A97E', color: 'white', fontSize: 10, fontWeight: 600, fontFamily: 'var(--font-inter)' }}>
-              {exp.badge}
+      {/* ── Mobile layout (search-style horizontal row) ── */}
+      <div className="md:hidden flex gap-3 p-3">
+        <div className="relative flex-shrink-0 overflow-hidden rounded-lg" style={{ width: 100, height: 100 }}>
+          <img src={exp.image} alt={exp.title} className="w-full h-full object-cover" />
+          <button
+            onClick={e => { e.preventDefault(); onWishlist() }}
+            className="absolute top-1.5 right-1.5 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-sm"
+            aria-label="Add to wishlist"
+          >
+            <Heart size={11} fill={wishlisted ? '#ef4444' : 'none'} color={wishlisted ? '#ef4444' : '#111111'} />
+          </button>
+          {exp.subcategory && (
+            <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded" style={{ backgroundColor: 'rgba(0,0,0,0.55)', color: 'white', fontSize: 10, fontWeight: 600, fontFamily: 'var(--font-inter)' }}>
+              {exp.subcategory}
             </span>
           )}
-          {wishlistBtn}
         </div>
-        <div className="p-3">
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 10, color: '#6F675C' }}>{exp.area}</p>
-          <h3 className="line-clamp-2 leading-snug mt-0.5" style={{ fontFamily: 'var(--font-playfair)', fontSize: 13, fontWeight: 600, color: '#111111' }}>
-            {exp.title}
-          </h3>
-          <div className="flex items-center gap-1 mt-1.5">
-            <Star size={10} fill="#C8A97E" color="#C8A97E" />
-            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 700, color: '#111111' }}>{exp.rating.toFixed(1)}</span>
-            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>({exp.reviews})</span>
+        <div className="flex flex-col justify-between flex-1 min-w-0 py-0.5">
+          <div>
+            <h3 className="leading-snug line-clamp-2" style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 600, color: '#111111' }}>
+              {exp.title}
+            </h3>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1">
+              <div className="flex items-center gap-1">
+                <MapPin size={10} style={{ color: '#6F675C' }} />
+                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>{exp.area}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Star size={10} fill="#C8A97E" color="#C8A97E" />
+                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 700, color: '#111111' }}>{exp.rating.toFixed(1)}</span>
+                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>({exp.reviews})</span>
+              </div>
+              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>⏱ {exp.duration}</span>
+            </div>
           </div>
-          <p className="mt-1.5" style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 700, color: '#111111' }}>
-            <span style={{ color: '#C8A97E' }}>IDR</span> {exp.price.toLocaleString('id-ID')}
-          </p>
+          <div className="flex items-center justify-between mt-2">
+            <div>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>
+                From <span style={{ color: '#C8A97E', fontWeight: 600 }}>IDR</span> <span style={{ fontWeight: 600 }}>{exp.price.toLocaleString('id-ID')}</span>
+              </p>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#4A7C59', marginTop: 1 }}>✓ Free cancellation</p>
+            </div>
+            <span className="px-3 py-1 rounded-full" style={{ backgroundColor: '#111111', color: 'white', fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 500 }}>
+              Book →
+            </span>
+          </div>
         </div>
       </div>
 
@@ -456,7 +478,7 @@ export default function CategoryClient({
         </div>
 
         {results.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-5">
             {results.map(exp => (
               <ExperienceCard
                 key={exp.slug}
