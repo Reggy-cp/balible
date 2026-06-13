@@ -1,5 +1,4 @@
 import SignUpForm from '@/components/SignUpForm'
-import Link from 'next/link'
 
 export default function TravelerSignUpPage() {
   return (
@@ -11,14 +10,7 @@ export default function TravelerSignUpPage() {
       heading="Create your traveler account"
       submitLabel="Create account"
       redirectTo="/"
-      switchLink={
-        <>
-          Want to host?{' '}
-          <Link href="/sign-up/host" style={{ color: '#111111', fontWeight: 600, textDecoration: 'none' }}>
-            Sign up as a Host →
-          </Link>
-        </>
-      }
+      switchLink={null}
     />
   )
 }

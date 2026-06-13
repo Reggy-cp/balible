@@ -30,7 +30,7 @@ interface Props {
   /** Where to redirect after successful signup */
   redirectTo: string
   /** Small link shown at bottom of form */
-  switchLink: React.ReactNode
+  switchLink: React.ReactNode | null
 }
 
 export default function SignUpForm({ role, panelBg, headline, subCopy, heading, submitLabel, redirectTo, switchLink }: Props) {
@@ -158,7 +158,7 @@ export default function SignUpForm({ role, panelBg, headline, subCopy, heading, 
             Already have an account?{' '}
             <Link href="/sign-in" style={{ color: '#111111', fontWeight: 600, textDecoration: 'none' }}>Sign in →</Link>
           </p>
-          <p style={{ fontSize: 13, color: '#9E9A94', marginTop: 8, textAlign: 'center' }}>{switchLink}</p>
+          {switchLink && <p style={{ fontSize: 13, color: '#9E9A94', marginTop: 8, textAlign: 'center' }}>{switchLink}</p>}
         </div>
       </div>
     </div>
