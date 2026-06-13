@@ -3,7 +3,7 @@ import { Resend } from 'resend'
 // Without RESEND_API_KEY all senders no-op so subscribe/booking flows never break.
 // Until a domain is verified in Resend, EMAIL_FROM must stay on onboarding@resend.dev
 // and delivery only works to the Resend account owner's address (test mode).
-const FROM = process.env.EMAIL_FROM ?? 'Balible <onboarding@resend.dev>'
+const FROM = process.env.EMAIL_FROM ?? 'Balible <hello@balible.com>'
 
 let resend: Resend | null = null
 function getClient(): Resend | null {
