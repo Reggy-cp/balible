@@ -17,6 +17,7 @@ const CATEGORY_DISPLAY: Record<string, string> = {
   FOOD_DRINK: 'Culinary', NATURE: 'Nature & Outdoors', ARCHITECTURE: 'Architecture',
   SURF_WATER: 'Water Activities', DIVING: 'Diving', COOKING: 'Cooking',
   LOCAL_EXPERTS: 'Local Experts',
+  RENTALS: 'Rentals',
 }
 
 async function getExperiences() {

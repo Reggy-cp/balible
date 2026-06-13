@@ -5,7 +5,7 @@ import Footer from '@/components/Footer'
 
 export const metadata = {
   title: 'Browse by Category — Balible',
-  description: 'Explore Bali through 8 categories of curated experiences — art & craft, wellness, culture, spiritual, food, nature, water activities, and local experts.',
+  description: 'Explore Bali through 9 categories — art & craft, wellness, culture, spiritual, food, nature, water activities, local experts, and rentals.',
 }
 
 const CATEGORIES = [
@@ -113,6 +113,19 @@ const CATEGORIES = [
     span: 'lg:col-span-2',
     imageHeight: 'h-48',
   },
+  {
+    slug: 'rentals',
+    label: 'Rentals',
+    tagline: 'Everything you need, ready to go',
+    description: 'Scooters, motorbikes, bicycles, e-bikes, villas, workspaces, studios, surfboards, camping gear, and dive equipment — from trusted local owners at honest prices.',
+    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&auto=format&fit=crop&q=80',
+    count: 10,
+    avgPrice: 320000,
+    featured: ['Scooter Rental', 'Private Pool Villa', 'Surfboard Rental'],
+    accent: '#D97706',
+    span: 'lg:col-span-2',
+    imageHeight: 'h-48',
+  },
 ]
 
 function formatIDR(n: number) {
@@ -138,7 +151,7 @@ export default function CategoriesPage() {
               Every way to experience Bali
             </h1>
             <p style={{ fontFamily: 'var(--font-inter)', fontSize: 16, color: '#6F675C', marginTop: 16, lineHeight: 1.75, maxWidth: 520 }}>
-              {totalExperiences} handpicked experiences across 8 categories — art, wellness, culture, spiritual, culinary, nature, water activities, and local experts. Each one led by a local who knows their craft.
+              {totalExperiences} handpicked listings across 9 categories — art, wellness, culture, spiritual, culinary, nature, water activities, local experts, and rentals. Each one led by a local who knows their craft.
             </p>
           </div>
 
@@ -159,7 +172,7 @@ export default function CategoriesPage() {
         <div className="flex flex-wrap gap-8 mt-10 pt-8" style={{ borderTop: '1px solid #E8E4DE' }}>
           {[
             { value: `${totalExperiences}+`, label: 'curated experiences' },
-            { value: '8',   label: 'categories' },
+            { value: '9',   label: 'categories' },
             { value: '4.8', label: 'average rating' },
             { value: '10+', label: 'areas of Bali' },
           ].map(({ value, label }) => (

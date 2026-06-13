@@ -113,9 +113,17 @@ const CATEGORY_META: Record<string, {
     color: '#34657F',
     subcategories: ['All', 'Photographers', 'Guides', 'Wellness Practitioners', 'Childcare', 'Pet Care', 'Creative Mentors', 'Drivers'],
   },
+  rentals: {
+    label: 'Rentals',
+    tagline: 'Everything you need, ready to go',
+    description: "Rent scooters, bikes, surfboards, villas, workspaces, and adventure gear from trusted local owners. Skip the tourist traps — get the right kit for your trip at honest prices.",
+    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&auto=format&fit=crop&q=80',
+    color: '#D97706',
+    subcategories: ['All', 'Scooter', 'Motorbike', 'Bicycle', 'E-Bike', 'Villa', 'Workspace', 'Studio', 'Surfboard', 'Camping Gear', 'Diving Equipment'],
+  },
 }
 
-const ALL_CATEGORY_SLUGS = ['art-craft', 'wellness', 'culture', 'nature', 'surf-water', 'diving', 'water-activities', 'culinary', 'spiritual', 'local-experts'] as const
+const ALL_CATEGORY_SLUGS = ['art-craft', 'wellness', 'culture', 'nature', 'surf-water', 'diving', 'water-activities', 'culinary', 'spiritual', 'local-experts', 'rentals'] as const
 // These are sub-categories hidden from the "Explore other categories" strip
 const SUB_CATEGORY_SLUGS = new Set(['surf-water', 'diving'])
 const SORT_OPTIONS = ['Most popular', 'Highest rated', 'Price: Low to High', 'Price: High to Low']

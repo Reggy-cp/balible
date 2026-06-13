@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useUser, UserButton } from '@clerk/nextjs'
 import {
   Menu, X, ChevronDown, LayoutDashboard,
-  Leaf, Scissors, Landmark, Mountain, Waves, ChefHat, Sun, Users,
+  Leaf, Scissors, Landmark, Mountain, Waves, ChefHat, Sun, Users, Bike,
 } from 'lucide-react'
 import NotificationBell from '@/components/NotificationBell'
 
@@ -18,6 +18,7 @@ const CATEGORIES = [
   { label: 'Nature & Outdoors', Icon: Mountain,  slug: 'nature' },
   { label: 'Water Activities',  Icon: Waves,     slug: 'water-activities' },
   { label: 'Local Experts',     Icon: Users,     slug: 'local-experts' },
+  { label: 'Rentals',           Icon: Bike,      slug: 'rentals' },
 ]
 
 const NAV_LINKS = [

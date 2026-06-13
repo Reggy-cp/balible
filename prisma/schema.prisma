@@ -237,6 +237,7 @@ enum Category {
   DIVING
   COOKING
   LOCAL_EXPERTS
+  RENTALS
 }
 
 enum Area {

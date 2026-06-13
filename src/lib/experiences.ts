@@ -42,6 +42,7 @@ const CATEGORY_DISPLAY: Record<string, string> = {
   DIVING: 'Water Activities',
   COOKING: 'Culinary',
   LOCAL_EXPERTS: 'Local Experts',
+  RENTALS: 'Rentals',
 }
 
 const CATEGORY_SLUG: Record<string, string> = {
@@ -55,6 +56,7 @@ const CATEGORY_SLUG: Record<string, string> = {
   DIVING: 'water-activities',
   COOKING: 'culinary',
   LOCAL_EXPERTS: 'local-experts',
+  RENTALS: 'rentals',
 }
 
 const AREA_DISPLAY: Record<string, string> = {

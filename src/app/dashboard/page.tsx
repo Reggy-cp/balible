@@ -614,7 +614,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                     <div>
                       <label style={labelStyle}>Category</label>
                       <select value={formData.category} onChange={e => setField('category', e.target.value)} style={{ ...inputStyle, backgroundColor: 'white', cursor: 'pointer' }}>
-                        {['Art & Craft','Wellness & Healing','Culture','Culinary','Spiritual','Nature & Outdoors','Water Activities'].map(c => <option key={c}>{c}</option>)}
+                        {['Art & Craft','Wellness & Healing','Culture','Culinary','Spiritual','Nature & Outdoors','Water Activities','Local Experts','Rentals'].map(c => <option key={c}>{c}</option>)}
                       </select>
                     </div>
                     <div>

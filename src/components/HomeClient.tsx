@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import {
   Heart, Search, CalendarDays, MapPin, X,
   Leaf, Scissors, Landmark, ChefHat, Sun,
-  Mountain, Waves, Grid3x3, Star, ShieldCheck, Users, Sparkles,
+  Mountain, Waves, Grid3x3, Star, ShieldCheck, Users, Sparkles, Bike,
   Instagram, Facebook, Twitter,
 } from 'lucide-react'
 import Navbar from '@/components/Navbar'
@@ -27,6 +27,7 @@ const CAT_GRID = [
   { label: 'Spiritual',    Icon: Sun,        href: '/categories/spiritual',  photo: 'https://images.unsplash.com/photo-1516690561799-46d8f74f9abf?w=400&auto=format&fit=crop&q=80' },
   { label: 'Water Activities', Icon: Waves,  href: '/categories/water-activities', photo: 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=400&auto=format&fit=crop&q=80' },
   { label: 'Local Experts', Icon: Users,     href: '/categories/local-experts', photo: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&auto=format&fit=crop&q=80' },
+  { label: 'Rentals',       Icon: Bike,      href: '/categories/rentals',       photo: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&auto=format&fit=crop&q=80' },
 ]
 
 const WHY_ITEMS = [
@@ -564,7 +565,7 @@ export default function HomeClient({ experiences, upcomingEvents, featuredServic
           <h2 className="mb-8" style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#111111', fontWeight: 700 }}>
             Explore by Category
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4">
             {CAT_GRID.map(({ label, Icon, href, photo }) => (
               <a
                 key={label}
