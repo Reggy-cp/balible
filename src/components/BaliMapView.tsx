@@ -28,16 +28,18 @@ export const MAP_EXPERIENCES = [
   { id: 12, slug: 'rice-terrace-walk',          title: 'Tegalalang Rice Terrace Walk',   category: 'Nature & Outdoors', area: 'Ubud',    lat: -8.4316,  lng: 115.2791, price: 280000, rating: 4.8, reviews: 192, duration: '2.5 hrs', image: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=400&auto=format&fit=crop&q=80' },
 ]
 
-const CATEGORIES = ['All', 'Art & Craft', 'Wellness & Healing', 'Culture', 'Culinary', 'Spiritual', 'Nature & Outdoors', 'Water Activities']
+const CATEGORIES = ['All', 'Art & Craft', 'Wellness & Healing', 'Culture', 'Culinary', 'Spiritual', 'Nature & Outdoors', 'Water Activities', 'Local Experts', 'Rentals']
 
 const CAT_COLORS: Record<string, string> = {
-  'Art & Craft':       '#C8A97E',
-  'Wellness & Healing':'#4A7C59',
-  'Culture':         '#8B6E9E',
-  'Culinary':        '#B66A45',
-  'Spiritual':       '#D4842A',
-  'Nature & Outdoors': '#6B8F3E',
-  'Water Activities': '#3B82C4',
+  'Art & Craft':        '#C8A97E',
+  'Wellness & Healing': '#4A7C59',
+  'Culture':            '#8B6E9E',
+  'Culinary':           '#B66A45',
+  'Spiritual':          '#D4842A',
+  'Nature & Outdoors':  '#6B8F3E',
+  'Water Activities':   '#3B82C4',
+  'Local Experts':      '#34657F',
+  'Rentals':            '#D97706',
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

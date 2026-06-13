@@ -183,7 +183,7 @@ const AREA_TO_ENUM: Record<string, string> = {
   'Ubud': 'UBUD', 'Canggu': 'CANGGU', 'Kuta': 'KUTA', 'Seminyak': 'SEMINYAK',
   'Uluwatu': 'ULUWATU', 'Gianyar': 'GIANYAR', 'Sanur': 'SANUR',
   'Nusa Dua': 'NUSA_DUA', 'Amed': 'AMED', 'Jimbaran': 'JIMBARAN',
-  'Kintamani': 'KINTAMANI', 'Sidemen': 'AMED',
+  'Kintamani': 'KINTAMANI', 'Sidemen': 'SIDEMEN', 'Medewi': 'MEDEWI',
 }
 
 export type HostListingInput = {

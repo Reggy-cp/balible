@@ -87,6 +87,9 @@ const AREA_COORDS: Record<string, [number, number]> = {
   'Amed':      [-8.3428, 115.6478],
   'Sanur':     [-8.7059, 115.2619],
   'Nusa Dua':  [-8.7900, 115.2300],
+  'Kintamani': [-8.2385, 115.3757],
+  'Sidemen':   [-8.4791, 115.4549],
+  'Medewi':    [-8.4724, 114.8493],
 }
 
 const MONTHLY_EARNINGS = [3200000, 2800000, 4100000, 3600000, 4800000, 5200000, 4400000, 5800000, 5100000, 6200000, 5700000, 7400000]
@@ -642,7 +645,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                     <div>
                       <label style={labelStyle}>Area</label>
                       <select value={formData.area} onChange={e => setField('area', e.target.value)} style={{ ...inputStyle, backgroundColor: 'white', cursor: 'pointer' }}>
-                        {['Ubud','Canggu','Kuta','Seminyak','Uluwatu','Gianyar','Sanur','Nusa Dua','Amed','Jimbaran'].map(a => <option key={a}>{a}</option>)}
+                        {['Ubud','Canggu','Kuta','Seminyak','Uluwatu','Gianyar','Sanur','Nusa Dua','Amed','Jimbaran','Kintamani','Sidemen','Medewi'].map(a => <option key={a}>{a}</option>)}
                       </select>
                     </div>
                   </div>
@@ -1280,7 +1283,7 @@ function ProfilePanel() {
               <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Primary Area</label>
               <select value={profile.area} onChange={set('area')}
                 style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none', backgroundColor: 'white', cursor: 'pointer' }}>
-                {['Ubud','Canggu','Kuta','Seminyak','Uluwatu','Gianyar','Sanur'].map(a => <option key={a}>{a}</option>)}
+                {['Ubud','Canggu','Kuta','Seminyak','Uluwatu','Gianyar','Sanur','Nusa Dua','Amed','Jimbaran','Kintamani','Sidemen','Medewi'].map(a => <option key={a}>{a}</option>)}
               </select>
             </div>
             <div>
