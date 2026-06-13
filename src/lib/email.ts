@@ -45,6 +45,42 @@ function layout(body: string) {
 </html>`
 }
 
+export async function sendVerificationEmail(to: string, token: string): Promise<{ sent: boolean }> {
+  const client = getClient()
+  if (!client) {
+    console.warn('[email] RESEND_API_KEY not set — skipping verification email to', to)
+    return { sent: false }
+  }
+  const appUrl = process.env.NEXTAUTH_URL ?? 'https://balible.com'
+  const verifyUrl = `${appUrl}/verify-email?token=${token}`
+  try {
+    await client.emails.send({
+      from: FROM,
+      to,
+      subject: 'Verify your Balible account',
+      html: layout(`
+        <h1 style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:24px;color:${BRAND.ink};">Verify your email</h1>
+        <p style="margin:0 0 24px;font-size:15px;color:${BRAND.muted};line-height:1.7;">
+          Thanks for joining Balible! Click the button below to verify your email address and activate your account.
+        </p>
+        <a href="${verifyUrl}" style="display:inline-block;padding:14px 28px;background-color:${BRAND.ink};color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;border-radius:10px;">
+          Verify my email →
+        </a>
+        <p style="margin:28px 0 0;font-size:13px;color:${BRAND.muted};line-height:1.6;">
+          This link expires in 24 hours. If you didn't create a Balible account, you can safely ignore this email.
+        </p>
+        <p style="margin:16px 0 0;font-size:12px;color:#9E9A94;line-height:1.6;word-break:break-all;">
+          Can't click? Copy this link: ${verifyUrl}
+        </p>
+      `),
+    })
+    return { sent: true }
+  } catch (err) {
+    console.error('[email] verification email failed:', err)
+    return { sent: false }
+  }
+}
+
 export async function sendNewsletterWelcome(to: string): Promise<{ sent: boolean }> {
   const client = getClient()
   if (!client) {
