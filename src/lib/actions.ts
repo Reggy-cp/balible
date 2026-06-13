@@ -1,7 +1,7 @@
 'use server'
 
 import { prisma } from './prisma'
-import { getOrCreateNeonUser } from './user'
+import { getSessionUser } from './user'
 import { createSnapTransaction } from './midtrans'
 import { SERVICE_FEE_RATE, computeBookingTotal } from './pricing'
 import { createNotification } from './notifications'
@@ -28,7 +28,7 @@ export async function toggleWishlistAction(
   slug: string,
 ): Promise<{ ok: boolean; saved: boolean; wishlistSlugs: string[] }> {
   try {
-    const user = await getOrCreateNeonUser()
+    const user = await getSessionUser()
     if (!user) return { ok: false, saved: false, wishlistSlugs: [] }
 
     const current: string[] = user.wishlistSlugs ?? []
@@ -48,7 +48,7 @@ export async function toggleWishlistAction(
 
 export async function getUserWishlist(): Promise<string[]> {
   try {
-    const user = await getOrCreateNeonUser()
+    const user = await getSessionUser()
     if (!user) return []
     const row = await prisma.user.findUnique({
       where: { id: user.id },
@@ -75,7 +75,7 @@ export async function createBookingAction(
   input: CreateBookingInput,
 ): Promise<{ ok: boolean; bookingRef?: string; snapToken?: string; error?: string }> {
   try {
-    const user = await getOrCreateNeonUser()
+    const user = await getSessionUser()
     if (!user) return { ok: false, error: 'Please sign in to complete your booking.' }
 
     const exp = await prisma.experience.findUnique({ where: { slug: input.slug } })
@@ -133,7 +133,7 @@ export async function createReviewAction(input: {
   comment: string
 }): Promise<{ ok: boolean }> {
   try {
-    const user = await getOrCreateNeonUser()
+    const user = await getSessionUser()
     if (!user) return { ok: false }
 
     const exp = await prisma.experience.findUnique({ where: { slug: input.slug } })
@@ -203,7 +203,7 @@ export type HostListingInput = {
 }
 
 async function getOrCreateOperator(businessName: string) {
-  const user = await getOrCreateNeonUser()
+  const user = await getSessionUser()
   if (!user) return null
   const existing = await prisma.operator.findUnique({ where: { userId: user.id } })
   if (existing) return existing
@@ -365,7 +365,7 @@ export async function updateExperienceStatusAction(
   status: 'ACTIVE' | 'PAUSED' | 'DRAFT' | 'PENDING_REVIEW',
 ): Promise<{ ok: boolean }> {
   try {
-    const user = await getOrCreateNeonUser()
+    const user = await getSessionUser()
     if (!user) return { ok: false }
     const operator = await prisma.operator.findUnique({ where: { userId: user.id } })
     if (!operator) return { ok: false }
@@ -379,7 +379,7 @@ export async function updateExperienceStatusAction(
 
 export async function deleteExperienceAction(slug: string): Promise<{ ok: boolean }> {
   try {
-    const user = await getOrCreateNeonUser()
+    const user = await getSessionUser()
     if (!user) return { ok: false }
     const operator = await prisma.operator.findUnique({ where: { userId: user.id } })
     if (!operator) return { ok: false }
@@ -390,7 +390,7 @@ export async function deleteExperienceAction(slug: string): Promise<{ ok: boolea
 
 export async function getHostExperiencesAction(): Promise<DashExp[] | null> {
   try {
-    const user = await getOrCreateNeonUser()
+    const user = await getSessionUser()
     if (!user) return null
     const operator = await prisma.operator.findUnique({ where: { userId: user.id } })
     if (!operator) return null
@@ -530,7 +530,7 @@ export type UserData = {
 
 export async function getUserData(): Promise<UserData | null> {
   try {
-    const user = await getOrCreateNeonUser()
+    const user = await getSessionUser()
     if (!user) return null
 
     const [fullUser, bookings, reviews] = await Promise.all([
@@ -678,7 +678,7 @@ export type HostDashboardData = {
 
 export async function getHostDashboardData(): Promise<HostDashboardData | null> {
   try {
-    const user = await getOrCreateNeonUser()
+    const user = await getSessionUser()
     if (!user) return null
 
     const operator = await prisma.operator.findUnique({

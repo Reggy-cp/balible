@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { Heart, Star, MapPin, Clock, Trash2, Search, Home, Map, User, SlidersHorizontal } from 'lucide-react'
-import { useUser } from '@clerk/nextjs'
+import { useSession } from 'next-auth/react'
 import Navbar from '@/components/Navbar'
 import WishlistHeart from '@/components/WishlistHeart'
 import MobileNav from '@/components/MobileNav'
@@ -109,7 +109,9 @@ function WishlistCard({ exp }: { exp: ExpWishlistMeta }) {
 const SORT_OPTIONS = ['Recommended', 'Price: Low to High', 'Price: High to Low', 'Top Rated']
 
 export default function WishlistPage() {
-  const { isSignedIn, isLoaded } = useUser()
+  const { status } = useSession()
+  const isLoaded = status !== 'loading'
+  const isSignedIn = status === 'authenticated'
   const [slugs, setSlugs]           = useState<string[]>([])
   const [expDetails, setExpDetails] = useState<ExpWishlistMeta[]>([])
   const [mounted, setMounted]       = useState(false)

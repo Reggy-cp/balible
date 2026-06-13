@@ -1,7 +1,7 @@
 'use server'
 
 import { prisma } from './prisma'
-import { getOrCreateNeonUser } from './user'
+import { getSessionUser } from './user'
 
 export type EventInput = {
   title: string
@@ -34,7 +34,7 @@ function toSlug(title: string): string {
 }
 
 async function getOperator() {
-  const user = await getOrCreateNeonUser()
+  const user = await getSessionUser()
   if (!user) return null
   return prisma.operator.findUnique({ where: { userId: user.id } })
 }

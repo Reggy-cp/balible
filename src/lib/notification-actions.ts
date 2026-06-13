@@ -1,7 +1,7 @@
 'use server'
 
 import { prisma } from './prisma'
-import { getOrCreateNeonUser } from './user'
+import { getSessionUser } from './user'
 
 export type NotificationRow = {
   id: string
@@ -15,7 +15,7 @@ export type NotificationRow = {
 
 export async function getMyNotifications(): Promise<{ notifications: NotificationRow[]; unread: number }> {
   try {
-    const user = await getOrCreateNeonUser()
+    const user = await getSessionUser()
     if (!user) return { notifications: [], unread: 0 }
     const [rows, unread] = await Promise.all([
       prisma.notification.findMany({
@@ -39,7 +39,7 @@ export async function getMyNotifications(): Promise<{ notifications: Notificatio
 
 export async function markMyNotificationsRead(): Promise<{ ok: boolean }> {
   try {
-    const user = await getOrCreateNeonUser()
+    const user = await getSessionUser()
     if (!user) return { ok: false }
     await prisma.notification.updateMany({
       where: { userId: user.id, read: false },

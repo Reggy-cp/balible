@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Heart } from 'lucide-react'
-import { useUser } from '@clerk/nextjs'
+import { useSession } from 'next-auth/react'
 import { toggleWishlistAction } from '@/lib/actions'
 
 const KEY = 'balible_wishlist'
@@ -20,7 +20,8 @@ export default function WishlistHeart({
   size?: number
   compact?: boolean
 }) {
-  const { isSignedIn } = useUser()
+  const { status } = useSession()
+  const isSignedIn = status === 'authenticated'
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {

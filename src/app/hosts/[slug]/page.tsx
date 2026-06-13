@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import { MapPin, Star, Clock, Users, Award, ChevronRight, CalendarDays, Ticket } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
@@ -425,7 +426,6 @@ export default async function HostPage({ params }: { params: { slug: string } })
   if (!host) notFound()
 
   const totalReviews = host.experiences.reduce((s, e) => s + e.reviews, 0)
-  const initials = host.name.split(' ').map(w => w[0]).join('').slice(0, 2)
 
   return (
     <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
@@ -437,18 +437,12 @@ export default async function HostPage({ params }: { params: { slug: string } })
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
 
             {/* Avatar */}
-            {host.avatar ? (
-              <img
-                src={host.avatar} alt={host.name}
-                className="rounded-2xl object-cover flex-shrink-0"
-                style={{ width: 96, height: 96 }}
-              />
-            ) : (
-              <div className="rounded-2xl flex items-center justify-center flex-shrink-0"
-                style={{ width: 96, height: 96, backgroundColor: '#C8A97E' }}>
-                <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 32, fontWeight: 700, color: 'white' }}>{initials}</span>
-              </div>
-            )}
+            <img
+              src={host.avatar ?? '/avatar-default.png'}
+              alt={host.name}
+              className="rounded-2xl object-cover flex-shrink-0"
+              style={{ width: 96, height: 96 }}
+            />
 
             {/* Info */}
             <div className="flex-1">

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { Playfair_Display, Inter } from 'next/font/google'
-import { ClerkProvider } from '@clerk/nextjs'
+import AuthProvider from '@/components/AuthProvider'
 import './globals.css'
 import ChatWidget from '@/components/ChatWidget'
 
@@ -46,13 +46,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider>
+    <AuthProvider>
       <html lang="en" className={`${playfair.variable} ${inter.variable}`}>
         <body>
           {children}
           <ChatWidget />
         </body>
       </html>
-    </ClerkProvider>
+    </AuthProvider>
   )
 }

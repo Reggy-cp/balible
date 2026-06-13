@@ -1,3 +1,5 @@
+import Image from 'next/image'
+
 const NAV_LINKS = [
   { label: 'Experiences',    href: '/search' },
   { label: 'Destinations',   href: '/destinations' },
@@ -16,7 +18,9 @@ export default function Footer() {
     <footer className="pt-10 px-6 pb-36 md:pb-8" style={{ backgroundColor: '#111111' }}>
       <div className="max-w-[1200px] mx-auto">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-          <a href="/" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: 'white', textDecoration: 'none' }}>BALIBLE</a>
+          <a href="/" style={{ textDecoration: 'none' }}>
+            <Image src="/logo-dark.png" alt="Balible" width={100} height={30} style={{ objectFit: 'contain', height: 30, width: 'auto' }} />
+          </a>
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
             {NAV_LINKS.map(({ label, href }) => (
               <a key={label} href={href} style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.5)', textDecoration: 'none' }} className="hover:text-white transition-colors">{label}</a>

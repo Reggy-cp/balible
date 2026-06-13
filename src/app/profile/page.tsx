@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react'
 import {
   User, Heart, CalendarDays, Settings, Star, MapPin, Clock,
-  Edit2, Camera, Check, ArrowRight, Home, Search, Map, X,
+  Edit2, Camera, Check, Home, Search, Map, X,
 } from 'lucide-react'
-import { useUser } from '@clerk/nextjs'
+import { useSession } from 'next-auth/react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
@@ -486,7 +486,7 @@ function lsp<T>(key: string, fallback: T): T {
   try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback } catch { return fallback }
 }
 
-function SettingsTab({ clerkName, clerkEmail }: { clerkName: string; clerkEmail: string }) {
+function SettingsTab({ clerkName, clerkEmail }: { clerkName: string; clerkEmail: string }) { // props kept for backward compat
   const EXTRA_DEFAULTS = { phone: '', nationality: '' }
   const [extra, setExtra]   = useState(EXTRA_DEFAULTS)
   const [notifs, setNotifs] = useState(PROFILE_NOTIF_DEFAULTS)
@@ -591,7 +591,9 @@ function SettingsTab({ clerkName, clerkEmail }: { clerkName: string; clerkEmail:
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function ProfilePage() {
-  const { user: clerkUser, isSignedIn, isLoaded } = useUser()
+  const { data: session, status } = useSession()
+  const isLoaded = status !== 'loading'
+  const isSignedIn = status === 'authenticated'
   const [activeTab, setActiveTab] = useState('bookings')
   const [reviews, setReviews] = useState<SubmittedReview[]>(() => lsp('balible_user_reviews', []))
   const [dbData, setDbData] = useState<UserData | null>(null)
@@ -613,12 +615,10 @@ export default function ProfilePage() {
   }
 
   // Clerk user info with graceful fallbacks
-  const displayName  = clerkUser?.fullName || clerkUser?.firstName || dbData?.name || 'Traveler'
-  const displayEmail = clerkUser?.primaryEmailAddress?.emailAddress || dbData?.email || ''
-  const displayImage = clerkUser?.imageUrl || dbData?.image || null
-  const memberSince  = clerkUser?.createdAt
-    ? new Date(clerkUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-    : null
+  const displayName  = session?.user?.name || dbData?.name || 'Traveler'
+  const displayEmail = session?.user?.email || dbData?.email || ''
+  const displayImage = session?.user?.image || dbData?.image || null
+  const memberSince: string | null = null
 
   // Stats derived from real data
   const tripsCount    = dbData?.bookings?.length ?? (localBookingCount || BOOKINGS.length)
@@ -648,15 +648,12 @@ export default function ProfilePage() {
             <div className="bg-white rounded-2xl p-6 text-center" style={{ border: '1px solid #E8E4DE' }}>
               {/* Avatar */}
               <div className="relative mx-auto mb-4" style={{ width: 80, height: 80 }}>
-                {displayImage ? (
-                  <img src={displayImage} alt={displayName} className="w-full h-full rounded-full object-cover" style={{ border: '3px solid white', boxShadow: '0 0 0 2px #C8A97E' }} />
-                ) : (
-                  <div className="w-full h-full rounded-full flex items-center justify-center" style={{ backgroundColor: '#C8A97E', border: '3px solid white', boxShadow: '0 0 0 2px #C8A97E' }}>
-                    <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 32, fontWeight: 700, color: 'white' }}>
-                      {displayName[0]?.toUpperCase()}
-                    </span>
-                  </div>
-                )}
+                <img
+                  src={displayImage ?? '/avatar-default.png'}
+                  alt={displayName}
+                  className="w-full h-full rounded-full object-cover"
+                  style={{ border: '3px solid white', boxShadow: '0 0 0 2px #C8A97E' }}
+                />
                 <button
                   className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center"
                   style={{ backgroundColor: '#111111', border: '2px solid white', cursor: 'pointer' }}
@@ -705,15 +702,6 @@ export default function ProfilePage() {
                 ))}
               </nav>
 
-              <div className="mt-5 pt-4" style={{ borderTop: '1px solid #E8E4DE' }}>
-                <a
-                  href="/for-hosts"
-                  className="flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
-                  style={{ height: 40, borderRadius: 8, backgroundColor: '#F5F1EB', color: '#111111', fontSize: 13, fontWeight: 600, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}
-                >
-                  Become A Host <ArrowRight size={13} />
-                </a>
-              </div>
             </div>
           </aside>
 

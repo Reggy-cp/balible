@@ -1,15 +1,17 @@
 'use server'
 
-import { auth, clerkClient } from '@clerk/nextjs/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 
 export async function setRole(role: 'customer' | 'host') {
-  const { userId } = await auth()
-  if (!userId) redirect('/sign-in')
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) redirect('/sign-in')
 
-  const client = await clerkClient()
-  await client.users.updateUser(userId, {
-    publicMetadata: { role },
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { role: role === 'host' ? 'OPERATOR' : 'TOURIST' },
   })
 
   redirect(role === 'host' ? '/dashboard' : '/')

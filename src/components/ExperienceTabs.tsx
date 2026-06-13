@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Star, CheckCircle2, XCircle, X, MapPin, ExternalLink } from 'lucide-react'
+import Image from 'next/image'
 import { createReviewAction } from '@/lib/actions'
 
 function hostSlug(name: string) {
@@ -225,19 +226,11 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
                   </span>
                 </div>
                 <div className="flex items-center gap-3 mt-1">
-                  {exp.operator.avatar || exp.operator.user.image ? (
-                    <img
-                      src={(exp.operator.avatar || exp.operator.user.image)!}
-                      alt={exp.operator.user.name}
-                      className="w-12 h-12 rounded-full object-cover flex-shrink-0"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#F5F1EB' }}>
-                      <span style={{ fontFamily: 'var(--font-inter)', fontSize: 18, fontWeight: 700, color: '#111111' }}>
-                        {exp.operator.user.name[0]}
-                      </span>
-                    </div>
-                  )}
+                  <img
+                    src={(exp.operator.avatar || exp.operator.user.image) ?? '/avatar-default.png'}
+                    alt={exp.operator.user.name}
+                    className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                  />
                   <div>
                     <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111' }}>{exp.operator.user.name}</p>
                     <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>{exp.operator.businessName}</p>
@@ -365,13 +358,11 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
               {exp.reviews.map(rev => (
                 <div key={rev.id} className="pb-6" style={{ borderBottom: '1px solid #E8E4DE' }}>
                   <div className="flex items-center gap-3 mb-3">
-                    {rev.user.image ? (
-                      <img src={rev.user.image} alt={rev.user.name} className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
-                    ) : (
-                      <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-semibold" style={{ backgroundColor: '#F5F1EB', color: '#111111' }}>
-                        {rev.user.name[0]}
-                      </div>
-                    )}
+                    <img
+                      src={rev.user.image ?? '/avatar-default.png'}
+                      alt={rev.user.name}
+                      className="w-9 h-9 rounded-full object-cover flex-shrink-0"
+                    />
                     <div className="flex-1">
                       <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111' }}>{rev.user.name}</p>
                       <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>
@@ -395,17 +386,11 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
         {active === 'Host' && (
           <div className="flex flex-col sm:flex-row gap-6">
             <div className="flex-shrink-0">
-              {exp.operator.avatar || exp.operator.user.image ? (
-                <img
-                  src={(exp.operator.avatar || exp.operator.user.image)!}
-                  alt={exp.operator.user.name}
-                  className="w-24 h-24 rounded-full object-cover"
-                />
-              ) : (
-                <div className="w-24 h-24 rounded-full flex items-center justify-center" style={{ backgroundColor: '#F5F1EB' }}>
-                  <span style={{ fontSize: 32, fontWeight: 700, color: '#111111' }}>{exp.operator.user.name[0]}</span>
-                </div>
-              )}
+              <img
+                src={(exp.operator.avatar || exp.operator.user.image) ?? '/avatar-default.png'}
+                alt={exp.operator.user.name}
+                className="w-24 h-24 rounded-full object-cover"
+              />
             </div>
             <div>
               <a href={`/hosts/${hostSlug(exp.operator.user.name)}`} style={{ textDecoration: 'none' }}>

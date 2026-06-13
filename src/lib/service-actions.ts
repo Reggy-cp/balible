@@ -1,7 +1,7 @@
 'use server'
 
 import { prisma } from './prisma'
-import { getOrCreateNeonUser } from './user'
+import { getSessionUser } from './user'
 import { computeBookingTotal } from './pricing'
 import { createNotification } from './notifications'
 
@@ -203,7 +203,7 @@ export async function createServiceBookingAction(input: {
   guestPhone: string
 }): Promise<{ ok: boolean; bookingRef?: string; status?: string; total?: number; error?: string }> {
   try {
-    const user = await getOrCreateNeonUser()
+    const user = await getSessionUser()
     if (!user) return { ok: false, error: 'SIGN_IN_REQUIRED' }
 
     const listing = await prisma.serviceListing.findUnique({
@@ -258,7 +258,7 @@ export async function updateServiceBookingStatusAction(
   action: 'accept' | 'decline',
 ): Promise<{ ok: boolean; status?: string; error?: string }> {
   try {
-    const user = await getOrCreateNeonUser()
+    const user = await getSessionUser()
     if (!user) return { ok: false, error: 'SIGN_IN_REQUIRED' }
 
     const provider = await prisma.provider.findUnique({ where: { userId: user.id } })
@@ -304,7 +304,7 @@ export type ProviderDashboardData = {
 
 export async function getProviderDashboardData(): Promise<ProviderDashboardData | null> {
   try {
-    const user = await getOrCreateNeonUser()
+    const user = await getSessionUser()
     if (!user) return null
 
     const provider = await prisma.provider.findUnique({
@@ -385,7 +385,7 @@ export async function registerAsProviderAction(input: {
   phone: string
 }): Promise<{ ok: boolean; error?: string }> {
   try {
-    const user = await getOrCreateNeonUser()
+    const user = await getSessionUser()
     if (!user) return { ok: false, error: 'Not signed in' }
 
     const existing = await prisma.provider.findUnique({ where: { userId: user.id } })
@@ -432,7 +432,7 @@ export async function createServiceListingAction(input: {
   instantConfirm: boolean
 }): Promise<{ ok: boolean; slug?: string; error?: string }> {
   try {
-    const user = await getOrCreateNeonUser()
+    const user = await getSessionUser()
     if (!user) return { ok: false, error: 'Not signed in' }
 
     const provider = await prisma.provider.findUnique({ where: { userId: user.id } })

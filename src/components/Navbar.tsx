@@ -2,9 +2,10 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
-import { useUser, UserButton } from '@clerk/nextjs'
+import Image from 'next/image'
+import { useSession, signOut } from 'next-auth/react'
 import {
-  Menu, X, ChevronDown, LayoutDashboard,
+  Menu, X, ChevronDown, LayoutDashboard, User,
   Leaf, Scissors, Landmark, Mountain, Waves, ChefHat, Sun, Users, Bike,
 } from 'lucide-react'
 import NotificationBell from '@/components/NotificationBell'
@@ -40,15 +41,21 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [dropOpen, setDropOpen] = useState(false)
   const dropRef = useRef<HTMLDivElement>(null)
-  const { isSignedIn, isLoaded, user } = useUser()
-
-  const role = user?.publicMetadata?.role as string | undefined
-  const isHost = role === 'host' || role === 'admin'
+  const { data: session, status } = useSession()
+  const isLoaded = status !== 'loading'
+  const isSignedIn = status === 'authenticated'
+  const user = session?.user
+  const isHost = user?.role === 'OPERATOR' || user?.role === 'ADMIN'
+  const [accountOpen, setAccountOpen] = useState(false)
+  const accountRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (dropRef.current && !dropRef.current.contains(e.target as Node)) {
         setDropOpen(false)
+      }
+      if (accountRef.current && !accountRef.current.contains(e.target as Node)) {
+        setAccountOpen(false)
       }
     }
     document.addEventListener('mousedown', handleClick)
@@ -66,13 +73,8 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-full px-5 lg:px-12 max-w-[1440px] mx-auto">
 
           {/* Logo */}
-          <a href="/" className="flex flex-col leading-none flex-shrink-0" style={{ textDecoration: 'none' }}>
-            <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', letterSpacing: '0.02em' }}>
-              BALIBLE
-            </span>
-            <span className="hidden sm:block" style={{ fontSize: 9, letterSpacing: '0.2em', color: '#6F675C', textTransform: 'uppercase' }}>
-              CURATED EXPERIENCES IN BALI
-            </span>
+          <a href="/" className="flex-shrink-0" style={{ textDecoration: 'none' }}>
+            <Image src="/logo-light.png" alt="Balible" width={120} height={36} style={{ objectFit: 'contain', height: 36, width: 'auto' }} priority />
           </a>
 
           {/* Desktop nav */}
@@ -156,7 +158,6 @@ export default function Navbar() {
           <div className="flex items-center gap-2">
             {isLoaded && isSignedIn && <NotificationBell />}
             {!isLoaded ? (
-              /* Skeleton while Clerk loads — prevents layout shift */
               <div className="hidden sm:flex items-center gap-2">
                 <div style={{ width: 64, height: 34, borderRadius: 10, backgroundColor: '#F5F1EB' }} />
                 <div style={{ width: 76, height: 34, borderRadius: 10, backgroundColor: '#E8E4DE' }} />
@@ -176,12 +177,36 @@ export default function Navbar() {
                     Dashboard
                   </a>
                 )}
-                <UserButton
-                  appearance={{
-                    variables: { colorPrimary: '#C8A97E' },
-                    elements: { avatarBox: { width: 36, height: 36 } },
-                  }}
-                />
+                {/* Avatar dropdown */}
+                <div className="relative" ref={accountRef}>
+                  <button
+                    onClick={() => setAccountOpen(o => !o)}
+                    className="flex items-center justify-center rounded-full overflow-hidden"
+                    style={{ width: 36, height: 36, border: '2px solid #E8E4DE', cursor: 'pointer', background: 'none', padding: 0 }}
+                  >
+                    <img src={user?.image ?? '/avatar-default.png'} alt={user?.name ?? 'Account'} className="w-full h-full object-cover" />
+                  </button>
+                  {accountOpen && (
+                    <div className="absolute right-0 mt-2 bg-white rounded-xl shadow-lg py-1" style={{ minWidth: 180, border: '1px solid #E8E4DE', zIndex: 200 }}>
+                      <a href="/profile" className="flex items-center gap-2.5 px-4 py-2.5 hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111', textDecoration: 'none' }}>
+                        <User size={14} style={{ color: '#6F675C' }} /> Profile
+                      </a>
+                      {isHost && (
+                        <a href="/dashboard" className="flex items-center gap-2.5 px-4 py-2.5 hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111', textDecoration: 'none' }}>
+                          <LayoutDashboard size={14} style={{ color: '#6F675C' }} /> Dashboard
+                        </a>
+                      )}
+                      <div style={{ borderTop: '1px solid #F5F1EB', margin: '4px 0' }} />
+                      <button
+                        onClick={() => signOut({ callbackUrl: '/' })}
+                        className="flex w-full items-center gap-2.5 px-4 py-2.5 hover:bg-stone-50 transition-colors"
+                        style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#B66A45', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
               <div className="hidden sm:flex items-center gap-2">
@@ -249,34 +274,20 @@ export default function Navbar() {
               {isLoaded && isSignedIn ? (
                 <div className="space-y-1">
                   {isHost && (
-                    <a
-                      href="/dashboard"
-                      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors"
-                      style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', textDecoration: 'none', fontWeight: 500 }}
-                    >
-                      <LayoutDashboard size={16} style={{ color: '#6F675C' }} />
-                      Dashboard
+                    <a href="/dashboard" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', textDecoration: 'none', fontWeight: 500 }}>
+                      <LayoutDashboard size={16} style={{ color: '#6F675C' }} /> Dashboard
                     </a>
                   )}
-                  <a
-                    href="/wishlist"
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors"
-                    style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', textDecoration: 'none' }}
-                  >
-                    <span style={{ fontSize: 16 }}>🤍</span>
-                    Wishlist
+                  <a href="/profile" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', textDecoration: 'none' }}>
+                    <img src={user?.image ?? '/avatar-default.png'} alt="" className="w-8 h-8 rounded-full object-cover" />
+                    {user?.name ?? 'My account'}
                   </a>
-                  <div className="flex items-center gap-3 px-4 py-3">
-                    <UserButton
-                          appearance={{
-                        variables: { colorPrimary: '#C8A97E' },
-                        elements: { avatarBox: { width: 32, height: 32 } },
-                      }}
-                    />
-                    <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
-                      {user?.firstName ?? 'My account'}
-                    </span>
-                  </div>
+                  <a href="/wishlist" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', textDecoration: 'none' }}>
+                    <span style={{ fontSize: 16 }}>🤍</span> Wishlist
+                  </a>
+                  <button onClick={() => signOut({ callbackUrl: '/' })} className="flex w-full items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#B66A45', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
+                    Sign out
+                  </button>
                 </div>
               ) : (
                 <div className="flex gap-2">

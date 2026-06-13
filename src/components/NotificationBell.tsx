@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { useUser } from '@clerk/nextjs'
+import { useSession } from 'next-auth/react'
 import { Bell, CalendarCheck, CreditCard, Info } from 'lucide-react'
 import { getMyNotifications, markMyNotificationsRead, type NotificationRow } from '@/lib/notification-actions'
 
@@ -22,7 +22,8 @@ function timeAgo(iso: string): string {
 }
 
 export default function NotificationBell() {
-  const { isSignedIn } = useUser()
+  const { status } = useSession()
+  const isSignedIn = status === 'authenticated'
   const [open, setOpen] = useState(false)
   const [items, setItems] = useState<NotificationRow[]>([])
   const [unread, setUnread] = useState(0)

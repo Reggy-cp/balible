@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import { MapPin, Star, Award } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
@@ -59,7 +60,6 @@ export default function HostsPage() {
       <div className="max-w-[1100px] mx-auto px-6 lg:px-16 py-12 pb-28">
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {HOSTS.map(host => {
-            const initials = host.name.split(' ').map((w: string) => w[0]).join('').slice(0, 2)
             const catColor = CATEGORY_COLORS[host.category] ?? '#C8A97E'
             return (
               <a
@@ -68,18 +68,13 @@ export default function HostsPage() {
                 className="group bg-white rounded-2xl overflow-hidden hover:shadow-lg transition-shadow block"
                 style={{ border: '1px solid #E8E4DE', textDecoration: 'none' }}
               >
-                {/* Photo or initials */}
+                {/* Photo */}
                 <div className="relative overflow-hidden" style={{ height: 180 }}>
-                  {host.avatar ? (
-                    <img
-                      src={host.avatar} alt={host.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: '#2A2A2A' }}>
-                      <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 48, fontWeight: 700, color: '#C8A97E' }}>{initials}</span>
-                    </div>
-                  )}
+                  <img
+                    src={host.avatar ?? '/avatar-default.png'}
+                    alt={host.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
                   <div className="absolute top-3 left-3">
                     <span style={{ backgroundColor: catColor, color: 'white', fontSize: 10, fontWeight: 600, padding: '3px 8px', borderRadius: 20 }}>
                       {host.category}
