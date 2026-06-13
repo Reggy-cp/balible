@@ -311,10 +311,11 @@ export default function CategoryClient({
         </div>
       </div>
 
-      {/* ── SUBCATEGORY PILLS ── */}
-      <div className="bg-white" style={{ borderBottom: '1px solid #E8E4DE' }}>
+      {/* ── STICKY FILTER BAR ── */}
+      <div className="sticky top-16 z-30 bg-white" style={{ borderBottom: '1px solid #E8E4DE' }}>
         <div className="max-w-[1440px] mx-auto px-6 lg:px-16">
-          <div className="flex items-center gap-2 py-3 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+          {/* Subcategory pills */}
+          <div className="flex items-center gap-2 pt-3 pb-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
             {meta.subcategories.map(sub => (
               <button
                 key={sub}
@@ -338,37 +339,36 @@ export default function CategoryClient({
               </button>
             ))}
           </div>
+          {/* Search bar */}
+          <div className="relative pb-3">
+            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: '#6F675C' }} />
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder={`Search ${meta.label} experiences…`}
+              style={{
+                width: '100%', height: 42, paddingLeft: 44, paddingRight: search ? 40 : 16,
+                borderRadius: 10, border: '1px solid #E8E4DE', backgroundColor: '#F5F1EB',
+                fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111',
+                outline: 'none', boxSizing: 'border-box',
+              }}
+            />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full hover:bg-stone-200 transition-colors"
+                style={{ border: 'none', background: 'none', cursor: 'pointer' }}
+              >
+                <X size={14} style={{ color: '#6F675C' }} />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
       {/* ── RESULTS ── */}
       <div className="max-w-[1440px] mx-auto px-6 lg:px-16 py-8">
-
-        {/* Search bar */}
-        <div className="relative mb-5">
-          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: '#6F675C' }} />
-          <input
-            type="text"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder={`Search ${meta.label} experiences…`}
-            style={{
-              width: '100%', height: 46, paddingLeft: 44, paddingRight: search ? 40 : 16,
-              borderRadius: 12, border: '1px solid #E8E4DE', backgroundColor: 'white',
-              fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111',
-              outline: 'none', boxSizing: 'border-box',
-            }}
-          />
-          {search && (
-            <button
-              onClick={() => setSearch('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full hover:bg-stone-100 transition-colors"
-              style={{ border: 'none', background: 'none', cursor: 'pointer' }}
-            >
-              <X size={14} style={{ color: '#6F675C' }} />
-            </button>
-          )}
-        </div>
 
         <div className="flex items-center justify-between mb-6">
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
