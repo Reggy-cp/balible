@@ -26,7 +26,7 @@ const CAT_GRID = [
   { label: 'Spiritual',    Icon: Sun,        href: '/categories/spiritual',  photo: 'https://images.unsplash.com/photo-1516690561799-46d8f74f9abf?w=400&auto=format&fit=crop&q=80' },
   { label: 'Water Activities', Icon: Waves,  href: '/categories/water-activities', photo: 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=400&auto=format&fit=crop&q=80' },
   { label: 'Local Experts', Icon: Users,     href: '/categories/local-experts', photo: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&auto=format&fit=crop&q=80' },
-  { label: 'Rentals',       Icon: Bike,      href: '/rentals',                  photo: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&auto=format&fit=crop&q=80' },
+  { label: 'Rentals',       Icon: Bike,      href: '/categories/rentals',       photo: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&auto=format&fit=crop&q=80' },
 ]
 
 const WHY_ITEMS = [

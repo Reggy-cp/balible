@@ -18,7 +18,7 @@ const CATEGORIES = [
   { label: 'Nature & Outdoors', Icon: Mountain,  slug: 'nature' },
   { label: 'Water Activities',  Icon: Waves,     slug: 'water-activities' },
   { label: 'Local Experts',     Icon: Users,     slug: 'local-experts' },
-  { label: 'Rentals',           Icon: Bike,      slug: 'rentals', href: '/rentals' },
+  { label: 'Rentals',           Icon: Bike,      slug: 'rentals' },
 ]
 
 const NAV_LINKS = [
