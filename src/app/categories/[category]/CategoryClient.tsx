@@ -155,32 +155,29 @@ function ExperienceCard({
       className="group block bg-white overflow-hidden hover:shadow-lg transition-all duration-200"
       style={{ border: '1px solid #E8E4DE', textDecoration: 'none', borderRadius: 16 }}
     >
-      {/* ── Mobile layout (explore style) ── */}
+      {/* ── Mobile layout (explore style, 2-col) ── */}
       <div className="md:hidden">
-        <div className="relative overflow-hidden" style={{ height: 180, borderRadius: '16px 16px 0 0' }}>
+        <div className="relative overflow-hidden" style={{ height: 140, borderRadius: '16px 16px 0 0' }}>
           <img src={exp.image} alt={exp.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
           {exp.badge && (
-            <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full" style={{ backgroundColor: '#C8A97E', color: 'white', fontSize: 11, fontWeight: 600, fontFamily: 'var(--font-inter)' }}>
+            <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full" style={{ backgroundColor: '#C8A97E', color: 'white', fontSize: 10, fontWeight: 600, fontFamily: 'var(--font-inter)' }}>
               {exp.badge}
             </span>
           )}
           {wishlistBtn}
         </div>
-        <div className="p-4">
-          <div className="flex items-center justify-between mb-1">
-            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>{exp.area}</p>
-            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#9E9A94' }}>{exp.duration}</p>
-          </div>
-          <h3 className="line-clamp-2 leading-snug" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 600, color: '#111111' }}>
+        <div className="p-3">
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 10, color: '#6F675C' }}>{exp.area}</p>
+          <h3 className="line-clamp-2 leading-snug mt-0.5" style={{ fontFamily: 'var(--font-playfair)', fontSize: 13, fontWeight: 600, color: '#111111' }}>
             {exp.title}
           </h3>
-          <div className="flex items-center gap-1 mt-2">
-            <Star size={11} fill="#C8A97E" color="#C8A97E" />
-            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 700, color: '#111111' }}>{exp.rating.toFixed(1)}</span>
-            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>({exp.reviews})</span>
+          <div className="flex items-center gap-1 mt-1.5">
+            <Star size={10} fill="#C8A97E" color="#C8A97E" />
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 700, color: '#111111' }}>{exp.rating.toFixed(1)}</span>
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>({exp.reviews})</span>
           </div>
-          <p className="mt-2" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 700, color: '#111111' }}>
-            From <span style={{ color: '#C8A97E' }}>IDR</span> {exp.price.toLocaleString('id-ID')}
+          <p className="mt-1.5" style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 700, color: '#111111' }}>
+            <span style={{ color: '#C8A97E' }}>IDR</span> {exp.price.toLocaleString('id-ID')}
           </p>
         </div>
       </div>
@@ -459,7 +456,7 @@ export default function CategoryClient({
         </div>
 
         {results.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-5">
             {results.map(exp => (
               <ExperienceCard
                 key={exp.slug}
