@@ -9,8 +9,7 @@ import { useUser } from '@clerk/nextjs'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
-import { getUserData, type UserData } from '@/lib/actions'
-import { STATIC_EXP_MAP } from '@/lib/static-experiences'
+import { getUserData, getExperiencesForWishlist, type UserData, type ExpWishlistMeta } from '@/lib/actions'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -341,15 +340,21 @@ function BookingsTab({ reviews, onReview, dbBookings }: { reviews: SubmittedRevi
 
 // ── Wishlist tab ───────────────────────────────────────────────────────────────
 
-const DEFAULT_WISHLIST_SLUGS = ['pottery-making-class', 'sound-healing-journey', 'uluwatu-kecak-sunset']
-
 function WishlistTab({ dbSlugs }: { dbSlugs?: string[] }) {
-  const [localSlugs, setLocalSlugs] = useState<string[]>(DEFAULT_WISHLIST_SLUGS)
-  useEffect(() => { setLocalSlugs(lsp<string[]>('balible_wishlist', DEFAULT_WISHLIST_SLUGS)) }, [])
-  // Merge DB slugs with local (DB takes precedence when signed in)
-  const slugSet = new Set([...(dbSlugs ?? localSlugs)])
-  const slugs = Array.from(slugSet)
-  const items = slugs.map(s => STATIC_EXP_MAP.get(s)).filter(Boolean) as NonNullable<ReturnType<typeof STATIC_EXP_MAP.get>>[]
+  const [items, setItems] = useState<ExpWishlistMeta[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const localSlugs: string[] = (() => {
+      try { return JSON.parse(localStorage.getItem('balible_wishlist') ?? '[]') } catch { return [] }
+    })()
+    const slugs = Array.from(new Set([...(dbSlugs ?? []), ...localSlugs]))
+    if (slugs.length === 0) { setLoading(false); return }
+    getExperiencesForWishlist(slugs)
+      .then(setItems)
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [dbSlugs])
 
   return (
     <div>
@@ -361,7 +366,11 @@ function WishlistTab({ dbSlugs }: { dbSlugs?: string[] }) {
           Manage →
         </a>
       </div>
-      {items.length === 0 ? (
+      {loading ? (
+        <div className="py-12 text-center">
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>Loading…</p>
+        </div>
+      ) : items.length === 0 ? (
         <div className="bg-white rounded-xl p-10 text-center" style={{ border: '1px solid #E8E4DE' }}>
           <Heart size={28} style={{ color: '#C8A97E', margin: '0 auto 12px' }} strokeWidth={1.5} />
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>No saved experiences yet.</p>
@@ -386,9 +395,9 @@ function WishlistTab({ dbSlugs }: { dbSlugs?: string[] }) {
                 <div className="flex items-center justify-between mt-2">
                   <div className="flex items-center gap-1">
                     <Star size={11} fill="#C8A97E" color="#C8A97E" />
-                    <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 700, color: '#111111' }}>{exp.rating}</span>
+                    <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 700, color: '#111111' }}>{exp.rating.toFixed(1)}</span>
                   </div>
-                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#111111' }}>IDR {(exp.price/1000).toFixed(0)}K</span>
+                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#111111' }}>IDR {exp.price.toLocaleString('id-ID')}</span>
                 </div>
               </div>
             </a>
@@ -594,7 +603,7 @@ export default function ProfilePage() {
       getUserData().then(data => { if (data) setDbData(data) }).catch(() => {})
     }
     setLocalBookingCount(lsp<Booking[]>('balible_bookings', []).length)
-    setLocalWishlistCount(lsp<string[]>('balible_wishlist', DEFAULT_WISHLIST_SLUGS).length)
+    setLocalWishlistCount(lsp<string[]>('balible_wishlist', []).length)
   }, [isLoaded, isSignedIn])
 
   const addReview = (r: SubmittedReview) => {
