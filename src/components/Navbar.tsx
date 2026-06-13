@@ -221,7 +221,7 @@ export default function Navbar() {
                   Sign in
                 </a>
                 <a
-                  href="/sign-up"
+                  href={pathname === '/for-hosts' ? '/sign-up/host' : '/sign-up'}
                   className="px-4 py-2 rounded-lg transition-colors"
                   style={{
                     fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600,
@@ -294,7 +294,7 @@ export default function Navbar() {
                   <a href="/sign-in" style={{ flex: 1, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #E8E4DE', borderRadius: 10, fontSize: 14, fontWeight: 500, color: '#111111', textDecoration: 'none', fontFamily: 'var(--font-inter)' }}>
                     Sign in
                   </a>
-                  <a href="/sign-up" style={{ flex: 1, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#111111', borderRadius: 10, fontSize: 14, fontWeight: 600, color: 'white', textDecoration: 'none', fontFamily: 'var(--font-inter)' }}>
+                  <a href={pathname === '/for-hosts' ? '/sign-up/host' : '/sign-up'} style={{ flex: 1, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#111111', borderRadius: 10, fontSize: 14, fontWeight: 600, color: 'white', textDecoration: 'none', fontFamily: 'var(--font-inter)' }}>
                     Sign up
                   </a>
                 </div>
