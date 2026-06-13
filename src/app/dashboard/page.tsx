@@ -327,9 +327,22 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
   const fileInputRef = useRef<HTMLInputElement>(null)
   const galleryInputRef = useRef<HTMLInputElement>(null)
 
-  const BLANK_FORM = { title: '', category: 'Art & Craft', area: 'Ubud', price: '', duration: '', maxGuests: '', minGuests: '', meetingPoint: '', description: '', includes: '', excludes: '' }
+  const SUBCATEGORY_MAP: Record<string, string[]> = {
+    'Art & Craft':        ['Pottery', 'Jewelry', 'Painting', 'Wood Carving', 'Textile', 'Weaving'],
+    'Wellness & Healing': ['Yoga', 'Meditation', 'Sound Healing', 'Spa & Ritual', 'Breathwork'],
+    'Culture':            ['Temple & Ceremony', 'Dance & Music', 'History Tour', 'Language'],
+    'Culinary':           ['Cooking Class', 'Spice & Herb', 'Market Tour', 'Coffee & Tea', 'Fermentation', 'Dessert & Sweets', 'Farm to Table'],
+    'Spiritual':          ['Temple & Ceremony', 'Healing Ritual', 'Holy Water', 'Blessing', 'Energy Work'],
+    'Nature & Outdoors':  ['Trekking', 'Waterfall', 'Sunrise', 'Rice Terrace', 'Wildlife'],
+    'Water Activities':   ['Surfing', 'Snorkelling', 'Freediving', 'Scuba Diving', 'Stand-Up Paddle'],
+    'Local Experts':      ['Photographers', 'Guides', 'Wellness Practitioners', 'Childcare', 'Pet Care', 'Creative Mentors', 'Drivers'],
+    'Rentals':            ['Scooter', 'Motorbike', 'Bicycle', 'E-Bike', 'Villa', 'Workspace', 'Studio', 'Surfboard', 'Camping Gear', 'Diving Equipment'],
+  }
+
+  const BLANK_FORM = { title: '', category: 'Art & Craft', subcategory: 'Pottery', area: 'Ubud', price: '', duration: '', maxGuests: '', minGuests: '', meetingPoint: '', description: '', includes: '', excludes: '' }
   const [formData, setFormData] = useState(BLANK_FORM)
   const setField = (k: keyof typeof BLANK_FORM, v: string) => setFormData(p => ({ ...p, [k]: v }))
+  const setCategory = (cat: string) => setFormData(p => ({ ...p, category: cat, subcategory: SUBCATEGORY_MAP[cat]?.[0] ?? '' }))
 
   const handleImageFile = (file: File) => {
     if (!file.type.startsWith('image/')) return
@@ -376,7 +389,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
     setImagePreview(exp.image)
     setFormStep(1)
     const savedData = (() => { try { const v = localStorage.getItem(`balible_exp_data_${exp.slug}`); return v ? JSON.parse(v) : {} } catch { return {} } })()
-    setFormData({ title: exp.title, category: exp.category, area: exp.area, price: String(exp.price), duration: exp.duration, maxGuests: String(exp.maxGuests), minGuests: String(savedData.minGuests || 1), meetingPoint: savedData.meetingPoint || '', description: savedData.description || '', includes: (savedData.includes ?? []).join('\n'), excludes: (savedData.excludes ?? []).join('\n') })
+    setFormData({ title: exp.title, category: exp.category, subcategory: savedData.subcategory || SUBCATEGORY_MAP[exp.category]?.[0] || '', area: exp.area, price: String(exp.price), duration: exp.duration, maxGuests: String(exp.maxGuests), minGuests: String(savedData.minGuests || 1), meetingPoint: savedData.meetingPoint || '', description: savedData.description || '', includes: (savedData.includes ?? []).join('\n'), excludes: (savedData.excludes ?? []).join('\n') })
     const saved = localStorage.getItem(`balible_schedule_${exp.slug}`)
     if (saved) setSchedule(JSON.parse(saved))
     else setSchedule(WEEK.map(day => ({ day, enabled: false, open: '09:00', close: '17:00' })))
@@ -391,6 +404,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
     const expData = {
       title: formData.title || editingExp?.title || '',
       category: formData.category,
+      subcategory: formData.subcategory,
       area: formData.area,
       price: Number(formData.price) || editingExp?.price || 0,
       duration: formData.duration || editingExp?.duration || '',
@@ -613,10 +627,18 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label style={labelStyle}>Category</label>
-                      <select value={formData.category} onChange={e => setField('category', e.target.value)} style={{ ...inputStyle, backgroundColor: 'white', cursor: 'pointer' }}>
+                      <select value={formData.category} onChange={e => setCategory(e.target.value)} style={{ ...inputStyle, backgroundColor: 'white', cursor: 'pointer' }}>
                         {['Art & Craft','Wellness & Healing','Culture','Culinary','Spiritual','Nature & Outdoors','Water Activities','Local Experts','Rentals'].map(c => <option key={c}>{c}</option>)}
                       </select>
                     </div>
+                    <div>
+                      <label style={labelStyle}>Subcategory</label>
+                      <select value={formData.subcategory} onChange={e => setField('subcategory', e.target.value)} style={{ ...inputStyle, backgroundColor: 'white', cursor: 'pointer' }}>
+                        {(SUBCATEGORY_MAP[formData.category] ?? []).map(s => <option key={s}>{s}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label style={labelStyle}>Area</label>
                       <select value={formData.area} onChange={e => setField('area', e.target.value)} style={{ ...inputStyle, backgroundColor: 'white', cursor: 'pointer' }}>
