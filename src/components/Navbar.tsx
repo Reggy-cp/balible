@@ -119,10 +119,10 @@ export default function Navbar() {
                       <p style={{ fontFamily: 'var(--font-inter)', fontSize: 10, fontWeight: 700, color: '#6F675C', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '4px 12px 8px' }}>
                         Browse by category
                       </p>
-                      {CATEGORIES.map(({ label: catLabel, Icon, slug, href: catHref }) => (
+                      {CATEGORIES.map(({ label: catLabel, Icon, slug }) => (
                         <a
                           key={slug}
-                          href={catHref ?? `/categories/${slug}`}
+                          href={`/categories/${slug}`}
                           className="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-stone-50 transition-colors"
                           style={{ textDecoration: 'none' }}
                         >
