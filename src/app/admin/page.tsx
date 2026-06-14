@@ -29,9 +29,9 @@ import {
   adminMarkPayoutPaidAction, getAdminPayoutsAction, type AdminPayout,
   sendBroadcastAction,
   getGADataAction, type GAData,
-  COMMISSION_RATE, PAYOUT_MIN_NET,
   getCommissionRateAction, updateCommissionRateAction,
 } from '@/lib/actions'
+import { COMMISSION_RATE, PAYOUT_MIN_NET } from '@/lib/constants'
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 

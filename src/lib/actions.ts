@@ -594,7 +594,6 @@ export async function getUserData(): Promise<UserData | null> {
 
 // ── Admin panel data ──────────────────────────────────────────────────────────
 
-export { COMMISSION_RATE, PAYOUT_MIN_NET } from './constants'
 import { COMMISSION_RATE, PAYOUT_MIN_NET } from './constants'
 
 async function getCommissionRate(): Promise<number> {

@@ -18,9 +18,10 @@ import {
   getHostDashboardData, getHostExperiencesAction,
   updateExperienceStatusAction, deleteExperienceAction,
   getOperatorPayoutsAction, type OperatorPayout,
-  requestPayoutAction, PAYOUT_MIN_NET,
+  requestPayoutAction,
   type DashExp, type DashBooking, type DashReview, type EarningsByMonth,
 } from '@/lib/actions'
+import { PAYOUT_MIN_NET } from '@/lib/constants'
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
