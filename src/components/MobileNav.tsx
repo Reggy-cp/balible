@@ -7,7 +7,7 @@ import { Home, Search, Bot, User } from 'lucide-react'
 const NAV: { Icon: React.ElementType; label: string; href: string | null }[] = [
   { Icon: Home,   label: 'Home',    href: '/' },
   { Icon: Search, label: 'Explore', href: '/search' },
-  { Icon: Bot,    label: 'Chat',    href: null },
+  { Icon: Bot,    label: 'AI Guide', href: null },
   { Icon: User,   label: 'Profile', href: '/profile' },
 ]
 
