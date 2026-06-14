@@ -62,9 +62,12 @@ model Operator {
   businessName String
   description  String
   avatar       String?
-  verified     Boolean  @default(false)
-  rating       Float    @default(0)
-  totalReviews Int      @default(0)
+  verified            Boolean  @default(false)
+  rating              Float    @default(0)
+  totalReviews        Int      @default(0)
+  payoutBank          String?
+  payoutAccountNumber String?
+  payoutAccountName   String?
 
   experiences Experience[]
   events      Event[]
