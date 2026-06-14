@@ -1,12 +1,13 @@
 'use client'
 
+import React from 'react'
 import { usePathname } from 'next/navigation'
-import { Home, Search, Map, User } from 'lucide-react'
+import { Home, Search, Bot, User } from 'lucide-react'
 
-const NAV = [
+const NAV: { Icon: React.ElementType; label: string; href: string | null }[] = [
   { Icon: Home,   label: 'Home',    href: '/' },
   { Icon: Search, label: 'Explore', href: '/search' },
-  { Icon: Map,    label: 'Map',     href: '/map' },
+  { Icon: Bot,    label: 'Chat',    href: null },
   { Icon: User,   label: 'Profile', href: '/profile' },
 ]
 
