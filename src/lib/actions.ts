@@ -594,7 +594,36 @@ export async function getUserData(): Promise<UserData | null> {
 
 // ── Admin panel data ──────────────────────────────────────────────────────────
 
-const COMMISSION_RATE = 0.10
+export const COMMISSION_RATE = 0.10  // fallback default
+export const PAYOUT_MIN_NET  = 5_000
+
+async function getCommissionRate(): Promise<number> {
+  try {
+    const s = await prisma.setting.findUnique({ where: { key: 'commission_rate' } })
+    if (!s) return COMMISSION_RATE
+    const n = parseFloat(s.value)
+    return isNaN(n) ? COMMISSION_RATE : n
+  } catch { return COMMISSION_RATE }
+}
+
+export async function getCommissionRateAction(): Promise<number> {
+  return getCommissionRate()
+}
+
+// ratePercent: percentage value, e.g. 10 for 10%
+export async function updateCommissionRateAction(ratePercent: number): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const user = await getSessionUser()
+    if (!user || (user as any).role !== 'ADMIN') return { ok: false, error: 'Unauthorized' }
+    if (ratePercent < 0 || ratePercent >= 100) return { ok: false, error: 'Rate must be between 0 and 100' }
+    await prisma.setting.upsert({
+      where:  { key: 'commission_rate' },
+      update: { value: String(ratePercent / 100) },
+      create: { key: 'commission_rate', value: String(ratePercent / 100) },
+    })
+    return { ok: true }
+  } catch (e: any) { return { ok: false, error: e.message } }
+}
 
 export type AdminStats = {
   totalUsers: number; totalExperiences: number; totalBookings: number
@@ -654,7 +683,10 @@ export async function adminUpdateExperienceStatusAction(id: string, status: stri
 export type AdminHost = {
   id: string; name: string; business: string; area: string
   experiences: number; totalBookings: number; totalEarnings: number
-  rating: number; status: string; joined: string
+  rating: number; totalReviews: number; status: string; joined: string
+  avatar: string | null
+  description: string
+  payoutBank: string; payoutAccountNumber: string; payoutAccountName: string
 }
 
 export async function getAdminHostsAction(): Promise<AdminHost[]> {
@@ -675,8 +707,11 @@ export async function getAdminHostsAction(): Promise<AdminHost[]> {
       return {
         id: r.id, name: r.user.name, business: r.businessName, area,
         experiences: r.experiences.length, totalBookings, totalEarnings,
-        rating: r.rating, status: r.verified ? 'Verified' : 'Pending',
+        rating: r.rating, totalReviews: r.totalReviews, status: r.verified ? 'Verified' : 'Pending',
         joined: r.user.createdAt.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        avatar: r.avatar ?? null,
+        description: r.description,
+        payoutBank: r.payoutBank ?? '', payoutAccountNumber: r.payoutAccountNumber ?? '', payoutAccountName: r.payoutAccountName ?? '',
       }
     })
   } catch { return [] }
@@ -693,37 +728,49 @@ export async function suspendHostAction(id: string): Promise<{ ok: boolean }> {
 }
 
 export type AdminBooking = {
-  id: string; ref: string; guest: string; email: string
-  experience: string; host: string; date: string
-  guests: number; total: number; commission: number; status: string
+  id: string; ref: string; guest: string; email: string; phone: string
+  experience: string; host: string; hostEmail: string
+  date: string; bookedOn: string
+  guests: number; total: number; commission: number; hostPayout: number
+  status: string; paymentId: string
 }
 
 export async function getAdminBookingsAction(): Promise<AdminBooking[]> {
   try {
     const rows = await prisma.booking.findMany({
       include: {
-        experience: { include: { operator: { include: { user: { select: { name: true } } } } } },
+        experience: { include: { operator: { include: { user: { select: { name: true, email: true } } } } } },
       },
       orderBy: { createdAt: 'desc' },
-      take: 200,
     })
     const statusDisplay: Record<string, string> = { CONFIRMED: 'Confirmed', PENDING: 'Pending', COMPLETED: 'Completed', CANCELLED: 'Cancelled' }
-    return rows.map((b, i) => ({
-      id: `B${String(i + 1).padStart(3, '0')}`,
-      ref: b.bookingRef,
-      guest: b.guestName, email: b.guestEmail,
-      experience: b.experience.title,
-      host: b.experience.operator.user.name,
-      date: b.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      guests: b.guests, total: b.totalPrice,
-      commission: Math.round(b.totalPrice * COMMISSION_RATE),
-      status: statusDisplay[String(b.status)] ?? 'Pending',
-    }))
+    return rows.map((b, i) => {
+      const commission = Math.round(b.totalPrice * COMMISSION_RATE)
+      return {
+        id: `B${String(i + 1).padStart(3, '0')}`,
+        ref: b.bookingRef,
+        guest: b.guestName, email: b.guestEmail, phone: b.guestPhone ?? '',
+        experience: b.experience.title,
+        host: b.experience.operator.user.name,
+        hostEmail: b.experience.operator.user.email ?? '',
+        date: b.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        bookedOn: b.createdAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        guests: b.guests, total: b.totalPrice,
+        commission, hostPayout: b.totalPrice - commission,
+        status: statusDisplay[String(b.status)] ?? 'Pending',
+        paymentId: b.paymentId ?? '',
+      }
+    })
   } catch { return [] }
 }
 
 export async function adminUpdateBookingStatusAction(ref: string, status: string): Promise<{ ok: boolean }> {
   try { await prisma.booking.update({ where: { bookingRef: ref }, data: { status: status as any } }); return { ok: true } }
+  catch { return { ok: false } }
+}
+
+export async function adminCompleteBookingAction(ref: string): Promise<{ ok: boolean }> {
+  try { await prisma.booking.update({ where: { bookingRef: ref }, data: { status: 'COMPLETED' } }); return { ok: true } }
   catch { return { ok: false } }
 }
 
@@ -751,7 +798,7 @@ export async function getAdminUsersAction(): Promise<AdminUser[]> {
 
 export type AdminReview = {
   id: string; guest: string; experience: string; host: string
-  rating: number; comment: string; date: string; status: string
+  rating: number; comment: string; date: string; status: string; hidden: boolean
 }
 
 export async function getAdminReviewsAction(): Promise<AdminReview[]> {
@@ -768,7 +815,8 @@ export async function getAdminReviewsAction(): Promise<AdminReview[]> {
       host: r.experience.operator.user.name,
       rating: r.rating, comment: r.comment,
       date: r.createdAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      status: 'Published',
+      status: r.hidden ? 'Hidden' : r.flagged ? 'Flagged' : 'Published',
+      hidden: r.hidden,
     }))
   } catch { return [] }
 }
@@ -776,6 +824,113 @@ export async function getAdminReviewsAction(): Promise<AdminReview[]> {
 export async function adminDeleteReviewAction(id: string): Promise<{ ok: boolean }> {
   try { await prisma.review.delete({ where: { id } }); return { ok: true } }
   catch { return { ok: false } }
+}
+
+export async function adminApproveReviewAction(id: string): Promise<{ ok: boolean }> {
+  try { await prisma.review.update({ where: { id }, data: { flagged: false, hidden: false } }); return { ok: true } }
+  catch { return { ok: false } }
+}
+
+export async function adminFlagReviewAction(id: string): Promise<{ ok: boolean }> {
+  try { await prisma.review.update({ where: { id }, data: { flagged: true } }); return { ok: true } }
+  catch { return { ok: false } }
+}
+
+export async function adminHideReviewAction(id: string): Promise<{ ok: boolean }> {
+  try { await prisma.review.update({ where: { id }, data: { hidden: true, flagged: false } }); return { ok: true } }
+  catch { return { ok: false } }
+}
+
+export async function adminDeleteExperienceAction(id: string): Promise<{ ok: boolean }> {
+  try { await prisma.experience.delete({ where: { id } }); return { ok: true } }
+  catch { return { ok: false } }
+}
+
+export async function adminUpdateUserAction(id: string, data: { name: string; email: string; role: string }): Promise<{ ok: boolean; error?: string }> {
+  try {
+    await prisma.user.update({ where: { id }, data: { name: data.name, email: data.email, role: data.role as any } })
+    return { ok: true }
+  } catch (e: any) { return { ok: false, error: e.message } }
+}
+
+export async function adminUpdateHostAction(id: string, data: { businessName: string; description: string; payoutBank: string; payoutAccountNumber: string; payoutAccountName: string }): Promise<{ ok: boolean; error?: string }> {
+  try {
+    await prisma.operator.update({ where: { id }, data })
+    return { ok: true }
+  } catch (e: any) { return { ok: false, error: e.message } }
+}
+
+export type AdminAnalytics = {
+  topExperiences: { title: string; bookings: number }[]
+  monthlyBookings: number[]
+  monthlyRevenue: number[]
+  months: string[]
+  categoryDist: { name: string; pct: number; color: string }[]
+  avgBookingValue: number
+  avgRating: number
+}
+
+export async function getAdminAnalyticsAction(): Promise<AdminAnalytics> {
+  try {
+    const now = new Date()
+    const months: string[] = []
+    const monthlyBookings: number[] = []
+    const monthlyRevenue: number[] = []
+
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+      months.push(d.toLocaleString('en-US', { month: 'short' }))
+      const start = d
+      const end = new Date(d.getFullYear(), d.getMonth() + 1, 1)
+      const [count, rev] = await Promise.all([
+        prisma.booking.count({ where: { createdAt: { gte: start, lt: end } } }),
+        prisma.booking.aggregate({ _sum: { totalPrice: true }, where: { createdAt: { gte: start, lt: end } } }),
+      ])
+      monthlyBookings.push(count)
+      monthlyRevenue.push(rev._sum.totalPrice ?? 0)
+    }
+
+    const exps = await prisma.experience.findMany({
+      include: { _count: { select: { bookings: true } } },
+      orderBy: { totalReviews: 'desc' },
+    })
+    const topExperiences = [...exps]
+      .sort((a, b) => b._count.bookings - a._count.bookings)
+      .slice(0, 5)
+      .map(e => ({ title: e.title, bookings: e._count.bookings }))
+
+    const catColors: Record<string, string> = {
+      WELLNESS: '#4A7C59', ART_CRAFT: '#C8A97E', CULTURE: '#B66A45',
+      NATURE: '#6F675C', FOOD_DRINK: '#111111', SURF_WATER: '#3B82F6',
+      DIVING: '#0EA5E9', COOKING: '#D97706', LOCAL_EXPERTS: '#8B5CF6', RENTALS: '#EC4899',
+    }
+    const catCounts = exps.reduce((acc, e) => {
+      const k = String(e.category)
+      acc[k] = (acc[k] ?? 0) + e._count.bookings
+      return acc
+    }, {} as Record<string, number>)
+    const totalCatBookings = Object.values(catCounts).reduce((a, b) => a + b, 0) || 1
+    const categoryDist = Object.entries(catCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([cat, count]) => ({
+        name: CATEGORY_DISPLAY[cat] ?? cat,
+        pct: Math.round((count / totalCatBookings) * 100),
+        color: catColors[cat] ?? '#9E9A94',
+      }))
+
+    const totalBookings = monthlyBookings.reduce((a, b) => a + b, 0)
+    const totalRevenue  = monthlyRevenue.reduce((a, b) => a + b, 0)
+    const avgRating     = exps.length ? exps.reduce((a, e) => a + e.rating, 0) / exps.length : 0
+
+    return {
+      topExperiences, monthlyBookings, monthlyRevenue, months, categoryDist,
+      avgBookingValue: totalBookings > 0 ? Math.round(totalRevenue / totalBookings) : 0,
+      avgRating: Math.round(avgRating * 100) / 100,
+    }
+  } catch {
+    return { topExperiences: [], monthlyBookings: Array(12).fill(0), monthlyRevenue: Array(12).fill(0), months: [], categoryDist: [], avgBookingValue: 0, avgRating: 0 }
+  }
 }
 
 export type AdminEvent = {
@@ -887,11 +1042,17 @@ export type DashBooking = {
 
 export type DashReview = { id: string; guest: string; experience: string; rating: number; comment: string; date: string }
 
+export type EarningsByMonth = { month: string; gross: number }
+
 export type HostDashboardData = {
   hostName: string
+  commissionRate: number
   experiences: DashExp[]
   bookings: DashBooking[]
   reviews: DashReview[]
+  earningsByMonth: EarningsByMonth[]
+  totalGross: number
+  pendingPayout: number
 }
 
 export async function getHostDashboardData(): Promise<HostDashboardData | null> {
@@ -905,10 +1066,20 @@ export async function getHostDashboardData(): Promise<HostDashboardData | null> 
     })
     if (!operator) return null
 
-    const [dbExps, dbBookings, dbReviews] = await Promise.all([
+    const now = new Date()
+    const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1)
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+
+    const [dbExps, dbBookings, dbReviews, earnedBookings, commRateDecimal] = await Promise.all([
       prisma.experience.findMany({
         where: { operatorId: operator.id },
-        include: { bookings: { select: { totalPrice: true } }, _count: { select: { bookings: true } } },
+        include: {
+          bookings: {
+            where: { status: { in: ['CONFIRMED', 'COMPLETED'] } },
+            select: { totalPrice: true },
+          },
+          _count: { select: { bookings: true } },
+        },
         orderBy: { createdAt: 'asc' },
       }),
       prisma.booking.findMany({
@@ -926,7 +1097,30 @@ export async function getHostDashboardData(): Promise<HostDashboardData | null> 
         orderBy: { createdAt: 'desc' },
         take: 100,
       }),
+      prisma.booking.findMany({
+        where: {
+          experience: { operatorId: operator.id },
+          status: { in: ['CONFIRMED', 'COMPLETED'] },
+          createdAt: { gte: twelveMonthsAgo },
+        },
+        select: { totalPrice: true, createdAt: true },
+      }),
+      getCommissionRate(),
     ])
+
+    // 12-month rolling earnings breakdown
+    const earningsByMonth: EarningsByMonth[] = Array.from({ length: 12 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - (11 - i), 1)
+      const gross = earnedBookings
+        .filter(b => b.createdAt.getFullYear() === d.getFullYear() && b.createdAt.getMonth() === d.getMonth())
+        .reduce((a, b) => a + b.totalPrice, 0)
+      return { month: d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }), gross }
+    })
+
+    const totalGross = earnedBookings.reduce((a, b) => a + b.totalPrice, 0)
+    const pendingPayout = earnedBookings
+      .filter(b => b.createdAt >= startOfMonth)
+      .reduce((a, b) => a + b.totalPrice, 0)
 
     const expStatusDisplay: Record<string, string> = {
       ACTIVE: 'Active', DRAFT: 'Draft', PENDING_REVIEW: 'Pending Review', PAUSED: 'Paused',
@@ -976,8 +1170,573 @@ export async function getHostDashboardData(): Promise<HostDashboardData | null> 
       date: r.createdAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
     }))
 
-    return { hostName: operator.user.name, experiences, bookings, reviews }
+    return { hostName: operator.user.name, commissionRate: Math.round(commRateDecimal * 100), experiences, bookings, reviews, earningsByMonth, totalGross, pendingPayout }
   } catch {
+    return null
+  }
+}
+
+// ── GA-style analytics ────────────────────────────────────────────────────────
+
+export type AnalyticsMetric = { value: number; change: number }
+
+export type AnalyticsData = {
+  metrics: {
+    bookings: AnalyticsMetric
+    revenue: AnalyticsMetric
+    newUsers: AnalyticsMetric
+    newHosts: AnalyticsMetric
+    avgBookingValue: AnalyticsMetric
+    cancelRate: AnalyticsMetric
+  }
+  bookingTrend: { label: string; current: number; prev: number }[]
+  revenueTrend:  { label: string; current: number; prev: number }[]
+  userGrowth:    { label: string; count: number }[]
+  topExperiences: { title: string; bookings: number; revenue: number; rating: number; area: string; category: string }[]
+  categoryBreakdown: { name: string; bookings: number; revenue: number; pct: number; color: string }[]
+  areaBreakdown:  { name: string; bookings: number; revenue: number }[]
+  topHosts:       { name: string; business: string; bookings: number; revenue: number; rating: number }[]
+  bookingStatus:  { status: string; count: number; color: string }[]
+}
+
+const CAT_COLORS: Record<string, string> = {
+  WELLNESS: '#4A7C59', ART_CRAFT: '#C8A97E', CULTURE: '#B66A45',
+  NATURE: '#6F675C', FOOD_DRINK: '#111111', SURF_WATER: '#3B82F6',
+  DIVING: '#0EA5E9', COOKING: '#D97706', LOCAL_EXPERTS: '#8B5CF6', RENTALS: '#EC4899',
+}
+
+const STATUS_COLORS: Record<string, string> = {
+  CONFIRMED: '#4A7C59', PENDING: '#C8A97E', COMPLETED: '#4B6CB7', CANCELLED: '#B66A45',
+}
+
+export async function getAnalyticsDataAction(days: number): Promise<AnalyticsData> {
+  const empty: AnalyticsData = {
+    metrics: { bookings: { value: 0, change: 0 }, revenue: { value: 0, change: 0 }, newUsers: { value: 0, change: 0 }, newHosts: { value: 0, change: 0 }, avgBookingValue: { value: 0, change: 0 }, cancelRate: { value: 0, change: 0 } },
+    bookingTrend: [], revenueTrend: [], userGrowth: [],
+    topExperiences: [], categoryBreakdown: [], areaBreakdown: [], topHosts: [], bookingStatus: [],
+  }
+  try {
+    const now = new Date()
+    const periodStart = new Date(now.getTime() - days * 86400000)
+    const prevStart   = new Date(periodStart.getTime() - days * 86400000)
+    const pct = (curr: number, prev: number) =>
+      prev === 0 ? (curr > 0 ? 100 : 0) : Math.round(((curr - prev) / prev) * 100)
+
+    // ── Bookings (both periods in one query) ──────────────────────────────────
+    const allBookings = await prisma.booking.findMany({
+      where: { createdAt: { gte: prevStart } },
+      include: {
+        experience: {
+          select: {
+            category: true, area: true, title: true, rating: true,
+            operator: { select: { businessName: true, user: { select: { name: true } } } },
+          },
+        },
+      },
+      orderBy: { createdAt: 'asc' },
+    })
+    const curr = allBookings.filter(b => b.createdAt >= periodStart)
+    const prev = allBookings.filter(b => b.createdAt < periodStart)
+
+    const currRev  = curr.reduce((a, b) => a + b.totalPrice, 0)
+    const prevRev  = prev.reduce((a, b) => a + b.totalPrice, 0)
+    const currAvg  = curr.length ? Math.round(currRev / curr.length) : 0
+    const prevAvg  = prev.length ? Math.round(prevRev / prev.length) : 0
+    const currCancel = curr.length ? Math.round((curr.filter(b => b.status === 'CANCELLED').length / curr.length) * 100) : 0
+    const prevCancel = prev.length ? Math.round((prev.filter(b => b.status === 'CANCELLED').length / prev.length) * 100) : 0
+
+    // ── Users ─────────────────────────────────────────────────────────────────
+    const allUsers = await prisma.user.findMany({
+      where: { createdAt: { gte: prevStart } },
+      select: { createdAt: true, role: true },
+    })
+    const currUsers = allUsers.filter(u => u.createdAt >= periodStart).length
+    const prevUsers = allUsers.filter(u => u.createdAt < periodStart).length
+
+    // ── Hosts ─────────────────────────────────────────────────────────────────
+    const allOps = await prisma.operator.findMany({
+      where: { user: { createdAt: { gte: prevStart } } },
+      include: { user: { select: { createdAt: true } } },
+    })
+    const currHosts = allOps.filter(o => o.user.createdAt >= periodStart).length
+    const prevHosts = allOps.filter(o => o.user.createdAt < periodStart).length
+
+    // ── Trend buckets ─────────────────────────────────────────────────────────
+    const bucketMs  = days <= 30 ? 86400000 : days <= 90 ? 7 * 86400000 : 30 * 86400000
+    const numBuckets = days <= 30 ? days : days <= 90 ? 13 : 12
+    const fmtLabel  = (d: Date) => days <= 30
+      ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      : days <= 90
+        ? `W${Math.ceil(((d.getTime() - periodStart.getTime()) / 86400000 + 1) / 7)}`
+        : d.toLocaleDateString('en-US', { month: 'short' })
+
+    const bookingTrend: AnalyticsData['bookingTrend'] = []
+    const revenueTrend:  AnalyticsData['revenueTrend']  = []
+    const userGrowth:    AnalyticsData['userGrowth']    = []
+
+    for (let i = 0; i < numBuckets; i++) {
+      const bs  = new Date(periodStart.getTime() + i * bucketMs)
+      const be  = new Date(bs.getTime() + bucketMs)
+      const pbs = new Date(prevStart.getTime()   + i * bucketMs)
+      const pbe = new Date(pbs.getTime() + bucketMs)
+      const cB  = curr.filter(b => b.createdAt >= bs && b.createdAt < be)
+      const pB  = prev.filter(b => b.createdAt >= pbs && b.createdAt < pbe)
+      const label = fmtLabel(bs)
+      bookingTrend.push({ label, current: cB.length,   prev: pB.length })
+      revenueTrend.push({ label, current: cB.reduce((a, b) => a + b.totalPrice, 0), prev: pB.reduce((a, b) => a + b.totalPrice, 0) })
+      userGrowth.push({ label, count: allUsers.filter(u => u.createdAt >= bs && u.createdAt < be).length })
+    }
+
+    // ── Top experiences ───────────────────────────────────────────────────────
+    const expMap = new Map<string, AnalyticsData['topExperiences'][0]>()
+    for (const b of curr) {
+      const key = b.experience.title
+      const e = expMap.get(key) ?? { title: b.experience.title, bookings: 0, revenue: 0, rating: b.experience.rating, area: AREA_DISPLAY[String(b.experience.area)] ?? String(b.experience.area), category: CATEGORY_DISPLAY[String(b.experience.category)] ?? String(b.experience.category) }
+      e.bookings++; e.revenue += b.totalPrice
+      expMap.set(key, e)
+    }
+    const topExperiences = Array.from(expMap.values()).sort((a, b) => b.bookings - a.bookings).slice(0, 10)
+
+    // ── Category breakdown ────────────────────────────────────────────────────
+    const catMap = new Map<string, { bookings: number; revenue: number }>()
+    for (const b of curr) {
+      const k = String(b.experience.category)
+      const e = catMap.get(k) ?? { bookings: 0, revenue: 0 }
+      e.bookings++; e.revenue += b.totalPrice; catMap.set(k, e)
+    }
+    const totalCatB = Array.from(catMap.values()).reduce((a, b) => a + b.bookings, 0) || 1
+    const categoryBreakdown = Array.from(catMap.entries()).sort((a, b) => b[1].bookings - a[1].bookings)
+      .map(([cat, d]) => ({ name: CATEGORY_DISPLAY[cat] ?? cat, ...d, pct: Math.round((d.bookings / totalCatB) * 100), color: CAT_COLORS[cat] ?? '#9E9A94' }))
+
+    // ── Area breakdown ────────────────────────────────────────────────────────
+    const areaMap = new Map<string, { bookings: number; revenue: number }>()
+    for (const b of curr) {
+      const k = AREA_DISPLAY[String(b.experience.area)] ?? String(b.experience.area)
+      const e = areaMap.get(k) ?? { bookings: 0, revenue: 0 }
+      e.bookings++; e.revenue += b.totalPrice; areaMap.set(k, e)
+    }
+    const areaBreakdown = Array.from(areaMap.entries()).sort((a, b) => b[1].bookings - a[1].bookings).map(([name, d]) => ({ name, ...d }))
+
+    // ── Top hosts ─────────────────────────────────────────────────────────────
+    const hostMap = new Map<string, AnalyticsData['topHosts'][0]>()
+    for (const b of curr) {
+      const k = b.experience.operator.businessName
+      const h = hostMap.get(k) ?? { name: b.experience.operator.user.name, business: b.experience.operator.businessName, bookings: 0, revenue: 0, rating: 0 }
+      h.bookings++; h.revenue += b.totalPrice; hostMap.set(k, h)
+    }
+    const topHosts = Array.from(hostMap.values()).sort((a, b) => b.revenue - a.revenue).slice(0, 10)
+
+    // ── Booking status ────────────────────────────────────────────────────────
+    const statusMap = new Map<string, number>()
+    for (const b of curr) { const s = String(b.status); statusMap.set(s, (statusMap.get(s) ?? 0) + 1) }
+    const bookingStatus = Array.from(statusMap.entries()).map(([s, count]) => ({
+      status: s.charAt(0) + s.slice(1).toLowerCase(), count, color: STATUS_COLORS[s] ?? '#9E9A94',
+    }))
+
+    return {
+      metrics: {
+        bookings:       { value: curr.length, change: pct(curr.length, prev.length) },
+        revenue:        { value: currRev,     change: pct(currRev, prevRev) },
+        newUsers:       { value: currUsers,   change: pct(currUsers, prevUsers) },
+        newHosts:       { value: currHosts,   change: pct(currHosts, prevHosts) },
+        avgBookingValue: { value: currAvg,    change: pct(currAvg, prevAvg) },
+        cancelRate:     { value: currCancel,  change: pct(prevCancel, currCancel) },
+      },
+      bookingTrend, revenueTrend, userGrowth,
+      topExperiences, categoryBreakdown, areaBreakdown, topHosts, bookingStatus,
+    }
+  } catch { return empty }
+}
+
+// ── Newsletter subscribers ────────────────────────────────────────────────────
+
+export type NewsletterSub = { id: string; email: string; source: string; joinedAt: string }
+
+export async function getNewsletterSubscribersAction(): Promise<NewsletterSub[]> {
+  try {
+    const rows = await prisma.newsletterSubscriber.findMany({ orderBy: { createdAt: 'desc' } })
+    return rows.map(r => ({
+      id: r.id, email: r.email, source: r.source,
+      joinedAt: r.createdAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    }))
+  } catch { return [] }
+}
+
+export async function deleteNewsletterSubAction(id: string): Promise<{ ok: boolean }> {
+  try { await prisma.newsletterSubscriber.delete({ where: { id } }); return { ok: true } }
+  catch { return { ok: false } }
+}
+
+// ── Real payments (booking aggregates per operator) ───────────────────────────
+
+export type AdminRealPayout = {
+  key: string; operatorId: string; name: string; business: string
+  bookings: number; gross: number; commission: number; net: number
+  period: string; periodLabel: string
+}
+
+export async function getAdminRealPayoutsAction(): Promise<AdminRealPayout[]> {
+  try {
+    const twoMonthsAgo = new Date()
+    twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2)
+
+    const [commissionRate, bookings] = await Promise.all([
+      getCommissionRate(),
+      prisma.booking.findMany({
+        where: { status: { in: ['CONFIRMED' as any, 'COMPLETED' as any] }, date: { gte: twoMonthsAgo } },
+        include: {
+          experience: {
+            include: { operator: { include: { user: { select: { name: true } } } } },
+          },
+        },
+      }),
+    ])
+
+    const map = new Map<string, AdminRealPayout>()
+    for (const b of bookings) {
+      const op = b.experience.operator
+      const month = b.date.toISOString().slice(0, 7)
+      const key = `${op.id}:${month}`
+      const existing = map.get(key) ?? {
+        key, operatorId: op.id, name: op.user.name, business: op.businessName,
+        bookings: 0, gross: 0, commission: 0, net: 0,
+        period: month,
+        periodLabel: b.date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+      }
+      existing.bookings++
+      existing.gross += b.totalPrice
+      existing.commission = Math.round(existing.gross * COMMISSION_RATE)
+      existing.net = existing.gross - existing.commission
+      map.set(key, existing)
+    }
+
+    return Array.from(map.values()).sort((a, b) => b.period.localeCompare(a.period))
+  } catch { return [] }
+}
+
+// ── Payout DB actions ─────────────────────────────────────────────────────────
+
+export type AdminPayout = {
+  id: string; operatorId: string; name: string; business: string
+  periodStart: string; periodEnd: string; periodLabel: string
+  gross: number; commission: number; net: number; bookings: number
+  status: string; paidAt: string | null; notes: string
+}
+
+export async function adminMarkPayoutPaidAction(input: {
+  operatorId: string; periodStart: string; periodEnd: string
+  gross: number; commission: number; net: number; bookings: number
+}): Promise<{ ok: boolean; id?: string }> {
+  try {
+    const payout = await prisma.payout.upsert({
+      where: {
+        operatorId_periodStart_periodEnd: {
+          operatorId: input.operatorId,
+          periodStart: new Date(input.periodStart),
+          periodEnd: new Date(input.periodEnd),
+        },
+      },
+      update: { status: 'PAID', paidAt: new Date(), gross: input.gross, commission: input.commission, net: input.net, bookings: input.bookings },
+      create: {
+        operatorId: input.operatorId,
+        periodStart: new Date(input.periodStart),
+        periodEnd: new Date(input.periodEnd),
+        gross: input.gross, commission: input.commission, net: input.net, bookings: input.bookings,
+        status: 'PAID', paidAt: new Date(),
+      },
+    })
+    return { ok: true, id: payout.id }
+  } catch { return { ok: false } }
+}
+
+export async function getAdminPayoutsAction(): Promise<AdminPayout[]> {
+  try {
+    const rows = await prisma.payout.findMany({
+      include: { operator: { include: { user: { select: { name: true } } } } },
+      orderBy: { periodStart: 'desc' },
+    })
+    return rows.map(p => ({
+      id: p.id,
+      operatorId: p.operatorId,
+      name: p.operator.user.name,
+      business: p.operator.businessName,
+      periodStart: p.periodStart.toISOString(),
+      periodEnd: p.periodEnd.toISOString(),
+      periodLabel: p.periodStart.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+      gross: p.gross, commission: p.commission, net: p.net, bookings: p.bookings,
+      status: p.status === 'PAID' ? 'Paid' : p.status === 'REQUESTED' ? 'Requested' : 'Pending',
+      paidAt: p.paidAt ? p.paidAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null,
+      notes: p.notes ?? '',
+    }))
+  } catch { return [] }
+}
+
+export type OperatorPayout = {
+  id: string; periodLabel: string; gross: number; commission: number; net: number
+  bookings: number; status: string; paidAt: string | null
+}
+
+export async function getOperatorPayoutsAction(): Promise<OperatorPayout[]> {
+  try {
+    const user = await getSessionUser()
+    if (!user) return []
+    const operator = await prisma.operator.findUnique({ where: { userId: user.id } })
+    if (!operator) return []
+    const rows = await prisma.payout.findMany({
+      where: { operatorId: operator.id },
+      orderBy: { periodStart: 'desc' },
+    })
+    return rows.map(p => ({
+      id: p.id,
+      periodLabel: p.periodStart.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+      gross: p.gross, commission: p.commission, net: p.net, bookings: p.bookings,
+      status: p.status === 'PAID' ? 'Paid' : p.status === 'REQUESTED' ? 'Requested' : 'Pending',
+      paidAt: p.paidAt ? p.paidAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null,
+    }))
+  } catch { return [] }
+}
+
+export async function requestPayoutAction(): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const user = await getSessionUser()
+    if (!user) return { ok: false, error: 'Not signed in' }
+    const operator = await prisma.operator.findUnique({ where: { userId: user.id } })
+    if (!operator) return { ok: false, error: 'No operator account' }
+
+    const now = new Date()
+    const y = now.getUTCFullYear(), m = now.getUTCMonth()
+    const periodStart = new Date(Date.UTC(y, m, 1))
+    const periodEnd   = new Date(Date.UTC(y, m + 1, 1))
+
+    const existing = await prisma.payout.findUnique({
+      where: { operatorId_periodStart_periodEnd: { operatorId: operator.id, periodStart, periodEnd } },
+    })
+    if ((existing?.status as string) === 'PAID') return { ok: false, error: 'This period is already paid.' }
+    if ((existing?.status as string) === 'REQUESTED') return { ok: false, error: 'Payout already requested.' }
+
+    const [commissionRate, bookings] = await Promise.all([
+      getCommissionRate(),
+      prisma.booking.findMany({
+        where: {
+          experience: { operatorId: operator.id },
+          status: { in: ['CONFIRMED', 'COMPLETED'] as any },
+          createdAt: { gte: periodStart, lt: periodEnd },
+        },
+        select: { totalPrice: true },
+      }),
+    ])
+    if (bookings.length === 0) return { ok: false, error: 'No confirmed bookings this month to pay out.' }
+
+    const gross      = bookings.reduce((a, b) => a + b.totalPrice, 0)
+    const commission = Math.round(gross * commissionRate)
+    const net        = gross - commission
+
+    if (net < PAYOUT_MIN_NET) {
+      return { ok: false, error: `Minimum payout is IDR ${PAYOUT_MIN_NET.toLocaleString()}. Your net this month is IDR ${net.toLocaleString()}.` }
+    }
+
+    await prisma.payout.upsert({
+      where: { operatorId_periodStart_periodEnd: { operatorId: operator.id, periodStart, periodEnd } },
+      update: { status: 'REQUESTED' as any, gross, commission, net, bookings: bookings.length },
+      create: { operatorId: operator.id, periodStart, periodEnd, gross, commission, net, bookings: bookings.length, status: 'REQUESTED' as any },
+    })
+    return { ok: true }
+  } catch (e: any) {
+    return { ok: false, error: e.message }
+  }
+}
+
+// ── Broadcast notifications ───────────────────────────────────────────────────
+
+export async function sendBroadcastAction(
+  target: 'all' | 'tourists' | 'operators',
+  title: string,
+  body: string,
+  href?: string,
+): Promise<{ ok: boolean; count: number; error?: string }> {
+  try {
+    const roleMap = { tourists: 'TOURIST', operators: 'OPERATOR' }
+    const where = target === 'all' ? {} : { role: roleMap[target] as any }
+    const users = await prisma.user.findMany({ where, select: { id: true } })
+    await prisma.notification.createMany({
+      data: users.map(u => ({
+        userId: u.id, title, body,
+        href: href || null,
+        type: 'broadcast',
+      })),
+    })
+    return { ok: true, count: users.length }
+  } catch (e: any) {
+    return { ok: false, count: 0, error: e.message }
+  }
+}
+
+// ── Google Analytics Data API ─────────────────────────────────────────────────
+
+export type GAMetrics = {
+  sessions: number; users: number; newUsers: number
+  pageViews: number; engagementRate: number; avgSessionDuration: number
+  sessionsPrev: number; usersPrev: number; pageViewsPrev: number
+}
+
+export type GATopPage = { path: string; sessions: number; users: number }
+export type GASource = { source: string; sessions: number; pct: number }
+export type GADevice = { device: string; sessions: number; pct: number }
+export type GACountry = { country: string; users: number; pct: number }
+export type GADayPoint = { date: string; sessions: number; users: number }
+
+export type GAData = {
+  metrics: GAMetrics
+  topPages: GATopPage[]
+  sources: GASource[]
+  devices: GADevice[]
+  countries: GACountry[]
+  trend: GADayPoint[]
+}
+
+function getGAClient() {
+  const raw = process.env.GOOGLE_SERVICE_ACCOUNT_KEY
+  if (!raw) throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY not set')
+  const creds = JSON.parse(raw)
+  const { BetaAnalyticsDataClient } = require('@google-analytics/data')
+  return new BetaAnalyticsDataClient({ credentials: creds })
+}
+
+export async function getGADataAction(
+  days = 30,
+  customStart?: string,
+  customEnd?: string,
+): Promise<GAData | null> {
+  try {
+    const propertyId = process.env.GOOGLE_GA4_PROPERTY_ID
+    if (!propertyId) return null
+
+    const client = getGAClient()
+    const property = `properties/${propertyId}`
+
+    let currRange: { startDate: string; endDate: string }
+    let prevRange: { startDate: string; endDate: string }
+
+    if (customStart && customEnd) {
+      const start = new Date(customStart)
+      const end = new Date(customEnd)
+      const rangeDays = Math.max(1, Math.round((end.getTime() - start.getTime()) / 86400000))
+      const prevEnd = new Date(start); prevEnd.setDate(prevEnd.getDate() - 1)
+      const prevStart = new Date(prevEnd); prevStart.setDate(prevStart.getDate() - rangeDays + 1)
+      const fmt = (d: Date) => d.toISOString().slice(0, 10)
+      currRange = { startDate: customStart, endDate: customEnd }
+      prevRange = { startDate: fmt(prevStart), endDate: fmt(prevEnd) }
+    } else {
+      currRange = { startDate: `${days}daysAgo`, endDate: 'today' }
+      prevRange = { startDate: `${days * 2}daysAgo`, endDate: `${days + 1}daysAgo` }
+    }
+
+    const [summaryRes, pagesRes, sourcesRes, devicesRes, countriesRes, trendRes] = await Promise.all([
+      // Summary metrics — current + previous period
+      client.runReport({
+        property,
+        dateRanges: [currRange, prevRange],
+        metrics: [
+          { name: 'sessions' }, { name: 'activeUsers' }, { name: 'newUsers' },
+          { name: 'screenPageViews' }, { name: 'engagementRate' },
+          { name: 'averageSessionDuration' },
+        ],
+      }),
+      // Top pages
+      client.runReport({
+        property, dateRanges: [currRange],
+        dimensions: [{ name: 'pagePath' }],
+        metrics: [{ name: 'sessions' }, { name: 'activeUsers' }],
+        orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
+        limit: 10,
+      }),
+      // Traffic sources
+      client.runReport({
+        property, dateRanges: [currRange],
+        dimensions: [{ name: 'sessionDefaultChannelGroup' }],
+        metrics: [{ name: 'sessions' }],
+        orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
+        limit: 8,
+      }),
+      // Devices
+      client.runReport({
+        property, dateRanges: [currRange],
+        dimensions: [{ name: 'deviceCategory' }],
+        metrics: [{ name: 'sessions' }],
+      }),
+      // Countries
+      client.runReport({
+        property, dateRanges: [currRange],
+        dimensions: [{ name: 'country' }],
+        metrics: [{ name: 'activeUsers' }],
+        orderBys: [{ metric: { metricName: 'activeUsers' }, desc: true }],
+        limit: 8,
+      }),
+      // Daily trend
+      client.runReport({
+        property, dateRanges: [currRange],
+        dimensions: [{ name: 'date' }],
+        metrics: [{ name: 'sessions' }, { name: 'activeUsers' }],
+        orderBys: [{ dimension: { dimensionName: 'date' } }],
+      }),
+    ])
+
+    const g = (row: any, idx: number) => Number(row.metricValues?.[idx]?.value ?? 0)
+    const d = (row: any, idx: number) => row.dimensionValues?.[idx]?.value ?? ''
+
+    // Summary — GA returns dateRange0 = current, dateRange1 = prev
+    const currRow = summaryRes[0]?.rows?.find((r: any) => d(r, 0) === 'date_range_0') ??
+      summaryRes[0]?.rows?.[0]
+    const prevRow = summaryRes[0]?.rows?.find((r: any) => d(r, 0) === 'date_range_1') ??
+      summaryRes[0]?.rows?.[1]
+
+    // When dateRanges has 2 entries, rows have a dimension for dateRange
+    const rowsByRange: Record<string, any> = {}
+    for (const row of (summaryRes[0]?.rows ?? [])) {
+      const rangeKey = row.dimensionValues?.[0]?.value ?? 'date_range_0'
+      rowsByRange[rangeKey] = row
+    }
+    const cr = rowsByRange['date_range_0']
+    const pr = rowsByRange['date_range_1']
+
+    const metrics: GAMetrics = {
+      sessions: g(cr, 0), users: g(cr, 1), newUsers: g(cr, 2),
+      pageViews: g(cr, 3), engagementRate: Math.round(g(cr, 4) * 100),
+      avgSessionDuration: Math.round(g(cr, 5)),
+      sessionsPrev: g(pr, 0), usersPrev: g(pr, 1), pageViewsPrev: g(pr, 3),
+    }
+
+    const topPages: GATopPage[] = (pagesRes[0]?.rows ?? []).map((r: any) => ({
+      path: d(r, 0), sessions: g(r, 0), users: g(r, 1),
+    }))
+
+    const totalSrc = (sourcesRes[0]?.rows ?? []).reduce((a: number, r: any) => a + g(r, 0), 0) || 1
+    const sources: GASource[] = (sourcesRes[0]?.rows ?? []).map((r: any) => ({
+      source: d(r, 0) || 'Direct', sessions: g(r, 0),
+      pct: Math.round((g(r, 0) / totalSrc) * 100),
+    }))
+
+    const totalDev = (devicesRes[0]?.rows ?? []).reduce((a: number, r: any) => a + g(r, 0), 0) || 1
+    const devices: GADevice[] = (devicesRes[0]?.rows ?? []).map((r: any) => ({
+      device: d(r, 0), sessions: g(r, 0),
+      pct: Math.round((g(r, 0) / totalDev) * 100),
+    }))
+
+    const totalCountry = (countriesRes[0]?.rows ?? []).reduce((a: number, r: any) => a + g(r, 0), 0) || 1
+    const countries: GACountry[] = (countriesRes[0]?.rows ?? []).map((r: any) => ({
+      country: d(r, 0), users: g(r, 0),
+      pct: Math.round((g(r, 0) / totalCountry) * 100),
+    }))
+
+    const trend: GADayPoint[] = (trendRes[0]?.rows ?? []).map((r: any) => {
+      const raw = d(r, 0) // "20260101"
+      const label = `${raw.slice(4, 6)}/${raw.slice(6, 8)}`
+      return { date: label, sessions: g(r, 0), users: g(r, 1) }
+    })
+
+    return { metrics, topPages, sources, devices, countries, trend }
+  } catch (e) {
+    console.error('GA Data API error:', e)
     return null
   }
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import {
   LayoutDashboard, Compass, Users, CalendarDays, Star,
   CreditCard, BarChart2, Settings, Menu, X,
@@ -8,6 +9,7 @@ import {
   Eye, Edit2, Trash2, Play, Pause, CheckCircle, XCircle,
   MoreHorizontal, Bell, LogOut, TrendingUp, Globe, Shield,
   Check, AlertTriangle, Plus, RefreshCw, Flag, Ticket, MapPin, Clock,
+  Mail, Megaphone, Send, Sparkles, Activity, FileText, MailOpen, ChevronUp,
 } from 'lucide-react'
 import {
   getPendingListingsAction, approveListingAction, rejectListingAction, type PendingListing,
@@ -15,10 +17,20 @@ import {
   getAdminStatsAction, type AdminStats,
   getAdminExperiencesAction, type AdminExp, adminUpdateExperienceStatusAction,
   getAdminHostsAction, type AdminHost, approveHostAction, suspendHostAction,
-  getAdminBookingsAction, type AdminBooking, adminUpdateBookingStatusAction,
+  getAdminBookingsAction, type AdminBooking, adminUpdateBookingStatusAction, adminCompleteBookingAction,
   getAdminUsersAction, type AdminUser,
   getAdminReviewsAction, type AdminReview, adminDeleteReviewAction,
   getAdminEventsAction, type AdminEvent, adminUpdateEventStatusAction, adminDeleteEventAction,
+  adminDeleteExperienceAction, adminApproveReviewAction, adminFlagReviewAction, adminHideReviewAction,
+  getAnalyticsDataAction, type AnalyticsData,
+  adminUpdateUserAction, adminUpdateHostAction,
+  getNewsletterSubscribersAction, type NewsletterSub, deleteNewsletterSubAction,
+  getAdminRealPayoutsAction, type AdminRealPayout,
+  adminMarkPayoutPaidAction, getAdminPayoutsAction, type AdminPayout,
+  sendBroadcastAction,
+  getGADataAction, type GAData,
+  COMMISSION_RATE, PAYOUT_MIN_NET,
+  getCommissionRateAction, updateCommissionRateAction,
 } from '@/lib/actions'
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
@@ -53,62 +65,6 @@ const CATEGORY_DIST = [
   { name: 'Water Activities',  pct: 6,  color: '#3B82F6' },
 ]
 
-const ALL_EXPERIENCES = [
-  { id: 1,  slug: 'pottery-making-class',      title: 'Pottery Making Class',         host: 'Made Sari',       area: 'Ubud',     category: 'Art & Craft',  price: 450000, rating: 4.9, reviews: 128, bookings: 87,  status: 'Active',  image: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=60&auto=format&fit=crop&q=80' },
-  { id: 2,  slug: 'silver-jewelry-workshop',   title: 'Silver Jewelry Workshop',      host: 'Ketut Suardana',  area: 'Canggu',   category: 'Art & Craft',  price: 550000, rating: 4.8, reviews: 94,  bookings: 61,  status: 'Active',  image: 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=60&auto=format&fit=crop&q=80' },
-  { id: 3,  slug: 'sound-healing-journey',     title: 'Sound Healing Journey',        host: 'Nina Putri',      area: 'Ubud',     category: 'Wellness',     price: 350000, rating: 4.8, reviews: 178, bookings: 143, status: 'Active',  image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=60&auto=format&fit=crop&q=80' },
-  { id: 4,  slug: 'uluwatu-kecak-sunset',      title: 'Uluwatu Sunset & Kecak Dance', host: 'I Nyoman Arta',   area: 'Uluwatu',  category: 'Culture',      price: 450000, rating: 4.9, reviews: 312, bookings: 198, status: 'Active',  image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=60&auto=format&fit=crop&q=80' },
-  { id: 5,  slug: 'balinese-cooking-class',    title: 'Balinese Cooking Class',       host: 'Putu Sari',       area: 'Seminyak', category: 'Culinary',          price: 480000, rating: 4.8, reviews: 156, bookings: 112, status: 'Active',  image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=60&auto=format&fit=crop&q=80' },
-  { id: 6,  slug: 'mount-batur-sunrise',       title: 'Mount Batur Sunrise Trek',     host: 'Wayan Surya',     area: 'Kintamani',category: 'Nature & Outdoors', price: 650000, rating: 4.8, reviews: 241, bookings: 167, status: 'Active',  image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=60&auto=format&fit=crop&q=80' },
-  { id: 7,  slug: 'beginner-surf-lesson',      title: 'Beginner Surf Lesson',         host: 'Komang Surya',    area: 'Kuta',     category: 'Water Activities',  price: 320000, rating: 4.7, reviews: 428, bookings: 312, status: 'Active',  image: 'https://images.unsplash.com/photo-1530870110042-98b2cb110834?w=60&auto=format&fit=crop&q=80' },
-  { id: 8,  slug: 'rice-terrace-walk',         title: 'Tegalalang Rice Terrace Walk', host: 'Gede Arnawa',     area: 'Ubud',     category: 'Nature & Outdoors', price: 280000, rating: 4.8, reviews: 192, bookings: 134, status: 'Active',  image: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=60&auto=format&fit=crop&q=80' },
-  { id: 9,  slug: 'waterfall-hidden-canyon',   title: 'Hidden Waterfall Canyon Hike', host: 'Putu Wirawan',    area: 'Aling-Aling', category: 'Nature & Outdoors', price: 450000, rating: 4.9, reviews: 89,  bookings: 54,  status: 'Active',  image: 'https://images.unsplash.com/photo-1552083375-1447ce886485?w=60&auto=format&fit=crop&q=80' },
-  { id: 10, slug: 'natural-dye-workshop',      title: 'Natural Dye Workshop',         host: 'Ni Made Suari',   area: 'Sidemen',  category: 'Art & Craft',  price: 380000, rating: 4.7, reviews: 48,  bookings: 29,  status: 'Draft',   image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=60&auto=format&fit=crop&q=80' },
-]
-
-const ALL_HOSTS = [
-  { id: 1, name: 'Made Sari',       business: 'Made Sari Pottery Studio', area: 'Ubud',     experiences: 3, totalBookings: 228, totalEarnings: 63900000, rating: 4.9, status: 'Verified',   joined: 'Jan 2023', image: null },
-  { id: 2, name: 'Ketut Suardana',  business: 'Ketut Silver Artistry',    area: 'Canggu',   experiences: 2, totalBookings: 94,  totalEarnings: 41800000, rating: 4.8, status: 'Verified',   joined: 'Mar 2023', image: null },
-  { id: 3, name: 'Nina Putri',      business: 'Sukha Healing Space',      area: 'Ubud',     experiences: 2, totalBookings: 355, totalEarnings: 98700000, rating: 4.9, status: 'Verified',   joined: 'Feb 2023', image: null },
-  { id: 4, name: 'I Nyoman Arta',   business: 'Bali Culture Tours',       area: 'Uluwatu',  experiences: 2, totalBookings: 516, totalEarnings: 181800000, rating: 4.9, status: 'Verified',  joined: 'Jan 2023', image: null },
-  { id: 5, name: 'Putu Sari',       business: 'Warung Dapur Bali',        area: 'Seminyak', experiences: 1, totalBookings: 112, totalEarnings: 43200000, rating: 4.8, status: 'Verified',   joined: 'Apr 2023', image: null },
-  { id: 6, name: 'Wayan Surya',     business: 'Batur Volcano Guides',     area: 'Kintamani',experiences: 1, totalBookings: 167, totalEarnings: 97500000, rating: 4.8, status: 'Verified',   joined: 'May 2023', image: null },
-  { id: 7, name: 'Komang Surya',    business: 'Kuta Surf Academy',        area: 'Kuta',     experiences: 2, totalBookings: 488, totalEarnings: 120100000,rating: 4.7, status: 'Verified',   joined: 'Jun 2023', image: null },
-  { id: 8, name: 'Wayan Gede',      business: 'Sacred Bali Ceremonies',   area: 'Gianyar',  experiences: 3, totalBookings: 250, totalEarnings: 108000000, rating: 4.8, status: 'Pending',   joined: 'Aug 2023', image: null },
-  { id: 9, name: 'Putu Ayu',        business: 'Ubud Food Stories',        area: 'Ubud',     experiences: 1, totalBookings: 97,  totalEarnings: 25400000, rating: 4.8, status: 'Pending',    joined: 'Sep 2023', image: null },
-  { id: 10,name: 'Kadek Anom',      business: 'Sawah Yoga Ubud',          area: 'Ubud',     experiences: 1, totalBookings: 156, totalEarnings: 39600000, rating: 4.9, status: 'Suspended',  joined: 'Jul 2023', image: null },
-]
-
-const ALL_BOOKINGS = [
-  { id: 'B001', ref: 'BAL-2024-001', guest: 'Sarah Kim',      email: 'sarah.k@gmail.com',    experience: 'Pottery Making Class',         host: 'Made Sari',      date: 'Jun 8, 2024',  guests: 2, total: 900000,   commission: 90000,   status: 'Confirmed' },
-  { id: 'B002', ref: 'BAL-2024-002', guest: 'Thomas Reeves',  email: 'treeves@gmail.com',     experience: 'Uluwatu Sunset & Kecak Dance',  host: 'I Nyoman Arta',  date: 'Jun 8, 2024',  guests: 3, total: 1350000,  commission: 135000,  status: 'Pending'   },
-  { id: 'B003', ref: 'BAL-2024-003', guest: 'Priya Mehta',    email: 'priya.m@gmail.com',     experience: 'Balinese Cooking Class',        host: 'Putu Sari',      date: 'Jun 9, 2024',  guests: 1, total: 480000,   commission: 48000,   status: 'Confirmed' },
-  { id: 'B004', ref: 'BAL-2024-004', guest: 'Marco Bianchi',  email: 'marco.b@gmail.com',     experience: 'Mount Batur Sunrise Trek',      host: 'Wayan Surya',    date: 'Jun 10, 2024', guests: 2, total: 1300000,  commission: 130000,  status: 'Pending'   },
-  { id: 'B005', ref: 'BAL-2024-005', guest: 'Yuki Tanaka',    email: 'yuki.t@gmail.com',      experience: 'Sound Healing Journey',         host: 'Nina Putri',     date: 'Jun 12, 2024', guests: 2, total: 700000,   commission: 70000,   status: 'Confirmed' },
-  { id: 'B006', ref: 'BAL-2024-006', guest: 'Alex Chen',      email: 'alex.c@gmail.com',      experience: 'Silver Jewelry Workshop',       host: 'Ketut Suardana', date: 'Jun 6, 2024',  guests: 4, total: 2200000,  commission: 220000,  status: 'Completed' },
-  { id: 'B007', ref: 'BAL-2024-007', guest: 'Lisa Wagner',    email: 'lisa.w@gmail.com',      experience: 'Beginner Surf Lesson',          host: 'Komang Surya',   date: 'Jun 3, 2024',  guests: 1, total: 320000,   commission: 32000,   status: 'Completed' },
-  { id: 'B008', ref: 'BAL-2024-008', guest: 'James Park',     email: 'james.p@gmail.com',     experience: 'Rice Terrace Walk',             host: 'Gede Arnawa',    date: 'Jun 1, 2024',  guests: 2, total: 560000,   commission: 56000,   status: 'Cancelled' },
-]
-
-const ALL_USERS = [
-  { id: 'U1', name: 'Sarah Kim',     email: 'sarah.k@gmail.com',    country: 'South Korea', bookings: 4, totalSpend: 2840000,  joined: 'Jan 2024', status: 'Active'    },
-  { id: 'U2', name: 'Thomas Reeves', email: 'treeves@gmail.com',     country: 'UK',          bookings: 2, totalSpend: 1800000,  joined: 'Mar 2024', status: 'Active'    },
-  { id: 'U3', name: 'Priya Mehta',   email: 'priya.m@gmail.com',     country: 'India',       bookings: 7, totalSpend: 5120000,  joined: 'Nov 2023', status: 'Active'    },
-  { id: 'U4', name: 'Marco Bianchi', email: 'marco.b@gmail.com',     country: 'Italy',       bookings: 1, totalSpend: 1300000,  joined: 'May 2024', status: 'Active'    },
-  { id: 'U5', name: 'Yuki Tanaka',   email: 'yuki.t@gmail.com',      country: 'Japan',       bookings: 3, totalSpend: 2100000,  joined: 'Feb 2024', status: 'Active'    },
-  { id: 'U6', name: 'Alex Chen',     email: 'alex.c@gmail.com',      country: 'Australia',   bookings: 9, totalSpend: 8400000,  joined: 'Oct 2023', status: 'Active'    },
-  { id: 'U7', name: 'Lisa Wagner',   email: 'lisa.w@gmail.com',      country: 'Germany',     bookings: 2, totalSpend: 970000,   joined: 'Apr 2024', status: 'Active'    },
-  { id: 'U8', name: 'James Park',    email: 'james.p@gmail.com',     country: 'USA',         bookings: 0, totalSpend: 0,        joined: 'Jun 2024', status: 'Inactive'  },
-]
-
-const ALL_REVIEWS = [
-  { id: 'R1', guest: 'Sarah K.',     experience: 'Pottery Making Class',         host: 'Made Sari',    rating: 5, comment: "Absolutely magical. Made is an incredible teacher — patient, encouraging, and full of beautiful stories about her family's craft.", date: 'May 12, 2024', status: 'Published' },
-  { id: 'R2', guest: 'Thomas R.',    experience: 'Uluwatu Sunset & Kecak Dance', host: 'I Nyoman Arta',rating: 5, comment: "The Kecak dance at sunset is genuinely one of the most spectacular things I have ever witnessed. Extraordinary.", date: 'May 17, 2024', status: 'Published' },
-  { id: 'R3', guest: 'Priya M.',     experience: 'Sound Healing Journey',        host: 'Nina Putri',   rating: 5, comment: 'One of the most profound experiences of my life. Nina holds the space with such grace and wisdom.', date: 'May 8, 2024',  status: 'Published' },
-  { id: 'R4', guest: 'Alex C.',      experience: 'Balinese Cooking Class',       host: 'Putu Sari',    rating: 4, comment: 'Really enjoyed every moment. The market visit was a highlight and the food we cooked was genuinely delicious.', date: 'Jun 6, 2024',  status: 'Published' },
-  { id: 'R5', guest: 'Yuki T.',      experience: 'Silver Jewelry Workshop',      host: 'Ketut Suardana',rating: 2, comment: 'Disappointing. The studio was not what was described and the instructor was distracted by his phone the whole time.', date: 'Jun 3, 2024',  status: 'Flagged'   },
-  { id: 'R6', guest: 'Lisa W.',      experience: 'Beginner Surf Lesson',         host: 'Komang Surya', rating: 5, comment: 'Best 2 hours of my trip. Komang is encouraging, patient and makes the whole thing feel safe.', date: 'Jun 3, 2024',  status: 'Published' },
-]
 
 const PAYOUTS = [
   { id: 'P1', host: 'I Nyoman Arta',  period: 'May 1–31, 2024', gross: 89100000, commission: 8910000, net: 80190000, status: 'Paid',    date: 'Jun 5, 2024'  },
@@ -128,15 +84,13 @@ const NAV_ITEMS = [
   { id: 'reviews',     label: 'Reviews',     Icon: Star },
   { id: 'payments',    label: 'Payments',    Icon: CreditCard },
   { id: 'analytics',   label: 'Analytics',   Icon: BarChart2 },
+  { id: 'featured',    label: 'Featured',    Icon: Sparkles },
+  { id: 'activity',    label: 'Activity Log',Icon: Activity },
+  { id: 'seo',         label: 'SEO',         Icon: FileText },
+  { id: 'emails',      label: 'Emails',      Icon: MailOpen },
+  { id: 'newsletter',  label: 'Newsletter',  Icon: Mail },
+  { id: 'broadcast',   label: 'Broadcast',   Icon: Megaphone },
   { id: 'settings',    label: 'Settings',    Icon: Settings },
-]
-
-const ALL_EVENTS = [
-  { id: 'E1', title: 'Full Moon Sound Bath',       host: 'Nina Putri',    date: '2026-07-06T19:00', location: 'Sukha Healing Space, Ubud',        price: 250000, capacity: 30, status: 'Published', slug: 'full-moon-sound-bath' },
-  { id: 'E2', title: 'Ubud Sacred Sites Walk',     host: 'I Nyoman Arta', date: '2026-07-20T08:00', location: 'Meeting point: Ubud Palace',        price: 350000, capacity: 15, status: 'Published', slug: 'ubud-sacred-sites-walk' },
-  { id: 'E3', title: 'Batik Design Workshop',      host: 'Ni Made Suari', date: '2026-08-04T09:00', location: 'Sidemen Art Village',               price: 450000, capacity: 12, status: 'Draft',     slug: 'batik-design-workshop' },
-  { id: 'E4', title: 'Sunset Cooking Demo',        host: 'Putu Sari',     date: '2026-07-25T17:00', location: 'Warung Dapur Bali, Seminyak',       price: 300000, capacity: 20, status: 'Published', slug: 'sunset-cooking-demo' },
-  { id: 'E5', title: 'Volcano Sunrise Expedition', host: 'Wayan Surya',   date: '2026-05-10T03:30', location: 'Mount Batur Trailhead, Kintamani',  price: 600000, capacity: 8,  status: 'Published', slug: 'volcano-sunrise-expedition' },
 ]
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -250,12 +204,11 @@ function SearchBar({ value, onChange, placeholder }: { value: string; onChange: 
 
 // ── Overview Panel ────────────────────────────────────────────────────────────
 
-const RECENT_BOOKINGS = ALL_BOOKINGS.slice(0, 5)
-
 function OverviewPanel({ onNav }: { onNav: (id: string) => void }) {
+  const { data: session }   = useSession()
   const [period, setPeriod] = useState('This Month')
   const [stats, setStats]   = useState<AdminStats | null>(null)
-  const [recent, setRecent] = useState<AdminBooking[]>(RECENT_BOOKINGS)
+  const [recent, setRecent] = useState<AdminBooking[]>([])
 
   useEffect(() => {
     getAdminStatsAction().then(setStats)
@@ -277,7 +230,7 @@ function OverviewPanel({ onNav }: { onNav: (id: string) => void }) {
       <div className="flex items-start justify-between mb-6">
         <div>
           <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(20px,2.5vw,26px)', fontWeight: 700, color: CHARCOAL }}>
-            Good morning, Reggy
+            {(() => { const h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening' })()}, {session?.user?.name?.split(' ')[0] ?? 'Admin'}
           </h1>
           <p style={{ fontSize: 14, color: COCONUT, marginTop: 3 }}>Here&apos;s what&apos;s happening on Balible today.</p>
         </div>
@@ -912,7 +865,7 @@ function ExperiencesPanel() {
                                 {exp.status !== 'Active' && <button onClick={() => setStatus(exp.id, 'Active')} className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-stone-50" style={{ fontSize: 13, color: FOREST, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}><Play size={12} />Activate</button>}
                                 {exp.status === 'Active' && <button onClick={() => setStatus(exp.id, 'Paused')} className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-stone-50" style={{ fontSize: 13, color: GOLD, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}><Pause size={12} />Pause</button>}
                                 <button onClick={() => setStatus(exp.id, 'Draft')} className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-stone-50" style={{ fontSize: 13, color: COCONUT, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}><Edit2 size={12} />Set Draft</button>
-                                <button onClick={() => { setExps(p => p.filter(e => e.id !== exp.id)); setMenuOpen(null) }} className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-stone-50" style={{ fontSize: 13, color: TERRACOTTA, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}><Trash2 size={12} />Remove</button>
+                                <button onClick={async () => { await adminDeleteExperienceAction(exp.id); setExps(p => p.filter(e => e.id !== exp.id)); setMenuOpen(null) }} className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-stone-50" style={{ fontSize: 13, color: TERRACOTTA, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}><Trash2 size={12} />Remove</button>
                               </div>
                             </>
                           )}
@@ -930,12 +883,164 @@ function ExperiencesPanel() {
   )
 }
 
+// ── Edit User Modal ───────────────────────────────────────────────────────────
+
+function EditUserModal({ user, onClose, onSaved }: {
+  user: AdminUser
+  onClose: () => void
+  onSaved: (updated: AdminUser) => void
+}) {
+  const [form, setForm] = useState({ name: user.name, email: user.email, role: user.role })
+  const [saving, setSaving] = useState(false)
+  const [error, setError]   = useState('')
+
+  const set = (k: keyof typeof form, v: string) => setForm(f => ({ ...f, [k]: v }))
+
+  const save = async () => {
+    if (!form.name.trim() || !form.email.trim()) { setError('Name and email are required.'); return }
+    setSaving(true); setError('')
+    const res = await adminUpdateUserAction(user.id, form)
+    setSaving(false)
+    if (!res.ok) { setError(res.error ?? 'Save failed.'); return }
+    onSaved({ ...user, ...form })
+  }
+
+  const INPUT = { width: '100%', height: 42, borderRadius: 10, border: `1px solid ${SAND}`, padding: '0 12px', fontSize: 14, fontFamily: 'var(--font-inter)', color: CHARCOAL, outline: 'none', backgroundColor: 'white' } as const
+  const LABEL = { fontSize: 12, fontWeight: 600, color: COCONUT, display: 'block', marginBottom: 5 } as const
+
+  return (
+    <>
+      <div className="fixed inset-0 z-40 bg-black/40" onClick={onClose} />
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md" style={{ border: `1px solid ${SAND}` }}>
+          <div className="flex items-center justify-between p-5 pb-0">
+            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: CHARCOAL }}>Edit User</h2>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: COCONUT }}><X size={18} /></button>
+          </div>
+          <div className="p-5 space-y-4">
+            <div>
+              <label style={LABEL}>Full Name</label>
+              <input value={form.name} onChange={e => set('name', e.target.value)} style={INPUT} />
+            </div>
+            <div>
+              <label style={LABEL}>Email</label>
+              <input value={form.email} onChange={e => set('email', e.target.value)} type="email" style={INPUT} />
+            </div>
+            <div>
+              <label style={LABEL}>Role</label>
+              <select value={form.role} onChange={e => set('role', e.target.value)}
+                style={{ ...INPUT, cursor: 'pointer' }}>
+                <option value="TOURIST">Tourist (Guest)</option>
+                <option value="OPERATOR">Operator (Host)</option>
+              </select>
+            </div>
+            {error && <p style={{ fontSize: 13, color: TERRACOTTA }}>{error}</p>}
+            <div className="flex gap-3 pt-2">
+              <button onClick={onClose} style={{ flex: 1, height: 42, borderRadius: 10, border: `1px solid ${SAND}`, background: 'white', color: COCONUT, fontSize: 14, cursor: 'pointer' }}>Cancel</button>
+              <button onClick={save} disabled={saving}
+                style={{ flex: 2, height: 42, borderRadius: 10, border: 'none', backgroundColor: CHARCOAL, color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>
+                {saving ? 'Saving…' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
+
+// ── Edit Host Modal ────────────────────────────────────────────────────────────
+
+function EditHostModal({ host, onClose, onSaved }: {
+  host: AdminHost
+  onClose: () => void
+  onSaved: (updated: AdminHost) => void
+}) {
+  const [form, setForm] = useState({
+    businessName: host.business,
+    description:  host.description,
+    payoutBank:   host.payoutBank,
+    payoutAccountNumber: host.payoutAccountNumber,
+    payoutAccountName:   host.payoutAccountName,
+  })
+  const [saving, setSaving] = useState(false)
+  const [error, setError]   = useState('')
+
+  const set = (k: keyof typeof form, v: string) => setForm(f => ({ ...f, [k]: v }))
+
+  const save = async () => {
+    if (!form.businessName.trim()) { setError('Business name is required.'); return }
+    setSaving(true); setError('')
+    const res = await adminUpdateHostAction(host.id, form)
+    setSaving(false)
+    if (!res.ok) { setError(res.error ?? 'Save failed.'); return }
+    onSaved({ ...host, business: form.businessName, description: form.description, payoutBank: form.payoutBank, payoutAccountNumber: form.payoutAccountNumber, payoutAccountName: form.payoutAccountName })
+  }
+
+  const INPUT = { width: '100%', height: 42, borderRadius: 10, border: `1px solid ${SAND}`, padding: '0 12px', fontSize: 14, fontFamily: 'var(--font-inter)', color: CHARCOAL, outline: 'none', backgroundColor: 'white' } as const
+  const TEXTAREA = { width: '100%', borderRadius: 10, border: `1px solid ${SAND}`, padding: '10px 12px', fontSize: 14, fontFamily: 'var(--font-inter)', color: CHARCOAL, outline: 'none', backgroundColor: 'white', resize: 'vertical' as const, minHeight: 80 }
+  const LABEL = { fontSize: 12, fontWeight: 600, color: COCONUT, display: 'block', marginBottom: 5 } as const
+
+  return (
+    <>
+      <div className="fixed inset-0 z-40 bg-black/40" onClick={onClose} />
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md my-4" style={{ border: `1px solid ${SAND}` }}>
+          <div className="flex items-center justify-between p-5 pb-0">
+            <div>
+              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: CHARCOAL }}>Edit Host</h2>
+              <p style={{ fontSize: 12, color: COCONUT, marginTop: 2 }}>{host.name}</p>
+            </div>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: COCONUT }}><X size={18} /></button>
+          </div>
+          <div className="p-5 space-y-4">
+            <div>
+              <label style={LABEL}>Business Name</label>
+              <input value={form.businessName} onChange={e => set('businessName', e.target.value)} style={INPUT} />
+            </div>
+            <div>
+              <label style={LABEL}>Bio / Description</label>
+              <textarea value={form.description} onChange={e => set('description', e.target.value)} style={TEXTAREA} />
+            </div>
+            <div style={{ borderTop: `1px solid ${SAND}`, paddingTop: 16 }}>
+              <p style={{ fontSize: 12, fontWeight: 700, color: COCONUT, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Payout Details</p>
+              <div className="space-y-3">
+                <div>
+                  <label style={LABEL}>Bank Name</label>
+                  <input value={form.payoutBank} onChange={e => set('payoutBank', e.target.value)} placeholder="e.g. BCA, Mandiri" style={INPUT} />
+                </div>
+                <div>
+                  <label style={LABEL}>Account Number</label>
+                  <input value={form.payoutAccountNumber} onChange={e => set('payoutAccountNumber', e.target.value)} style={INPUT} />
+                </div>
+                <div>
+                  <label style={LABEL}>Account Name</label>
+                  <input value={form.payoutAccountName} onChange={e => set('payoutAccountName', e.target.value)} style={INPUT} />
+                </div>
+              </div>
+            </div>
+            {error && <p style={{ fontSize: 13, color: TERRACOTTA }}>{error}</p>}
+            <div className="flex gap-3 pt-2">
+              <button onClick={onClose} style={{ flex: 1, height: 42, borderRadius: 10, border: `1px solid ${SAND}`, background: 'white', color: COCONUT, fontSize: 14, cursor: 'pointer' }}>Cancel</button>
+              <button onClick={save} disabled={saving}
+                style={{ flex: 2, height: 42, borderRadius: 10, border: 'none', backgroundColor: CHARCOAL, color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>
+                {saving ? 'Saving…' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
+
 // ── Hosts Panel ───────────────────────────────────────────────────────────────
 
 function HostsPanel() {
   const [search, setSearch]   = useState('')
   const [filter, setFilter]   = useState('All')
   const [hosts, setHosts]     = useState<AdminHost[]>([])
+  const [editing, setEditing] = useState<AdminHost | null>(null)
 
   useEffect(() => { getAdminHostsAction().then(setHosts) }, [])
 
@@ -990,9 +1095,13 @@ function HostsPanel() {
           <div key={host.id} className="bg-white rounded-xl p-4" style={{ border: `1px solid ${SAND}` }}>
             {/* Info row */}
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: GOLD }}>
-                <span style={{ fontSize: 14, fontWeight: 700, color: 'white' }}>{host.name[0]}</span>
-              </div>
+              {host.avatar ? (
+                <img src={host.avatar} alt={host.name} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+              ) : (
+                <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: GOLD }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: 'white' }}>{host.name[0]}</span>
+                </div>
+              )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span style={{ fontSize: 14, fontWeight: 700, color: CHARCOAL }}>{host.name}</span>
@@ -1003,7 +1112,7 @@ function HostsPanel() {
                   <span style={{ fontSize: 11, color: COCONUT }}>{host.experiences} listings</span>
                   <span style={{ fontSize: 11, color: COCONUT }}>{host.totalBookings} bookings</span>
                   <span style={{ fontSize: 11, fontWeight: 600, color: FOREST }}>{fmt(host.totalEarnings)} earned</span>
-                  <span style={{ fontSize: 11, color: COCONUT }}>⭐ {host.rating}</span>
+                  <span style={{ fontSize: 11, color: COCONUT }}>⭐ {host.rating > 0 ? host.rating.toFixed(1) : '—'} ({host.totalReviews} reviews)</span>
                   <span style={{ fontSize: 11, color: COCONUT }}>Joined {host.joined}</span>
                 </div>
               </div>
@@ -1011,6 +1120,10 @@ function HostsPanel() {
 
             {/* Actions row */}
             <div className="flex flex-wrap gap-2 mt-3 pt-3" style={{ borderTop: `1px solid ${IVORY}` }}>
+                <button onClick={() => setEditing(host)} className="flex items-center gap-1.5 hover:opacity-80"
+                  style={{ height: 32, padding: '0 14px', borderRadius: 8, border: `1px solid ${SAND}`, backgroundColor: 'white', color: CHARCOAL, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                  <Edit2 size={12} /> Edit
+                </button>
                 {host.status === 'Pending' && (
                   <>
                     <button onClick={() => approve(host.id)} className="flex items-center gap-1.5 hover:opacity-90"
@@ -1039,110 +1152,203 @@ function HostsPanel() {
           </div>
         ))}
       </div>
+
+      {editing && (
+        <EditHostModal
+          host={editing}
+          onClose={() => setEditing(null)}
+          onSaved={updated => { setHosts(h => h.map(x => x.id === updated.id ? updated : x)); setEditing(null) }}
+        />
+      )}
     </div>
   )
 }
 
 // ── Bookings Panel ────────────────────────────────────────────────────────────
 
+const DATE_RANGES = ['All time', 'Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'This month', 'Last month']
+
+function inDateRange(bookedOn: string, range: string): boolean {
+  if (range === 'All time') return true
+  const d = new Date(bookedOn)
+  if (isNaN(d.getTime())) return true
+  const now = new Date()
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  if (range === 'Today') return d >= startOfToday
+  if (range === 'Last 7 days')  { const from = new Date(now); from.setDate(now.getDate() - 7);  return d >= from }
+  if (range === 'Last 30 days') { const from = new Date(now); from.setDate(now.getDate() - 30); return d >= from }
+  if (range === 'Last 90 days') { const from = new Date(now); from.setDate(now.getDate() - 90); return d >= from }
+  if (range === 'This month')   { return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() }
+  if (range === 'Last month')   {
+    const lm = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+    const lme = new Date(now.getFullYear(), now.getMonth(), 1)
+    return d >= lm && d < lme
+  }
+  return true
+}
+
 function BookingsPanel() {
   const [statusFilter, setStatusFilter] = useState('All')
+  const [dateRange, setDateRange]       = useState('All time')
+  const [hostFilter, setHostFilter]     = useState('All hosts')
   const [search, setSearch]             = useState('')
   const [bookings, setBookings]         = useState<AdminBooking[]>([])
+  const [loading, setLoading]           = useState(true)
 
-  useEffect(() => { getAdminBookingsAction().then(setBookings) }, [])
+  useEffect(() => {
+    getAdminBookingsAction().then(b => { setBookings(b); setLoading(false) })
+  }, [])
 
-  const confirm = async (id: string) => {
+  const hosts = useMemo(() => Array.from(new Set(bookings.map(b => b.host))).sort(), [bookings])
+
+  const updateStatus = (id: string, status: string, enumVal: string) => {
     const b = bookings.find(x => x.id === id)
-    if (b) await adminUpdateBookingStatusAction(b.ref, 'CONFIRMED')
-    setBookings(p => p.map(x => x.id === id ? { ...x, status: 'Confirmed' } : x))
+    if (b) adminUpdateBookingStatusAction(b.ref, enumVal).catch(() => {})
+    setBookings(p => p.map(x => x.id === id ? { ...x, status } : x))
   }
-  const cancel  = async (id: string) => {
+  const complete = (id: string) => {
     const b = bookings.find(x => x.id === id)
-    if (b) await adminUpdateBookingStatusAction(b.ref, 'CANCELLED')
-    setBookings(p => p.map(x => x.id === id ? { ...x, status: 'Cancelled' } : x))
+    if (b) adminCompleteBookingAction(b.ref).catch(() => {})
+    setBookings(p => p.map(x => x.id === id ? { ...x, status: 'Completed' } : x))
   }
 
   const visible = useMemo(() => {
-    let list = statusFilter === 'All' ? bookings : bookings.filter(b => b.status === statusFilter)
+    let list = bookings
+    if (statusFilter !== 'All') list = list.filter(b => b.status === statusFilter)
+    if (hostFilter !== 'All hosts') list = list.filter(b => b.host === hostFilter)
+    list = list.filter(b => inDateRange(b.bookedOn, dateRange))
     if (search) {
       const q = search.toLowerCase()
-      list = list.filter(b => b.guest.toLowerCase().includes(q) || b.experience.toLowerCase().includes(q) || b.ref.toLowerCase().includes(q) || b.host.toLowerCase().includes(q))
+      list = list.filter(b =>
+        b.guest.toLowerCase().includes(q) || b.email.toLowerCase().includes(q) ||
+        b.experience.toLowerCase().includes(q) || b.ref.toLowerCase().includes(q) ||
+        b.host.toLowerCase().includes(q) || b.phone.includes(q)
+      )
     }
     return list
-  }, [bookings, statusFilter, search])
+  }, [bookings, statusFilter, hostFilter, dateRange, search])
 
-  const totalRevenue = visible.reduce((a, b) => a + b.total, 0)
+  const totalRevenue    = visible.reduce((a, b) => a + b.total, 0)
   const totalCommission = visible.reduce((a, b) => a + b.commission, 0)
+  const totalPayout     = visible.reduce((a, b) => a + b.hostPayout, 0)
+
+  const exportCSV = () => {
+    const headers = ['Ref', 'Guest', 'Guest Email', 'Guest Phone', 'Experience', 'Host', 'Host Email', 'Experience Date', 'Booked On', 'Guests', 'Total (IDR)', 'Commission (IDR)', 'Host Payout (IDR)', 'Status', 'Payment ID']
+    const rows = visible.map(b => [
+      b.ref, b.guest, b.email, b.phone, b.experience, b.host, b.hostEmail,
+      b.date, b.bookedOn, b.guests, b.total, b.commission, b.hostPayout, b.status, b.paymentId,
+    ])
+    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n')
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }))
+    a.download = `bookings-${dateRange.replace(/\s+/g, '-').toLowerCase()}.csv`
+    a.click()
+  }
+
+  const selectStyle: React.CSSProperties = { height: 38, borderRadius: 10, border: `1px solid ${SAND}`, backgroundColor: 'white', fontSize: 13, color: COCONUT, cursor: 'pointer', paddingInline: 12, outline: 'none' }
 
   return (
     <div>
-      <PageHeader title="All Bookings" sub={`${bookings.length} total bookings on the platform`} />
+      <PageHeader title="All Bookings" sub={`${bookings.length} total · ${visible.length} shown`} />
 
+      {/* Summary cards — scoped to current filter */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
         {[
-          { label: 'Gross Revenue', value: fmt(totalRevenue), color: CHARCOAL },
-          { label: 'Platform Commission (10%)', value: fmt(totalCommission), color: FOREST },
-          { label: 'Host Payouts', value: fmt(totalRevenue - totalCommission), color: GOLD },
+          { label: 'Gross Revenue',       value: fmt(totalRevenue),    color: CHARCOAL },
+          { label: 'Platform Commission', value: fmt(totalCommission), color: FOREST },
+          { label: 'Host Payouts',        value: fmt(totalPayout),     color: GOLD },
         ].map(s => (
           <div key={s.label} className="bg-white rounded-xl p-4" style={{ border: `1px solid ${SAND}` }}>
             <p style={{ fontSize: 11, color: COCONUT }}>{s.label}</p>
             <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: s.color, marginTop: 4 }}>{s.value}</p>
+            <p style={{ fontSize: 10, color: COCONUT, marginTop: 2 }}>
+              {visible.length} booking{visible.length !== 1 ? 's' : ''} · {statusFilter !== 'All' ? statusFilter : dateRange}
+            </p>
           </div>
         ))}
       </div>
 
-      <div className="flex gap-3 mb-4">
-        <SearchBar value={search} onChange={setSearch} placeholder="Search guest, experience, host or ref…" />
-        <button
-          onClick={() => {
-            const rows = [['Ref','Guest','Experience','Host','Date','Guests','Total','Status'], ...bookings.map(b => [b.ref, b.guest, b.experience, b.host, b.date, b.guests, b.total, b.status])]
-            const csv = rows.map(r => r.join(',')).join('\n')
-            const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'bookings.csv'; a.click()
-          }}
-          className="flex items-center gap-2 px-4 rounded-xl flex-shrink-0 hover:opacity-80"
+      {/* Filters row */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex-1 min-w-[200px]">
+          <SearchBar value={search} onChange={setSearch} placeholder="Search guest, host, experience, ref…" />
+        </div>
+        <select value={dateRange} onChange={e => setDateRange(e.target.value)} style={selectStyle}>
+          {DATE_RANGES.map(r => <option key={r}>{r}</option>)}
+        </select>
+        <select value={hostFilter} onChange={e => setHostFilter(e.target.value)} style={selectStyle}>
+          <option>All hosts</option>
+          {hosts.map(h => <option key={h}>{h}</option>)}
+        </select>
+        <button onClick={exportCSV} className="flex items-center gap-2 px-4 rounded-xl flex-shrink-0 hover:opacity-80"
           style={{ height: 38, border: `1px solid ${SAND}`, backgroundColor: 'white', fontSize: 13, color: COCONUT, cursor: 'pointer' }}>
           <Download size={13} /> CSV
         </button>
       </div>
 
+      {/* Status tabs */}
       <div className="flex gap-2 mb-5 overflow-x-auto">
         {['All', 'Pending', 'Confirmed', 'Completed', 'Cancelled'].map(s => (
-          <button key={s} onClick={() => setStatusFilter(s)} style={{ padding: '6px 14px', borderRadius: 10, fontSize: 13, fontWeight: statusFilter === s ? 600 : 400, flexShrink: 0, backgroundColor: statusFilter === s ? CHARCOAL : 'white', color: statusFilter === s ? 'white' : COCONUT, border: `1px solid`, borderColor: statusFilter === s ? CHARCOAL : SAND, cursor: 'pointer' }}>
+          <button key={s} onClick={() => setStatusFilter(s)}
+            style={{ padding: '6px 14px', borderRadius: 10, fontSize: 13, fontWeight: statusFilter === s ? 600 : 400, flexShrink: 0, backgroundColor: statusFilter === s ? CHARCOAL : 'white', color: statusFilter === s ? 'white' : COCONUT, border: '1px solid', borderColor: statusFilter === s ? CHARCOAL : SAND, cursor: 'pointer' }}>
             {s} <span style={{ opacity: 0.5, fontSize: 11 }}>{s === 'All' ? bookings.length : bookings.filter(b => b.status === s).length}</span>
           </button>
         ))}
       </div>
 
+      {loading && <p style={{ fontSize: 13, color: COCONUT }}>Loading bookings…</p>}
+
       <div className="space-y-3">
+        {visible.length === 0 && !loading && (
+          <div className="bg-white rounded-xl p-10 text-center" style={{ border: `1px solid ${SAND}` }}>
+            <p style={{ fontSize: 14, color: COCONUT }}>No bookings match your filters.</p>
+          </div>
+        )}
         {visible.map(b => (
           <div key={b.id} className="bg-white rounded-xl p-4" style={{ border: `1px solid ${SAND}` }}>
             <div className="flex items-start justify-between flex-wrap gap-2 mb-2">
               <div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span style={{ fontSize: 14, fontWeight: 700, color: CHARCOAL }}>{b.guest}</span>
                   <StatusBadge status={b.status} />
                 </div>
-                <p style={{ fontSize: 12, color: COCONUT, marginTop: 1 }}>{b.email} · {b.ref}</p>
+                <p style={{ fontSize: 12, color: COCONUT, marginTop: 1 }}>
+                  {b.email}{b.phone ? ` · ${b.phone}` : ''} · <span style={{ fontFamily: 'monospace', fontSize: 11 }}>{b.ref}</span>
+                </p>
               </div>
-              <div className="text-right">
+              <div className="text-right flex-shrink-0">
                 <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL }}>{fmt(b.total)}</p>
                 <p style={{ fontSize: 11, color: FOREST }}>Commission: {fmt(b.commission)}</p>
+                <p style={{ fontSize: 11, color: GOLD }}>Host payout: {fmt(b.hostPayout)}</p>
               </div>
             </div>
-            <div className="flex flex-wrap gap-x-4 gap-y-0.5">
+            <div className="flex flex-wrap gap-x-4 gap-y-0.5 mb-1">
               <span style={{ fontSize: 12, color: COCONUT }}>📋 {b.experience}</span>
               <span style={{ fontSize: 12, color: COCONUT }}>🧑‍🏫 {b.host}</span>
               <span style={{ fontSize: 12, color: COCONUT }}>📅 {b.date}</span>
               <span style={{ fontSize: 12, color: COCONUT }}>👤 {b.guests} guest{b.guests > 1 ? 's' : ''}</span>
             </div>
-            {b.status === 'Pending' && (
+            <p style={{ fontSize: 11, color: '#C8C4BE' }}>
+              Booked {b.bookedOn}{b.paymentId ? ` · Payment: ${b.paymentId}` : ''}
+            </p>
+            {(b.status === 'Pending' || b.status === 'Confirmed') && (
               <div className="flex gap-2 mt-3 pt-3" style={{ borderTop: `1px solid ${IVORY}` }}>
-                <button onClick={() => confirm(b.id)} className="flex items-center justify-center gap-1.5 hover:opacity-90"
-                  style={{ height: 34, flex: 1, borderRadius: 8, border: 'none', backgroundColor: CHARCOAL, color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-                  <CheckCircle size={13} /> Confirm
-                </button>
-                <button onClick={() => cancel(b.id)} className="flex items-center justify-center gap-1.5 hover:bg-red-50"
+                {b.status === 'Pending' && (
+                  <button onClick={() => updateStatus(b.id, 'Confirmed', 'CONFIRMED')}
+                    className="flex items-center justify-center gap-1.5 hover:opacity-90"
+                    style={{ height: 34, flex: 1, borderRadius: 8, border: 'none', backgroundColor: CHARCOAL, color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                    <CheckCircle size={13} /> Confirm
+                  </button>
+                )}
+                {b.status === 'Confirmed' && (
+                  <button onClick={() => complete(b.id)}
+                    className="flex items-center justify-center gap-1.5 hover:opacity-90"
+                    style={{ height: 34, flex: 1, borderRadius: 8, border: 'none', backgroundColor: FOREST, color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                    <Check size={13} /> Mark Completed
+                  </button>
+                )}
+                <button onClick={() => updateStatus(b.id, 'Cancelled', 'CANCELLED')}
+                  className="flex items-center justify-center gap-1.5 hover:bg-red-50"
                   style={{ height: 34, flex: 1, borderRadius: 8, border: `1px solid ${SAND}`, backgroundColor: 'white', color: TERRACOTTA, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
                   <XCircle size={13} /> Cancel
                 </button>
@@ -1160,6 +1366,7 @@ function BookingsPanel() {
 function UsersPanel() {
   const [search, setSearch] = useState('')
   const [users, setUsers]   = useState<AdminUser[]>([])
+  const [editing, setEditing] = useState<AdminUser | null>(null)
 
   useEffect(() => { getAdminUsersAction().then(setUsers) }, [])
 
@@ -1187,7 +1394,7 @@ function UsersPanel() {
       </div>
 
       <div className="mb-4">
-        <SearchBar value={search} onChange={setSearch} placeholder="Search name, email or country…" />
+        <SearchBar value={search} onChange={setSearch} placeholder="Search name, email or role…" />
       </div>
 
       <div className="bg-white rounded-xl overflow-hidden" style={{ border: `1px solid ${SAND}` }}>
@@ -1195,13 +1402,13 @@ function UsersPanel() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead style={{ backgroundColor: IVORY }}>
               <tr>
-                {['Name', 'Email', 'Role', 'Bookings', 'Total Spent', 'Joined', 'Status'].map(h => (
+                {['Name', 'Email', 'Role', 'Bookings', 'Total Spent', 'Joined', 'Status', ''].map(h => (
                   <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: COCONUT, textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {visible.map((u, i) => (
+              {visible.map((u) => (
                 <tr key={u.id} style={{ borderTop: `1px solid ${IVORY}` }}>
                   <td style={{ padding: '12px 16px' }}>
                     <div className="flex items-center gap-2.5">
@@ -1217,12 +1424,27 @@ function UsersPanel() {
                   <td style={{ padding: '12px 16px', fontSize: 13, fontWeight: 600, color: u.totalSpend > 0 ? FOREST : COCONUT }}>{u.totalSpend > 0 ? fmt(u.totalSpend) : '—'}</td>
                   <td style={{ padding: '12px 16px', fontSize: 12, color: COCONUT }}>{u.joined}</td>
                   <td style={{ padding: '12px 16px' }}><StatusBadge status={u.status} /></td>
+                  <td style={{ padding: '12px 16px' }}>
+                    <button onClick={() => setEditing(u)}
+                      className="flex items-center gap-1 hover:opacity-80"
+                      style={{ height: 30, padding: '0 10px', borderRadius: 8, border: `1px solid ${SAND}`, backgroundColor: 'white', color: CHARCOAL, fontSize: 12, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                      <Edit2 size={11} /> Edit
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </div>
+
+      {editing && (
+        <EditUserModal
+          user={editing}
+          onClose={() => setEditing(null)}
+          onSaved={updated => { setUsers(u => u.map(x => x.id === updated.id ? updated : x)); setEditing(null) }}
+        />
+      )}
     </div>
   )
 }
@@ -1230,66 +1452,104 @@ function UsersPanel() {
 // ── Reviews Panel ─────────────────────────────────────────────────────────────
 
 function ReviewsPanel() {
-  const [starFilter, setStarFilter] = useState(0)
-  const [reviews, setReviews]       = useState<AdminReview[]>([])
+  const [statusFilter, setStatusFilter] = useState('All')
+  const [starFilter, setStarFilter]     = useState(0)
+  const [reviews, setReviews]           = useState<AdminReview[]>([])
 
   useEffect(() => { getAdminReviewsAction().then(setReviews) }, [])
 
-  const remove  = async (id: string) => {
-    await adminDeleteReviewAction(id)
-    setReviews(r => r.filter(x => x.id !== id))
-  }
-  const approve = (id: string) => setReviews(r => r.map(x => x.id === id ? { ...x, status: 'Published' } : x))
+  const patch = (id: string, updates: Partial<AdminReview>) =>
+    setReviews(r => r.map(x => x.id === id ? { ...x, ...updates } : x))
 
-  const flagged = reviews.filter(r => r.status === 'Flagged')
-  const visible = starFilter === 0 ? reviews : reviews.filter(r => r.rating === starFilter)
-  const avg     = (reviews.reduce((a, r) => a + r.rating, 0) / reviews.length).toFixed(1)
+  const flag    = (id: string) => { adminFlagReviewAction(id).catch(() => {}); patch(id, { status: 'Flagged' }) }
+  const unflag  = (id: string) => { adminApproveReviewAction(id).catch(() => {}); patch(id, { status: 'Published', hidden: false }) }
+  const hide    = (id: string) => { adminHideReviewAction(id).catch(() => {}); patch(id, { status: 'Hidden', hidden: true }) }
+  const remove  = (id: string) => { adminDeleteReviewAction(id).catch(() => {}); setReviews(r => r.filter(x => x.id !== id)) }
+
+  const needsAttention = reviews.filter(r => r.status === 'Flagged')
+
+  const visible = reviews.filter(r => {
+    const matchStatus = statusFilter === 'All' || r.status === statusFilter
+    const matchStar   = starFilter === 0 || r.rating === starFilter
+    return matchStatus && matchStar
+  })
+
+  const published = reviews.filter(r => r.status === 'Published')
+  const avg = published.length > 0 ? (published.reduce((a, r) => a + r.rating, 0) / published.length).toFixed(1) : '—'
+
+  const STATUS_TABS = ['All', 'Published', 'Flagged', 'Hidden']
 
   return (
     <div>
-      <PageHeader title="Reviews" sub={`${reviews.length} reviews · avg ${avg} ★`} />
+      <PageHeader title="Reviews" sub={`${reviews.length} total · ${published.length} published · avg ${avg} ★`} />
 
-      {flagged.length > 0 && (
-        <div className="flex items-start gap-3 p-4 rounded-xl mb-5" style={{ backgroundColor: '#FEF2F2', border: `1px solid #FECACA` }}>
+      {needsAttention.length > 0 && (
+        <div className="flex items-start gap-3 p-4 rounded-xl mb-5" style={{ backgroundColor: '#FEF2F2', border: '1px solid #FECACA' }}>
           <Flag size={16} style={{ color: TERRACOTTA, flexShrink: 0, marginTop: 1 }} />
           <div>
-            <p style={{ fontSize: 14, fontWeight: 600, color: CHARCOAL }}>{flagged.length} flagged review{flagged.length > 1 ? 's' : ''} need moderation</p>
-            <p style={{ fontSize: 13, color: COCONUT, marginTop: 1 }}>Review and decide whether to keep or remove.</p>
+            <p style={{ fontSize: 14, fontWeight: 600, color: CHARCOAL }}>{needsAttention.length} flagged review{needsAttention.length > 1 ? 's' : ''} need moderation</p>
+            <p style={{ fontSize: 13, color: COCONUT, marginTop: 1 }}>Keep (restore to public), Hide (remove from listing), or Delete permanently.</p>
           </div>
         </div>
       )}
 
-      <div className="flex gap-2 mb-5 flex-wrap">
+      {/* Status tabs + star filter */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        {STATUS_TABS.map(s => (
+          <button key={s} onClick={() => setStatusFilter(s)}
+            style={{ padding: '6px 14px', borderRadius: 10, fontSize: 13, fontWeight: statusFilter === s ? 600 : 400, backgroundColor: statusFilter === s ? CHARCOAL : 'white', color: statusFilter === s ? 'white' : COCONUT, border: `1px solid ${statusFilter === s ? CHARCOAL : SAND}`, cursor: 'pointer' }}>
+            {s} <span style={{ opacity: 0.5, fontSize: 11 }}>{s === 'All' ? reviews.length : reviews.filter(r => r.status === s).length}</span>
+          </button>
+        ))}
+        <div style={{ borderLeft: `1px solid ${SAND}`, margin: '0 4px' }} />
         {[0, 5, 4, 3, 2, 1].map(s => (
           <button key={s} onClick={() => setStarFilter(starFilter === s ? 0 : s)}
-            style={{ padding: '6px 14px', borderRadius: 10, fontSize: 13, fontWeight: starFilter === s ? 600 : 400, backgroundColor: starFilter === s ? CHARCOAL : 'white', color: starFilter === s ? 'white' : COCONUT, border: `1px solid ${starFilter === s ? CHARCOAL : SAND}`, cursor: 'pointer' }}>
-            {s === 0 ? 'All' : `${s} ★`} <span style={{ opacity: 0.5, fontSize: 11 }}>{s === 0 ? reviews.length : reviews.filter(r => r.rating === s).length}</span>
+            style={{ padding: '6px 12px', borderRadius: 10, fontSize: 12, fontWeight: starFilter === s ? 600 : 400, backgroundColor: starFilter === s ? GOLD : 'white', color: starFilter === s ? 'white' : COCONUT, border: `1px solid ${starFilter === s ? GOLD : SAND}`, cursor: 'pointer' }}>
+            {s === 0 ? 'All ★' : `${s}★`}
           </button>
         ))}
       </div>
 
       <div className="space-y-3">
+        {visible.length === 0 && (
+          <div className="bg-white rounded-xl p-10 text-center" style={{ border: `1px solid ${SAND}` }}>
+            <p style={{ fontSize: 14, color: COCONUT }}>No reviews in this filter.</p>
+          </div>
+        )}
         {visible.map(r => (
-          <div key={r.id} className="bg-white rounded-xl p-4" style={{ border: `1px solid ${r.status === 'Flagged' ? '#FECACA' : SAND}` }}>
+          <div key={r.id} className="bg-white rounded-xl p-4"
+            style={{ border: `1px solid ${r.status === 'Flagged' ? '#FECACA' : r.status === 'Hidden' ? SAND : SAND}`, opacity: r.status === 'Hidden' ? 0.65 : 1 }}>
             <div className="flex items-start justify-between flex-wrap gap-2 mb-2">
               <div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span style={{ fontSize: 14, fontWeight: 700, color: CHARCOAL }}>{r.guest}</span>
                   <span style={{ fontSize: 12, color: GOLD }}>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
                   <StatusBadge status={r.status} />
                 </div>
                 <p style={{ fontSize: 12, color: COCONUT, marginTop: 1 }}>{r.experience} · {r.host} · {r.date}</p>
               </div>
-              <div className="flex gap-2">
-                {r.status === 'Flagged' && (
-                  <button onClick={() => approve(r.id)} className="flex items-center gap-1 hover:opacity-90"
-                    style={{ height: 30, padding: '0 12px', borderRadius: 8, border: 'none', backgroundColor: FOREST, color: 'white', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
-                    <Check size={11} /> Keep
+              <div className="flex gap-2 flex-wrap">
+                {r.status === 'Published' && (
+                  <button onClick={() => flag(r.id)} className="flex items-center gap-1 hover:opacity-80"
+                    style={{ height: 30, padding: '0 10px', borderRadius: 8, border: `1px solid #FECACA`, backgroundColor: 'white', color: TERRACOTTA, fontSize: 12, cursor: 'pointer' }}>
+                    <Flag size={10} /> Flag
+                  </button>
+                )}
+                {(r.status === 'Flagged' || r.status === 'Hidden') && (
+                  <button onClick={() => unflag(r.id)} className="flex items-center gap-1 hover:opacity-90"
+                    style={{ height: 30, padding: '0 10px', borderRadius: 8, border: 'none', backgroundColor: FOREST, color: 'white', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                    <Check size={11} /> Restore
+                  </button>
+                )}
+                {r.status !== 'Hidden' && (
+                  <button onClick={() => hide(r.id)} className="flex items-center gap-1 hover:opacity-80"
+                    style={{ height: 30, padding: '0 10px', borderRadius: 8, border: `1px solid ${SAND}`, backgroundColor: 'white', color: COCONUT, fontSize: 12, cursor: 'pointer' }}>
+                    <Eye size={10} /> Hide
                   </button>
                 )}
                 <button onClick={() => remove(r.id)} className="flex items-center gap-1 hover:opacity-80"
-                  style={{ height: 30, padding: '0 12px', borderRadius: 8, border: `1px solid ${SAND}`, backgroundColor: 'white', color: TERRACOTTA, fontSize: 12, cursor: 'pointer' }}>
-                  <Trash2 size={11} /> Remove
+                  style={{ height: 30, padding: '0 10px', borderRadius: 8, border: `1px solid ${SAND}`, backgroundColor: 'white', color: TERRACOTTA, fontSize: 12, cursor: 'pointer' }}>
+                  <Trash2 size={10} /> Delete
                 </button>
               </div>
             </div>
@@ -1304,23 +1564,69 @@ function ReviewsPanel() {
 // ── Payments Panel ────────────────────────────────────────────────────────────
 
 function PaymentsPanel() {
-  const [payouts, setPayouts] = useState(PAYOUTS)
-  const pay = (id: string) => setPayouts(p => p.map(x => x.id === id ? { ...x, status: 'Paid', date: 'Jun 8, 2024' } : x))
+  const [queue, setQueue]         = useState<AdminRealPayout[]>([])
+  const [history, setHistory]     = useState<AdminPayout[]>([])
+  const [loading, setLoading]     = useState(true)
+  const [saving, setSaving]       = useState<string | null>(null)
+  const [periodFilter, setPeriodFilter] = useState('')
+  const [tab, setTab]             = useState<'queue' | 'history'>('queue')
 
-  const totalGross      = REVENUE_CHART.reduce((a, b) => a + b, 0)
-  const totalCommission = Math.round(totalGross * 0.1)
-  const pendingPayouts  = payouts.filter(p => p.status === 'Pending').reduce((a, p) => a + p.net, 0)
+  const [commPct, setCommPct] = useState<number>(Math.round(COMMISSION_RATE * 100))
+
+  useEffect(() => {
+    Promise.all([
+      getAdminRealPayoutsAction(),
+      getAdminPayoutsAction(),
+      getCommissionRateAction(),
+    ]).then(([q, h, rate]) => {
+      setQueue(q); setHistory(h); setLoading(false)
+      setCommPct(Math.round(rate * 100))
+    })
+  }, [])
+
+  const paidKeys      = new Set(history.filter(h => h.status === 'Paid').map(h => `${h.operatorId}:${h.periodStart.slice(0, 7)}`))
+  const requestedKeys = new Set(history.filter(h => h.status === 'Requested').map(h => `${h.operatorId}:${h.periodStart.slice(0, 7)}`))
+
+  const filteredQueue = periodFilter ? queue.filter(p => p.periodLabel === periodFilter) : queue
+  const periods = Array.from(new Set(queue.map(p => p.periodLabel)))
+
+  const totalGross   = filteredQueue.reduce((a, p) => a + p.gross, 0)
+  const totalComm    = filteredQueue.reduce((a, p) => a + p.commission, 0)
+  const pendingAmt   = filteredQueue.filter(p => !paidKeys.has(p.key)).reduce((a, p) => a + p.net, 0)
+
+  const markPaid = async (p: AdminRealPayout) => {
+    setSaving(p.key)
+    const [yr, mo] = p.period.split('-').map(Number)
+    const periodStart = new Date(Date.UTC(yr, mo - 1, 1)).toISOString()
+    const periodEnd   = new Date(Date.UTC(yr, mo, 1)).toISOString()
+    const res = await adminMarkPayoutPaidAction({
+      operatorId: p.operatorId, periodStart, periodEnd,
+      gross: p.gross, commission: p.commission, net: p.net, bookings: p.bookings,
+    })
+    if (res.ok) {
+      const newPayout: AdminPayout = {
+        id: res.id ?? '', operatorId: p.operatorId, name: p.name, business: p.business,
+        periodStart, periodEnd, periodLabel: p.periodLabel,
+        gross: p.gross, commission: p.commission, net: p.net, bookings: p.bookings,
+        status: 'Paid', paidAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), notes: '',
+      }
+      setHistory(h => [newPayout, ...h])
+    }
+    setSaving(null)
+  }
+
+  const selectSt: React.CSSProperties = { height: 34, padding: '0 10px', borderRadius: 8, border: `1px solid ${SAND}`, fontSize: 12, color: CHARCOAL, backgroundColor: 'white', cursor: 'pointer' }
 
   return (
     <div>
-      <PageHeader title="Payments & Payouts" sub="Platform revenue and host payout management" />
+      <PageHeader title="Payments & Payouts" sub="Booking revenue and host payout management" />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
-          { label: 'Gross Revenue',       value: fmt(totalGross),      color: CHARCOAL },
-          { label: 'Platform Commission', value: fmt(totalCommission), color: FOREST   },
-          { label: 'Host Payouts',        value: fmt(totalGross - totalCommission), color: GOLD },
-          { label: 'Pending Payouts',     value: fmt(pendingPayouts),  color: TERRACOTTA },
+          { label: 'Gross Revenue',       value: fmt(totalGross),        color: CHARCOAL },
+          { label: 'Platform Commission', value: fmt(totalComm),         color: FOREST   },
+          { label: 'Host Payouts',        value: fmt(totalGross - totalComm), color: GOLD },
+          { label: 'Pending Payouts',     value: fmt(pendingAmt),        color: TERRACOTTA },
         ].map(s => (
           <div key={s.label} className="bg-white rounded-xl p-4 lg:p-5" style={{ border: `1px solid ${SAND}` }}>
             <p style={{ fontSize: 12, color: COCONUT }}>{s.label}</p>
@@ -1329,139 +1635,722 @@ function PaymentsPanel() {
         ))}
       </div>
 
-      {/* Revenue chart */}
-      <div className="bg-white rounded-xl p-5 mb-5" style={{ border: `1px solid ${SAND}` }}>
-        <h2 className="mb-3" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: CHARCOAL }}>Monthly Revenue</h2>
-        <MiniChart data={REVENUE_CHART} color={GOLD} />
-        <div className="flex justify-between mt-1">
-          {MONTHS.map(m => <span key={m} style={{ fontSize: 9, color: COCONUT }}>{m}</span>)}
-        </div>
+      {/* Payout Rules */}
+      <div className="flex flex-wrap items-center gap-3 mb-5 px-4 py-3 rounded-xl" style={{ backgroundColor: '#F5F1EB', border: '1px solid #E8E4DE' }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color: '#6F675C', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Payout Rules</span>
+
+        {[
+          { label: 'Commission', value: `${commPct}% of gross` },
+          { label: 'Min payout', value: `IDR ${PAYOUT_MIN_NET.toLocaleString()} net` },
+          { label: 'Max payout', value: 'Full net earnings (no cap)' },
+          { label: 'Frequency',  value: 'Per operator request, monthly' },
+        ].map(r => (
+          <div key={r.label} className="flex items-center gap-1 px-3 py-1 rounded-lg" style={{ backgroundColor: 'white', border: '1px solid #E8E4DE' }}>
+            <span style={{ fontSize: 11, color: '#9B9690' }}>{r.label}:</span>
+            <span style={{ fontSize: 11, fontWeight: 600, color: '#111111' }}>{r.value}</span>
+          </div>
+        ))}
+        <span style={{ fontSize: 11, color: COCONUT }}>— edit commission in <strong>Platform Settings</strong></span>
       </div>
 
-      {/* Payout queue */}
+      {/* Tab switcher */}
+      <div className="flex gap-2 mb-5">
+        {(['queue', 'history'] as const).map(t => (
+          <button key={t} onClick={() => setTab(t)}
+            style={{ padding: '6px 18px', borderRadius: 10, fontSize: 13, fontWeight: tab === t ? 600 : 400, backgroundColor: tab === t ? CHARCOAL : 'white', color: tab === t ? 'white' : COCONUT, border: `1px solid ${tab === t ? CHARCOAL : SAND}`, cursor: 'pointer', textTransform: 'capitalize' }}>
+            {t === 'queue' ? `Payout Queue (${filteredQueue.filter(p => !paidKeys.has(p.key)).length})` : `History (${history.length})`}
+          </button>
+        ))}
+        {tab === 'queue' && (
+          <select value={periodFilter} onChange={e => setPeriodFilter(e.target.value)} style={selectSt}>
+            <option value="">All periods</option>
+            {periods.map(p => <option key={p}>{p}</option>)}
+          </select>
+        )}
+      </div>
+
       <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
-        <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: CHARCOAL }}>Host Payout Queue</h2>
-        <div className="overflow-x-auto">
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ borderBottom: `1px solid ${SAND}` }}>
-                {['Host', 'Period', 'Gross', 'Commission (10%)', 'Net Payout', 'Status', 'Action'].map(h => (
-                  <th key={h} style={{ padding: '0 12px 10px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: COCONUT, textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {payouts.map((p, i) => (
-                <tr key={p.id} style={{ borderBottom: i < payouts.length - 1 ? `1px solid ${IVORY}` : 'none' }}>
-                  <td style={{ padding: '13px 12px', fontSize: 13, fontWeight: 600, color: CHARCOAL }}>{p.host}</td>
-                  <td style={{ padding: '13px 12px', fontSize: 12, color: COCONUT, whiteSpace: 'nowrap' }}>{p.period}</td>
-                  <td style={{ padding: '13px 12px', fontSize: 13, color: CHARCOAL }}>{fmt(p.gross)}</td>
-                  <td style={{ padding: '13px 12px', fontSize: 13, color: FOREST }}>{fmt(p.commission)}</td>
-                  <td style={{ padding: '13px 12px', fontSize: 13, fontWeight: 700, color: CHARCOAL }}>{fmt(p.net)}</td>
-                  <td style={{ padding: '13px 12px' }}><StatusBadge status={p.status} /></td>
-                  <td style={{ padding: '13px 12px' }}>
-                    {p.status === 'Pending' ? (
-                      <button onClick={() => pay(p.id)} className="flex items-center gap-1 hover:opacity-90"
-                        style={{ height: 30, padding: '0 12px', borderRadius: 8, border: 'none', backgroundColor: CHARCOAL, color: 'white', fontSize: 12, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                        <RefreshCw size={11} /> Pay Now
-                      </button>
-                    ) : (
-                      <span style={{ fontSize: 12, color: COCONUT }}>{p.date}</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        {loading ? (
+          <p style={{ fontSize: 13, color: COCONUT, padding: '24px 0', textAlign: 'center' }}>Loading…</p>
+        ) : tab === 'queue' ? (
+          filteredQueue.length === 0 ? (
+            <p style={{ fontSize: 13, color: COCONUT, padding: '24px 0', textAlign: 'center' }}>No confirmed bookings in this period.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: `1px solid ${SAND}` }}>
+                    {['Host', 'Business', 'Period', 'Bookings', 'Gross', 'Commission', 'Net Payout', 'Status'].map(h => (
+                      <th key={h} style={{ padding: '0 12px 10px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: COCONUT, textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredQueue.map((p, i) => {
+                    const isPaid      = paidKeys.has(p.key)
+                    const isRequested = requestedKeys.has(p.key)
+                    return (
+                      <tr key={p.key} style={{ borderBottom: i < filteredQueue.length - 1 ? `1px solid ${IVORY}` : 'none', backgroundColor: isRequested && !isPaid ? '#FDFAF5' : 'transparent' }}>
+                        <td style={{ padding: '13px 12px', fontSize: 13, fontWeight: 600, color: CHARCOAL, whiteSpace: 'nowrap' }}>{p.name}</td>
+                        <td style={{ padding: '13px 12px', fontSize: 12, color: COCONUT }}>{p.business}</td>
+                        <td style={{ padding: '13px 12px', fontSize: 12, color: COCONUT, whiteSpace: 'nowrap' }}>{p.periodLabel}</td>
+                        <td style={{ padding: '13px 12px', fontSize: 13, color: CHARCOAL, textAlign: 'center' }}>{p.bookings}</td>
+                        <td style={{ padding: '13px 12px', fontSize: 13, color: CHARCOAL, whiteSpace: 'nowrap' }}>{fmt(p.gross)}</td>
+                        <td style={{ padding: '13px 12px', fontSize: 13, color: FOREST, whiteSpace: 'nowrap' }}>{fmt(p.commission)}</td>
+                        <td style={{ padding: '13px 12px', fontSize: 13, fontWeight: 700, color: CHARCOAL, whiteSpace: 'nowrap' }}>{fmt(p.net)}</td>
+                        <td style={{ padding: '13px 12px' }}>
+                          {isPaid ? (
+                            <StatusBadge status="Paid" />
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              {isRequested && (
+                                <span style={{ padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 700, backgroundColor: '#FDF3E3', color: '#C8A97E', border: '1px solid #E8D4B8', whiteSpace: 'nowrap' }}>
+                                  ⏳ Requested
+                                </span>
+                              )}
+                              <button onClick={() => markPaid(p)} disabled={saving === p.key}
+                                className="flex items-center gap-1 hover:opacity-90"
+                                style={{ height: 30, padding: '0 12px', borderRadius: 8, border: 'none', backgroundColor: isRequested ? FOREST : CHARCOAL, color: 'white', fontSize: 12, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', opacity: saving === p.key ? 0.6 : 1 }}>
+                                <Check size={11} /> {saving === p.key ? 'Saving…' : 'Mark Paid'}
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )
+        ) : (
+          history.length === 0 ? (
+            <p style={{ fontSize: 13, color: COCONUT, padding: '24px 0', textAlign: 'center' }}>No payouts recorded yet. Use the Payout Queue to mark payments.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: `1px solid ${SAND}` }}>
+                    {['Host', 'Period', 'Bookings', 'Gross', 'Commission', 'Net Paid', 'Paid On', 'Status'].map(h => (
+                      <th key={h} style={{ padding: '0 12px 10px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: COCONUT, textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {history.map((p, i) => (
+                    <tr key={p.id} style={{ borderBottom: i < history.length - 1 ? `1px solid ${IVORY}` : 'none' }}>
+                      <td style={{ padding: '13px 12px', fontSize: 13, fontWeight: 600, color: CHARCOAL, whiteSpace: 'nowrap' }}>{p.name}</td>
+                      <td style={{ padding: '13px 12px', fontSize: 12, color: COCONUT, whiteSpace: 'nowrap' }}>{p.periodLabel}</td>
+                      <td style={{ padding: '13px 12px', fontSize: 13, color: CHARCOAL, textAlign: 'center' }}>{p.bookings}</td>
+                      <td style={{ padding: '13px 12px', fontSize: 13, color: CHARCOAL, whiteSpace: 'nowrap' }}>{fmt(p.gross)}</td>
+                      <td style={{ padding: '13px 12px', fontSize: 13, color: FOREST, whiteSpace: 'nowrap' }}>{fmt(p.commission)}</td>
+                      <td style={{ padding: '13px 12px', fontSize: 13, fontWeight: 700, color: CHARCOAL, whiteSpace: 'nowrap' }}>{fmt(p.net)}</td>
+                      <td style={{ padding: '13px 12px', fontSize: 12, color: COCONUT, whiteSpace: 'nowrap' }}>{p.paidAt ?? '—'}</td>
+                      <td style={{ padding: '13px 12px' }}><StatusBadge status={p.status} /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )
+        )}
       </div>
     </div>
   )
 }
 
-// ── Analytics Panel ───────────────────────────────────────────────────────────
+// ── Analytics: shared chart components ────────────────────────────────────────
+
+function DualLineChart({ data, color, fmtY }: {
+  data: { label: string; current: number; prev: number }[]
+  color: string
+  fmtY?: (v: number) => string
+}) {
+  const W = 600, H = 160, PL = 48, PR = 8, PT = 8, PB = 28
+  const IW = W - PL - PR, IH = H - PT - PB
+  if (!data.length) return <div style={{ height: H, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ fontSize: 13, color: COCONUT }}>No data</p></div>
+
+  const allVals = data.flatMap(d => [d.current, d.prev])
+  const maxV = Math.max(...allVals, 1)
+  const yScale = (v: number) => PT + IH - (v / maxV) * IH
+  const xScale = (i: number) => PL + (i / Math.max(data.length - 1, 1)) * IW
+
+  const pathD = (key: 'current' | 'prev') => data.map((d, i) => `${i === 0 ? 'M' : 'L'}${xScale(i).toFixed(1)},${yScale(d[key]).toFixed(1)}`).join(' ')
+
+  const yTicks = [0, 0.25, 0.5, 0.75, 1].map(t => ({ val: maxV * t, y: yScale(maxV * t) }))
+  const step = Math.max(1, Math.floor(data.length / 6))
+  const xLabels = data.filter((_, i) => i % step === 0 || i === data.length - 1)
+    .map((d, _, arr) => ({ label: d.label, x: xScale(data.indexOf(d)) }))
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: H }} preserveAspectRatio="none">
+      {yTicks.map(t => (
+        <g key={t.val}>
+          <line x1={PL} x2={W - PR} y1={t.y} y2={t.y} stroke={SAND} strokeWidth="1" />
+          <text x={PL - 4} y={t.y + 4} textAnchor="end" style={{ fontSize: 9, fill: COCONUT }}>
+            {fmtY ? fmtY(t.val) : Math.round(t.val)}
+          </text>
+        </g>
+      ))}
+      {xLabels.map(l => (
+        <text key={l.label} x={l.x} y={H - 4} textAnchor="middle" style={{ fontSize: 9, fill: COCONUT }}>{l.label}</text>
+      ))}
+      <path d={pathD('prev')} fill="none" stroke={color} strokeWidth="1.5" strokeDasharray="4 3" strokeOpacity="0.35" strokeLinejoin="round" strokeLinecap="round" />
+      <path d={pathD('current')} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function HBarChart({ data, color, fmtVal }: {
+  data: { name: string; value: number }[]
+  color: string
+  fmtVal?: (v: number) => string
+}) {
+  const max = Math.max(...data.map(d => d.value), 1)
+  return (
+    <div className="space-y-2.5">
+      {data.map(d => (
+        <div key={d.name}>
+          <div className="flex justify-between mb-1">
+            <span style={{ fontSize: 12, color: CHARCOAL }}>{d.name}</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: CHARCOAL }}>{fmtVal ? fmtVal(d.value) : d.value.toLocaleString()}</span>
+          </div>
+          <div style={{ height: 6, borderRadius: 3, backgroundColor: IVORY }}>
+            <div style={{ height: '100%', width: `${(d.value / max) * 100}%`, backgroundColor: color, borderRadius: 3, transition: 'width 0.4s ease' }} />
+          </div>
+        </div>
+      ))}
+      {data.length === 0 && <p style={{ fontSize: 13, color: COCONUT }}>No data yet.</p>}
+    </div>
+  )
+}
+
+function BarSparkChart({ data, color }: { data: number[]; color: string }) {
+  const max = Math.max(...data, 1)
+  return (
+    <div className="flex items-end gap-0.5" style={{ height: 40 }}>
+      {data.map((v, i) => (
+        <div key={i} style={{ flex: 1, backgroundColor: color, opacity: 0.15 + (v / max) * 0.85, borderRadius: 2, height: `${Math.max((v / max) * 100, 4)}%` }} />
+      ))}
+    </div>
+  )
+}
+
+function GAMetricCard({ label, value, change, good = 'up', fmtValue }: {
+  label: string; value: number; change: number; good?: 'up' | 'down'; fmtValue: (v: number) => string
+}) {
+  const isGood = good === 'up' ? change >= 0 : change <= 0
+  const changeColor = change === 0 ? COCONUT : isGood ? FOREST : TERRACOTTA
+  const arrow = change > 0 ? '↑' : change < 0 ? '↓' : '→'
+  return (
+    <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
+      <p style={{ fontSize: 11, color: COCONUT, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</p>
+      <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(18px,2vw,26px)', fontWeight: 700, color: CHARCOAL, marginTop: 4, lineHeight: 1.1 }}>{fmtValue(value)}</p>
+      <p style={{ fontSize: 12, color: changeColor, marginTop: 5, fontWeight: 500 }}>
+        {arrow} {Math.abs(change)}% <span style={{ color: COCONUT, fontWeight: 400 }}>vs prev. period</span>
+      </p>
+    </div>
+  )
+}
+
+// ── Analytics Panel ────────────────────────────────────────────────────────────
+
+function GAChangeChip({ curr, prev }: { curr: number; prev: number }) {
+  if (!prev) return null
+  const pct = Math.round(((curr - prev) / prev) * 100)
+  const up = pct >= 0
+  return (
+    <span className="flex items-center gap-0.5" style={{ fontSize: 11, fontWeight: 600, color: up ? FOREST : TERRACOTTA }}>
+      {up ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}{Math.abs(pct)}%
+    </span>
+  )
+}
 
 function AnalyticsPanel() {
-  const topExps = [...ALL_EXPERIENCES].sort((a, b) => b.bookings - a.bookings).slice(0, 5)
-  const totalBookings = ALL_EXPERIENCES.reduce((a, e) => a + e.bookings, 0)
+  const [days, setDays]         = useState(30)
+  const [tab, setTab]           = useState<'overview' | 'audience' | 'revenue' | 'content' | 'traffic'>('overview')
+  const [data, setData]         = useState<AnalyticsData | null>(null)
+  const [gaData, setGaData]     = useState<GAData | null>(null)
+  const [loading, setLoading]   = useState(true)
+  const [gaLoading, setGaLoading] = useState(false)
+  const [useCustom, setUseCustom] = useState(false)
+  const [customStart, setCustomStart] = useState('')
+  const [customEnd, setCustomEnd]     = useState('')
+
+  const today = new Date().toISOString().slice(0, 10)
+
+  const effectiveDays = useCustom && customStart && customEnd
+    ? Math.max(1, Math.round((new Date(customEnd).getTime() - new Date(customStart).getTime()) / 86400000))
+    : days
+
+  useEffect(() => {
+    if (useCustom) return
+    setLoading(true); setData(null)
+    getAnalyticsDataAction(days).then(d => { setData(d); setLoading(false) })
+  }, [days, useCustom])
+
+  useEffect(() => {
+    if (useCustom && customStart && customEnd && customEnd >= customStart) {
+      setLoading(true); setData(null)
+      getAnalyticsDataAction(effectiveDays).then(d => { setData(d); setLoading(false) })
+    }
+  }, [useCustom, customStart, customEnd])
+
+  useEffect(() => {
+    if (tab !== 'traffic') return
+    if (useCustom && customStart && customEnd && customEnd >= customStart) {
+      setGaLoading(true)
+      getGADataAction(effectiveDays, customStart, customEnd).then(d => { setGaData(d); setGaLoading(false) })
+    } else if (!useCustom) {
+      setGaLoading(true)
+      getGADataAction(days).then(d => { setGaData(d); setGaLoading(false) })
+    }
+  }, [tab, days, useCustom, customStart, customEnd])
+
+  const PERIODS = [{ label: '7D', value: 7 }, { label: '30D', value: 30 }, { label: '3M', value: 90 }, { label: '12M', value: 365 }]
+  const TABS = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'audience', label: 'Audience' },
+    { id: 'revenue',  label: 'Revenue' },
+    { id: 'content',  label: 'Content' },
+    { id: 'traffic',  label: 'Web Traffic' },
+  ] as const
 
   return (
     <div>
-      <PageHeader title="Analytics" sub="Platform performance overview" />
-
-      <div className="grid lg:grid-cols-2 gap-5 mb-5">
-        {/* Bookings trend */}
-        <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
-          <h2 className="mb-1" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: CHARCOAL }}>Booking Trend</h2>
-          <div className="flex items-baseline gap-2 mb-3">
-            <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: CHARCOAL }}>1,248</span>
-            <span style={{ fontSize: 12, color: FOREST }}>↑ 16.2% YoY</span>
-          </div>
-          <MiniChart data={BOOKING_CHART} color={FOREST} />
-          <div className="flex justify-between mt-1">
-            {MONTHS.map(m => <span key={m} style={{ fontSize: 9, color: COCONUT }}>{m}</span>)}
-          </div>
+      {/* Header */}
+      <div className="flex items-start justify-between mb-5 flex-wrap gap-3">
+        <div>
+          <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(20px,2.5vw,26px)', fontWeight: 700, color: CHARCOAL }}>Analytics</h1>
+          <p style={{ fontSize: 13, color: COCONUT, marginTop: 3 }}>Platform performance — compared to previous period</p>
         </div>
-
-        {/* Revenue trend */}
-        <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
-          <h2 className="mb-1" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: CHARCOAL }}>Revenue Trend</h2>
-          <div className="flex items-baseline gap-2 mb-3">
-            <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: CHARCOAL }}>IDR 2.45B</span>
-            <span style={{ fontSize: 12, color: FOREST }}>↑ 18.3% YoY</span>
-          </div>
-          <MiniChart data={REVENUE_CHART} color={GOLD} />
-          <div className="flex justify-between mt-1">
-            {MONTHS.map(m => <span key={m} style={{ fontSize: 9, color: COCONUT }}>{m}</span>)}
-          </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Preset period buttons */}
+          {!useCustom && (
+            <div className="flex gap-1 bg-white rounded-xl p-1" style={{ border: `1px solid ${SAND}` }}>
+              {PERIODS.map(p => (
+                <button key={p.value} onClick={() => setDays(p.value)}
+                  style={{ padding: '6px 14px', borderRadius: 10, fontSize: 13, fontWeight: days === p.value ? 600 : 400, backgroundColor: days === p.value ? CHARCOAL : 'transparent', color: days === p.value ? 'white' : COCONUT, border: 'none', cursor: 'pointer' }}>
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          )}
+          {/* Custom date range */}
+          {useCustom && (
+            <div className="flex items-center gap-2 bg-white rounded-xl px-3 py-1.5" style={{ border: `1px solid ${SAND}` }}>
+              <input type="date" value={customStart} max={customEnd || today}
+                onChange={e => setCustomStart(e.target.value)}
+                style={{ border: 'none', outline: 'none', fontSize: 13, color: CHARCOAL, backgroundColor: 'transparent', cursor: 'pointer' }} />
+              <span style={{ fontSize: 13, color: COCONUT }}>→</span>
+              <input type="date" value={customEnd} min={customStart} max={today}
+                onChange={e => setCustomEnd(e.target.value)}
+                style={{ border: 'none', outline: 'none', fontSize: 13, color: CHARCOAL, backgroundColor: 'transparent', cursor: 'pointer' }} />
+            </div>
+          )}
+          {/* Custom toggle */}
+          <button onClick={() => { setUseCustom(v => !v); setCustomStart(''); setCustomEnd('') }}
+            style={{ height: 36, padding: '0 14px', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', border: `1px solid ${SAND}`, backgroundColor: useCustom ? CHARCOAL : 'white', color: useCustom ? 'white' : COCONUT }}>
+            {useCustom ? '✕ Clear' : 'Custom range'}
+          </button>
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-5">
-        {/* Top experiences by bookings */}
-        <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
-          <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: CHARCOAL }}>Top Experiences</h2>
-          <div className="space-y-4">
-            {topExps.map((e, i) => {
-              const pct = (e.bookings / topExps[0].bookings) * 100
-              return (
-                <div key={e.id}>
-                  <div className="flex justify-between items-center mb-1">
-                    <div className="flex items-center gap-2">
-                      <span style={{ fontSize: 12, fontWeight: 700, color: COCONUT, width: 16 }}>{i + 1}</span>
-                      <span style={{ fontSize: 13, color: CHARCOAL, fontWeight: 500 }}>{e.title}</span>
-                    </div>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: CHARCOAL }}>{e.bookings}</span>
+      {/* Sub-tabs */}
+      <div className="flex gap-0 mb-6" style={{ borderBottom: `2px solid ${SAND}` }}>
+        {TABS.map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)}
+            style={{ padding: '8px 18px', fontSize: 13, fontWeight: tab === t.id ? 600 : 400, color: tab === t.id ? CHARCOAL : COCONUT, background: 'none', border: 'none', cursor: 'pointer', borderBottom: tab === t.id ? `2px solid ${CHARCOAL}` : '2px solid transparent', marginBottom: -2 }}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {loading && (
+        <div className="flex items-center justify-center py-20">
+          <p style={{ fontSize: 14, color: COCONUT }}>Loading…</p>
+        </div>
+      )}
+
+      {!loading && data && tab === 'overview' && (
+        <div>
+          {/* Metric cards */}
+          <div className="grid grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
+            <GAMetricCard label="Bookings"         value={data.metrics.bookings.value}       change={data.metrics.bookings.change}       good="up"   fmtValue={v => v.toLocaleString()} />
+            <GAMetricCard label="Gross Revenue"    value={data.metrics.revenue.value}        change={data.metrics.revenue.change}        good="up"   fmtValue={fmt} />
+            <GAMetricCard label="New Users"        value={data.metrics.newUsers.value}       change={data.metrics.newUsers.change}       good="up"   fmtValue={v => v.toLocaleString()} />
+            <GAMetricCard label="New Hosts"        value={data.metrics.newHosts.value}       change={data.metrics.newHosts.change}       good="up"   fmtValue={v => v.toLocaleString()} />
+            <GAMetricCard label="Avg Booking Value" value={data.metrics.avgBookingValue.value} change={data.metrics.avgBookingValue.change} good="up" fmtValue={fmt} />
+            <GAMetricCard label="Cancel Rate"      value={data.metrics.cancelRate.value}     change={data.metrics.cancelRate.change}     good="down" fmtValue={v => `${v}%`} />
+          </div>
+
+          {/* Dual-line charts */}
+          <div className="grid lg:grid-cols-2 gap-5 mb-6">
+            <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
+              <div className="flex items-center justify-between mb-3">
+                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL }}>Bookings over time</h2>
+                <div className="flex items-center gap-3">
+                  <span className="flex items-center gap-1.5" style={{ fontSize: 11, color: COCONUT }}><span style={{ width: 16, height: 2, display: 'inline-block', backgroundColor: FOREST, borderRadius: 1 }} /> Current</span>
+                  <span className="flex items-center gap-1.5" style={{ fontSize: 11, color: COCONUT }}><span style={{ width: 16, height: 1, display: 'inline-block', borderTop: `2px dashed ${FOREST}`, opacity: 0.5 }} /> Previous</span>
+                </div>
+              </div>
+              <DualLineChart data={data.bookingTrend} color={FOREST} />
+            </div>
+            <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
+              <div className="flex items-center justify-between mb-3">
+                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL }}>Revenue over time</h2>
+                <div className="flex items-center gap-3">
+                  <span className="flex items-center gap-1.5" style={{ fontSize: 11, color: COCONUT }}><span style={{ width: 16, height: 2, display: 'inline-block', backgroundColor: GOLD, borderRadius: 1 }} /> Current</span>
+                  <span className="flex items-center gap-1.5" style={{ fontSize: 11, color: COCONUT }}><span style={{ width: 16, height: 1, display: 'inline-block', borderTop: `2px dashed ${GOLD}`, opacity: 0.5 }} /> Previous</span>
+                </div>
+              </div>
+              <DualLineChart data={data.revenueTrend} color={GOLD} fmtY={v => v >= 1e6 ? `${(v/1e6).toFixed(0)}M` : v >= 1e3 ? `${(v/1e3).toFixed(0)}K` : String(Math.round(v))} />
+            </div>
+          </div>
+
+          {/* Booking status + top experiences */}
+          <div className="grid lg:grid-cols-5 gap-5">
+            <div className="lg:col-span-2 bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
+              <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL }}>Booking Status</h2>
+              {data.bookingStatus.length > 0 ? (
+                <>
+                  <DonutChart
+                    data={data.bookingStatus.map(s => ({ name: s.status, pct: Math.round((s.count / data.bookingStatus.reduce((a, x) => a + x.count, 0)) * 100), color: s.color }))}
+                    total={data.bookingStatus.reduce((a, s) => a + s.count, 0)}
+                  />
+                  <div className="mt-4 space-y-2 pt-4" style={{ borderTop: `1px solid ${SAND}` }}>
+                    {data.bookingStatus.map(s => (
+                      <div key={s.status} className="flex justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
+                          <span style={{ fontSize: 12, color: COCONUT }}>{s.status}</span>
+                        </div>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: CHARCOAL }}>{s.count}</span>
+                      </div>
+                    ))}
                   </div>
-                  <div style={{ height: 6, borderRadius: 3, backgroundColor: IVORY, overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${pct}%`, backgroundColor: GOLD, borderRadius: 3 }} />
+                </>
+              ) : <p style={{ fontSize: 13, color: COCONUT }}>No bookings in period.</p>}
+            </div>
+            <div className="lg:col-span-3 bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
+              <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL }}>Top Experiences</h2>
+              <HBarChart data={data.topExperiences.slice(0, 5).map(e => ({ name: e.title, value: e.bookings }))} color={GOLD} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {!loading && data && tab === 'audience' && (
+        <div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <GAMetricCard label="New Users"  value={data.metrics.newUsers.value}  change={data.metrics.newUsers.change}  good="up" fmtValue={v => v.toLocaleString()} />
+            <GAMetricCard label="New Hosts"  value={data.metrics.newHosts.value}  change={data.metrics.newHosts.change}  good="up" fmtValue={v => v.toLocaleString()} />
+            <GAMetricCard label="Bookings"   value={data.metrics.bookings.value}  change={data.metrics.bookings.change}  good="up" fmtValue={v => v.toLocaleString()} />
+            <GAMetricCard label="Avg Spend"  value={data.metrics.avgBookingValue.value} change={data.metrics.avgBookingValue.change} good="up" fmtValue={fmt} />
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-5 mb-6">
+            <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
+              <h2 className="mb-3" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL }}>New Users over time</h2>
+              <BarSparkChart data={data.userGrowth.map(u => u.count)} color={FOREST} />
+              <div className="flex justify-between mt-1">
+                {data.userGrowth.filter((_, i) => i % Math.max(1, Math.floor(data.userGrowth.length / 6)) === 0).map(u => (
+                  <span key={u.label} style={{ fontSize: 9, color: COCONUT }}>{u.label}</span>
+                ))}
+              </div>
+            </div>
+            <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
+              <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL }}>Top Hosts by Revenue</h2>
+              <HBarChart data={data.topHosts.slice(0, 6).map(h => ({ name: h.business, value: h.revenue }))} color={GOLD} fmtVal={fmt} />
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
+            <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL }}>Top Hosts</h2>
+            <div className="overflow-x-auto">
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: `1px solid ${SAND}` }}>
+                    {['Host', 'Business', 'Bookings', 'Revenue', 'Rating'].map(h => (
+                      <th key={h} style={{ padding: '0 12px 10px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: COCONUT, textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.topHosts.map((h, i) => (
+                    <tr key={h.business} style={{ borderBottom: i < data.topHosts.length - 1 ? `1px solid ${IVORY}` : 'none' }}>
+                      <td style={{ padding: '11px 12px', fontSize: 13, fontWeight: 600, color: CHARCOAL }}>{h.name}</td>
+                      <td style={{ padding: '11px 12px', fontSize: 12, color: COCONUT }}>{h.business}</td>
+                      <td style={{ padding: '11px 12px', fontSize: 13, fontWeight: 600, color: CHARCOAL }}>{h.bookings}</td>
+                      <td style={{ padding: '11px 12px', fontSize: 13, fontWeight: 600, color: FOREST }}>{fmt(h.revenue)}</td>
+                      <td style={{ padding: '11px 12px', fontSize: 12, color: COCONUT }}>{h.rating > 0 ? `${h.rating.toFixed(1)} ★` : '—'}</td>
+                    </tr>
+                  ))}
+                  {data.topHosts.length === 0 && <tr><td colSpan={5} style={{ padding: '20px 12px', fontSize: 13, color: COCONUT, textAlign: 'center' }}>No data for this period.</td></tr>}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {!loading && data && tab === 'revenue' && (
+        <div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <GAMetricCard label="Gross Revenue"     value={data.metrics.revenue.value}        change={data.metrics.revenue.change}        good="up"   fmtValue={fmt} />
+            <GAMetricCard label="Platform Commission" value={Math.round(data.metrics.revenue.value * 0.1)} change={data.metrics.revenue.change} good="up" fmtValue={fmt} />
+            <GAMetricCard label="Avg Booking Value" value={data.metrics.avgBookingValue.value} change={data.metrics.avgBookingValue.change} good="up"   fmtValue={fmt} />
+            <GAMetricCard label="Bookings"          value={data.metrics.bookings.value}       change={data.metrics.bookings.change}       good="up"   fmtValue={v => v.toLocaleString()} />
+          </div>
+
+          <div className="bg-white rounded-xl p-5 mb-5" style={{ border: `1px solid ${SAND}` }}>
+            <div className="flex items-center justify-between mb-3">
+              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL }}>Revenue over time</h2>
+              <div className="flex items-center gap-3">
+                <span className="flex items-center gap-1.5" style={{ fontSize: 11, color: COCONUT }}><span style={{ width: 16, height: 2, display: 'inline-block', backgroundColor: GOLD, borderRadius: 1 }} /> Current</span>
+                <span className="flex items-center gap-1.5" style={{ fontSize: 11, color: COCONUT }}><span style={{ width: 16, height: 1, display: 'inline-block', borderTop: `2px dashed ${GOLD}`, opacity: 0.5 }} /> Previous</span>
+              </div>
+            </div>
+            <DualLineChart data={data.revenueTrend} color={GOLD} fmtY={v => v >= 1e6 ? `${(v/1e6).toFixed(0)}M` : v >= 1e3 ? `${(v/1e3).toFixed(0)}K` : String(Math.round(v))} />
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-5">
+            <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
+              <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL }}>Revenue by Category</h2>
+              <HBarChart data={data.categoryBreakdown.map(c => ({ name: c.name, value: c.revenue }))} color={GOLD} fmtVal={fmt} />
+            </div>
+            <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
+              <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL }}>Revenue by Area</h2>
+              <HBarChart data={data.areaBreakdown.map(a => ({ name: a.name, value: a.revenue }))} color={TERRACOTTA} fmtVal={fmt} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {!loading && data && tab === 'content' && (
+        <div>
+          <div className="bg-white rounded-xl p-5 mb-5" style={{ border: `1px solid ${SAND}` }}>
+            <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL }}>Top Experiences</h2>
+            <div className="overflow-x-auto">
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: `1px solid ${SAND}` }}>
+                    {['#', 'Experience', 'Category', 'Area', 'Bookings', 'Revenue', 'Rating', 'Bar'].map(h => (
+                      <th key={h} style={{ padding: '0 12px 10px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: COCONUT, textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.topExperiences.map((e, i) => {
+                    const pct = data.topExperiences[0]?.bookings ? (e.bookings / data.topExperiences[0].bookings) * 100 : 0
+                    return (
+                      <tr key={e.title} style={{ borderBottom: i < data.topExperiences.length - 1 ? `1px solid ${IVORY}` : 'none' }}>
+                        <td style={{ padding: '11px 12px', fontSize: 12, fontWeight: 700, color: COCONUT }}>{i + 1}</td>
+                        <td style={{ padding: '11px 12px', fontSize: 13, fontWeight: 600, color: CHARCOAL, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.title}</td>
+                        <td style={{ padding: '11px 12px', fontSize: 12, color: COCONUT }}>{e.category}</td>
+                        <td style={{ padding: '11px 12px', fontSize: 12, color: COCONUT }}>{e.area}</td>
+                        <td style={{ padding: '11px 12px', fontSize: 13, fontWeight: 600, color: CHARCOAL }}>{e.bookings}</td>
+                        <td style={{ padding: '11px 12px', fontSize: 13, fontWeight: 600, color: FOREST }}>{fmt(e.revenue)}</td>
+                        <td style={{ padding: '11px 12px', fontSize: 12, color: COCONUT }}>{e.rating > 0 ? `${e.rating.toFixed(1)} ★` : '—'}</td>
+                        <td style={{ padding: '11px 12px', minWidth: 100 }}>
+                          <div style={{ height: 6, borderRadius: 3, backgroundColor: IVORY }}>
+                            <div style={{ height: '100%', width: `${pct}%`, backgroundColor: GOLD, borderRadius: 3 }} />
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                  {data.topExperiences.length === 0 && <tr><td colSpan={8} style={{ padding: '20px 12px', fontSize: 13, color: COCONUT, textAlign: 'center' }}>No data for this period.</td></tr>}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-5">
+            <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
+              <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL }}>Bookings by Category</h2>
+              {data.categoryBreakdown.length > 0 ? (
+                <>
+                  <DonutChart data={data.categoryBreakdown.map(c => ({ name: c.name, pct: c.pct, color: c.color }))} total={data.metrics.bookings.value} />
+                  <div className="mt-4 space-y-1.5 pt-4" style={{ borderTop: `1px solid ${SAND}` }}>
+                    {data.categoryBreakdown.map(c => (
+                      <div key={c.name} className="flex justify-between items-center">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: c.color }} />
+                          <span style={{ fontSize: 12, color: COCONUT }}>{c.name}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span style={{ fontSize: 12, fontWeight: 600, color: CHARCOAL }}>{c.bookings}</span>
+                          <span style={{ fontSize: 11, color: COCONUT, width: 30, textAlign: 'right' }}>{c.pct}%</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : <p style={{ fontSize: 13, color: COCONUT }}>No data for this period.</p>}
+            </div>
+            <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
+              <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL }}>Bookings by Area</h2>
+              <HBarChart data={data.areaBreakdown.map(a => ({ name: a.name, value: a.bookings }))} color={FOREST} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Web Traffic (GA4) ── */}
+      {tab === 'traffic' && (
+        <div>
+          {gaLoading && (
+            <div className="flex items-center justify-center py-20">
+              <p style={{ fontSize: 14, color: COCONUT }}>Loading Google Analytics data…</p>
+            </div>
+          )}
+          {!gaLoading && !gaData && (
+            <div className="flex items-center justify-center py-20">
+              <p style={{ fontSize: 14, color: COCONUT }}>No GA data available. Check service account permissions.</p>
+            </div>
+          )}
+          {!gaLoading && gaData && (
+            <div>
+              {/* Summary metrics */}
+              <div className="grid grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
+                {[
+                  { label: 'Sessions',       curr: gaData.metrics.sessions,   prev: gaData.metrics.sessionsPrev,  fmt: (v: number) => v.toLocaleString() },
+                  { label: 'Users',          curr: gaData.metrics.users,      prev: gaData.metrics.usersPrev,     fmt: (v: number) => v.toLocaleString() },
+                  { label: 'New Users',      curr: gaData.metrics.newUsers,   prev: 0,                            fmt: (v: number) => v.toLocaleString() },
+                  { label: 'Page Views',     curr: gaData.metrics.pageViews,  prev: gaData.metrics.pageViewsPrev, fmt: (v: number) => v.toLocaleString() },
+                  { label: 'Engagement Rate', curr: gaData.metrics.engagementRate, prev: 0,                      fmt: (v: number) => `${v}%` },
+                  { label: 'Avg Session',    curr: gaData.metrics.avgSessionDuration, prev: 0,                   fmt: (v: number) => `${Math.floor(v / 60)}m ${v % 60}s` },
+                ].map(s => (
+                  <div key={s.label} className="bg-white rounded-xl p-4 lg:p-5" style={{ border: `1px solid ${SAND}` }}>
+                    <p style={{ fontSize: 12, color: COCONUT }}>{s.label}</p>
+                    <div className="flex items-end justify-between mt-1">
+                      <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(16px,1.8vw,22px)', fontWeight: 700, color: CHARCOAL, lineHeight: 1.2 }}>{s.fmt(s.curr)}</p>
+                      {s.prev > 0 && <GAChangeChip curr={s.curr} prev={s.prev} />}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Trend chart */}
+              <div className="bg-white rounded-xl p-5 mb-5" style={{ border: `1px solid ${SAND}` }}>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL }}>Sessions & Users over time</h2>
+                  <div className="flex items-center gap-4">
+                    <span className="flex items-center gap-1.5" style={{ fontSize: 11, color: COCONUT }}><span style={{ width: 16, height: 2, display: 'inline-block', backgroundColor: GOLD, borderRadius: 1 }} /> Sessions</span>
+                    <span className="flex items-center gap-1.5" style={{ fontSize: 11, color: COCONUT }}><span style={{ width: 16, height: 2, display: 'inline-block', backgroundColor: FOREST, borderRadius: 1 }} /> Users</span>
                   </div>
                 </div>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* Category distribution */}
-        <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
-          <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: CHARCOAL }}>Bookings by Category</h2>
-          <DonutChart data={CATEGORY_DIST} total={totalBookings} />
-
-          <div className="mt-5 pt-4 grid grid-cols-2 gap-3" style={{ borderTop: `1px solid ${SAND}` }}>
-            {[
-              { label: 'Avg booking value', value: 'IDR 480K' },
-              { label: 'Repeat guest rate', value: '38%' },
-              { label: 'Avg rating',         value: '4.82 ★' },
-              { label: 'Host satisfaction',  value: '96%' },
-            ].map(m => (
-              <div key={m.label}>
-                <p style={{ fontSize: 11, color: COCONUT }}>{m.label}</p>
-                <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL, marginTop: 2 }}>{m.value}</p>
+                {gaData.trend.length > 0 ? (
+                  <DualLineChart
+                    data={gaData.trend.map(d => ({ label: d.date, current: d.sessions, prev: d.users }))}
+                    color={GOLD}
+                  />
+                ) : <p style={{ fontSize: 13, color: COCONUT }}>No trend data.</p>}
               </div>
-            ))}
-          </div>
+
+              <div className="grid lg:grid-cols-2 gap-5 mb-5">
+                {/* Traffic sources */}
+                <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
+                  <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL }}>Traffic Sources</h2>
+                  {gaData.sources.length > 0 ? (
+                    <div className="space-y-3">
+                      {gaData.sources.map((s, i) => (
+                        <div key={i}>
+                          <div className="flex justify-between mb-1">
+                            <span style={{ fontSize: 13, color: CHARCOAL }}>{s.source}</span>
+                            <span style={{ fontSize: 12, color: COCONUT }}>{s.sessions.toLocaleString()} sessions · {s.pct}%</span>
+                          </div>
+                          <div className="rounded-full overflow-hidden" style={{ height: 6, backgroundColor: SAND }}>
+                            <div className="h-full rounded-full" style={{ width: `${s.pct}%`, backgroundColor: GOLD }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : <p style={{ fontSize: 13, color: COCONUT }}>No source data.</p>}
+                </div>
+
+                {/* Devices */}
+                <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
+                  <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL }}>Devices</h2>
+                  {gaData.devices.length > 0 ? (
+                    <>
+                      <DonutChart
+                        data={gaData.devices.map((d, i) => ({
+                          name: d.device.charAt(0).toUpperCase() + d.device.slice(1),
+                          pct: d.pct,
+                          color: [GOLD, FOREST, TERRACOTTA, COCONUT][i] ?? COCONUT,
+                        }))}
+                        total={gaData.metrics.sessions}
+                      />
+                      <div className="mt-3 space-y-1.5 pt-3" style={{ borderTop: `1px solid ${SAND}` }}>
+                        {gaData.devices.map((d, i) => (
+                          <div key={i} className="flex justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: [GOLD, FOREST, TERRACOTTA, COCONUT][i] ?? COCONUT }} />
+                              <span style={{ fontSize: 12, color: COCONUT }}>{d.device.charAt(0).toUpperCase() + d.device.slice(1)}</span>
+                            </div>
+                            <span style={{ fontSize: 12, fontWeight: 600, color: CHARCOAL }}>{d.pct}%</span>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  ) : <p style={{ fontSize: 13, color: COCONUT }}>No device data.</p>}
+                </div>
+              </div>
+
+              <div className="grid lg:grid-cols-2 gap-5">
+                {/* Top pages */}
+                <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
+                  <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL }}>Top Pages</h2>
+                  {gaData.topPages.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <thead>
+                          <tr style={{ borderBottom: `1px solid ${SAND}` }}>
+                            {['Page', 'Sessions', 'Users'].map(h => (
+                              <th key={h} style={{ padding: '0 8px 8px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: COCONUT, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {gaData.topPages.map((p, i) => (
+                            <tr key={i} style={{ borderBottom: i < gaData.topPages.length - 1 ? `1px solid ${IVORY}` : 'none' }}>
+                              <td style={{ padding: '10px 8px', fontSize: 12, color: CHARCOAL, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.path}</td>
+                              <td style={{ padding: '10px 8px', fontSize: 12, color: CHARCOAL }}>{p.sessions.toLocaleString()}</td>
+                              <td style={{ padding: '10px 8px', fontSize: 12, color: COCONUT }}>{p.users.toLocaleString()}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : <p style={{ fontSize: 13, color: COCONUT }}>No page data.</p>}
+                </div>
+
+                {/* Countries */}
+                <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
+                  <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL }}>Top Countries</h2>
+                  {gaData.countries.length > 0 ? (
+                    <div className="space-y-3">
+                      {gaData.countries.map((c, i) => (
+                        <div key={i}>
+                          <div className="flex justify-between mb-1">
+                            <span style={{ fontSize: 13, color: CHARCOAL }}>{c.country}</span>
+                            <span style={{ fontSize: 12, color: COCONUT }}>{c.users.toLocaleString()} users · {c.pct}%</span>
+                          </div>
+                          <div className="rounded-full overflow-hidden" style={{ height: 6, backgroundColor: SAND }}>
+                            <div className="h-full rounded-full" style={{ width: `${c.pct}%`, backgroundColor: FOREST }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : <p style={{ fontSize: 13, color: COCONUT }}>No country data.</p>}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
+      )}
     </div>
   )
 }
@@ -1625,6 +2514,713 @@ const PLATFORM_DEFAULTS = {
 
 const NOTIF_DEFAULTS = { newHost: true, newBooking: false, flaggedReview: true, weeklyReport: true }
 
+// ── Newsletter panel ──────────────────────────────────────────────────────────
+
+function NewsletterPanel() {
+  const [subs, setSubs] = useState<NewsletterSub[]>([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+
+  useEffect(() => {
+    getNewsletterSubscribersAction().then(d => { setSubs(d); setLoading(false) })
+  }, [])
+
+  const filtered = search
+    ? subs.filter(s => s.email.toLowerCase().includes(search.toLowerCase()) || s.source.toLowerCase().includes(search.toLowerCase()))
+    : subs
+
+  const exportCSV = () => {
+    const rows = ['Email,Source,Joined', ...subs.map(s => `${s.email},${s.source},${s.joinedAt}`)]
+    const blob = new Blob([rows.join('\n')], { type: 'text/csv' })
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'newsletter-subscribers.csv'; a.click()
+  }
+
+  const remove = async (id: string) => {
+    await deleteNewsletterSubAction(id)
+    setSubs(p => p.filter(s => s.id !== id))
+  }
+
+  return (
+    <div>
+      <PageHeader title="Newsletter Subscribers" sub="Manage email list and export contacts" />
+
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        {[
+          { label: 'Total Subscribers', value: subs.length.toString(), color: CHARCOAL },
+          { label: 'Homepage Sign-ups',  value: subs.filter(s => s.source === 'homepage').length.toString(),  color: FOREST },
+          { label: 'Other Sources',     value: subs.filter(s => s.source !== 'homepage').length.toString(), color: GOLD },
+        ].map(s => (
+          <div key={s.label} className="bg-white rounded-xl p-4 lg:p-5" style={{ border: `1px solid ${SAND}` }}>
+            <p style={{ fontSize: 12, color: COCONUT }}>{s.label}</p>
+            <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: s.color, marginTop: 4 }}>{s.value}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: CHARCOAL }}>Subscriber List</h2>
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: COCONUT }} />
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search emails…"
+                style={{ height: 34, paddingLeft: 32, paddingRight: 12, borderRadius: 8, border: `1px solid ${SAND}`, fontSize: 13, color: CHARCOAL, outline: 'none', width: 200 }} />
+            </div>
+            <button onClick={exportCSV}
+              className="flex items-center gap-1.5 hover:opacity-90"
+              style={{ height: 34, padding: '0 14px', borderRadius: 8, border: 'none', backgroundColor: CHARCOAL, color: 'white', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+              <Download size={13} /> Export CSV
+            </button>
+          </div>
+        </div>
+
+        {loading ? (
+          <p style={{ fontSize: 13, color: COCONUT, padding: '24px 0', textAlign: 'center' }}>Loading…</p>
+        ) : filtered.length === 0 ? (
+          <p style={{ fontSize: 13, color: COCONUT, padding: '24px 0', textAlign: 'center' }}>No subscribers found.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: `1px solid ${SAND}` }}>
+                  {['Email', 'Source', 'Joined', ''].map(h => (
+                    <th key={h} style={{ padding: '0 12px 10px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: COCONUT, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((s, i) => (
+                  <tr key={s.id} style={{ borderBottom: i < filtered.length - 1 ? `1px solid ${IVORY}` : 'none' }}>
+                    <td style={{ padding: '12px 12px', fontSize: 13, color: CHARCOAL }}>{s.email}</td>
+                    <td style={{ padding: '12px 12px' }}>
+                      <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20, backgroundColor: IVORY, color: COCONUT }}>{s.source}</span>
+                    </td>
+                    <td style={{ padding: '12px 12px', fontSize: 12, color: COCONUT }}>{s.joinedAt}</td>
+                    <td style={{ padding: '12px 12px', textAlign: 'right' }}>
+                      <button onClick={() => remove(s.id)} title="Remove"
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                        <Trash2 size={14} style={{ color: TERRACOTTA }} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ── Broadcast panel ───────────────────────────────────────────────────────────
+
+function BroadcastPanel() {
+  const [target, setTarget] = useState<'all' | 'tourists' | 'operators'>('all')
+  const [title, setTitle] = useState('')
+  const [body, setBody] = useState('')
+  const [href, setHref] = useState('')
+  const [sending, setSending] = useState(false)
+  const [result, setResult] = useState<{ ok: boolean; count: number; error?: string } | null>(null)
+
+  const send = async () => {
+    if (!title.trim() || !body.trim()) return
+    setSending(true); setResult(null)
+    const r = await sendBroadcastAction(target, title.trim(), body.trim(), href.trim() || undefined)
+    setResult(r); setSending(false)
+    if (r.ok) { setTitle(''); setBody(''); setHref('') }
+  }
+
+  const targetLabels = { all: 'All Users', tourists: 'Travelers Only', operators: 'Hosts Only' }
+
+  return (
+    <div>
+      <PageHeader title="Broadcast Notifications" sub="Send platform-wide announcements to users" />
+
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Compose */}
+        <div className="lg:col-span-2 bg-white rounded-xl p-6" style={{ border: `1px solid ${SAND}` }}>
+          <h2 className="mb-5" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: CHARCOAL }}>Compose Message</h2>
+
+          {/* Target selector */}
+          <div className="mb-4">
+            <p style={{ fontSize: 12, fontWeight: 600, color: COCONUT, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Send To</p>
+            <div className="flex gap-2">
+              {(['all', 'tourists', 'operators'] as const).map(t => (
+                <button key={t} onClick={() => setTarget(t)}
+                  style={{
+                    height: 34, padding: '0 14px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                    border: target === t ? 'none' : `1px solid ${SAND}`,
+                    backgroundColor: target === t ? CHARCOAL : 'white',
+                    color: target === t ? 'white' : COCONUT,
+                  }}>
+                  {targetLabels[t]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Title */}
+          <div className="mb-4">
+            <p style={{ fontSize: 12, fontWeight: 600, color: COCONUT, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Title</p>
+            <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Notification title…"
+              style={{ width: '100%', height: 40, padding: '0 12px', borderRadius: 8, border: `1px solid ${SAND}`, fontSize: 14, color: CHARCOAL, outline: 'none', boxSizing: 'border-box' }} />
+          </div>
+
+          {/* Body */}
+          <div className="mb-4">
+            <p style={{ fontSize: 12, fontWeight: 600, color: COCONUT, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Message</p>
+            <textarea value={body} onChange={e => setBody(e.target.value)} placeholder="Write your message…" rows={4}
+              style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: `1px solid ${SAND}`, fontSize: 14, color: CHARCOAL, outline: 'none', resize: 'vertical', fontFamily: 'var(--font-inter)', boxSizing: 'border-box' }} />
+          </div>
+
+          {/* Link (optional) */}
+          <div className="mb-5">
+            <p style={{ fontSize: 12, fontWeight: 600, color: COCONUT, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Link (optional)</p>
+            <input value={href} onChange={e => setHref(e.target.value)} placeholder="/experiences  or  /dashboard"
+              style={{ width: '100%', height: 40, padding: '0 12px', borderRadius: 8, border: `1px solid ${SAND}`, fontSize: 13, color: CHARCOAL, outline: 'none', boxSizing: 'border-box' }} />
+          </div>
+
+          {result && (
+            <div className="mb-4 rounded-lg p-3" style={{ backgroundColor: result.ok ? '#F0F7F2' : '#FEF2F2', border: `1px solid ${result.ok ? '#C3E6D0' : '#FECACA'}` }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: result.ok ? FOREST : TERRACOTTA }}>
+                {result.ok ? `✓ Sent to ${result.count} user${result.count !== 1 ? 's' : ''}` : `Error: ${result.error ?? 'Failed to send'}`}
+              </p>
+            </div>
+          )}
+
+          <button onClick={send} disabled={sending || !title.trim() || !body.trim()}
+            className="flex items-center gap-2 hover:opacity-90 disabled:opacity-50"
+            style={{ height: 42, padding: '0 20px', borderRadius: 10, border: 'none', backgroundColor: GOLD, color: 'white', fontSize: 14, fontWeight: 700, cursor: sending ? 'wait' : 'pointer' }}>
+            <Send size={15} /> {sending ? 'Sending…' : 'Send Notification'}
+          </button>
+        </div>
+
+        {/* Preview */}
+        <div className="bg-white rounded-xl p-6" style={{ border: `1px solid ${SAND}` }}>
+          <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: CHARCOAL }}>Preview</h2>
+          <div className="rounded-xl p-4" style={{ backgroundColor: IVORY, border: `1px solid ${SAND}` }}>
+            <div className="flex items-start gap-3 mb-3">
+              <div className="rounded-full flex items-center justify-center flex-shrink-0"
+                style={{ width: 36, height: 36, backgroundColor: GOLD }}>
+                <Bell size={16} style={{ color: 'white' }} />
+              </div>
+              <div>
+                <p style={{ fontSize: 13, fontWeight: 700, color: CHARCOAL, lineHeight: 1.3 }}>{title || 'Notification title'}</p>
+                <p style={{ fontSize: 11, color: COCONUT, marginTop: 2 }}>Balible · now</p>
+              </div>
+            </div>
+            <p style={{ fontSize: 13, color: COCONUT, lineHeight: 1.5 }}>{body || 'Your message will appear here…'}</p>
+            {href && (
+              <p className="mt-3" style={{ fontSize: 12, color: GOLD, fontWeight: 600 }}>→ {href}</p>
+            )}
+          </div>
+          <div className="mt-4 p-3 rounded-lg" style={{ backgroundColor: IVORY }}>
+            <p style={{ fontSize: 12, color: COCONUT }}>Recipients: <strong style={{ color: CHARCOAL }}>{targetLabels[target]}</strong></p>
+            <p style={{ fontSize: 11, color: COCONUT, marginTop: 4 }}>Notifications appear in each user's bell menu on their next login.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Featured Content Panel ────────────────────────────────────────────────────
+
+function FeaturedPanel() {
+  const [exps, setExps]       = useState<AdminExp[]>([])
+  const [featured, setFeatured] = useState<string[]>(() => {
+    try { const v = localStorage.getItem('balible_featured'); return v ? JSON.parse(v) : [] } catch { return [] }
+  })
+  const [saved, setSaved] = useState(false)
+
+  useEffect(() => { getAdminExperiencesAction().then(setExps) }, [])
+
+  const active = exps.filter(e => e.status === 'Active')
+  const orderedFeatured = featured.filter(id => active.find(e => e.id === id))
+  const isFull = orderedFeatured.length >= 6
+
+  const toggle = (id: string) => setFeatured(prev => prev.includes(id) ? prev.filter(x => x !== id) : isFull ? prev : [...prev, id])
+  const moveUp   = (id: string) => setFeatured(prev => { const i = prev.indexOf(id); if (i <= 0) return prev; const n = [...prev]; [n[i-1], n[i]] = [n[i], n[i-1]]; return n })
+  const moveDown = (id: string) => setFeatured(prev => { const i = prev.indexOf(id); if (i >= prev.length - 1) return prev; const n = [...prev]; [n[i], n[i+1]] = [n[i+1], n[i]]; return n })
+
+  const save = () => { localStorage.setItem('balible_featured', JSON.stringify(featured)); setSaved(true); setTimeout(() => setSaved(false), 2000) }
+
+  return (
+    <div>
+      <PageHeader title="Featured Content" sub={`${orderedFeatured.length}/6 slots · shown in the homepage spotlight`}
+        action={
+          <button onClick={save} style={{ height: 38, padding: '0 20px', borderRadius: 10, border: 'none', backgroundColor: saved ? FOREST : CHARCOAL, color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s' }}>
+            {saved ? <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Check size={13} /> Saved</span> : 'Save Order'}
+          </button>
+        }
+      />
+
+      <div className="grid lg:grid-cols-2 gap-5 mb-5">
+        {/* Ordered featured slots */}
+        <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
+          <div className="flex items-center justify-between mb-4">
+            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: CHARCOAL }}>Featured Slots</h2>
+            <span style={{ fontSize: 12, color: COCONUT, backgroundColor: IVORY, padding: '3px 10px', borderRadius: 20 }}>{orderedFeatured.length}/6</span>
+          </div>
+          {orderedFeatured.length === 0 ? (
+            <div className="py-10 text-center">
+              <Sparkles size={24} style={{ color: SAND, margin: '0 auto 8px' }} />
+              <p style={{ fontSize: 13, color: COCONUT }}>No featured experiences yet. Select from the right.</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {orderedFeatured.map((id, idx) => {
+                const exp = active.find(e => e.id === id)
+                if (!exp) return null
+                return (
+                  <div key={id} className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: IVORY, border: `1px solid ${SAND}` }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: GOLD, width: 18, flexShrink: 0 }}>#{idx + 1}</span>
+                    <img src={exp.image} alt="" className="w-9 h-9 rounded-lg object-cover flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p style={{ fontSize: 13, fontWeight: 600, color: CHARCOAL, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{exp.title}</p>
+                      <p style={{ fontSize: 11, color: COCONUT }}>{exp.area}</p>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => moveUp(id)} disabled={idx === 0}
+                        style={{ width: 26, height: 26, borderRadius: 6, border: `1px solid ${SAND}`, background: 'white', cursor: idx === 0 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: idx === 0 ? 0.35 : 1 }}>
+                        <ChevronUp size={13} style={{ color: COCONUT }} />
+                      </button>
+                      <button onClick={() => moveDown(id)} disabled={idx === orderedFeatured.length - 1}
+                        style={{ width: 26, height: 26, borderRadius: 6, border: `1px solid ${SAND}`, background: 'white', cursor: idx === orderedFeatured.length - 1 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: idx === orderedFeatured.length - 1 ? 0.35 : 1 }}>
+                        <ChevronDown size={13} style={{ color: COCONUT }} />
+                      </button>
+                      <button onClick={() => toggle(id)}
+                        style={{ width: 26, height: 26, borderRadius: 6, border: `1px solid ${SAND}`, background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: TERRACOTTA }}>
+                        <X size={12} />
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* All active experiences to pick from */}
+        <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
+          <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: CHARCOAL }}>All Active Experiences</h2>
+          <div className="space-y-2" style={{ maxHeight: 360, overflowY: 'auto', paddingRight: 4 }}>
+            {active.map(exp => {
+              const isFeatured = featured.includes(exp.id)
+              return (
+                <div key={exp.id} onClick={() => toggle(exp.id)}
+                  className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-stone-50 transition-colors"
+                  style={{ border: `1px solid ${isFeatured ? GOLD : SAND}`, backgroundColor: isFeatured ? '#FFFDF9' : 'white' }}>
+                  <img src={exp.image} alt="" className="w-9 h-9 rounded-lg object-cover flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p style={{ fontSize: 13, fontWeight: 500, color: CHARCOAL, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{exp.title}</p>
+                    <p style={{ fontSize: 11, color: COCONUT }}>{exp.area}</p>
+                  </div>
+                  <div style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${isFeatured ? GOLD : SAND}`, backgroundColor: isFeatured ? GOLD : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    {isFeatured && <Check size={11} style={{ color: 'white' }} />}
+                  </div>
+                </div>
+              )
+            })}
+            {active.length === 0 && <p style={{ fontSize: 13, color: COCONUT, textAlign: 'center', padding: '20px 0' }}>Loading…</p>}
+          </div>
+          {isFull && <p className="mt-3" style={{ fontSize: 12, color: GOLD }}>6 slots filled. Remove one to add another.</p>}
+        </div>
+      </div>
+
+      {/* Preview strip */}
+      <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
+        <h2 className="mb-1" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: CHARCOAL }}>Homepage Preview</h2>
+        <p className="mb-4" style={{ fontSize: 12, color: COCONUT }}>These appear in the "Featured Experiences" section on the homepage.</p>
+        <div className="flex gap-3 overflow-x-auto pb-2">
+          {orderedFeatured.length === 0
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex-shrink-0 rounded-xl flex items-center justify-center"
+                  style={{ width: 160, height: 110, border: `2px dashed ${SAND}`, backgroundColor: IVORY }}>
+                  <span style={{ fontSize: 11, color: COCONUT }}>Slot {i + 1}</span>
+                </div>
+              ))
+            : orderedFeatured.map((id, i) => {
+                const exp = active.find(e => e.id === id)
+                if (!exp) return null
+                return (
+                  <div key={id} className="flex-shrink-0 rounded-xl overflow-hidden" style={{ width: 160, position: 'relative' }}>
+                    <img src={exp.image} alt="" style={{ width: 160, height: 110, objectFit: 'cover', display: 'block' }} />
+                    <div style={{ position: 'absolute', top: 6, left: 6, backgroundColor: GOLD, borderRadius: 12, padding: '2px 7px', fontSize: 10, fontWeight: 700, color: 'white' }}>#{i + 1}</div>
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 60%)' }} />
+                    <p style={{ position: 'absolute', bottom: 6, left: 6, right: 6, fontSize: 11, fontWeight: 600, color: 'white', lineHeight: 1.3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{exp.title}</p>
+                  </div>
+                )
+              })
+          }
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Activity Log Panel ────────────────────────────────────────────────────────
+
+const ACTIVITY_ITEMS = [
+  { id: 1,  type: 'booking', icon: '📅', actor: 'Sarah Kim',       action: 'booked Pottery Making Class',              time: '2 min ago'  },
+  { id: 2,  type: 'review',  icon: '⭐', actor: 'Thomas Reeves',   action: 'left a 5★ review on Pottery Making Class', time: '18 min ago' },
+  { id: 3,  type: 'host',    icon: '🧑', actor: 'Komang Surya',    action: 'applied to become a host',                 time: '1 hr ago'   },
+  { id: 4,  type: 'booking', icon: '📅', actor: 'Priya Mehta',     action: 'booked Batik Painting Workshop',           time: '2 hr ago'   },
+  { id: 5,  type: 'exp',     icon: '🏡', actor: 'I Nyoman Arta',   action: 'submitted a new listing for review',       time: '4 hr ago'   },
+  { id: 6,  type: 'cancel',  icon: '❌', actor: 'James Park',       action: 'cancelled booking BAL-2024-008',           time: '5 hr ago'   },
+  { id: 7,  type: 'user',    icon: '👤', actor: 'Yuki Tanaka',     action: 'created a new account',                    time: '6 hr ago'   },
+  { id: 8,  type: 'review',  icon: '⭐', actor: 'Lisa Wagner',     action: 'left a 4★ review on Batik Workshop',       time: '8 hr ago'   },
+  { id: 9,  type: 'host',    icon: '✅', actor: 'Made Sari',       action: 'was approved as a verified host',          time: '1 day ago'  },
+  { id: 10, type: 'booking', icon: '📅', actor: 'Marco Bianchi',   action: 'booked Pottery Making Class',              time: '1 day ago'  },
+  { id: 11, type: 'exp',     icon: '🟢', actor: 'Admin',           action: 'activated Wooden Mask Carving Class',      time: '1 day ago'  },
+  { id: 12, type: 'payout',  icon: '💸', actor: 'System',          action: 'processed payout IDR 80.2M → I Nyoman Arta', time: '2 days ago' },
+  { id: 13, type: 'user',    icon: '👤', actor: 'Alex Chen',       action: 'created a new account',                    time: '2 days ago' },
+  { id: 14, type: 'booking', icon: '📅', actor: 'Alex Chen',       action: 'booked Batik Painting Workshop',           time: '2 days ago' },
+  { id: 15, type: 'payout',  icon: '📢', actor: 'Admin',           action: 'sent broadcast to 234 users',              time: '3 days ago' },
+]
+
+const ACT_FILTERS = [
+  { id: 'all',     label: 'All'      },
+  { id: 'booking', label: 'Bookings' },
+  { id: 'host',    label: 'Hosts'    },
+  { id: 'review',  label: 'Reviews'  },
+  { id: 'exp',     label: 'Listings' },
+  { id: 'user',    label: 'Users'    },
+  { id: 'payout',  label: 'Payouts'  },
+  { id: 'cancel',  label: 'Cancels'  },
+]
+
+function ActivityLogPanel() {
+  const [filter, setFilter] = useState('all')
+  const [search, setSearch] = useState('')
+
+  const visible = ACTIVITY_ITEMS.filter(a => {
+    if (filter !== 'all' && a.type !== filter) return false
+    if (search) {
+      const q = search.toLowerCase()
+      if (!a.actor.toLowerCase().includes(q) && !a.action.toLowerCase().includes(q)) return false
+    }
+    return true
+  })
+
+  const exportCSV = () => {
+    const rows = [['Time', 'Actor', 'Action', 'Type'], ...ACTIVITY_ITEMS.map(a => [a.time, a.actor, a.action, a.type])]
+    const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n')
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'activity-log.csv'; a.click()
+  }
+
+  return (
+    <div>
+      <PageHeader title="Activity Log" sub="Recent platform events — bookings, hosts, reviews, users"
+        action={
+          <button onClick={exportCSV} className="flex items-center gap-2 hover:opacity-80"
+            style={{ height: 38, padding: '0 16px', borderRadius: 10, border: `1px solid ${SAND}`, backgroundColor: 'white', fontSize: 13, color: COCONUT, cursor: 'pointer' }}>
+            <Download size={13} /> Export CSV
+          </button>
+        }
+      />
+
+      <div className="flex gap-3 mb-4">
+        <SearchBar value={search} onChange={setSearch} placeholder="Search actor or action…" />
+      </div>
+
+      <div className="overflow-x-auto mb-5 scrollbar-none">
+        <div className="inline-flex gap-1 bg-white rounded-xl p-1" style={{ border: `1px solid ${SAND}` }}>
+          {ACT_FILTERS.map(f => (
+            <button key={f.id} onClick={() => setFilter(f.id)}
+              style={{ padding: '6px 14px', borderRadius: 10, fontSize: 13, fontWeight: filter === f.id ? 600 : 400, backgroundColor: filter === f.id ? CHARCOAL : 'transparent', color: filter === f.id ? 'white' : COCONUT, border: 'none', cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap' }}>
+              {f.label}
+              {f.id !== 'all' && <span style={{ marginLeft: 4, opacity: 0.5, fontSize: 11 }}>{ACTIVITY_ITEMS.filter(a => a.type === f.id).length}</span>}
+              {f.id === 'all' && <span style={{ marginLeft: 4, opacity: 0.5, fontSize: 11 }}>{ACTIVITY_ITEMS.length}</span>}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl overflow-hidden" style={{ border: `1px solid ${SAND}` }}>
+        {visible.length === 0 && (
+          <div className="py-12 text-center"><p style={{ fontSize: 13, color: COCONUT }}>No activity matches your filter.</p></div>
+        )}
+        {visible.map((item, i) => (
+          <div key={item.id} className="flex items-start gap-4 px-5 py-4 hover:bg-stone-50 transition-colors"
+            style={{ borderBottom: i < visible.length - 1 ? `1px solid ${IVORY}` : 'none' }}>
+            <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: IVORY }}>
+              <span style={{ fontSize: 14 }}>{item.icon}</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p style={{ fontSize: 14, color: CHARCOAL, lineHeight: 1.4 }}>
+                <strong style={{ fontWeight: 600 }}>{item.actor}</strong>{' '}
+                <span style={{ color: COCONUT }}>{item.action}</span>
+              </p>
+            </div>
+            <span style={{ fontSize: 12, color: COCONUT, flexShrink: 0, whiteSpace: 'nowrap', marginTop: 2 }}>{item.time}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ── SEO Panel ─────────────────────────────────────────────────────────────────
+
+const DEFAULT_SEO = {
+  home:         { title: 'Balible — Book Bali Experiences with Local Hosts',            description: 'Discover authentic Bali experiences — pottery, yoga, cooking, surf & more. Book directly with local hosts.', keywords: 'Bali experiences, Bali activities, book Bali tour' },
+  search:       { title: 'Search Experiences in Bali — Balible',                        description: 'Browse 100+ curated Bali experiences by area, category and price. Instant booking available.',               keywords: 'Bali tour booking, Bali workshops, Bali classes' },
+  experiences:  { title: 'Experience Bali with Expert Local Hosts',                     description: 'Authentic, hands-on Bali experiences led by locals. Art, wellness, culture, food, surf & more.',              keywords: 'Bali local experiences, authentic Bali activities' },
+  destinations: { title: 'Explore Bali Destinations — Balible',                         description: 'Discover Ubud, Canggu, Seminyak, Kuta, Uluwatu & more. Find local experiences in every Bali region.',        keywords: 'Bali destinations, Ubud experiences, Canggu activities' },
+  for_hosts:    { title: 'Become a Balible Host — Share Your Bali',                     description: 'Join Balible as a host and earn money sharing your skills with travelers from around the world.',             keywords: 'Bali host, share experience Bali, earn money Bali' },
+  about:        { title: 'About Balible — Our Story',                                   description: "Balible connects travelers with Bali's most passionate local hosts for authentic cultural experiences.",        keywords: 'about Balible, Bali experience platform' },
+}
+type SEOKey = keyof typeof DEFAULT_SEO
+const SEO_LABELS: Record<SEOKey, string> = { home: 'Homepage', search: 'Search / Listings', experiences: 'Experience Detail', destinations: 'Destinations', for_hosts: 'For Hosts', about: 'About' }
+
+function SEOPanel() {
+  const [seo, setSeo]     = useState<typeof DEFAULT_SEO>(() => { try { const v = localStorage.getItem('balible_seo'); return v ? JSON.parse(v) : DEFAULT_SEO } catch { return DEFAULT_SEO } })
+  const [active, setActive] = useState<SEOKey>('home')
+  const [saved, setSaved]   = useState(false)
+
+  const update = (key: string, val: string) => setSeo(s => ({ ...s, [active]: { ...s[active], [key]: val } }))
+  const save = () => { localStorage.setItem('balible_seo', JSON.stringify(seo)); setSaved(true); setTimeout(() => setSaved(false), 2000) }
+  const current = seo[active]
+
+  const inputStyle = { width: '100%', borderRadius: 10, border: `1px solid ${SAND}`, padding: '0 12px', fontSize: 13, fontFamily: 'var(--font-inter)', color: CHARCOAL, outline: 'none', boxSizing: 'border-box' as const }
+
+  return (
+    <div>
+      <PageHeader title="SEO Settings" sub="Manage page titles, meta descriptions and keywords"
+        action={
+          <button onClick={save} style={{ height: 38, padding: '0 20px', borderRadius: 10, border: 'none', backgroundColor: saved ? FOREST : CHARCOAL, color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s' }}>
+            {saved ? <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Check size={13} /> Saved</span> : 'Save All'}
+          </button>
+        }
+      />
+
+      <div className="grid lg:grid-cols-4 gap-5">
+        {/* Page list */}
+        <div className="bg-white rounded-xl p-4" style={{ border: `1px solid ${SAND}` }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: COCONUT, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 12 }}>Pages</p>
+          <div className="space-y-1">
+            {(Object.keys(SEO_LABELS) as SEOKey[]).map(k => (
+              <button key={k} onClick={() => setActive(k)}
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left transition-all"
+                style={{ fontSize: 13, fontWeight: active === k ? 600 : 400, color: active === k ? CHARCOAL : COCONUT, backgroundColor: active === k ? IVORY : 'transparent', border: 'none', cursor: 'pointer' }}>
+                <Globe size={13} style={{ flexShrink: 0 }} />
+                <span style={{ flex: 1 }}>{SEO_LABELS[k]}</span>
+                {active === k && <span style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: GOLD, display: 'block', flexShrink: 0 }} />}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Editor + preview */}
+        <div className="lg:col-span-3 space-y-4">
+          <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
+            <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: CHARCOAL }}>{SEO_LABELS[active]}</h2>
+            <div className="space-y-4">
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: COCONUT, marginBottom: 5 }}>
+                  Page Title <span style={{ fontWeight: 400 }}>({current.title.length}/60)</span>
+                </label>
+                <input value={current.title} onChange={e => update('title', e.target.value)} maxLength={60} style={{ ...inputStyle, height: 40 }} />
+                {current.title.length > 55 && <p style={{ fontSize: 11, color: TERRACOTTA, marginTop: 3 }}>Aim for under 60 chars</p>}
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: COCONUT, marginBottom: 5 }}>
+                  Meta Description <span style={{ fontWeight: 400 }}>({current.description.length}/160)</span>
+                </label>
+                <textarea value={current.description} onChange={e => update('description', e.target.value)} rows={3} maxLength={160}
+                  style={{ ...inputStyle, padding: '10px 12px', resize: 'none' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: COCONUT, marginBottom: 5 }}>Keywords <span style={{ fontWeight: 400 }}>(comma-separated)</span></label>
+                <input value={current.keywords} onChange={e => update('keywords', e.target.value)} placeholder="keyword1, keyword2" style={{ ...inputStyle, height: 40 }} />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: COCONUT, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 12 }}>Google Preview</p>
+            <div className="p-4 rounded-lg" style={{ backgroundColor: IVORY, border: `1px solid ${SAND}` }}>
+              <p style={{ fontSize: 14, color: '#1A0DAB', fontWeight: 600, marginBottom: 2 }}>{current.title || 'Page title'}</p>
+              <p style={{ fontSize: 12, color: FOREST, marginBottom: 4 }}>balible.com/</p>
+              <p style={{ fontSize: 13, color: '#545454', lineHeight: 1.5 }}>{current.description || 'Meta description will appear here…'}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Emails Panel ──────────────────────────────────────────────────────────────
+
+const BASE_TEMPLATES = {
+  confirmation: {
+    label: 'Booking Confirmation',
+    subject: 'Your Balible booking is confirmed! 🌴',
+    body: `Hi {{guest_name}},
+
+Your booking for {{experience_title}} has been confirmed!
+
+📅 Date: {{booking_date}}
+⏰ Time: {{booking_time}}
+👥 Guests: {{guest_count}}
+📍 Meeting point: {{meeting_point}}
+
+Your booking reference is {{booking_ref}}.
+
+We'll see you soon,
+{{host_name}} & the Balible team`,
+  },
+  cancellation: {
+    label: 'Booking Cancellation',
+    subject: 'Your Balible booking has been cancelled',
+    body: `Hi {{guest_name}},
+
+We're sorry to let you know that your booking for {{experience_title}} on {{booking_date}} has been cancelled.
+
+Booking ref: {{booking_ref}}
+
+A full refund will be processed within 5–7 business days. We'd love to help you find another experience at balible.com/search.
+
+With apologies,
+The Balible team`,
+  },
+  host_alert: {
+    label: 'New Booking Alert (Host)',
+    subject: 'New booking — {{experience_title}}',
+    body: `Hi {{host_name}},
+
+You have a new booking for {{experience_title}}.
+
+Guest: {{guest_name}}
+Date: {{booking_date}} at {{booking_time}}
+Guests: {{guest_count}}
+Total: IDR {{booking_total}}
+
+Please confirm in your host dashboard within 24 hours → balible.com/dashboard
+
+The Balible team`,
+  },
+  review_request: {
+    label: 'Review Request (Post-Stay)',
+    subject: 'How was your experience with {{host_name}}?',
+    body: `Hi {{guest_name}},
+
+We hope you had an amazing time at {{experience_title}}!
+
+Would you take 2 minutes to leave a review? Your feedback helps other travelers discover great local experiences in Bali.
+
+✍️ Leave a review → balible.com/profile?tab=reviews
+
+The Balible team`,
+  },
+}
+type EmailKey = keyof typeof BASE_TEMPLATES
+
+function EmailsPanel() {
+  const [active, setActive] = useState<EmailKey>('confirmation')
+  const [templates, setTemplates] = useState<typeof BASE_TEMPLATES>(() => {
+    try { const v = localStorage.getItem('balible_email_templates'); return v ? JSON.parse(v) : BASE_TEMPLATES } catch { return BASE_TEMPLATES }
+  })
+  const [sending, setSending] = useState(false)
+  const [sent, setSent]       = useState(false)
+  const [saved, setSaved]     = useState(false)
+
+  const current = templates[active]
+  const update  = (key: 'subject' | 'body', val: string) => setTemplates(t => ({ ...t, [active]: { ...t[active], [key]: val } }))
+  const save    = () => { localStorage.setItem('balible_email_templates', JSON.stringify(templates)); setSaved(true); setTimeout(() => setSaved(false), 2000) }
+  const sendTest = async () => {
+    setSending(true); await new Promise(r => setTimeout(r, 1200)); setSending(false)
+    setSent(true); setTimeout(() => setSent(false), 3000)
+  }
+
+  const inputStyle = { width: '100%', borderRadius: 10, border: `1px solid ${SAND}`, padding: '0 12px', fontSize: 13, fontFamily: 'var(--font-inter)', color: CHARCOAL, outline: 'none', boxSizing: 'border-box' as const }
+
+  return (
+    <div>
+      <PageHeader title="Email Templates" sub="Manage notification emails sent to guests and hosts"
+        action={
+          <div className="flex items-center gap-2">
+            <button onClick={sendTest} disabled={sending}
+              style={{ height: 38, padding: '0 16px', borderRadius: 10, border: `1px solid ${SAND}`, backgroundColor: 'white', fontSize: 13, fontWeight: 600, color: sent ? FOREST : COCONUT, cursor: 'pointer' }}>
+              {sending ? 'Sending…' : sent ? '✓ Test Sent' : 'Send Test'}
+            </button>
+            <button onClick={save} style={{ height: 38, padding: '0 20px', borderRadius: 10, border: 'none', backgroundColor: saved ? FOREST : CHARCOAL, color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s' }}>
+              {saved ? '✓ Saved' : 'Save Templates'}
+            </button>
+          </div>
+        }
+      />
+
+      <div className="grid lg:grid-cols-4 gap-5">
+        {/* Template list */}
+        <div className="bg-white rounded-xl p-4" style={{ border: `1px solid ${SAND}` }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: COCONUT, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 12 }}>Templates</p>
+          <div className="space-y-1">
+            {(Object.keys(BASE_TEMPLATES) as EmailKey[]).map(k => (
+              <button key={k} onClick={() => setActive(k)}
+                className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-left"
+                style={{ fontSize: 13, fontWeight: active === k ? 600 : 400, color: active === k ? CHARCOAL : COCONUT, backgroundColor: active === k ? IVORY : 'transparent', border: 'none', cursor: 'pointer', lineHeight: 1.4 }}>
+                <Mail size={13} style={{ flexShrink: 0 }} />
+                {BASE_TEMPLATES[k].label}
+              </button>
+            ))}
+          </div>
+          <div className="mt-4 p-3 rounded-lg" style={{ backgroundColor: IVORY, border: `1px solid ${SAND}` }}>
+            <p style={{ fontSize: 11, color: COCONUT, lineHeight: 1.5 }}>
+              Use <code style={{ backgroundColor: SAND, padding: '1px 4px', borderRadius: 3, fontSize: 10 }}>{`{{variable}}`}</code> placeholders — filled automatically from booking data.
+            </p>
+          </div>
+        </div>
+
+        {/* Editor + preview */}
+        <div className="lg:col-span-3 space-y-4">
+          <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
+            <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: CHARCOAL }}>{current.label}</h2>
+            <div className="space-y-4">
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: COCONUT, marginBottom: 5 }}>Subject Line</label>
+                <input value={current.subject} onChange={e => update('subject', e.target.value)} style={{ ...inputStyle, height: 40 }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: COCONUT, marginBottom: 5 }}>Email Body</label>
+                <textarea value={current.body} onChange={e => update('body', e.target.value)} rows={10}
+                  style={{ ...inputStyle, padding: '10px 12px', resize: 'vertical', lineHeight: 1.6 }} />
+              </div>
+            </div>
+          </div>
+
+          {/* Preview */}
+          <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: COCONUT, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 12 }}>Email Preview</p>
+            <div style={{ backgroundColor: IVORY, borderRadius: 12, overflow: 'hidden', border: `1px solid ${SAND}` }}>
+              <div style={{ padding: '12px 16px', borderBottom: `1px solid ${SAND}`, display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 28, height: 28, borderRadius: '50%', backgroundColor: GOLD, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: 'white' }}>B</span>
+                </div>
+                <div>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: CHARCOAL, margin: 0 }}>Balible <span style={{ fontWeight: 400, color: COCONUT }}>noreply@balible.com</span></p>
+                  <p style={{ fontSize: 11, color: COCONUT, margin: 0 }}>{current.subject}</p>
+                </div>
+              </div>
+              <div style={{ padding: '16px', whiteSpace: 'pre-wrap', fontSize: 13, color: CHARCOAL, lineHeight: 1.7, fontFamily: 'var(--font-inter)', maxHeight: 260, overflowY: 'auto' }}>
+                {current.body}
+              </div>
+              <div style={{ padding: '12px 16px', borderTop: `1px solid ${SAND}`, display: 'flex', justifyContent: 'center' }}>
+                <div style={{ height: 36, padding: '0 24px', borderRadius: 8, backgroundColor: CHARCOAL, color: 'white', fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+                  View on Balible →
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function ls<T>(key: string, fallback: T): T {
   if (typeof window === 'undefined') return fallback
   try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback } catch { return fallback }
@@ -1636,13 +3232,21 @@ function SettingsPanel() {
   const [platform, setPlatform]     = useState(() => ls('balible_platform', PLATFORM_DEFAULTS))
   const [notifs, setNotifs]         = useState(() => ls('balible_notifs', NOTIF_DEFAULTS))
   const [saved, setSaved]           = useState(false)
+  const [saving, setSaving]         = useState(false)
+  const [saveErr, setSaveErr]       = useState<string | null>(null)
 
-  const save = () => {
-    localStorage.setItem('balible_commission',  JSON.stringify(commission))
+  useEffect(() => {
+    getCommissionRateAction().then(rate => setCommission(String(Math.round(rate * 100))))
+  }, [])
+
+  const save = async () => {
+    setSaving(true); setSaveErr(null)
+    const res = await updateCommissionRateAction(parseInt(commission || '0', 10))
+    if (!res.ok) { setSaving(false); setSaveErr(res.error ?? 'Failed to save commission'); return }
     localStorage.setItem('balible_service_fee', JSON.stringify(serviceFee))
     localStorage.setItem('balible_platform',    JSON.stringify(platform))
     localStorage.setItem('balible_notifs',      JSON.stringify(notifs))
-    setSaved(true)
+    setSaving(false); setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
   const toggle = (k: keyof typeof notifs) => setNotifs(n => ({ ...n, [k]: !n[k] }))
@@ -1738,9 +3342,10 @@ function SettingsPanel() {
           </div>
         </div>
 
-        <button onClick={save} className="flex items-center gap-2 hover:opacity-90 transition-opacity"
-          style={{ height: 44, paddingInline: 28, borderRadius: 10, border: 'none', backgroundColor: saved ? FOREST : CHARCOAL, color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s', minWidth: 160 }}>
-          {saved ? <><Check size={14} /> Saved!</> : 'Save Settings'}
+        {saveErr && <p style={{ fontSize: 13, color: TERRACOTTA }}>{saveErr}</p>}
+        <button onClick={save} disabled={saving} className="flex items-center gap-2 hover:opacity-90 transition-opacity"
+          style={{ height: 44, paddingInline: 28, borderRadius: 10, border: 'none', backgroundColor: saved ? FOREST : CHARCOAL, color: 'white', fontSize: 14, fontWeight: 600, cursor: saving ? 'default' : 'pointer', opacity: saving ? 0.7 : 1, transition: 'background 0.2s', minWidth: 160 }}>
+          {saved ? <><Check size={14} /> Saved!</> : saving ? 'Saving…' : 'Save Settings'}
         </button>
       </div>
     </div>
@@ -1881,9 +3486,14 @@ export default function AdminPage() {
       case 'reviews':     return <ReviewsPanel />
       case 'payments':    return <PaymentsPanel />
       case 'analytics':   return <AnalyticsPanel />
+      case 'featured':    return <FeaturedPanel />
+      case 'activity':    return <ActivityLogPanel />
+      case 'seo':         return <SEOPanel />
+      case 'emails':      return <EmailsPanel />
+      case 'newsletter':  return <NewsletterPanel />
+      case 'broadcast':   return <BroadcastPanel />
       case 'settings':    return <SettingsPanel />
       default:            return <OverviewPanel onNav={setActiveNav} />
-
     }
   }
 

@@ -123,7 +123,6 @@ function ReviewForm({ onSubmit, onCancel }: {
 export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
   const [active, setActive] = useState('About')
   const [userReview, setUserReview] = useState<UserReview | null>(null)
-  const [hasBooking, setHasBooking] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [includes, setIncludes] = useState<string[]>(exp.includes)
   const [excludes, setExcludes] = useState<string[]>(exp.excludes)
@@ -131,8 +130,6 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
   useEffect(() => {
     const all: UserReview[] = lsp('balible_user_reviews', [])
     setUserReview(all.find(r => r.slug === exp.slug) ?? null)
-    const bookings: Array<{ slug: string }> = lsp('balible_bookings', [])
-    setHasBooking(bookings.some(b => b.slug === exp.slug))
     const saved = lsp<{ includes?: string[]; excludes?: string[] }>(`balible_exp_data_${exp.slug}`, {})
     if (saved.includes?.length) setIncludes(saved.includes)
     if (saved.excludes?.length) setExcludes(saved.excludes)
@@ -315,7 +312,7 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
                   </p>
                 </div>
               </div>
-              {hasBooking && !userReview && !showForm && (
+              {!userReview && !showForm && (
                 <button
                   onClick={() => setShowForm(true)}
                   style={{ height: 38, padding: '0 18px', borderRadius: 8, border: '1px solid #111111', background: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111', flexShrink: 0 }}

@@ -71,6 +71,7 @@ model Operator {
 
   experiences Experience[]
   events      Event[]
+  payouts     Payout[]
 }
 
 model Experience {
@@ -120,8 +121,9 @@ model Booking {
   paymentId    String?
   guestName    String
   guestEmail   String
-  guestPhone   String?
-  createdAt    DateTime      @default(now())
+  guestPhone       String?
+  reviewRequested  Boolean       @default(false)
+  createdAt        DateTime      @default(now())
 }
 
 model Review {
@@ -132,7 +134,27 @@ model Review {
   experience   Experience @relation(fields: [experienceId], references: [id])
   rating       Int
   comment      String
+  flagged      Boolean    @default(false)
+  hidden       Boolean    @default(false)
   createdAt    DateTime   @default(now())
+}
+
+model Payout {
+  id          String       @id @default(cuid())
+  operatorId  String
+  operator    Operator     @relation(fields: [operatorId], references: [id])
+  periodStart DateTime
+  periodEnd   DateTime
+  gross       Int
+  commission  Int
+  net         Int
+  bookings    Int
+  status      PayoutStatus @default(PENDING)
+  paidAt      DateTime?
+  notes       String?
+  createdAt   DateTime     @default(now())
+
+  @@unique([operatorId, periodStart, periodEnd])
 }
 
 model WishlistItem {
@@ -302,10 +324,22 @@ enum BookingStatus {
   COMPLETED
 }
 
+enum PayoutStatus {
+  PENDING
+  REQUESTED
+  PAID
+}
+
 enum EventStatus {
   DRAFT
   PUBLISHED
   CANCELLED
+}
+
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
 }
 
 model NewsletterSubscriber {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verifyNotificationSignature } from '@/lib/midtrans'
-import { sendBookingConfirmation } from '@/lib/email'
+import { sendBookingConfirmation, sendHostBookingAlert, sendBookingCancellation } from '@/lib/email'
 import { createNotification } from '@/lib/notifications'
 
 const AREA_DISPLAY: Record<string, string> = {
@@ -30,7 +30,11 @@ export async function POST(req: NextRequest) {
 
   const booking = await prisma.booking.findUnique({
     where: { bookingRef: order_id },
-    include: { experience: true },
+    include: {
+      experience: {
+        include: { operator: { include: { user: { select: { name: true, email: true } } } } },
+      },
+    },
   })
   if (!booking) {
     // Unknown order (e.g. dashboard test notification) — acknowledge so Midtrans stops retrying
@@ -54,31 +58,61 @@ export async function POST(req: NextRequest) {
       body: `Payment received — you're all set for ${booking.experience.title}.`,
       href: '/profile',
     })
-    // Best-effort — email failure must not make Midtrans retry the notification
-    await sendBookingConfirmation({
-      to: booking.guestEmail,
-      guestName: booking.guestName,
-      bookingRef: booking.bookingRef,
-      experienceTitle: booking.experience.title,
-      area: AREA_DISPLAY[booking.experience.area] ?? booking.experience.area,
-      meetingPoint: booking.experience.meetingPoint,
-      date: booking.date,
-      guests: booking.guests,
-      totalPrice: booking.totalPrice,
-      duration: booking.experience.duration,
-    })
+    // Best-effort — email failures must not make Midtrans retry the notification
+    const area = AREA_DISPLAY[booking.experience.area] ?? String(booking.experience.area)
+    await Promise.all([
+      sendBookingConfirmation({
+        to: booking.guestEmail,
+        guestName: booking.guestName,
+        bookingRef: booking.bookingRef,
+        experienceTitle: booking.experience.title,
+        area,
+        meetingPoint: booking.experience.meetingPoint,
+        date: booking.date,
+        guests: booking.guests,
+        totalPrice: booking.totalPrice,
+        duration: booking.experience.duration,
+      }),
+      booking.experience.operator?.user
+        ? sendHostBookingAlert({
+            to: booking.experience.operator.user.email,
+            hostName: booking.experience.operator.user.name,
+            guestName: booking.guestName,
+            guestEmail: booking.guestEmail,
+            guestPhone: booking.guestPhone,
+            bookingRef: booking.bookingRef,
+            experienceTitle: booking.experience.title,
+            date: booking.date,
+            guests: booking.guests,
+            totalPrice: booking.totalPrice,
+          })
+        : Promise.resolve({ sent: false }),
+    ])
   } else if (failed && booking.status === 'PENDING') {
     await prisma.booking.update({
       where: { id: booking.id },
       data: { status: 'CANCELLED', paymentId: transaction_id ?? null },
     })
-    await createNotification({
-      userId: booking.userId,
-      type: 'payment',
-      title: 'Payment unsuccessful',
-      body: `Your payment for ${booking.experience.title} ${transaction_status === 'expire' ? 'expired' : 'was not completed'}. You can book again anytime.`,
-      href: `/experiences/${booking.experience.slug}`,
-    })
+    const reason = transaction_status === 'expire' ? 'payment_expired'
+      : transaction_status === 'deny' ? 'payment_failed'
+      : 'cancelled'
+    await Promise.all([
+      createNotification({
+        userId: booking.userId,
+        type: 'payment',
+        title: 'Payment unsuccessful',
+        body: `Your payment for ${booking.experience.title} ${transaction_status === 'expire' ? 'expired' : 'was not completed'}. You can book again anytime.`,
+        href: `/experiences/${booking.experience.slug}`,
+      }),
+      sendBookingCancellation({
+        to: booking.guestEmail,
+        guestName: booking.guestName,
+        bookingRef: booking.bookingRef,
+        experienceTitle: booking.experience.title,
+        date: booking.date,
+        reason,
+      }),
+    ])
   }
 
   return NextResponse.json({ ok: true })

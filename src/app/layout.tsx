@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { Playfair_Display, Inter } from 'next/font/google'
+import { GoogleAnalytics } from '@next/third-parties/google'
 import AuthProvider from '@/components/AuthProvider'
+import { LanguageProvider } from '@/contexts/LanguageContext'
 import './globals.css'
 import ChatWidget from '@/components/ChatWidget'
 
@@ -49,9 +51,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <AuthProvider>
       <html lang="en" className={`${playfair.variable} ${inter.variable}`}>
         <body>
-          {children}
+          <LanguageProvider>
+            {children}
+          </LanguageProvider>
           <ChatWidget />
         </body>
+        <GoogleAnalytics gaId="G-YVD0CCC602" />
       </html>
     </AuthProvider>
   )

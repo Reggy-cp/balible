@@ -9,31 +9,36 @@ import {
   Leaf, Scissors, Landmark, Mountain, Waves, ChefHat, Sun, Users, Bike,
 } from 'lucide-react'
 import NotificationBell from '@/components/NotificationBell'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { LOCALES, type TranslationKey } from '@/lib/i18n'
 
-const CATEGORIES = [
-  { label: 'Wellness & Healing', Icon: Leaf,      slug: 'wellness' },
-  { label: 'Art & Craft',       Icon: Scissors,  slug: 'art-craft' },
-  { label: 'Culture',           Icon: Landmark,  slug: 'culture' },
-  { label: 'Culinary',          Icon: ChefHat,   slug: 'culinary' },
-  { label: 'Spiritual',         Icon: Sun,       slug: 'spiritual' },
-  { label: 'Nature & Outdoors', Icon: Mountain,  slug: 'nature' },
-  { label: 'Water Activities',  Icon: Waves,     slug: 'water-activities' },
-  { label: 'Local Experts',     Icon: Users,     slug: 'local-experts' },
-  { label: 'Rentals',           Icon: Bike,      slug: 'rentals' },
+type CategoryDef = { labelKey: TranslationKey; Icon: React.ElementType; slug: string }
+const CATEGORIES: CategoryDef[] = [
+  { labelKey: 'cat_wellness',  Icon: Leaf,      slug: 'wellness' },
+  { labelKey: 'cat_art',       Icon: Scissors,  slug: 'art-craft' },
+  { labelKey: 'cat_culture',   Icon: Landmark,  slug: 'culture' },
+  { labelKey: 'cat_culinary',  Icon: ChefHat,   slug: 'culinary' },
+  { labelKey: 'cat_spiritual', Icon: Sun,       slug: 'spiritual' },
+  { labelKey: 'cat_nature',    Icon: Mountain,  slug: 'nature' },
+  { labelKey: 'cat_water',     Icon: Waves,     slug: 'water-activities' },
+  { labelKey: 'cat_experts',   Icon: Users,     slug: 'local-experts' },
+  { labelKey: 'cat_rentals',   Icon: Bike,      slug: 'rentals' },
 ]
 
-const NAV_LINKS = [
-  { label: 'Experiences',  href: '/search',       hasDropdown: true },
-  { label: 'Destinations',  href: '/destinations',   hasDropdown: false },
-  { label: 'Events',        href: '/events',         hasDropdown: false },
-  { label: 'For Hosts',     href: '/for-hosts',      hasDropdown: false },
+type NavLink = { labelKey: TranslationKey; href: string; hasDropdown: boolean }
+const NAV_LINKS: NavLink[] = [
+  { labelKey: 'nav_experiences',  href: '/search',       hasDropdown: true },
+  { labelKey: 'nav_destinations', href: '/destinations', hasDropdown: false },
+  { labelKey: 'nav_events',       href: '/events',       hasDropdown: false },
+  { labelKey: 'nav_for_hosts',    href: '/for-hosts',    hasDropdown: false },
 ]
 
-const MOBILE_LINKS = [
-  { label: 'Experiences',   href: '/search' },
-  { label: 'Destinations',  href: '/destinations' },
-  { label: 'Events',        href: '/events' },
-  { label: 'For Hosts',     href: '/for-hosts' },
+type MobileLink = { labelKey: TranslationKey; href: string }
+const MOBILE_LINKS: MobileLink[] = [
+  { labelKey: 'nav_experiences',  href: '/search' },
+  { labelKey: 'nav_destinations', href: '/destinations' },
+  { labelKey: 'nav_events',       href: '/events' },
+  { labelKey: 'nav_for_hosts',    href: '/for-hosts' },
 ]
 
 export default function Navbar() {
@@ -49,6 +54,7 @@ export default function Navbar() {
   const dashboardHref = user?.role === 'ADMIN' ? '/admin' : '/dashboard'
   const [accountOpen, setAccountOpen] = useState(false)
   const accountRef = useRef<HTMLDivElement>(null)
+  const { locale, setLocale, t } = useLanguage()
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -80,9 +86,9 @@ export default function Navbar() {
 
           {/* Desktop nav */}
           <div className="hidden lg:flex items-center gap-1">
-            {NAV_LINKS.map(({ label, href, hasDropdown }) =>
+            {NAV_LINKS.map(({ labelKey, href, hasDropdown }) =>
               hasDropdown ? (
-                <div key={label} className="relative" ref={dropRef}>
+                <div key={labelKey} className="relative" ref={dropRef}>
                   <button
                     onClick={() => setDropOpen(o => !o)}
                     className="flex items-center gap-1 px-3 py-2 rounded-lg transition-colors hover:bg-stone-50"
@@ -93,7 +99,7 @@ export default function Navbar() {
                       background: 'none', border: 'none', cursor: 'pointer',
                     }}
                   >
-                    {label}
+                    {t(labelKey)}
                     <ChevronDown
                       size={13}
                       style={{ color: '#6F675C', transition: 'transform 0.15s', transform: dropOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
@@ -114,15 +120,15 @@ export default function Navbar() {
                           <span style={{ fontSize: 14 }}>🌟</span>
                         </div>
                         <div>
-                          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111' }}>All Experiences</p>
+                          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111' }}>{t('nav_all_experiences')}</p>
                           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>Browse all 16+ experiences</p>
                         </div>
                       </a>
                       <div style={{ height: 1, backgroundColor: '#F5F1EB', marginBottom: 8, marginInline: 8 }} />
                       <p style={{ fontFamily: 'var(--font-inter)', fontSize: 10, fontWeight: 700, color: '#6F675C', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '4px 12px 8px' }}>
-                        Browse by category
+                        {t('nav_browse_category')}
                       </p>
-                      {CATEGORIES.map(({ label: catLabel, Icon, slug }) => (
+                      {CATEGORIES.map(({ labelKey: catKey, Icon, slug }) => (
                         <a
                           key={slug}
                           href={`/categories/${slug}`}
@@ -132,7 +138,7 @@ export default function Navbar() {
                           <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#F5F1EB' }}>
                             <Icon size={13} style={{ color: '#C8A97E' }} />
                           </div>
-                          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>{catLabel}</span>
+                          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>{t(catKey)}</span>
                         </a>
                       ))}
                     </div>
@@ -140,7 +146,7 @@ export default function Navbar() {
                 </div>
               ) : (
                 <a
-                  key={label}
+                  key={labelKey}
                   href={href}
                   className="px-3 py-2 rounded-lg transition-colors hover:bg-stone-50"
                   style={{
@@ -149,7 +155,7 @@ export default function Navbar() {
                     fontWeight: isActive(href) ? 600 : 400,
                   }}
                 >
-                  {label}
+                  {t(labelKey)}
                 </a>
               )
             )}
@@ -157,6 +163,24 @@ export default function Navbar() {
 
           {/* Right side */}
           <div className="flex items-center gap-2">
+            {/* Language switcher */}
+            <div className="hidden sm:flex items-center" style={{ border: '1px solid #E8E4DE', borderRadius: 8, overflow: 'hidden' }}>
+              {LOCALES.map(loc => (
+                <button
+                  key={loc.code}
+                  onClick={() => setLocale(loc.code)}
+                  style={{
+                    fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: locale === loc.code ? 700 : 400,
+                    padding: '5px 9px', background: locale === loc.code ? '#111111' : 'transparent',
+                    color: locale === loc.code ? '#ffffff' : '#6F675C',
+                    border: 'none', cursor: 'pointer', lineHeight: 1,
+                  }}
+                  aria-label={loc.label}
+                >
+                  {loc.code.toUpperCase()}
+                </button>
+              ))}
+            </div>
             {isLoaded && isSignedIn && <NotificationBell />}
             {!isLoaded ? (
               <div className="hidden sm:flex items-center gap-2">
@@ -175,7 +199,7 @@ export default function Navbar() {
                     }}
                   >
                     <LayoutDashboard size={14} />
-                    Dashboard
+                    {t('nav_dashboard')}
                   </a>
                 )}
                 {/* Avatar dropdown */}
@@ -190,11 +214,11 @@ export default function Navbar() {
                   {accountOpen && (
                     <div className="absolute right-0 mt-2 bg-white rounded-xl shadow-lg py-1" style={{ minWidth: 180, border: '1px solid #E8E4DE', zIndex: 200 }}>
                       <a href="/profile" className="flex items-center gap-2.5 px-4 py-2.5 hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111', textDecoration: 'none' }}>
-                        <User size={14} style={{ color: '#6F675C' }} /> Profile
+                        <User size={14} style={{ color: '#6F675C' }} /> {t('nav_profile')}
                       </a>
                       {isHost && (
                         <a href={dashboardHref} className="flex items-center gap-2.5 px-4 py-2.5 hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111', textDecoration: 'none' }}>
-                          <LayoutDashboard size={14} style={{ color: '#6F675C' }} /> Dashboard
+                          <LayoutDashboard size={14} style={{ color: '#6F675C' }} /> {t('nav_dashboard')}
                         </a>
                       )}
                       <div style={{ borderTop: '1px solid #F5F1EB', margin: '4px 0' }} />
@@ -203,7 +227,7 @@ export default function Navbar() {
                         className="flex w-full items-center gap-2.5 px-4 py-2.5 hover:bg-stone-50 transition-colors"
                         style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#B66A45', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
                       >
-                        Sign out
+                        {t('nav_sign_out')}
                       </button>
                     </div>
                   )}
@@ -219,7 +243,7 @@ export default function Navbar() {
                     color: '#111111', textDecoration: 'none', border: '1px solid #E8E4DE',
                   }}
                 >
-                  Sign in
+                  {t('nav_sign_in')}
                 </a>
                 <a
                   href={pathname === '/for-hosts' ? '/sign-up/host' : '/sign-up'}
@@ -229,7 +253,7 @@ export default function Navbar() {
                     color: 'white', textDecoration: 'none', backgroundColor: '#111111',
                   }}
                 >
-                  Sign up
+                  {t('nav_sign_up')}
                 </a>
               </div>
             )}
@@ -253,9 +277,9 @@ export default function Navbar() {
             style={{ top: 64, borderBottom: '1px solid #E8E4DE', zIndex: 100, maxHeight: 'calc(100vh - 128px)' }}
           >
             <div className="px-4 pt-3 pb-2 space-y-1">
-              {MOBILE_LINKS.map(({ label, href }) => (
+              {MOBILE_LINKS.map(({ labelKey, href }) => (
                 <a
-                  key={label}
+                  key={labelKey}
                   href={href}
                   className="flex items-center px-4 py-3 rounded-xl transition-colors hover:bg-stone-50"
                   style={{
@@ -264,9 +288,27 @@ export default function Navbar() {
                     fontWeight: isActive(href) ? 600 : 400,
                   }}
                 >
-                  {label}
+                  {t(labelKey)}
                   {isActive(href) && <span style={{ marginLeft: 'auto', width: 6, height: 6, borderRadius: '50%', backgroundColor: '#C8A97E' }} />}
                 </a>
+              ))}
+            </div>
+
+            {/* Language toggle in mobile menu */}
+            <div className="px-4 pt-2 pb-3 flex gap-2" style={{ borderTop: '1px solid #F5F1EB' }}>
+              {LOCALES.map(loc => (
+                <button
+                  key={loc.code}
+                  onClick={() => setLocale(loc.code)}
+                  style={{
+                    fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: locale === loc.code ? 700 : 400,
+                    padding: '7px 16px', background: locale === loc.code ? '#111111' : '#F5F1EB',
+                    color: locale === loc.code ? '#ffffff' : '#6F675C',
+                    border: 'none', borderRadius: 8, cursor: 'pointer',
+                  }}
+                >
+                  {loc.flag} {loc.label}
+                </button>
               ))}
             </div>
 
@@ -276,27 +318,27 @@ export default function Navbar() {
                 <div className="space-y-1">
                   {isHost && (
                     <a href={dashboardHref} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', textDecoration: 'none', fontWeight: 500 }}>
-                      <LayoutDashboard size={16} style={{ color: '#6F675C' }} /> Dashboard
+                      <LayoutDashboard size={16} style={{ color: '#6F675C' }} /> {t('nav_dashboard')}
                     </a>
                   )}
                   <a href="/profile" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', textDecoration: 'none' }}>
                     <img src={user?.image ?? '/avatar-default.png'} alt="" className="w-8 h-8 rounded-full object-cover" />
-                    {user?.name ?? 'My account'}
+                    {user?.name ?? t('nav_profile')}
                   </a>
                   <a href="/wishlist" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', textDecoration: 'none' }}>
-                    <span style={{ fontSize: 16 }}>🤍</span> Wishlist
+                    <span style={{ fontSize: 16 }}>🤍</span> {t('nav_wishlist')}
                   </a>
                   <button onClick={() => signOut({ callbackUrl: '/' })} className="flex w-full items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#B66A45', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
-                    Sign out
+                    {t('nav_sign_out')}
                   </button>
                 </div>
               ) : (
                 <div className="flex gap-2">
                   <a href="/sign-in" style={{ flex: 1, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #E8E4DE', borderRadius: 10, fontSize: 14, fontWeight: 500, color: '#111111', textDecoration: 'none', fontFamily: 'var(--font-inter)' }}>
-                    Sign in
+                    {t('nav_sign_in')}
                   </a>
                   <a href={pathname === '/for-hosts' ? '/sign-up/host' : '/sign-up'} style={{ flex: 1, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#111111', borderRadius: 10, fontSize: 14, fontWeight: 600, color: 'white', textDecoration: 'none', fontFamily: 'var(--font-inter)' }}>
-                    Sign up
+                    {t('nav_sign_up')}
                   </a>
                 </div>
               )}

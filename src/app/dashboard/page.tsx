@@ -7,7 +7,7 @@ import {
   ArrowUpRight, Menu, X, Search, Download,
   MoreHorizontal, Eye, Edit2, Play, Pause, Trash2,
   CheckCircle, XCircle, MapPin, Clock, Users, Camera, Check,
-  Ticket, Globe, Lock,
+  Ticket, Globe, Lock, ChevronLeft, ChevronRight, CalendarRange, Images,
 } from 'lucide-react'
 import {
   getHostEvents, createEvent, updateEvent, deleteEvent,
@@ -17,7 +17,9 @@ import {
   saveHostListingAction, submitHostListingAction, type HostListingInput,
   getHostDashboardData, getHostExperiencesAction,
   updateExperienceStatusAction, deleteExperienceAction,
-  type DashExp, type DashBooking, type DashReview,
+  getOperatorPayoutsAction, type OperatorPayout,
+  requestPayoutAction, PAYOUT_MIN_NET,
+  type DashExp, type DashBooking, type DashReview, type EarningsByMonth,
 } from '@/lib/actions'
 
 // ── Data ──────────────────────────────────────────────────────────────────────
@@ -105,14 +107,16 @@ const PAYOUTS = [
 ]
 
 const NAV_ITEMS = [
-  { id: 'overview',    label: 'Overview',    Icon: LayoutDashboard },
-  { id: 'experiences', label: 'Experiences', Icon: Compass },
-  { id: 'events',      label: 'Events',      Icon: Ticket },
-  { id: 'bookings',    label: 'Bookings',    Icon: CalendarDays },
-  { id: 'earnings',    label: 'Earnings',    Icon: TrendingUp },
-  { id: 'reviews',     label: 'Reviews',     Icon: Star },
-  { id: 'profile',     label: 'Profile',     Icon: UserCircle },
-  { id: 'settings',    label: 'Settings',    Icon: Settings },
+  { id: 'overview',      label: 'Overview',      Icon: LayoutDashboard },
+  { id: 'experiences',   label: 'Experiences',   Icon: Compass },
+  { id: 'events',        label: 'Events',        Icon: Ticket },
+  { id: 'bookings',      label: 'Bookings',      Icon: CalendarDays },
+  { id: 'availability',  label: 'Availability',  Icon: CalendarRange },
+  { id: 'earnings',      label: 'Earnings',      Icon: TrendingUp },
+  { id: 'photos',        label: 'Photos',        Icon: Images },
+  { id: 'reviews',       label: 'Reviews',       Icon: Star },
+  { id: 'profile',       label: 'Profile',       Icon: UserCircle },
+  { id: 'settings',      label: 'Settings',      Icon: Settings },
 ]
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -966,13 +970,65 @@ function BookingsPanel({ initialBookings }: { initialBookings?: DashBooking[] })
 
 // ── Earnings Panel ────────────────────────────────────────────────────────────
 
-function EarningsPanel({ commissionRate }: { commissionRate: number }) {
-  const netMult  = (100 - commissionRate) / 100
-  const totalGross = MONTHLY_EARNINGS.reduce((a, b) => a + b, 0)
-  const lastMoGross = MONTHLY_EARNINGS[MONTHLY_EARNINGS.length - 1]
-  const prevMo   = MONTHLY_EARNINGS[MONTHLY_EARNINGS.length - 2]
-  const growth   = (((lastMoGross - prevMo) / prevMo) * 100).toFixed(1)
-  const totalExp = EXPERIENCES.reduce((a, e) => a + e.earnings, 0)
+function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBookings, earningsByMonth: liveEarningsByMonth, totalGross: liveTotalGross, pendingPayout: livePendingPayout, payouts: livePayouts }: {
+  commissionRate: number
+  experiences?: DashExp[]
+  bookings?: DashBooking[]
+  earningsByMonth?: EarningsByMonth[]
+  totalGross?: number
+  pendingPayout?: number
+  payouts?: OperatorPayout[]
+}) {
+  const [requesting, setRequesting] = useState(false)
+  const [requestMsg, setRequestMsg] = useState<{ ok: boolean; text: string } | null>(null)
+
+  const netMult = (100 - commissionRate) / 100
+  const hasLive = liveEarningsByMonth !== undefined
+
+  // Chart data: live 12-month breakdown or static fallback
+  const chartData   = hasLive ? liveEarningsByMonth.map(m => m.gross) : MONTHLY_EARNINGS
+  const chartLabels = hasLive ? liveEarningsByMonth.map(m => m.month)  : MONTHS_SHORT
+
+  // Stats
+  const totalGross  = hasLive ? (liveTotalGross ?? 0) : MONTHLY_EARNINGS.reduce((a, b) => a + b, 0)
+  const thisMonthGross = hasLive
+    ? (liveEarningsByMonth[liveEarningsByMonth.length - 1]?.gross ?? 0)
+    : MONTHLY_EARNINGS[MONTHLY_EARNINGS.length - 1]
+  const prevMonthGross = hasLive
+    ? (liveEarningsByMonth[liveEarningsByMonth.length - 2]?.gross ?? 0)
+    : MONTHLY_EARNINGS[MONTHLY_EARNINGS.length - 2]
+  const growth = prevMonthGross > 0
+    ? `${thisMonthGross > prevMonthGross ? '↑' : '↓'} ${Math.abs(((thisMonthGross - prevMonthGross) / prevMonthGross) * 100).toFixed(0)}% vs last month`
+    : thisMonthGross > 0 ? 'First bookings this month' : 'No bookings this month'
+  const pendingPayout = hasLive ? (livePendingPayout ?? 0) : MONTHLY_EARNINGS[MONTHLY_EARNINGS.length - 1]
+
+  // Avg per booking from live confirmed bookings
+  const confirmedBookings = liveBookings?.filter(b => b.status === 'Confirmed' || b.status === 'Completed') ?? []
+  const avgPerBooking = hasLive && confirmedBookings.length > 0
+    ? Math.round(totalGross / confirmedBookings.length)
+    : 690000
+
+  // By experience
+  const expSource = liveExps ?? EXPERIENCES
+  const totalExpEarnings = expSource.reduce((a, e) => a + e.earnings, 0)
+
+  // Current-month payout status from DB records
+  const nowMonthLabel = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+  const thisMonthPayout = livePayouts?.find(p => p.periodLabel === nowMonthLabel)
+  const isRequested = thisMonthPayout?.status === 'Requested' || requestMsg?.ok
+  const isPaid      = thisMonthPayout?.status === 'Paid'
+
+  // Payout limits
+  const pendingNet  = Math.round(pendingPayout * netMult)
+  const belowMin    = hasLive && pendingNet > 0 && pendingNet < PAYOUT_MIN_NET
+
+  const handleRequestPayout = async () => {
+    setRequesting(true)
+    setRequestMsg(null)
+    const res = await requestPayoutAction()
+    setRequesting(false)
+    setRequestMsg({ ok: res.ok, text: res.ok ? 'Payout requested! Balible will process within 3 business days.' : (res.error ?? 'Something went wrong.') })
+  }
 
   return (
     <div>
@@ -989,10 +1045,9 @@ function EarningsPanel({ commissionRate }: { commissionRate: number }) {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
-          { label: 'Total Earned',    value: fmt(Math.round(totalGross * netMult)),   sub: `After ${commissionRate}% commission`, subColor: '#6F675C' },
-          { label: 'This Month',      value: fmt(Math.round(lastMoGross * netMult)),  sub: `↑ ${growth}% vs last month`,         subColor: '#4A7C59' },
-          { label: 'Avg per Booking', value: fmt(Math.round(690000 * netMult)),       sub: 'Last 90 days',                       subColor: '#6F675C' },
-          { label: 'Pending Payout',  value: fmt(Math.round(lastMoGross * netMult)),  sub: 'Releases Jun 5',                     subColor: '#C8A97E' },
+          { label: 'Total Earned',    value: fmt(Math.round(totalGross * netMult)),      sub: `After ${commissionRate}% commission`, subColor: '#6F675C' },
+          { label: 'This Month',      value: fmt(Math.round(thisMonthGross * netMult)),  sub: growth,                               subColor: thisMonthGross >= prevMonthGross ? '#4A7C59' : '#B66A45' },
+          { label: 'Avg per Booking', value: fmt(Math.round(avgPerBooking * netMult)),   sub: `${confirmedBookings.length > 0 ? confirmedBookings.length + ' confirmed' : 'All time'}`, subColor: '#6F675C' },
         ].map(s => (
           <div key={s.label} className="bg-white rounded-xl p-4 lg:p-5" style={{ border: '1px solid #E8E4DE' }}>
             <p style={{ fontSize: 12, color: '#6F675C' }}>{s.label}</p>
@@ -1000,21 +1055,55 @@ function EarningsPanel({ commissionRate }: { commissionRate: number }) {
             <p className="mt-1" style={{ fontSize: 11, color: s.subColor }}>{s.sub}</p>
           </div>
         ))}
+
+        {/* Pending Payout card — with Request Payout button */}
+        <div className="bg-white rounded-xl p-4 lg:p-5" style={{ border: `1px solid ${isPaid ? '#C8E6D6' : isRequested ? '#E8D4B8' : belowMin ? '#F5D5C5' : '#E8E4DE'}`, backgroundColor: isPaid ? '#F8FDF9' : isRequested ? '#FDFAF5' : 'white' }}>
+          <p style={{ fontSize: 12, color: '#6F675C' }}>Pending Payout</p>
+          <p className="mt-1" style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(14px,1.6vw,20px)', fontWeight: 700, color: '#111111', lineHeight: 1.2 }}>{fmt(pendingNet)}</p>
+          {isPaid ? (
+            <p className="mt-2" style={{ fontSize: 11, color: '#4A7C59', fontWeight: 600 }}>✓ Paid this month</p>
+          ) : isRequested ? (
+            <p className="mt-2" style={{ fontSize: 11, color: '#C8A97E', fontWeight: 600 }}>⏳ Requested — pending review</p>
+          ) : belowMin ? (
+            <p className="mt-2" style={{ fontSize: 11, color: '#B66A45' }}>
+              Below minimum ({fmt(PAYOUT_MIN_NET)} net required)
+            </p>
+          ) : hasLive && pendingNet > 0 ? (
+            <>
+              <button onClick={handleRequestPayout} disabled={requesting}
+                className="mt-2 w-full flex items-center justify-center gap-1"
+                style={{ height: 28, borderRadius: 8, border: 'none', backgroundColor: '#C8A97E', color: 'white', fontSize: 11, fontWeight: 600, cursor: requesting ? 'default' : 'pointer', opacity: requesting ? 0.7 : 1 }}>
+                {requesting ? 'Requesting…' : 'Request Payout'}
+              </button>
+              <p className="mt-1" style={{ fontSize: 10, color: '#9B9690', textAlign: 'center' }}>
+                Min {fmt(PAYOUT_MIN_NET)} · Max {fmt(pendingNet)}
+              </p>
+            </>
+          ) : (
+            <p className="mt-2" style={{ fontSize: 11, color: '#C8A97E' }}>Current month, not yet paid out</p>
+          )}
+          {requestMsg && (
+            <p className="mt-1" style={{ fontSize: 10, color: requestMsg.ok ? '#4A7C59' : '#B66A45', lineHeight: 1.4 }}>{requestMsg.text}</p>
+          )}
+        </div>
       </div>
 
       {/* Chart */}
       <div className="bg-white rounded-xl p-5 mb-5" style={{ border: '1px solid #E8E4DE' }}>
-        <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Monthly Revenue</h2>
-        <MiniChart data={MONTHLY_EARNINGS} color="#C8A97E" />
+        <div className="flex items-center justify-between mb-4">
+          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Monthly Revenue</h2>
+          {hasLive && <span style={{ fontSize: 11, color: '#4A7C59', fontWeight: 600 }}>● Live data</span>}
+        </div>
+        <MiniChart data={chartData} color="#C8A97E" />
         <div className="flex justify-between mt-1 mb-5">
-          {MONTHS_SHORT.map(m => <span key={m} style={{ fontSize: 9, color: '#6F675C' }}>{m}</span>)}
+          {chartLabels.map((m, i) => <span key={i} style={{ fontSize: 9, color: '#6F675C' }}>{m}</span>)}
         </div>
         <div className="flex items-end gap-1" style={{ height: 56 }}>
-          {MONTHLY_EARNINGS.map((v, i) => {
-            const max = Math.max(...MONTHLY_EARNINGS)
-            const isLast = i === MONTHLY_EARNINGS.length - 1
+          {chartData.map((v, i) => {
+            const max = Math.max(...chartData, 1)
+            const isLast = i === chartData.length - 1
             return (
-              <div key={i} title={`${MONTHS_SHORT[i]}: ${fmt(v)}`}
+              <div key={i} title={`${chartLabels[i]}: ${fmt(v)}`}
                 style={{ flex: 1, height: `${(v / max) * 100}%`, borderRadius: '3px 3px 0 0', backgroundColor: isLast ? '#C8A97E' : '#E8E4DE', minHeight: 4, cursor: 'default', transition: 'background 0.2s' }} />
             )
           })}
@@ -1025,12 +1114,15 @@ function EarningsPanel({ commissionRate }: { commissionRate: number }) {
         {/* By experience */}
         <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
           <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>By Experience</h2>
+          {expSource.length === 0 ? (
+            <p style={{ fontSize: 14, color: '#9E9A94' }}>No active experiences yet.</p>
+          ) : (
           <div className="space-y-4">
-            {EXPERIENCES.map(e => {
-              const pct = (e.earnings / totalExp) * 100
+            {expSource.map((e, idx) => {
+              const pct = totalExpEarnings > 0 ? (e.earnings / totalExpEarnings) * 100 : 0
               const netEarnings = Math.round(e.earnings * netMult)
               return (
-                <div key={e.id}>
+                <div key={e.id ?? idx}>
                   <div className="flex justify-between items-center mb-1">
                     <span style={{ fontSize: 13, color: '#111111', fontWeight: 500 }}>{e.title}</span>
                     <div className="text-right">
@@ -1046,45 +1138,55 @@ function EarningsPanel({ commissionRate }: { commissionRate: number }) {
               )
             })}
           </div>
+          )}
         </div>
 
         {/* Payout history */}
         <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
           <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Payout History</h2>
-          <div className="space-y-3">
-            {PAYOUTS.map(p => {
-              const commission = Math.round(p.gross * commissionRate / 100)
-              const net = p.gross - commission
-              return (
-                <div key={p.id} className="p-3.5 rounded-xl" style={{ backgroundColor: '#F5F1EB' }}>
-                  <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: '#111111' }}>{p.period}</p>
-                      <p style={{ fontSize: 11, color: '#6F675C', marginTop: 1 }}>{p.status === 'Paid' ? `Paid ${p.date}` : `Expected ${p.date}`}</p>
+          {livePayouts === undefined ? (
+            <p style={{ fontSize: 13, color: '#6F675C' }}>Loading…</p>
+          ) : livePayouts.length === 0 ? (
+            <div className="p-6 text-center rounded-xl" style={{ backgroundColor: '#F5F1EB' }}>
+              <p style={{ fontSize: 13, color: '#6F675C' }}>No payouts recorded yet.</p>
+              <p style={{ fontSize: 12, color: '#9E9A94', marginTop: 4 }}>Balible processes payouts monthly. Your first payout will appear here once processed.</p>
+            </div>
+          ) : (
+            <>
+              <div className="space-y-3">
+                {livePayouts.map(p => (
+                  <div key={p.id} className="p-3.5 rounded-xl" style={{ backgroundColor: '#F5F1EB' }}>
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <p style={{ fontSize: 13, fontWeight: 600, color: '#111111' }}>{p.periodLabel}</p>
+                        <p style={{ fontSize: 11, color: '#6F675C', marginTop: 1 }}>
+                          {p.status === 'Paid' ? `Paid ${p.paidAt}` : 'Pending payment'}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p style={{ fontSize: 14, fontWeight: 700, color: '#4A7C59' }}>{fmt(p.net)}</p>
+                        <div className="mt-1"><StatusBadge status={p.status} /></div>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p style={{ fontSize: 14, fontWeight: 700, color: '#4A7C59' }}>{fmt(net)}</p>
-                      <div className="mt-1"><StatusBadge status={p.status} /></div>
+                    <div className="flex gap-4 pt-2" style={{ borderTop: '1px solid #E0DDD8' }}>
+                      <span style={{ fontSize: 11, color: '#6F675C' }}>{p.bookings} bookings · Gross: {fmt(p.gross)}</span>
+                      <span style={{ fontSize: 11, color: '#B66A45' }}>Commission: {fmt(p.commission)}</span>
                     </div>
                   </div>
-                  <div className="flex gap-4 pt-2" style={{ borderTop: '1px solid #E0DDD8' }}>
-                    <span style={{ fontSize: 11, color: '#6F675C' }}>Gross: {fmt(p.gross)}</span>
-                    <span style={{ fontSize: 11, color: '#B66A45' }}>Commission −{commissionRate}%: {fmt(commission)}</span>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-          <button
-            onClick={() => {
-              const rows = [['Period','Gross','Commission','Net','Status','Date'], ...PAYOUTS.map(p => { const c = Math.round(p.gross * commissionRate / 100); return [p.period, p.gross, c, p.gross - c, p.status, p.date] })]
-              const csv = rows.map(r => r.join(',')).join('\n')
-              const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'payout-statements.csv'; a.click()
-            }}
-            className="w-full mt-4 py-2.5 rounded-xl hover:opacity-80 transition-opacity flex items-center justify-center gap-2"
-            style={{ border: '1px solid #E8E4DE', background: 'none', color: '#6F675C', cursor: 'pointer', fontSize: 13 }}>
-            <Download size={13} /> Download statements
-          </button>
+                ))}
+              </div>
+              <button
+                onClick={() => {
+                  const rows = [['Period','Bookings','Gross','Commission','Net','Status','Paid On'], ...livePayouts.map(p => [p.periodLabel, p.bookings, p.gross, p.commission, p.net, p.status, p.paidAt ?? ''])]
+                  const csv = rows.map(r => r.join(',')).join('\n')
+                  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'payout-statements.csv'; a.click()
+                }}
+                className="w-full mt-4 py-2.5 rounded-xl hover:opacity-80 transition-opacity flex items-center justify-center gap-2"
+                style={{ border: '1px solid #E8E4DE', background: 'none', color: '#6F675C', cursor: 'pointer', fontSize: 13 }}>
+                <Download size={13} /> Download statements
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -1781,6 +1883,246 @@ function EventsPanel() {
   )
 }
 
+// ── Availability Panel ────────────────────────────────────────────────────────
+
+const MOCK_BOOKED = new Set(['2026-06-08','2026-06-09','2026-06-12','2026-06-15','2026-06-20','2026-06-22','2026-07-04','2026-07-11','2026-07-18'])
+
+function AvailabilityPanel() {
+  const today = new Date()
+  const [year,  setYear]  = useState(today.getFullYear())
+  const [month, setMonth] = useState(today.getMonth())
+  const [blocked, setBlocked] = useState<Set<string>>(() => {
+    try { const v = localStorage.getItem('balible_blocked'); return new Set(v ? JSON.parse(v) : []) } catch { return new Set() }
+  })
+
+  const monthStr  = String(month + 1).padStart(2, '0')
+  const monthName = new Date(year, month, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' })
+  const firstDay  = new Date(year, month, 1).getDay()
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+
+  const dayKey = (d: number) => `${year}-${monthStr}-${String(d).padStart(2, '0')}`
+
+  const toggle = (d: number) => {
+    const k = dayKey(d)
+    if (MOCK_BOOKED.has(k)) return
+    setBlocked(prev => {
+      const next = new Set(prev)
+      next.has(k) ? next.delete(k) : next.add(k)
+      localStorage.setItem('balible_blocked', JSON.stringify(Array.from(next)))
+      return next
+    })
+  }
+  const unblock = (k: string) => setBlocked(prev => { const n = new Set(prev); n.delete(k); localStorage.setItem('balible_blocked', JSON.stringify(Array.from(n))); return n })
+
+  const prevMonth = () => { if (month === 0) { setMonth(11); setYear(y => y - 1) } else setMonth(m => m - 1) }
+  const nextMonth = () => { if (month === 11) { setMonth(0); setYear(y => y + 1) } else setMonth(m => m + 1) }
+
+  const thisMonthPrefix = `${year}-${monthStr}-`
+  const blockedThisMonth = Array.from(blocked).filter(k => k.startsWith(thisMonthPrefix))
+  const bookedThisMonth  = Array.from(MOCK_BOOKED).filter(k => k.startsWith(thisMonthPrefix))
+
+  const todayKey = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`
+
+  return (
+    <div>
+      <PageHeader title="Availability Calendar" subtitle="Block dates when you're unavailable — booked dates auto-populate" />
+
+      {/* Legend */}
+      <div className="flex flex-wrap items-center gap-5 mb-5">
+        {[
+          { bg: 'white',    border: '#E8E4DE', label: 'Available'                           },
+          { bg: '#FDF8F4',  border: '#C8A97E', label: `Booked (${bookedThisMonth.length})`  },
+          { bg: '#FEF2F2',  border: '#B66A45', label: `Blocked (${blockedThisMonth.length})` },
+        ].map(({ bg, border, label }) => (
+          <div key={label} className="flex items-center gap-2">
+            <div style={{ width: 14, height: 14, borderRadius: 4, backgroundColor: bg, border: `2px solid ${border}` }} />
+            <span style={{ fontSize: 12, color: '#6F675C' }}>{label}</span>
+          </div>
+        ))}
+        <p style={{ fontSize: 12, color: '#9E9A94', marginLeft: 'auto' }}>Click any date to block / unblock</p>
+      </div>
+
+      <div className="bg-white rounded-xl p-5 mb-5" style={{ border: '1px solid #E8E4DE' }}>
+        <div className="flex items-center justify-between mb-4">
+          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>{monthName}</h2>
+          <div className="flex items-center gap-2">
+            <button onClick={prevMonth} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid #E8E4DE', background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <ChevronLeft size={14} style={{ color: '#6F675C' }} />
+            </button>
+            <button onClick={() => { setMonth(today.getMonth()); setYear(today.getFullYear()) }}
+              style={{ height: 32, padding: '0 12px', borderRadius: 8, border: '1px solid #E8E4DE', background: 'white', fontSize: 12, color: '#6F675C', cursor: 'pointer' }}>
+              Today
+            </button>
+            <button onClick={nextMonth} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid #E8E4DE', background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <ChevronRight size={14} style={{ color: '#6F675C' }} />
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-7 mb-2">
+          {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
+            <div key={d} style={{ padding: '4px 0', textAlign: 'center', fontSize: 11, fontWeight: 600, color: '#9E9A94', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{d}</div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-7 gap-1">
+          {Array.from({ length: firstDay }).map((_, i) => <div key={`e${i}`} />)}
+          {Array.from({ length: daysInMonth }).map((_, i) => {
+            const d    = i + 1
+            const k    = dayKey(d)
+            const isBooked  = MOCK_BOOKED.has(k)
+            const isBlocked = blocked.has(k)
+            const isToday   = k === todayKey
+            const isPast    = new Date(year, month, d) < new Date(today.getFullYear(), today.getMonth(), today.getDate())
+
+            let bg = 'white', borderColor = '#E8E4DE', color = '#111111', cursor = 'pointer'
+            if (isBooked)  { bg = '#FDF8F4'; borderColor = '#C8A97E'; color = '#C8A97E'; cursor = 'default' }
+            if (isBlocked) { bg = '#FEF2F2'; borderColor = '#B66A45'; color = '#B66A45' }
+            if (isPast)    { bg = '#FAFAF8'; color = '#C8C4BE'; cursor = 'default' }
+
+            return (
+              <div key={d} onClick={() => !isPast && toggle(d)}
+                className="flex flex-col items-center justify-center rounded-lg transition-colors select-none"
+                style={{ aspectRatio: '1', backgroundColor: bg, border: isToday ? `2px solid #111111` : `1px solid ${borderColor}`, cursor }}>
+                <span style={{ fontSize: 13, fontWeight: isToday ? 700 : 400, color }}>{d}</span>
+                {isBooked  && <span style={{ fontSize: 8, color: '#C8A97E', fontWeight: 700, lineHeight: 1 }}>BOOK</span>}
+                {isBlocked && !isBooked && <span style={{ fontSize: 8, color: '#B66A45', fontWeight: 700, lineHeight: 1 }}>OFF</span>}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Blocked list */}
+      <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
+        <h2 className="mb-3" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Blocked Dates — {monthName}</h2>
+        {blockedThisMonth.length === 0 ? (
+          <p style={{ fontSize: 13, color: '#6F675C' }}>No blocked dates for {monthName}. Click calendar dates to mark your unavailable days.</p>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {[...blockedThisMonth].sort().map(k => (
+              <div key={k} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg"
+                style={{ backgroundColor: '#FEF2F2', border: '1px solid #F5C9C5' }}>
+                <span style={{ fontSize: 13, color: '#B66A45', fontWeight: 500 }}>
+                  {new Date(k + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </span>
+                <button onClick={() => unblock(k)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, lineHeight: 0, color: '#B66A45', display: 'flex' }}>
+                  <X size={12} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ── Photos Panel ──────────────────────────────────────────────────────────────
+
+function PhotosPanel() {
+  const [galleries, setGalleries] = useState<Record<number, string[]>>(() => {
+    try {
+      return Object.fromEntries(EXPERIENCES.map(e => {
+        const v = localStorage.getItem(`balible_gallery_${e.slug}`)
+        return [e.id, v ? JSON.parse(v) : [e.image]]
+      }))
+    } catch { return Object.fromEntries(EXPERIENCES.map(e => [e.id, [e.image]])) }
+  })
+  const [uploading, setUploading] = useState<Record<number, boolean>>({})
+  const fileRefs = useRef<Record<number, HTMLInputElement | null>>({})
+
+  const persist = (expId: number, arr: string[]) => {
+    const exp = EXPERIENCES.find(e => e.id === expId)
+    if (exp) localStorage.setItem(`balible_gallery_${exp.slug}`, JSON.stringify(arr))
+  }
+
+  const addPhoto = (expId: number, src: string) =>
+    setGalleries(prev => { const arr = [...(prev[expId] ?? []), src]; persist(expId, arr); return { ...prev, [expId]: arr } })
+
+  const removePhoto = (expId: number, idx: number) =>
+    setGalleries(prev => { const arr = [...(prev[expId] ?? [])]; arr.splice(idx, 1); persist(expId, arr); return { ...prev, [expId]: arr } })
+
+  const setCover = (expId: number, idx: number) =>
+    setGalleries(prev => {
+      const arr = [...(prev[expId] ?? [])]
+      const [photo] = arr.splice(idx, 1); arr.unshift(photo)
+      persist(expId, arr); return { ...prev, [expId]: arr }
+    })
+
+  const handleFile = (expId: number, file: File) => {
+    if (!file.type.startsWith('image/')) return
+    setUploading(u => ({ ...u, [expId]: true }))
+    const reader = new FileReader()
+    reader.onload = e => { addPhoto(expId, e.target?.result as string); setUploading(u => ({ ...u, [expId]: false })) }
+    reader.readAsDataURL(file)
+  }
+
+  return (
+    <div>
+      <PageHeader title="Photo Management" subtitle="Manage gallery photos for each of your experiences" />
+      <div className="space-y-5">
+        {EXPERIENCES.map(exp => {
+          const photos = galleries[exp.id] ?? [exp.image]
+          return (
+            <div key={exp.id} className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
+              <div className="flex items-center gap-3 mb-4">
+                <img src={exp.image} alt="" className="w-10 h-10 rounded-xl object-cover flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: '#111111' }}>{exp.title}</h3>
+                  <p style={{ fontSize: 12, color: '#6F675C' }}>{photos.length} photo{photos.length !== 1 ? 's' : ''} · first is cover</p>
+                </div>
+                <input
+                  ref={el => { fileRefs.current[exp.id] = el }}
+                  type="file" accept="image/*" className="hidden"
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(exp.id, f); if (fileRefs.current[exp.id]) fileRefs.current[exp.id]!.value = '' }}
+                />
+                <button onClick={() => fileRefs.current[exp.id]?.click()} disabled={uploading[exp.id]}
+                  className="flex items-center gap-2 hover:opacity-80"
+                  style={{ height: 34, padding: '0 14px', borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 12, fontWeight: 600, color: '#6F675C', cursor: 'pointer' }}>
+                  <Camera size={13} /> {uploading[exp.id] ? 'Uploading…' : 'Add Photo'}
+                </button>
+              </div>
+
+              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
+                {photos.map((src, idx) => (
+                  <div key={idx} className="relative group" style={{ aspectRatio: '1', borderRadius: 10, overflow: 'hidden' }}>
+                    <img src={src} alt={`Photo ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    {idx === 0 && (
+                      <div style={{ position: 'absolute', top: 4, left: 4, backgroundColor: '#C8A97E', borderRadius: 6, padding: '2px 5px', fontSize: 8, fontWeight: 700, color: 'white', letterSpacing: '0.04em' }}>COVER</div>
+                    )}
+                    <div className="absolute inset-0 flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      style={{ backgroundColor: 'rgba(0,0,0,0.38)' }}>
+                      {idx !== 0 && (
+                        <button onClick={() => setCover(exp.id, idx)} title="Set as cover"
+                          style={{ width: 28, height: 28, borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.9)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Star size={12} style={{ color: '#C8A97E' }} />
+                        </button>
+                      )}
+                      <button onClick={() => removePhoto(exp.id, idx)} title="Remove photo"
+                        style={{ width: 28, height: 28, borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.9)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Trash2 size={12} style={{ color: '#B66A45' }} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {photos.length < 10 && (
+                  <div onClick={() => fileRefs.current[exp.id]?.click()}
+                    className="flex flex-col items-center justify-center cursor-pointer hover:bg-stone-50 transition-colors"
+                    style={{ aspectRatio: '1', borderRadius: 10, border: '2px dashed #E8E4DE', backgroundColor: '#FAFAF8', gap: 4 }}>
+                    <Camera size={15} style={{ color: '#9E9A94' }} />
+                    <span style={{ fontSize: 10, color: '#9E9A94' }}>Add</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 
 const HOST_NOTIFICATIONS = [
@@ -1897,11 +2239,16 @@ function SidebarInner({ activeNav, setActiveNav, hostName }: { activeNav: string
 export default function DashboardPage() {
   const [activeNav, setActiveNav]   = useState('overview')
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [liveExperiences, setLiveExperiences] = useState<DashExp[] | undefined>(undefined)
-  const [liveBookings, setLiveBookings]       = useState<DashBooking[] | undefined>(undefined)
-  const [liveReviews, setLiveReviews]         = useState<DashReview[] | undefined>(undefined)
-  const [liveHostName, setLiveHostName]       = useState<string | undefined>(undefined)
-  const commissionRate = Math.max(0, Math.min(100, parseInt(String(lsh('balible_commission', '10')), 10) || 10))
+  const [liveExperiences, setLiveExperiences]     = useState<DashExp[] | undefined>(undefined)
+  const [liveBookings, setLiveBookings]           = useState<DashBooking[] | undefined>(undefined)
+  const [liveReviews, setLiveReviews]             = useState<DashReview[] | undefined>(undefined)
+  const [liveHostName, setLiveHostName]           = useState<string | undefined>(undefined)
+  const [liveEarningsByMonth, setLiveEarningsByMonth] = useState<EarningsByMonth[] | undefined>(undefined)
+  const [liveTotalGross, setLiveTotalGross]       = useState<number | undefined>(undefined)
+  const [livePendingPayout, setLivePendingPayout] = useState<number | undefined>(undefined)
+  const [livePayouts, setLivePayouts]             = useState<OperatorPayout[] | undefined>(undefined)
+  const [liveCommissionRate, setLiveCommissionRate] = useState<number | undefined>(undefined)
+  const commissionRate = liveCommissionRate ?? Math.max(0, Math.min(100, parseInt(String(lsh('balible_commission', '10')), 10) || 10))
 
   useEffect(() => {
     getHostDashboardData().then(data => {
@@ -1910,20 +2257,27 @@ export default function DashboardPage() {
       setLiveBookings(data.bookings)
       setLiveReviews(data.reviews)
       setLiveHostName(data.hostName)
+      setLiveEarningsByMonth(data.earningsByMonth)
+      setLiveTotalGross(data.totalGross)
+      setLivePendingPayout(data.pendingPayout)
+      setLiveCommissionRate(data.commissionRate)
     }).catch(() => {})
+    getOperatorPayoutsAction().then(setLivePayouts).catch(() => {})
   }, [])
 
   const renderPanel = () => {
     switch (activeNav) {
-      case 'overview':    return <OverviewPanel onNav={setActiveNav} commissionRate={commissionRate} experiences={liveExperiences} bookings={liveBookings} reviews={liveReviews} hostName={liveHostName} />
-      case 'experiences': return <ExperiencesPanel commissionRate={commissionRate} initialExperiences={liveExperiences} />
-      case 'events':      return <EventsPanel />
-      case 'bookings':    return <BookingsPanel initialBookings={liveBookings} />
-      case 'earnings':    return <EarningsPanel commissionRate={commissionRate} />
-      case 'reviews':     return <ReviewsPanel initialReviews={liveReviews} />
-      case 'profile':     return <ProfilePanel />
-      case 'settings':    return <SettingsPanel />
-      default:            return <OverviewPanel onNav={setActiveNav} commissionRate={commissionRate} experiences={liveExperiences} bookings={liveBookings} reviews={liveReviews} hostName={liveHostName} />
+      case 'overview':      return <OverviewPanel onNav={setActiveNav} commissionRate={commissionRate} experiences={liveExperiences} bookings={liveBookings} reviews={liveReviews} hostName={liveHostName} />
+      case 'experiences':   return <ExperiencesPanel commissionRate={commissionRate} initialExperiences={liveExperiences} />
+      case 'events':        return <EventsPanel />
+      case 'bookings':      return <BookingsPanel initialBookings={liveBookings} />
+      case 'availability':  return <AvailabilityPanel />
+      case 'earnings':      return <EarningsPanel commissionRate={commissionRate} experiences={liveExperiences} bookings={liveBookings} earningsByMonth={liveEarningsByMonth} totalGross={liveTotalGross} pendingPayout={livePendingPayout} payouts={livePayouts} />
+      case 'photos':        return <PhotosPanel />
+      case 'reviews':       return <ReviewsPanel initialReviews={liveReviews} />
+      case 'profile':       return <ProfilePanel />
+      case 'settings':      return <SettingsPanel />
+      default:              return <OverviewPanel onNav={setActiveNav} commissionRate={commissionRate} experiences={liveExperiences} bookings={liveBookings} reviews={liveReviews} hostName={liveHostName} />
     }
   }
 
