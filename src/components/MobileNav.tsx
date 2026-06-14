@@ -30,7 +30,7 @@ export default function MobileNav() {
         const content = (
           <>
             {favicon
-              ? <Image src="/icon.png" alt="AI Guide" width={28} height={28} style={{ borderRadius: '50%', opacity: active ? 1 : 0.65 }} />
+              ? <Image src="/icon.png" alt="AI Guide" width={30} height={30} style={{ borderRadius: '50%', opacity: active ? 1 : 0.65 }} />
               : Icon && <Icon size={20} color={active ? '#C8A97E' : '#6F675C'} />
             }
             <span style={{
