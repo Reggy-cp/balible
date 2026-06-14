@@ -402,7 +402,7 @@ export async function registerAsProviderAction(input: {
 
     await prisma.user.update({
       where: { id: user.id },
-      data: { role: 'PROVIDER' },
+      data: { role: 'OPERATOR' },
     })
 
     return { ok: true }

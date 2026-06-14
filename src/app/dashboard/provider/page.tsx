@@ -573,7 +573,7 @@ function Sidebar({ active, setActive }: { active: string; setActive: (id: string
       <a href="/" style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: 'white', textDecoration: 'none', marginBottom: 32 }}>
         BALIBLE
       </a>
-      <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', fontWeight: 600, letterSpacing: '0.08em', marginBottom: 10 }}>PROVIDER</p>
+      <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', fontWeight: 600, letterSpacing: '0.08em', marginBottom: 10 }}>OPERATOR</p>
       <nav className="space-y-1 flex-1">
         {NAV.map(({ id, label, Icon }) => (
           <button
