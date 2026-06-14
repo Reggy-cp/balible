@@ -1067,9 +1067,8 @@ export async function getHostDashboardData(): Promise<HostDashboardData | null> 
 
     const now = new Date()
     const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1)
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
 
-    const [dbExps, dbBookings, dbReviews, earnedBookings, commRateDecimal] = await Promise.all([
+    const [dbExps, dbBookings, dbReviews, earnedBookings, allEarnedBookings, paidPayouts, commRateDecimal] = await Promise.all([
       prisma.experience.findMany({
         where: { operatorId: operator.id },
         include: {
@@ -1096,6 +1095,7 @@ export async function getHostDashboardData(): Promise<HostDashboardData | null> 
         orderBy: { createdAt: 'desc' },
         take: 100,
       }),
+      // Last 12 months for chart
       prisma.booking.findMany({
         where: {
           experience: { operatorId: operator.id },
@@ -1103,6 +1103,19 @@ export async function getHostDashboardData(): Promise<HostDashboardData | null> 
           createdAt: { gte: twelveMonthsAgo },
         },
         select: { totalPrice: true, createdAt: true },
+      }),
+      // All time confirmed/completed for pendingPayout calculation
+      prisma.booking.findMany({
+        where: {
+          experience: { operatorId: operator.id },
+          status: { in: ['CONFIRMED', 'COMPLETED'] },
+        },
+        select: { totalPrice: true },
+      }),
+      // Already-paid payouts to subtract
+      prisma.payout.findMany({
+        where: { operatorId: operator.id, status: 'PAID' as any },
+        select: { gross: true },
       }),
       getCommissionRate(),
     ])
@@ -1116,10 +1129,10 @@ export async function getHostDashboardData(): Promise<HostDashboardData | null> 
       return { month: d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }), gross }
     })
 
-    const totalGross = earnedBookings.reduce((a, b) => a + b.totalPrice, 0)
-    const pendingPayout = earnedBookings
-      .filter(b => b.createdAt >= startOfMonth)
-      .reduce((a, b) => a + b.totalPrice, 0)
+    const totalGross   = earnedBookings.reduce((a, b) => a + b.totalPrice, 0)
+    const totalEarned  = allEarnedBookings.reduce((a, b) => a + b.totalPrice, 0)
+    const totalPaid    = paidPayouts.reduce((a, p) => a + p.gross, 0)
+    const pendingPayout = Math.max(0, totalEarned - totalPaid)
 
     const expStatusDisplay: Record<string, string> = {
       ACTIVE: 'Active', DRAFT: 'Draft', PENDING_REVIEW: 'Pending Review', PAUSED: 'Paused',
@@ -1513,31 +1526,40 @@ export async function requestPayoutAction(): Promise<{ ok: boolean; error?: stri
     if ((existing?.status as string) === 'PAID') return { ok: false, error: 'This period is already paid.' }
     if ((existing?.status as string) === 'REQUESTED') return { ok: false, error: 'Payout already requested.' }
 
-    const [commissionRate, bookings] = await Promise.all([
+    const [commissionRate, allBookings, paidPayouts] = await Promise.all([
       getCommissionRate(),
+      // All confirmed/completed bookings ever
       prisma.booking.findMany({
         where: {
           experience: { operatorId: operator.id },
           status: { in: ['CONFIRMED', 'COMPLETED'] as any },
-          createdAt: { gte: periodStart, lt: periodEnd },
         },
         select: { totalPrice: true },
       }),
+      // Already-paid payouts to exclude
+      prisma.payout.findMany({
+        where: { operatorId: operator.id, status: 'PAID' as any },
+        select: { gross: true },
+      }),
     ])
-    if (bookings.length === 0) return { ok: false, error: 'No confirmed bookings this month to pay out.' }
 
-    const gross      = bookings.reduce((a, b) => a + b.totalPrice, 0)
+    const totalEarned = allBookings.reduce((a, b) => a + b.totalPrice, 0)
+    const totalPaid   = paidPayouts.reduce((a, p) => a + p.gross, 0)
+    const gross       = totalEarned - totalPaid
+
+    if (gross <= 0) return { ok: false, error: 'No outstanding earnings to pay out.' }
+
     const commission = Math.round(gross * commissionRate)
     const net        = gross - commission
 
     if (net < PAYOUT_MIN_NET) {
-      return { ok: false, error: `Minimum payout is IDR ${PAYOUT_MIN_NET.toLocaleString()}. Your net this month is IDR ${net.toLocaleString()}.` }
+      return { ok: false, error: `Minimum payout is IDR ${PAYOUT_MIN_NET.toLocaleString()}. Your net outstanding is IDR ${net.toLocaleString()}.` }
     }
 
     await prisma.payout.upsert({
       where: { operatorId_periodStart_periodEnd: { operatorId: operator.id, periodStart, periodEnd } },
-      update: { status: 'REQUESTED' as any, gross, commission, net, bookings: bookings.length },
-      create: { operatorId: operator.id, periodStart, periodEnd, gross, commission, net, bookings: bookings.length, status: 'REQUESTED' as any },
+      update: { status: 'REQUESTED' as any, gross, commission, net, bookings: allBookings.length },
+      create: { operatorId: operator.id, periodStart, periodEnd, gross, commission, net, bookings: allBookings.length, status: 'REQUESTED' as any },
     })
     return { ok: true }
   } catch (e: any) {

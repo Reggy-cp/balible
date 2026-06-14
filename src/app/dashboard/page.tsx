@@ -1081,7 +1081,7 @@ function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBo
               </p>
             </>
           ) : (
-            <p className="mt-2" style={{ fontSize: 11, color: '#C8A97E' }}>Current month, not yet paid out</p>
+            <p className="mt-2" style={{ fontSize: 11, color: '#C8A97E' }}>Confirmed earnings, not yet paid out</p>
           )}
           {requestMsg && (
             <p className="mt-1" style={{ fontSize: 10, color: requestMsg.ok ? '#4A7C59' : '#B66A45', lineHeight: 1.4 }}>{requestMsg.text}</p>
