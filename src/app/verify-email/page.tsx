@@ -50,7 +50,7 @@ function VerifyEmailContent() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#F5F1EB', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', fontFamily: 'var(--font-inter)' }}>
       <Link href="/">
-        <Image src="/logo-light.png" alt="Balible" width={120} height={36} style={{ objectFit: 'contain', marginBottom: 40 }} />
+        <Image src="/logo-dark.png" alt="Balible" width={120} height={36} style={{ objectFit: 'contain', marginBottom: 40 }} />
       </Link>
 
       <div style={{ width: '100%', maxWidth: 440, backgroundColor: 'white', borderRadius: 16, padding: '48px 40px', textAlign: 'center', border: '1px solid #E8E4DE' }}>

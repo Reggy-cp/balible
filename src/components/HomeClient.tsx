@@ -616,7 +616,7 @@ export default function HomeClient({ experiences, upcomingEvents }: { experience
         <div className="max-w-[1440px] mx-auto">
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-10 pb-8" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
             <div className="col-span-2 lg:col-span-1">
-              <Image src="/logo-dark.png" alt="Balible" width={110} height={33} style={{ objectFit: 'contain', height: 33, width: 'auto' }} />
+              <Image src="/logo-light.png" alt="Balible" width={110} height={33} style={{ objectFit: 'contain', height: 33, width: 'auto' }} />
               <p className="mt-2" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: 'rgba(255,255,255,0.55)', lineHeight: 1.6 }}>
                 Curated experiences in the island of Bali.
               </p>

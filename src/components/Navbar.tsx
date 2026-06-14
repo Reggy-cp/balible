@@ -71,11 +71,11 @@ export default function Navbar() {
   return (
     <>
       <nav className="sticky top-0 z-50 bg-white" style={{ height: 64, borderBottom: '1px solid #E8E4DE' }}>
-        <div className="flex items-center justify-between h-full px-5 lg:px-12 max-w-[1440px] mx-auto">
+        <div className="flex items-center justify-between px-5 lg:px-12 max-w-[1440px] mx-auto" style={{ height: 64 }}>
 
           {/* Logo */}
-          <a href="/" className="flex-shrink-0" style={{ textDecoration: 'none' }}>
-            <Image src="/logo-light.png" alt="Balible" width={120} height={36} style={{ objectFit: 'contain', height: 36, width: 'auto' }} priority />
+          <a href="/" className="flex-shrink-0 flex items-center" style={{ textDecoration: 'none', height: '100%' }}>
+            <Image src="/logo-dark.png" alt="Balible" width={120} height={36} style={{ objectFit: 'contain', height: 36, width: 'auto', display: 'block' }} priority />
           </a>
 
           {/* Desktop nav */}

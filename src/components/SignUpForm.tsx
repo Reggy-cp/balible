@@ -84,7 +84,7 @@ export default function SignUpForm({ role, panelBg, headline, subCopy, heading, 
       {/* Left brand panel */}
       <div className="hidden lg:flex" style={{ width: 420, flexShrink: 0, backgroundColor: panelBg, flexDirection: 'column', justifyContent: 'space-between', padding: '48px 40px' }}>
         <Link href="/" style={{ textDecoration: 'none' }}>
-          <Image src="/logo-dark.png" alt="Balible" width={130} height={40} style={{ objectFit: 'contain', height: 40, width: 'auto' }} />
+          <Image src="/logo-light.png" alt="Balible" width={130} height={40} style={{ objectFit: 'contain', height: 40, width: 'auto' }} />
         </Link>
         <div>
           <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 34, fontWeight: 700, color: 'white', lineHeight: 1.25, margin: '0 0 16px' }}>
@@ -101,7 +101,7 @@ export default function SignUpForm({ role, panelBg, headline, subCopy, heading, 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
         <div className="lg:hidden" style={{ textAlign: 'center', marginBottom: 36 }}>
           <Link href="/">
-            <Image src="/logo-light.png" alt="Balible" width={110} height={34} style={{ objectFit: 'contain' }} />
+            <Image src="/logo-dark.png" alt="Balible" width={110} height={34} style={{ objectFit: 'contain' }} />
           </Link>
         </div>
 

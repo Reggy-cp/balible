@@ -20,7 +20,7 @@ export default async function OnboardingPage() {
     }}>
       <div style={{ textAlign: 'center', marginBottom: 48 }}>
         <Link href="/">
-          <Image src="/logo-light.png" alt="Balible" width={110} height={34} style={{ objectFit: 'contain' }} />
+          <Image src="/logo-dark.png" alt="Balible" width={110} height={34} style={{ objectFit: 'contain' }} />
         </Link>
       </div>
 

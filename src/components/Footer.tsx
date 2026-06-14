@@ -19,7 +19,7 @@ export default function Footer() {
       <div className="max-w-[1200px] mx-auto">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
           <a href="/" style={{ textDecoration: 'none' }}>
-            <Image src="/logo-dark.png" alt="Balible" width={100} height={30} style={{ objectFit: 'contain', height: 30, width: 'auto' }} />
+            <Image src="/logo-light.png" alt="Balible" width={100} height={30} style={{ objectFit: 'contain', height: 30, width: 'auto' }} />
           </a>
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
             {NAV_LINKS.map(({ label, href }) => (

@@ -213,7 +213,7 @@ export default function BaliMapView() {
           <div style={{ padding: '16px 20px 0', borderBottom: '1px solid #E8E4DE' }}>
             <div className="flex items-center justify-between mb-3">
               <a href="/" style={{ textDecoration: 'none' }}>
-                <Image src="/logo-light.png" alt="Balible" width={100} height={30} style={{ objectFit: 'contain', height: 30, width: 'auto' }} />
+                <Image src="/logo-dark.png" alt="Balible" width={100} height={30} style={{ objectFit: 'contain', height: 30, width: 'auto' }} />
               </a>
               <div className="flex items-center gap-2">
                 <a href="/search"
@@ -346,7 +346,7 @@ export default function BaliMapView() {
           {/* Mobile header */}
           <div className="lg:hidden flex items-center justify-between px-4 py-3 bg-white" style={{ borderBottom: '1px solid #E8E4DE', flexShrink: 0 }}>
             <a href="/" style={{ textDecoration: 'none' }}>
-              <Image src="/logo-light.png" alt="Balible" width={90} height={27} style={{ objectFit: 'contain', height: 27, width: 'auto' }} />
+              <Image src="/logo-dark.png" alt="Balible" width={90} height={27} style={{ objectFit: 'contain', height: 27, width: 'auto' }} />
             </a>
             <div className="flex items-center gap-2">
               <button onClick={() => setShowFilters(!showFilters)}

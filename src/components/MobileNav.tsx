@@ -1,14 +1,15 @@
 'use client'
 
 import React from 'react'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Home, Search, Bot, User } from 'lucide-react'
+import { Home, Search, User } from 'lucide-react'
 
-const NAV: { Icon: React.ElementType; label: string; href: string | null }[] = [
-  { Icon: Home,   label: 'Home',    href: '/' },
-  { Icon: Search, label: 'Explore', href: '/search' },
-  { Icon: Bot,    label: 'AI Guide', href: null },
-  { Icon: User,   label: 'Profile', href: '/profile' },
+const NAV: { Icon?: React.ElementType; favicon?: boolean; label: string; href: string | null }[] = [
+  { Icon: Home,   label: 'Home',     href: '/' },
+  { Icon: Search, label: 'Explore',  href: '/search' },
+  { favicon: true, label: 'AI Guide', href: null },
+  { Icon: User,   label: 'Profile',  href: '/profile' },
 ]
 
 export default function MobileNav() {
@@ -20,7 +21,7 @@ export default function MobileNav() {
       className="fixed bottom-0 left-0 right-0 bg-white z-50 md:hidden flex items-center"
       style={{ height: 64, borderTop: '1px solid #E8E4DE', paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
-      {NAV.map(({ Icon, label, href }) => {
+      {NAV.map(({ Icon, favicon, label, href }) => {
         const active = isActive(href)
         const handleClick = href === null
           ? () => window.dispatchEvent(new CustomEvent('balible:open-chat'))
@@ -28,7 +29,10 @@ export default function MobileNav() {
 
         const content = (
           <>
-            <Icon size={20} color={active ? '#C8A97E' : '#6F675C'} />
+            {favicon
+              ? <Image src="/icon.png" alt="AI Guide" width={22} height={22} style={{ borderRadius: 6, opacity: active ? 1 : 0.65 }} />
+              : Icon && <Icon size={20} color={active ? '#C8A97E' : '#6F675C'} />
+            }
             <span style={{
               fontFamily: 'var(--font-inter)', fontSize: 10,
               color: active ? '#C8A97E' : '#6F675C',
