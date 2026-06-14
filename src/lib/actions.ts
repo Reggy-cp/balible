@@ -594,8 +594,8 @@ export async function getUserData(): Promise<UserData | null> {
 
 // ── Admin panel data ──────────────────────────────────────────────────────────
 
-export const COMMISSION_RATE = 0.10  // fallback default
-export const PAYOUT_MIN_NET  = 5_000
+export { COMMISSION_RATE, PAYOUT_MIN_NET } from './constants'
+import { COMMISSION_RATE, PAYOUT_MIN_NET } from './constants'
 
 async function getCommissionRate(): Promise<number> {
   try {
