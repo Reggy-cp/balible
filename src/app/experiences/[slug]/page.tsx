@@ -1594,6 +1594,9 @@ const STATIC: Record<string, ExpData> = {
   },
 }
 
+// Cache rendered pages for 1 hour; background revalidation keeps content fresh
+export const revalidate = 3600
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function ExperienceDetailPage({ params }: { params: { slug: string } }) {
