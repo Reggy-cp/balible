@@ -67,7 +67,7 @@ export default function SignUpForm({ role, panelBg, headline, subCopy, heading, 
     if (signInRes?.error) {
       router.push('/sign-in')
     } else {
-      router.push(`/check-email?email=${encodeURIComponent(email)}`)
+      router.push(`/check-email?email=${encodeURIComponent(email)}&next=${encodeURIComponent(redirectTo)}`)
       router.refresh()
     }
   }

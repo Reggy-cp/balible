@@ -32,13 +32,13 @@ function SignInContent() {
     if (res?.error) {
       setError('Incorrect email or password.')
     } else {
-      router.push('/')
+      router.push('/dashboard')
       router.refresh()
     }
   }
 
   async function handleGoogle() {
-    await signIn('google', { callbackUrl: '/' })
+    await signIn('google', { callbackUrl: '/dashboard' })
   }
 
   const inputStyle: React.CSSProperties = {

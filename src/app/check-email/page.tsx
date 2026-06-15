@@ -8,6 +8,7 @@ import Image from 'next/image'
 function CheckEmailContent() {
   const params = useSearchParams()
   const email = params.get('email') ?? 'your inbox'
+  const next = params.get('next') ?? '/'
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#F5F1EB', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', fontFamily: 'var(--font-inter)' }}>
@@ -29,7 +30,7 @@ function CheckEmailContent() {
           Didn&apos;t receive it? Check your spam folder. The link expires in 24 hours.
         </p>
         <Link
-          href="/"
+          href={next}
           style={{ display: 'inline-block', padding: '12px 24px', backgroundColor: '#111111', color: 'white', borderRadius: 10, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}
         >
           Continue to Balible →
