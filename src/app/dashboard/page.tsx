@@ -1365,36 +1365,22 @@ function ProfilePanel() {
         <div className="bg-white rounded-xl p-6 flex flex-col items-center text-center" style={{ border: '1px solid #E8E4DE' }}>
           <div className="relative mb-4">
             <div className="w-24 h-24 rounded-full overflow-hidden" style={{ border: '3px solid #C8A97E' }}>
-              <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: '#C8A97E' }}>
-                <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 36, fontWeight: 700, color: 'white' }}>M</span>
-              </div>
+              {session?.user?.image
+                ? <img src={session.user.image} alt={profile.name} className="w-full h-full object-cover" />
+                : <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: '#C8A97E' }}>
+                    <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 36, fontWeight: 700, color: 'white' }}>
+                      {(profile.name || session?.user?.name || 'H').charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+              }
             </div>
             <button className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center"
               style={{ backgroundColor: '#111111', border: 'none', cursor: 'pointer' }}>
               <Camera size={12} style={{ color: 'white' }} />
             </button>
           </div>
-          <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>{profile.name}</h3>
+          <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>{profile.name || session?.user?.name}</h3>
           <p style={{ fontSize: 13, color: '#6F675C', marginTop: 2 }}>Operator · {profile.area}</p>
-          <div className="flex items-center gap-1 mt-2">
-            <Star size={13} fill="#C8A97E" color="#C8A97E" />
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#111111' }}>4.9</span>
-            <span style={{ fontSize: 13, color: '#6F675C' }}>(128 reviews)</span>
-          </div>
-          <div className="mt-3 px-3 py-1 rounded-full flex items-center gap-1.5" style={{ backgroundColor: '#F0F7F2' }}>
-            <Check size={11} style={{ color: '#4A7C59' }} />
-            <span style={{ fontSize: 12, fontWeight: 600, color: '#4A7C59' }}>Verified Host</span>
-          </div>
-          <div className="mt-5 w-full pt-5" style={{ borderTop: '1px solid #E8E4DE' }}>
-            <div className="grid grid-cols-3 gap-2">
-              {[{ label: 'Bookings', value: '145' }, { label: 'Reviews', value: '220' }, { label: 'Listings', value: '4' }].map(s => (
-                <div key={s.label}>
-                  <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>{s.value}</p>
-                  <p style={{ fontSize: 11, color: '#6F675C' }}>{s.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
 
         <div className="lg:col-span-2 bg-white rounded-xl p-6" style={{ border: '1px solid #E8E4DE' }}>
@@ -2247,7 +2233,8 @@ function HostNotifBell({ onSettings, align = 'left', dark = false }: { onSetting
 }
 
 function SidebarInner({ activeNav, setActiveNav, hostName }: { activeNav: string; setActiveNav: (id: string) => void; hostName?: string }) {
-  const displayName = hostName ?? 'Host'
+  const { data: session } = useSession()
+  const displayName = hostName ?? session?.user?.name ?? 'Host'
   const initial = displayName.charAt(0).toUpperCase()
   return (
     <>
@@ -2259,8 +2246,13 @@ function SidebarInner({ activeNav, setActiveNav, hostName }: { activeNav: string
       </div>
 
       <div className="flex items-center gap-3 mx-3 px-3 py-3 rounded-xl mb-3" style={{ backgroundColor: 'rgba(255,255,255,0.06)' }}>
-        <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#C8A97E' }}>
-          <span style={{ fontSize: 16, fontWeight: 700, color: 'white' }}>{initial}</span>
+        <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0" style={{ border: '2px solid rgba(200,169,126,0.5)' }}>
+          {session?.user?.image
+            ? <img src={session.user.image} alt={displayName} className="w-full h-full object-cover" />
+            : <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: '#C8A97E' }}>
+                <span style={{ fontSize: 16, fontWeight: 700, color: 'white' }}>{initial}</span>
+              </div>
+          }
         </div>
         <div className="min-w-0">
           <p style={{ fontSize: 13, fontWeight: 600, color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName}</p>
