@@ -216,7 +216,7 @@ function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences, bo
 }) {
   const [period, setPeriod] = useState('This Month')
   const netMult = (100 - commissionRate) / 100
-  const expSource = liveExperiences ?? EXPERIENCES
+  const expSource = liveExperiences ?? []
   const totalNetEarnings = expSource.reduce((a, e) => a + e.earnings, 0) * netMult
   const lastMonthNet = MONTHLY_EARNINGS[MONTHLY_EARNINGS.length - 1] * netMult
 
@@ -316,7 +316,7 @@ function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences, bo
           <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
             <h2 className="mb-3" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Top Experiences</h2>
             <div className="space-y-3">
-              {EXPERIENCES.filter(e => e.status === 'Active').map((e, i) => (
+              {expSource.filter(e => e.status === 'Active').map((e, i) => (
                 <div key={e.id} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span style={{ fontSize: 12, fontWeight: 700, color: '#6F675C', width: 16 }}>{i + 1}</span>
@@ -337,7 +337,7 @@ function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences, bo
 
 function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRate: number; initialExperiences?: DashExp[] }) {
   const [filter, setFilter]   = useState('All')
-  const [exps, setExps]       = useState<DashExp[]>(initialExperiences ?? EXPERIENCES)
+  const [exps, setExps]       = useState<DashExp[]>(initialExperiences ?? [])
   const [showForm, setShowForm] = useState(false)
   const [editingExp, setEditingExp] = useState<DashExp | null>(null)
   const [menuOpen, setMenuOpen] = useState<number | null>(null)
@@ -1025,7 +1025,7 @@ function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBo
     : 690000
 
   // By experience
-  const expSource = liveExps ?? EXPERIENCES
+  const expSource = liveExps ?? []
   const totalExpEarnings = expSource.reduce((a, e) => a + e.earnings, 0)
 
   // Current-month payout status from DB records
@@ -2069,20 +2069,21 @@ function AvailabilityPanel() {
 
 // ── Photos Panel ──────────────────────────────────────────────────────────────
 
-function PhotosPanel() {
+function PhotosPanel({ experiences }: { experiences?: DashExp[] }) {
+  const exps = experiences ?? []
   const [galleries, setGalleries] = useState<Record<number, string[]>>(() => {
     try {
-      return Object.fromEntries(EXPERIENCES.map(e => {
+      return Object.fromEntries(exps.map(e => {
         const v = localStorage.getItem(`balible_gallery_${e.slug}`)
         return [e.id, v ? JSON.parse(v) : [e.image]]
       }))
-    } catch { return Object.fromEntries(EXPERIENCES.map(e => [e.id, [e.image]])) }
+    } catch { return Object.fromEntries(exps.map(e => [e.id, [e.image]])) }
   })
   const [uploading, setUploading] = useState<Record<number, boolean>>({})
   const fileRefs = useRef<Record<number, HTMLInputElement | null>>({})
 
   const persist = (expId: number, arr: string[]) => {
-    const exp = EXPERIENCES.find(e => e.id === expId)
+    const exp = exps.find(e => e.id === expId)
     if (exp) localStorage.setItem(`balible_gallery_${exp.slug}`, JSON.stringify(arr))
   }
 
@@ -2111,7 +2112,7 @@ function PhotosPanel() {
     <div>
       <PageHeader title="Photo Management" subtitle="Manage gallery photos for each of your experiences" />
       <div className="space-y-5">
-        {EXPERIENCES.map(exp => {
+        {exps.map(exp => {
           const photos = galleries[exp.id] ?? [exp.image]
           return (
             <div key={exp.id} className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
@@ -2322,7 +2323,7 @@ export default function DashboardPage() {
       case 'bookings':      return <BookingsPanel initialBookings={liveBookings} />
       case 'availability':  return <AvailabilityPanel />
       case 'earnings':      return <EarningsPanel commissionRate={commissionRate} experiences={liveExperiences} bookings={liveBookings} earningsByMonth={liveEarningsByMonth} totalGross={liveTotalGross} pendingPayout={livePendingPayout} payouts={livePayouts} />
-      case 'photos':        return <PhotosPanel />
+      case 'photos':        return <PhotosPanel experiences={liveExperiences} />
       case 'reviews':       return <ReviewsPanel initialReviews={liveReviews} />
       case 'profile':       return <ProfilePanel />
       case 'settings':      return <SettingsPanel />
