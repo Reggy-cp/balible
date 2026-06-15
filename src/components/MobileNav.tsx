@@ -3,15 +3,16 @@
 import React from 'react'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Home, Search, User, LayoutDashboard } from 'lucide-react'
+import { Home, Search, User, LayoutDashboard, Heart } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import type { TranslationKey } from '@/lib/i18n'
 
 const BASE_NAV: { Icon?: React.ElementType; favicon?: boolean; labelKey: TranslationKey; href: string | null }[] = [
-  { Icon: Home,    labelKey: 'mob_home',     href: '/' },
-  { Icon: Search,  labelKey: 'mob_explore',  href: '/search' },
-  { favicon: true, labelKey: 'mob_ai_guide', href: null },
+  { Icon: Home,    labelKey: 'mob_home',      href: '/' },
+  { Icon: Search,  labelKey: 'mob_explore',   href: '/search' },
+  { favicon: true, labelKey: 'mob_ai_guide',  href: null },
+  { Icon: Heart,   labelKey: 'mob_wishlist',  href: '/wishlist' },
 ]
 
 export default function MobileNav() {

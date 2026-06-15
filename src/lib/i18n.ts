@@ -27,6 +27,7 @@ const translations = {
     mob_home:             'Home',
     mob_explore:          'Explore',
     mob_ai_guide:         'AI Guide',
+    mob_wishlist:         'Wishlist',
     mob_profile:          'Profile',
     mob_dashboard:        'Dashboard',
     // Categories
@@ -112,6 +113,7 @@ const translations = {
     mob_home:             'Beranda',
     mob_explore:          'Jelajahi',
     mob_ai_guide:         'Panduan AI',
+    mob_wishlist:         'Favorit',
     mob_profile:          'Profil',
     mob_dashboard:        'Dasbor',
     // Categories
@@ -197,6 +199,7 @@ const translations = {
     mob_home:             'Главная',
     mob_explore:          'Обзор',
     mob_ai_guide:         'ИИ-гид',
+    mob_wishlist:         'Избранное',
     mob_profile:          'Профиль',
     mob_dashboard:        'Панель',
     // Categories
