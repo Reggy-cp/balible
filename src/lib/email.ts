@@ -84,21 +84,22 @@ export async function sendVerificationEmail(to: string, token: string): Promise<
 export async function sendNewsletterWelcome(to: string): Promise<{ sent: boolean }> {
   const client = getClient()
   if (!client) {
-    console.warn('[email] RESEND_API_KEY not set — skipping newsletter welcome to', to)
+    console.warn(‘[email] RESEND_API_KEY not set — skipping newsletter welcome to’, to)
     return { sent: false }
   }
+  const appUrl = process.env.NEXTAUTH_URL ?? ‘https://balible.com’
   try {
     await client.emails.send({
       from: FROM,
       to,
-      subject: 'Welcome to Balible — you’re on the list',
+      subject: ‘Welcome to Balible — you’re on the list’,
       html: layout(`
-        <h1 style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:24px;color:${BRAND.ink};">You’re on the list</h1>
+        <h1 style="margin:0 0 12px;font-family:Georgia,’Times New Roman’,serif;font-size:24px;color:${BRAND.ink};">You’re on the list</h1>
         <p style="margin:0 0 16px;font-size:15px;color:${BRAND.muted};line-height:1.7;">
           Thanks for subscribing. You’ll be the first to hear when new experiences go live
           across Bali — from hidden pottery studios in Ubud to sunrise treks on Kintamani.
         </p>
-        <a href="https://balible.vercel.app/search" style="display:inline-block;padding:12px 24px;background-color:${BRAND.gold};color:${BRAND.ink};font-size:14px;font-weight:600;text-decoration:none;border-radius:6px;">
+        <a href="${appUrl}/search" style="display:inline-block;padding:12px 24px;background-color:${BRAND.gold};color:${BRAND.ink};font-size:14px;font-weight:600;text-decoration:none;border-radius:6px;">
           Browse experiences
         </a>
       `),

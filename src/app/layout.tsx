@@ -24,13 +24,13 @@ export const metadata: Metadata = {
   title: 'Balible — Curated Experiences in Bali',
   description: 'Discover authentic, meaningful, and beautiful experiences across the island of Bali.',
   keywords: 'Bali, experiences, activities, tours, culture, wellness, Ubud, Canggu',
-  metadataBase: new URL('https://balible.vercel.app'),
+  metadataBase: new URL('https://balible.com'),
   openGraph: {
     type: 'website',
     siteName: 'Balible',
     title: 'Balible — Curated Experiences in Bali',
     description: 'Discover authentic, meaningful, and beautiful experiences across the island of Bali.',
-    url: 'https://balible.vercel.app',
+    url: 'https://balible.com',
     images: [{
       url: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1200&h=630&auto=format&fit=crop&q=80',
       width: 1200,
