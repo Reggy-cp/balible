@@ -54,7 +54,10 @@ export default function Navbar() {
   const dashboardHref = user?.role === 'ADMIN' ? '/admin' : '/dashboard'
   const [accountOpen, setAccountOpen] = useState(false)
   const accountRef = useRef<HTMLDivElement>(null)
+  const [langOpen, setLangOpen] = useState(false)
+  const langRef = useRef<HTMLDivElement>(null)
   const { locale, setLocale, t } = useLanguage()
+  const currentLocale = LOCALES.find(l => l.code === locale)!
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -63,6 +66,9 @@ export default function Navbar() {
       }
       if (accountRef.current && !accountRef.current.contains(e.target as Node)) {
         setAccountOpen(false)
+      }
+      if (langRef.current && !langRef.current.contains(e.target as Node)) {
+        setLangOpen(false)
       }
     }
     document.addEventListener('mousedown', handleClick)
@@ -163,25 +169,42 @@ export default function Navbar() {
 
           {/* Right side */}
           <div className="flex items-center gap-2">
-            {/* Language switcher */}
-            <div className="hidden sm:flex items-center" style={{ border: '1px solid #E8E4DE', borderRadius: 8, overflow: 'hidden' }}>
-              {LOCALES.map(loc => (
-                <button
-                  key={loc.code}
-                  onClick={() => setLocale(loc.code)}
-                  style={{
-                    fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: locale === loc.code ? 700 : 400,
-                    padding: '5px 9px', background: locale === loc.code ? '#111111' : 'transparent',
-                    color: locale === loc.code ? '#ffffff' : '#6F675C',
-                    border: 'none', cursor: 'pointer', lineHeight: 1,
-                  }}
-                  aria-label={loc.label}
-                >
-                  {loc.code.toUpperCase()}
-                </button>
-              ))}
-            </div>
             {isLoaded && isSignedIn && <NotificationBell />}
+
+            {/* Language dropdown */}
+            <div className="relative" ref={langRef}>
+              <button
+                onClick={() => setLangOpen(o => !o)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-stone-50 transition-colors"
+                style={{ border: '1px solid #E8E4DE', background: 'white', cursor: 'pointer' }}
+                aria-label="Select language"
+              >
+                <span style={{ fontSize: 15, lineHeight: 1 }}>{currentLocale.flag}</span>
+                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 600, color: '#111111' }}>
+                  {currentLocale.code.toUpperCase()}
+                </span>
+                <ChevronDown size={11} style={{ color: '#6F675C', transition: 'transform 0.15s', transform: langOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+              </button>
+              {langOpen && (
+                <div className="absolute right-0 mt-2 bg-white rounded-xl shadow-lg py-1" style={{ minWidth: 140, border: '1px solid #E8E4DE', zIndex: 200 }}>
+                  {LOCALES.map(loc => (
+                    <button
+                      key={loc.code}
+                      onClick={() => { setLocale(loc.code); setLangOpen(false) }}
+                      className="flex w-full items-center gap-2.5 px-4 py-2.5 hover:bg-stone-50 transition-colors"
+                      style={{
+                        fontFamily: 'var(--font-inter)', fontSize: 13, border: 'none', cursor: 'pointer', textAlign: 'left',
+                        background: locale === loc.code ? '#F5F1EB' : 'transparent',
+                        color: '#111111', fontWeight: locale === loc.code ? 600 : 400,
+                      }}
+                    >
+                      <span style={{ fontSize: 16 }}>{loc.flag}</span>
+                      {loc.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             {!isLoaded ? (
               <div className="hidden sm:flex items-center gap-2">
                 <div style={{ width: 64, height: 34, borderRadius: 10, backgroundColor: '#F5F1EB' }} />
@@ -289,24 +312,6 @@ export default function Navbar() {
                   {t(labelKey)}
                   {isActive(href) && <span style={{ marginLeft: 'auto', width: 6, height: 6, borderRadius: '50%', backgroundColor: '#C8A97E' }} />}
                 </a>
-              ))}
-            </div>
-
-            {/* Language toggle in mobile menu */}
-            <div className="px-4 pt-2 pb-3 flex gap-2" style={{ borderTop: '1px solid #F5F1EB' }}>
-              {LOCALES.map(loc => (
-                <button
-                  key={loc.code}
-                  onClick={() => setLocale(loc.code)}
-                  style={{
-                    fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: locale === loc.code ? 700 : 400,
-                    padding: '7px 16px', background: locale === loc.code ? '#111111' : '#F5F1EB',
-                    color: locale === loc.code ? '#ffffff' : '#6F675C',
-                    border: 'none', borderRadius: 8, cursor: 'pointer',
-                  }}
-                >
-                  {loc.flag} {loc.label}
-                </button>
               ))}
             </div>
 
