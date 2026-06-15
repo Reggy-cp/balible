@@ -31,7 +31,7 @@ const AREAS: Record<string, AreaData> = {
     color: '#4A7C59', bg: '#F0F7F2',
     mustSee: [
       { name: 'Tegalalang Rice Terraces', description: 'The iconic stepped paddies north of Ubud — best at golden hour, when the light catches the water in the flooded fields.' },
-      { name: 'Campuhan Ridge Walk', description: 'A two-kilometre walk along a jungle ridge above the Campuhan river — peaceful, green, and free of charge.' },
+      { name: 'Campuhan Ridge Walk', description: 'A two-kilometre walk along a jungle ridge above the Campuhan river — peaceful, green, and free.' },
       { name: 'Pura Tirta Empul', description: 'A water purification temple where Balinese Hindus bathe in spring-fed pools as a ritual act of spiritual cleansing. One of Bali\'s most sacred sites.' },
     ],
     practicalTips: [
@@ -45,7 +45,7 @@ const AREAS: Record<string, AreaData> = {
   canggu: {
     slug: 'canggu', name: 'Canggu', tagline: 'Surf, Soul & Slow Mornings',
     description: 'Once a sleepy rice paddy village, Canggu has evolved into Bali\'s most vibrant creative district. Black-sand beaches, world-class surf breaks, sunrise yoga on rooftops, and specialty coffee at every turn.',
-    longDescription: 'Canggu sits on Bali\'s south-west coast, where the Indian Ocean rolls in from the south and the rice paddies begin immediately beyond the beach roads. A decade ago it was known only to surfers and long-stay expats. Today it is Bali\'s most international neighbourhood — a place where digital nomads work from beachside cafes, yoga teachers offer dawn classes on rooftop platforms, and the food scene moves faster than anywhere else on the island. The rice paddies are still there, though increasingly hemmed in by villas and warungs. The surf breaks — Batu Bolong, Echo Beach, Berawa — are still excellent. Canggu rewards early risers: the light before 8am, when the surfers are out and the cafes just opening, is the Canggu that people come back for.',
+    longDescription: 'Canggu sits on Bali\'s south-west coast, where the Indian Ocean rolls in from the south and the rice paddies begin immediately beyond the beach roads. A decade ago it was known only to surfers and long-stay expats. Today it is Bali\'s most international neighbourhood — a place where digital nomads work from beachside cafes, yoga teachers offer dawn classes on rooftop platforms, and a food scene that reinvents itself each season. The rice paddies are still there, though increasingly hemmed in by villas and warungs. The surf breaks — Batu Bolong, Echo Beach, Berawa — are still excellent. Canggu rewards early risers: the light before 8am, when the surfers are out and the cafes just opening, is the Canggu that people come back for.',
     highlights: ['Echo Beach', 'Batu Bolong Temple', 'Berawa Beach', 'Pererenan Rice Fields', 'Sunrise Yoga'],
     rating: 4.82,
     image: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=800&auto=format&fit=crop&q=80',
@@ -66,7 +66,7 @@ const AREAS: Record<string, AreaData> = {
   },
   uluwatu: {
     slug: 'uluwatu', name: 'Uluwatu', tagline: 'Clifftops, Kecak & Surf',
-    description: 'Perched on dramatic limestone cliffs above the Indian Ocean, Uluwatu is one of Bali\'s most awe-inspiring locations. Famous for the sacred temple, the mesmerising Kecak fire dance at sunset, and serious surf breaks below.',
+    description: 'Perched on dramatic limestone cliffs above the Indian Ocean, Uluwatu is where Bali reaches its most elemental — ancient temple, ocean thunder, and some of the world\'s most demanding surf.',
     longDescription: 'The Bukit Peninsula is a raised limestone plateau at Bali\'s southern tip, cut by cliff faces that drop seventy metres straight into the Indian Ocean. Uluwatu sits at the western point of this plateau, where the ancient sea temple Pura Luhur Uluwatu clings to the clifftop above the waves. The surf at Uluwatu is among the best in the world — hollow, fast, and demanding — and it draws a global community of serious surfers to the cluster of simple cliff-top warungs and guesthouses that have grown above the break. Each evening, a hundred men perform the Kecak fire dance in the temple complex as the sun sets behind them into the ocean. It is one of the great spectacles available to a traveller in Southeast Asia.',
     highlights: ['Uluwatu Temple', 'Kecak Sunset Dance', 'Padang Padang Beach', 'Bingin Beach', 'Blue Point Bay'],
     rating: 4.92,
@@ -153,7 +153,7 @@ const AREAS: Record<string, AreaData> = {
     experienceAreas: ['Sidemen', 'Amed'],
   },
   kuta: {
-    slug: 'kuta', name: 'Kuta', tagline: 'Where Bali Meets the Ocean',
+    slug: 'kuta', name: 'Kuta', tagline: 'Where Surf Culture Was Born',
     description: 'Kuta is where most visitors first land in Bali — and its long surf beach, energetic streets, and legendary sunsets make it impossible to overlook. The original surf town still has magic beneath the noise.',
     longDescription: 'Kuta\'s story is Bali\'s modern story: a quiet fishing village discovered by surfers in the 1960s, transformed into the island\'s first tourist hub, and now a dense, energetic strip of beach clubs, surf schools, and hawker streets running along a remarkable stretch of coastline. The beach itself — three kilometres of pale sand facing the full force of the Indian Ocean — is still one of the great beaches of Asia. The waves here are what built the town\'s reputation, and they remain consistent, powerful, and accessible enough to have taught a generation of beginners to stand up. Kuta is the most polarising part of Bali: loved for its energy and accessibility, avoided by those seeking quiet. Both responses are fair. The town works best understood on its own terms — as a place that does beach, surf, food, and nightlife with more commitment than anywhere else on the island.',
     highlights: ['Kuta Beach', 'Sunset at Poppies Lane', 'Beginner Surf Breaks', 'Kuta Art Market', 'Discovery Mall'],
@@ -285,7 +285,7 @@ const AREAS: Record<string, AreaData> = {
     experienceAreas: ['Medewi'],
   },
   kintamani: {
-    slug: 'kintamani', name: 'Kintamani', tagline: 'Volcanoes, Caldera & Cool Air',
+    slug: 'kintamani', name: 'Kintamani', tagline: 'Above the Clouds, Below the Volcano',
     description: 'Kintamani sits on the rim of an ancient volcanic caldera, with Lake Batur shimmering far below and the dark cone of Gunung Batur rising above the water. At 1,500 metres, the air is cool, the views are extraordinary, and the silence is complete.',
     longDescription: 'Kintamani is Bali\'s highland, a world away from the beach resorts of the south — cooler, quieter, and dominated by one of the most dramatic landscapes in Indonesia. The caldera rim road at Penelokan offers a view that stops conversation: Lake Batur, six kilometres wide, lying in the floor of an ancient collapsed volcano, with the active Gunung Batur cone rising from the lake\'s edge and the older, more massive Gunung Abang forming the opposite wall. The Batur volcano has erupted over twenty times in the past two hundred years — most recently in 2000 — and its presence is both beautiful and visceral. Villages on the caldera rim have a different culture from the south: the Bali Aga people, Bali\'s original inhabitants who predate the arrival of Majapahit Hinduism, have communities here that maintain ancient practices including the famous funeral rites at Trunyan village on the lake shore.',
     highlights: ['Gunung Batur Sunrise Trek', 'Lake Batur', 'Caldera Rim Viewpoint', 'Trunyan Bali Aga Village', 'Kintamani Coffee Plantations'],
