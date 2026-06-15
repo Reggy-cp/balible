@@ -1594,8 +1594,21 @@ const STATIC: Record<string, ExpData> = {
   },
 }
 
-// Cache rendered pages for 1 hour; background revalidation keeps content fresh
+// Pre-render known slugs at build time; revalidate hourly for new/updated experiences
 export const revalidate = 3600
+
+export async function generateStaticParams() {
+  try {
+    const experiences = await prisma.experience.findMany({
+      where: { status: 'ACTIVE' },
+      select: { slug: true },
+    })
+    return experiences.map(e => ({ slug: e.slug }))
+  } catch {
+    // Fall back to known static slugs if DB is unavailable at build time
+    return Object.keys(STATIC).map(slug => ({ slug }))
+  }
+}
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
