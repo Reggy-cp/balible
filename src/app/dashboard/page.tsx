@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import {
   LayoutDashboard, Compass, CalendarDays, TrendingUp, Star,
   UserCircle, Settings, LogOut, Bell, Plus, ChevronDown,
@@ -242,7 +243,7 @@ function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences, bo
       <div className="flex items-start justify-between mb-6">
         <div>
           <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(20px,2.5vw,26px)', fontWeight: 700, color: '#111111' }}>
-            Welcome back, {hostName ?? 'Made Sari'}
+            Welcome back, {hostName ?? 'Host'}
           </h1>
           <p style={{ fontSize: 14, color: '#6F675C', marginTop: 3 }}>Here's what's happening with your experiences.</p>
         </div>
@@ -1330,14 +1331,20 @@ function lsh<T>(key: string, fallback: T): T {
 // ── Profile Panel ─────────────────────────────────────────────────────────────
 
 const HOST_PROFILE_DEFAULTS = {
-  name: 'Made Sari', businessName: 'Made Sari Pottery Studio',
-  email: 'made.sari@balible.com', phone: '+62 812 3456 7890',
-  bio: "Third-generation Balinese potter offering authentic clay experiences in the heart of Ubud. I believe every piece of clay carries a story — and I love helping visitors find their own.",
+  name: '', businessName: '',
+  email: '', phone: '',
+  bio: '',
   area: 'Ubud', languages: 'English, Bahasa Indonesia',
 }
 
 function ProfilePanel() {
-  const [profile, setProfile] = useState(() => lsh('balible_host_profile', HOST_PROFILE_DEFAULTS))
+  const { data: session } = useSession()
+  const sessionDefaults = {
+    ...HOST_PROFILE_DEFAULTS,
+    name: session?.user?.name ?? '',
+    email: session?.user?.email ?? '',
+  }
+  const [profile, setProfile] = useState(() => lsh('balible_host_profile', sessionDefaults))
   const [saved, setSaved]     = useState(false)
 
   const save = () => {
@@ -1439,7 +1446,7 @@ function ProfilePanel() {
 // ── Settings Panel ────────────────────────────────────────────────────────────
 
 const HOST_NOTIF_DEFAULTS  = { newBooking: true, cancellation: true, review: false, reminders: true }
-const HOST_PAYOUT_DEFAULTS = { bankName: 'Bank Central Asia (BCA)', accountNumber: '•••• •••• 4521', accountHolder: 'Made Sari' }
+const HOST_PAYOUT_DEFAULTS = { bankName: '', accountNumber: '', accountHolder: '' }
 
 function SettingsPanel() {
   const [notifs, setNotifs]       = useState(() => lsh('balible_host_notifs',  HOST_NOTIF_DEFAULTS))
@@ -2240,7 +2247,7 @@ function HostNotifBell({ onSettings, align = 'left', dark = false }: { onSetting
 }
 
 function SidebarInner({ activeNav, setActiveNav, hostName }: { activeNav: string; setActiveNav: (id: string) => void; hostName?: string }) {
-  const displayName = hostName ?? 'Made Sari'
+  const displayName = hostName ?? 'Host'
   const initial = displayName.charAt(0).toUpperCase()
   return (
     <>
