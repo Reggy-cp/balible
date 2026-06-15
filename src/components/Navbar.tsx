@@ -213,14 +213,12 @@ export default function Navbar() {
                   </button>
                   {accountOpen && (
                     <div className="absolute right-0 mt-2 bg-white rounded-xl shadow-lg py-1" style={{ minWidth: 180, border: '1px solid #E8E4DE', zIndex: 200 }}>
-                      <a href="/profile" className="flex items-center gap-2.5 px-4 py-2.5 hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111', textDecoration: 'none' }}>
-                        <User size={14} style={{ color: '#6F675C' }} /> {t('nav_profile')}
+                      <a href={isHost ? dashboardHref : '/profile'} className="flex items-center gap-2.5 px-4 py-2.5 hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111', textDecoration: 'none' }}>
+                        {isHost
+                          ? <><LayoutDashboard size={14} style={{ color: '#6F675C' }} /> {t('nav_dashboard')}</>
+                          : <><User size={14} style={{ color: '#6F675C' }} /> {t('nav_profile')}</>
+                        }
                       </a>
-                      {isHost && (
-                        <a href={dashboardHref} className="flex items-center gap-2.5 px-4 py-2.5 hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111', textDecoration: 'none' }}>
-                          <LayoutDashboard size={14} style={{ color: '#6F675C' }} /> {t('nav_dashboard')}
-                        </a>
-                      )}
                       <div style={{ borderTop: '1px solid #F5F1EB', margin: '4px 0' }} />
                       <button
                         onClick={() => signOut({ callbackUrl: '/' })}
@@ -316,14 +314,9 @@ export default function Navbar() {
             <div className="px-4 pb-5 pt-3" style={{ borderTop: '1px solid #F5F1EB' }}>
               {isLoaded && isSignedIn ? (
                 <div className="space-y-1">
-                  {isHost && (
-                    <a href={dashboardHref} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', textDecoration: 'none', fontWeight: 500 }}>
-                      <LayoutDashboard size={16} style={{ color: '#6F675C' }} /> {t('nav_dashboard')}
-                    </a>
-                  )}
-                  <a href="/profile" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', textDecoration: 'none' }}>
+                  <a href={isHost ? dashboardHref : '/profile'} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', textDecoration: 'none' }}>
                     <img src={user?.image ?? '/avatar-default.png'} alt="" className="w-8 h-8 rounded-full object-cover" />
-                    {user?.name ?? t('nav_profile')}
+                    {user?.name ?? (isHost ? t('nav_dashboard') : t('nav_profile'))}
                   </a>
                   <a href="/wishlist" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', textDecoration: 'none' }}>
                     <span style={{ fontSize: 16 }}>🤍</span> {t('nav_wishlist')}
