@@ -33,6 +33,10 @@ export async function createSnapTransaction(input: SnapTransactionInput): Promis
           email: input.customerEmail || undefined,
           phone: input.customerPhone || undefined,
         },
+        callbacks: {
+          finish: `${process.env.NEXTAUTH_URL ?? 'https://balible.com'}/profile`,
+          notification: `${process.env.NEXTAUTH_URL ?? 'https://balible.com'}/api/midtrans/notify`,
+        },
       }),
     })
     const data = await res.json()

@@ -2,16 +2,16 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { ChevronUp, Shield, Award, Clock, Edit2, Lock } from 'lucide-react'
+import { ChevronUp, Shield, Award, Clock, Edit2, Lock, MapPin } from 'lucide-react'
 import MobileNav from '@/components/MobileNav'
-import { createBookingAction, getExperienceForCheckout, type ExpCheckoutMeta } from '@/lib/actions'
+import { createBookingAction, getExperienceForCheckout, getBookingStatusAction, type ExpCheckoutMeta } from '@/lib/actions'
 
 const STEPS = ['Experience & Date', 'Your Details', 'Payment', 'Confirmation']
 type Step = 0 | 1 | 2 | 3
 
 // ── Experience lookup (loaded from DB) ────────────────────────────────────────
 
-const LOADING_META: ExpCheckoutMeta = { title: 'Loading…', area: '', price: 0, image: '', serviceFeeRate: 0.1 }
+const LOADING_META: ExpCheckoutMeta = { title: 'Loading…', area: '', price: 0, image: '', serviceFeeRate: 0.1, meetingPoint: '' }
 
 function formatDate(s: string): string {
   if (!s) return 'Date not selected'
@@ -55,7 +55,7 @@ function generateSlots(open: string, close: string, bookedGuests: Record<string,
 // ── Shared types ───────────────────────────────────────────────────────────────
 
 type BookingData = {
-  title: string; area: string; image: string
+  title: string; area: string; image: string; meetingPoint: string
   date: string; time: string; rawTime: string
   pricePerPerson: number; serviceFeeRate: number
   slug: string; rawDate: string; maxGuests: number
@@ -181,6 +181,16 @@ function BookingSummary({ booking, guests, editing, onEdit }: { booking: Booking
           )}
         </div>
       </div>
+
+      {booking.meetingPoint && (
+        <div className="py-4" style={{ borderBottom: '1px solid #E8E4DE' }}>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 600, color: '#6F675C', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Meeting point</p>
+          <div className="flex items-start gap-2">
+            <MapPin size={13} style={{ color: '#C8A97E', flexShrink: 0, marginTop: 2 }} />
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111', lineHeight: 1.5 }}>{booking.meetingPoint}</p>
+          </div>
+        </div>
+      )}
 
       <div className="pt-4 space-y-2">
         <div className="flex justify-between">
@@ -452,24 +462,55 @@ function StepConfirmation({ booking, guests, bookingRef, payStatus = 'paid' }: {
   const fee = Math.round(sub * booking.serviceFeeRate)
   const total = sub + fee
   const ref = bookingRef ?? genRef(booking.slug, booking.rawDate)
-  const pending = payStatus === 'pending'
+
+  const [liveStatus, setLiveStatus] = useState<'paid' | 'pending'>(payStatus)
+
+  // Poll booking status every 5 s while pending, stop once confirmed or after 30 min
+  useEffect(() => {
+    if (liveStatus !== 'pending' || !bookingRef) return
+    let attempts = 0
+    const MAX = 360 // 30 min at 5 s intervals
+    const id = setInterval(async () => {
+      attempts++
+      const result = await getBookingStatusAction(bookingRef)
+      if (result?.status === 'CONFIRMED') {
+        setLiveStatus('paid')
+        clearInterval(id)
+      } else if (attempts >= MAX) {
+        clearInterval(id)
+      }
+    }, 5000)
+    return () => clearInterval(id)
+  }, [bookingRef, liveStatus])
+
+  const pending = liveStatus === 'pending'
 
   return (
     <div className="bg-white rounded-xl p-8 text-center" style={{ border: '1px solid #E8E4DE' }}>
-      <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: '#F0F7F2' }}>
-        <span style={{ fontSize: 28, color: '#4A7C59' }}>✓</span>
+      <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
+        style={{ backgroundColor: pending ? '#FEF9EC' : '#F0F7F2', transition: 'background-color 0.5s' }}>
+        {pending
+          ? <span style={{ fontSize: 28 }}>⏳</span>
+          : <span style={{ fontSize: 28, color: '#4A7C59' }}>✓</span>}
       </div>
       <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: '#111111', marginBottom: 8 }}>
-        {pending ? 'Almost there!' : 'Booking Confirmed!'}
+        {pending ? 'Waiting for payment…' : 'Booking Confirmed!'}
       </h2>
       <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: '#6F675C', marginBottom: 6 }}>
         {pending
-          ? 'Complete your payment using the instructions from Midtrans — your spot is held and we’ll email your confirmation as soon as payment arrives.'
+          ? 'Complete your transfer using the instructions from Midtrans. This page will update automatically once your payment is received.'
           : 'Your booking has been saved to your profile. A confirmation email is on its way.'}
       </p>
-      <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', marginBottom: 32 }}>
+      <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', marginBottom: pending ? 16 : 32 }}>
         Ref: <span style={{ fontWeight: 600, color: '#111111', letterSpacing: '0.05em' }}>{ref}</span>
       </p>
+
+      {pending && (
+        <div className="flex items-center justify-center gap-2 mb-8">
+          <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#C8A97E', display: 'inline-block', animation: 'pulse 1.5s ease-in-out infinite' }} />
+          <span style={{ fontSize: 13, color: '#C8A97E', fontWeight: 500 }}>Checking payment status…</span>
+        </div>
+      )}
 
       <div className="flex items-center gap-3 p-4 rounded-xl text-left mx-auto max-w-sm mb-8" style={{ border: '1px solid #E8E4DE', backgroundColor: '#F5F1EB' }}>
         <img src={booking.image} alt="" className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
@@ -548,7 +589,7 @@ function CheckoutInner() {
   })()
 
   const booking: BookingData = {
-    title: expMeta.title, area: expMeta.area, image: expMeta.image,
+    title: expMeta.title, area: expMeta.area, image: expMeta.image, meetingPoint: expMeta.meetingPoint,
     date: formatDate(rawDate), time: formatTime(selectedRawTime), rawTime: selectedRawTime,
     pricePerPerson: expMeta.price, serviceFeeRate: expMeta.serviceFeeRate,
     slug, rawDate, maxGuests,
@@ -576,14 +617,8 @@ function CheckoutInner() {
     document.body.appendChild(s)
   }, [])
 
-  const saveLocalBooking = (ref: string) => {
+  const trackSlot = (ref: string) => {
     try {
-      const prev = JSON.parse(localStorage.getItem('balible_bookings') ?? '[]')
-      localStorage.setItem('balible_bookings', JSON.stringify([
-        { id: ref, title: booking.title, area: booking.area, image: booking.image, date: booking.date, time: booking.time, guests, total, status: 'Upcoming', rating: null, slug: booking.slug },
-        ...prev.filter((b: { id: string }) => b.id !== ref),
-      ]))
-      // Track booked guests per slot for capacity enforcement
       if (booking.rawTime) {
         const slotKey = `balible_booked_${booking.slug}_${booking.rawDate}`
         const prevSlots: Record<string, number> = JSON.parse(localStorage.getItem(slotKey) ?? '{}')
@@ -601,6 +636,7 @@ function CheckoutInner() {
       const res = await createBookingAction({
         slug: booking.slug,
         rawDate: booking.rawDate,
+        rawTime: booking.rawTime || undefined,
         guests,
         guestName: contact.fullName || 'Guest',
         guestEmail: contact.email || '',
@@ -619,8 +655,8 @@ function CheckoutInner() {
       }
       const ref = res.bookingRef
       snap.pay(res.snapToken, {
-        onSuccess: () => { saveLocalBooking(ref); setPaidRef(ref); setPayStatus('paid'); setStep(3); setPaying(false) },
-        onPending: () => { saveLocalBooking(ref); setPaidRef(ref); setPayStatus('pending'); setStep(3); setPaying(false) },
+        onSuccess: () => { trackSlot(ref); setPaidRef(ref); setPayStatus('paid'); setStep(3); setPaying(false) },
+        onPending: () => { trackSlot(ref); setPaidRef(ref); setPayStatus('pending'); setStep(3); setPaying(false) },
         onError:   () => { setPayError('Payment failed — you have not been charged. Please try again.'); setPaying(false) },
         onClose:   () => { setPaying(false) },
       })

@@ -271,6 +271,76 @@ export async function sendReviewRequest(input: ReviewRequestInput): Promise<{ se
   }
 }
 
+export type PaymentPendingInput = {
+  to: string
+  guestName: string
+  bookingRef: string
+  experienceTitle: string
+  date: Date
+  guests: number
+  totalPrice: number
+  paymentType: string
+  vaBank?: string
+  vaNumber?: string
+  expiryTime?: string
+}
+
+export async function sendPaymentPendingEmail(input: PaymentPendingInput): Promise<{ sent: boolean }> {
+  const client = getClient()
+  if (!client) {
+    console.warn('[email] RESEND_API_KEY not set — skipping payment pending email to', input.to)
+    return { sent: false }
+  }
+  const dateStr = input.date.toLocaleDateString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'Asia/Makassar',
+  })
+  const row = (label: string, value: string) => `
+    <tr>
+      <td style="padding:8px 0;font-size:13px;color:${BRAND.muted};width:160px;vertical-align:top;">${label}</td>
+      <td style="padding:8px 0;font-size:14px;color:${BRAND.ink};font-weight:600;">${value}</td>
+    </tr>`
+
+  const bankName = (input.vaBank ?? '').toUpperCase()
+  const vaBlock = input.vaNumber ? `
+    <div style="margin:20px 0;padding:16px 20px;background-color:#FEF9EC;border-radius:10px;border:1px solid #E8D4B8;">
+      <p style="margin:0 0 4px;font-size:12px;color:${BRAND.muted};font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">${bankName ? bankName + ' Virtual Account' : 'Virtual Account'}</p>
+      <p style="margin:0;font-size:24px;font-weight:700;color:${BRAND.ink};letter-spacing:0.1em;">${input.vaNumber}</p>
+      ${input.expiryTime ? `<p style="margin:8px 0 0;font-size:12px;color:${BRAND.muted};">Pay before: ${input.expiryTime} (WIB)</p>` : ''}
+    </div>` : ''
+
+  try {
+    await client.emails.send({
+      from: FROM,
+      to: input.to,
+      subject: `Complete your payment — ${input.experienceTitle}`,
+      html: layout(`
+        <p style="margin:0 0 4px;font-size:13px;color:${BRAND.gold};font-weight:600;">PAYMENT INSTRUCTIONS</p>
+        <h1 style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:24px;color:${BRAND.ink};">${input.experienceTitle}</h1>
+        <p style="margin:0 0 20px;font-size:15px;color:${BRAND.muted};line-height:1.7;">
+          Hi ${input.guestName}, your spot is held! Complete your transfer below to confirm your booking.
+          We will send a confirmation email as soon as payment is received.
+        </p>
+        ${vaBlock}
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid ${BRAND.border};border-bottom:1px solid ${BRAND.border};margin-bottom:20px;">
+          ${row('Booking ref', input.bookingRef)}
+          ${row('Experience', input.experienceTitle)}
+          ${row('Date', `${dateStr} (Bali time)`)}
+          ${row('Guests', String(input.guests))}
+          ${row('Amount due', `IDR ${input.totalPrice.toLocaleString('id-ID')}`)}
+        </table>
+        <p style="margin:0;font-size:13px;color:${BRAND.muted};line-height:1.7;">
+          Transfer the exact amount shown above. Your booking will be confirmed automatically
+          once payment is verified — no action needed on your end.
+        </p>
+      `),
+    })
+    return { sent: true }
+  } catch (err) {
+    console.error('[email] payment pending email failed:', err)
+    return { sent: false }
+  }
+}
+
 export type BookingConfirmationInput = {
   to: string
   guestName: string
@@ -328,6 +398,62 @@ export async function sendBookingConfirmation(input: BookingConfirmationInput): 
     return { sent: true }
   } catch (err) {
     console.error('[email] booking confirmation failed:', err)
+    return { sent: false }
+  }
+}
+
+// ── Activity reminder (1 hour before) ─────────────────────────────────────────
+
+export type ActivityReminderInput = {
+  to: string
+  name: string
+  experienceTitle: string
+  experienceSlug: string
+  date: string
+  time: string
+  meetingPoint: string
+  bookingRef: string
+  isHost?: boolean
+}
+
+export async function sendActivityReminder(input: ActivityReminderInput): Promise<{ sent: boolean }> {
+  const client = getClient()
+  if (!client) return { sent: false }
+  try {
+    const row = (label: string, value: string) => `
+      <tr>
+        <td style="padding:10px 0;font-size:13px;color:#6F675C;width:130px;vertical-align:top;">${label}</td>
+        <td style="padding:10px 0;font-size:13px;color:#111111;font-weight:500;">${value}</td>
+      </tr>`
+    const greeting = input.isHost
+      ? `Hi ${input.name}, your guest will arrive in about 1 hour for the experience below.`
+      : `Hi ${input.name}, your experience starts in about 1 hour — here's a quick reminder.`
+    await client.emails.send({
+      from: FROM,
+      to: input.to,
+      subject: `Reminder: ${input.experienceTitle} starts in 1 hour`,
+      html: layout(`
+        <p style="margin:0 0 4px;font-size:13px;color:${BRAND.gold};font-weight:600;">⏰ STARTING IN 1 HOUR</p>
+        <h1 style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:24px;color:${BRAND.ink};">${input.experienceTitle}</h1>
+        <p style="margin:0 0 20px;font-size:15px;color:${BRAND.muted};line-height:1.7;">${greeting}</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid ${BRAND.border};border-bottom:1px solid ${BRAND.border};margin-bottom:20px;">
+          ${row('Date', input.date)}
+          ${row('Time', `${input.time} (Bali time)`)}
+          ${row('Meeting point', input.meetingPoint)}
+          ${row('Booking ref', input.bookingRef)}
+        </table>
+        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(input.meetingPoint + ', Bali')}"
+          style="display:inline-block;padding:12px 24px;background-color:${BRAND.ink};color:white;text-decoration:none;border-radius:8px;font-size:14px;font-weight:600;margin-bottom:16px;">
+          📍 Open in Google Maps
+        </a>
+        <p style="margin:0;font-size:13px;color:${BRAND.muted};line-height:1.7;">
+          ${input.isHost ? 'Questions? Reply to this email.' : 'Have a wonderful experience!'}
+        </p>
+      `),
+    })
+    return { sent: true }
+  } catch (err) {
+    console.error('[email] activity reminder failed:', err)
     return { sent: false }
   }
 }

@@ -9,7 +9,7 @@ import { useSession } from 'next-auth/react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
-import { getUserData, getExperiencesForWishlist, type UserData, type ExpWishlistMeta } from '@/lib/actions'
+import { getUserData, getExperiencesForWishlist, cancelBookingAction, getExperienceMetaForModal, submitReviewAction, type UserData, type ExpWishlistMeta } from '@/lib/actions'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -17,16 +17,8 @@ type Booking = {
   id: string; title: string; area: string; date: string; time?: string
   guests: number; total: number; status: string
   rating: number | null; image: string; slug: string
-}
-
-type SubmittedReview = {
-  bookingId: string
-  experience: string
-  slug: string
-  reviewDate: string
-  rating: number
-  comment: string
-  image: string
+  duration?: string; meetingPoint?: string; includes?: string[]
+  latitude?: number; longitude?: number
 }
 
 // ── Mock data ──────────────────────────────────────────────────────────────────
@@ -106,6 +98,7 @@ function StatusBadge({ status }: { status: string }) {
     Upcoming:  { bg: '#F0F7F2', color: '#4A7C59' },
     Completed: { bg: '#EEF2FF', color: '#4B6CB7' },
     Cancelled: { bg: '#FEF2F2', color: '#B66A45' },
+    Pending:   { bg: '#FEF9EC', color: '#C8A97E' },
   }
   const s = map[status] ?? { bg: '#F5F1EB', color: '#6F675C' }
   return (
@@ -119,40 +112,39 @@ function StatusBadge({ status }: { status: string }) {
 
 const RATING_LABELS = ['', 'Disappointing', 'Below average', 'Good', 'Very good', 'Exceptional']
 
-function ReviewModal({ booking, onSubmit, onClose }: {
+function ReviewModal({ booking, onClose, onRefresh }: {
   booking: Booking
-  onSubmit: (r: SubmittedReview) => void
   onClose: () => void
+  onRefresh: () => void
 }) {
   const [rating, setRating]   = useState(0)
   const [hover, setHover]     = useState(0)
   const [comment, setComment] = useState('')
   const [done, setDone]       = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const active = hover || rating
 
-  const submit = () => {
-    if (!rating || !comment.trim()) return
-    onSubmit({
-      bookingId:  booking.id,
-      experience: booking.title,
-      slug:       booking.slug,
-      reviewDate: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      rating,
-      comment:    comment.trim(),
-      image:      booking.image,
-    })
+  const submit = async () => {
+    if (!rating || !comment.trim() || submitting) return
+    setSubmitting(true)
+    setError(null)
+    const res = await submitReviewAction(booking.slug, rating, comment.trim())
+    setSubmitting(false)
+    if (!res.ok) { setError(res.error ?? 'Failed to submit review'); return }
     setDone(true)
+    onRefresh()
     setTimeout(onClose, 1600)
   }
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-4 pt-4 pb-20 sm:p-4"
+      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center px-4 pt-4 pb-4 sm:p-4"
       style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl overflow-y-auto" style={{ maxHeight: 'calc(100vh - 160px)' }}>
+      <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl overflow-y-auto" style={{ maxHeight: '85vh' }}>
         {done ? (
           <div className="text-center py-8">
             <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#F0F7F2' }}>
@@ -216,18 +208,19 @@ function ReviewModal({ booking, onSubmit, onClose }: {
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#C8C4BE', marginTop: 3, textAlign: 'right' }}>{comment.length}/500</p>
             </div>
 
+            {error && <p style={{ fontSize: 12, color: '#B66A45', marginBottom: 8 }}>{error}</p>}
             <button
               onClick={submit}
-              disabled={!rating || !comment.trim()}
+              disabled={!rating || !comment.trim() || submitting}
               style={{
                 width: '100%', height: 44, borderRadius: 10, border: 'none',
-                backgroundColor: !rating || !comment.trim() ? '#E8E4DE' : '#111111',
-                color: !rating || !comment.trim() ? '#6F675C' : 'white',
+                backgroundColor: !rating || !comment.trim() || submitting ? '#E8E4DE' : '#111111',
+                color: !rating || !comment.trim() || submitting ? '#6F675C' : 'white',
                 fontSize: 14, fontWeight: 600,
-                cursor: !rating || !comment.trim() ? 'not-allowed' : 'pointer',
+                cursor: !rating || !comment.trim() || submitting ? 'not-allowed' : 'pointer',
                 transition: 'all 0.2s',
               }}>
-              Submit Review
+              {submitting ? 'Submitting…' : 'Submit Review'}
             </button>
           </>
         )}
@@ -236,25 +229,156 @@ function ReviewModal({ booking, onSubmit, onClose }: {
   )
 }
 
-// ── Bookings tab ───────────────────────────────────────────────────────────────
+// ── Booking detail modal ───────────────────────────────────────────────────────
 
-function BookingsTab({ reviews, onReview, dbBookings }: { reviews: SubmittedReview[]; onReview: (r: SubmittedReview) => void; dbBookings?: Booking[] }) {
-  const [cancelled, setCancelled] = useState<Set<string>>(new Set())
-  const [reviewing, setReviewing] = useState<Booking | null>(null)
-  const [savedBookings, setSavedBookings] = useState<Booking[]>([])
-  const cancel = (id: string) => setCancelled(s => new Set(s).add(id))
+function googleCalendarUrl(booking: Booking): string {
+  const date = new Date(booking.date)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const fmt = (d: Date) => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`
+  const start = fmt(date)
+  const end   = fmt(new Date(date.getTime() + 86400000))
+  const details = [`Booking ref: ${booking.id}`, `Guests: ${booking.guests}`, booking.meetingPoint ? `Meeting point: ${booking.meetingPoint}` : ''].filter(Boolean).join('\n')
+  const params = new URLSearchParams({ action: 'TEMPLATE', text: `${booking.title} – Balible`, dates: `${start}/${end}`, details, ...(booking.meetingPoint ? { location: `${booking.meetingPoint}, Bali` } : {}) })
+  return `https://calendar.google.com/calendar/render?${params}`
+}
+
+function BookingDetailModal({ booking, onClose }: { booking: Booking; onClose: () => void }) {
+  const [meta, setMeta] = useState<{ meetingPoint: string | null; duration: string | null; includes: string[] } | null>(null)
+
+  const meetingPoint = meta?.meetingPoint ?? booking.meetingPoint ?? null
+  const duration     = meta?.duration     ?? booking.duration     ?? null
+  const includes     = meta?.includes     ?? booking.includes     ?? []
 
   useEffect(() => {
-    setSavedBookings(lsp('balible_bookings', []))
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKey)
+    getExperienceMetaForModal(booking.slug).then(d => { if (d) setMeta(d) }).catch(() => {})
+    return () => {
+      document.body.style.overflow = prev
+      document.removeEventListener('keydown', onKey)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const savedIds = new Set(savedBookings.map(b => b.id))
-  const dbIds = new Set((dbBookings ?? []).map(b => b.id))
-  // Signed in (dbBookings defined): show DB + real checkout bookings only — no demo data
-  // Signed out (dbBookings undefined): show localStorage + demo data
-  const allBookings = dbBookings !== undefined
-    ? [...dbBookings, ...savedBookings.filter(b => !dbIds.has(b.id))]
-    : [...savedBookings, ...BOOKINGS.filter(b => !savedIds.has(b.id))]
+  const row = (label: string, value: string) => (
+    <div className="flex gap-3 py-3" style={{ borderBottom: '1px solid #F5F1EB' }}>
+      <span style={{ fontSize: 13, color: '#6F675C', width: 120, flexShrink: 0 }}>{label}</span>
+      <span style={{ fontSize: 13, color: '#111111', fontWeight: 500 }}>{value}</span>
+    </div>
+  )
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4"
+      style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}>
+      <div className="w-full sm:max-w-lg bg-white sm:rounded-2xl overflow-hidden"
+        style={{ maxHeight: '92vh', display: 'flex', flexDirection: 'column', borderRadius: '20px 20px 0 0' }}>
+
+        {/* Image */}
+        <div className="relative flex-shrink-0" style={{ height: 200 }}>
+          <img src={booking.image} alt={booking.title} className="w-full h-full object-cover" />
+          <button onClick={onClose}
+            className="absolute top-3 right-3 flex items-center justify-center"
+            style={{ width: 32, height: 32, borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.45)', border: 'none', cursor: 'pointer', color: 'white' }}>
+            <X size={16} />
+          </button>
+          <div className="absolute bottom-3 left-3">
+            <StatusBadge status={booking.status} />
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="overflow-y-auto p-5 flex-1">
+          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', marginBottom: 4 }}>
+            {booking.title}
+          </h2>
+          <div className="flex items-center gap-1 mb-4">
+            <MapPin size={12} style={{ color: '#6F675C' }} />
+            <span style={{ fontSize: 13, color: '#6F675C' }}>{booking.area}</span>
+          </div>
+
+          <div>
+            {row('Booking ref', booking.id)}
+            {row('Date', booking.date)}
+            {booking.time && row('Time', booking.time)}
+            {row('Guests', `${booking.guests} guest${booking.guests > 1 ? 's' : ''}`)}
+            {duration && row('Duration', duration)}
+            {meetingPoint && row('Meeting point', meetingPoint)}
+            {row('Total paid', `IDR ${booking.total.toLocaleString('id-ID')}`)}
+          </div>
+
+          {includes.length > 0 && (
+            <div className="mt-4">
+              <p style={{ fontSize: 13, fontWeight: 600, color: '#111111', marginBottom: 8 }}>What's included</p>
+              <ul className="space-y-1.5">
+                {includes.map((item, i) => (
+                  <li key={i} className="flex items-start gap-2" style={{ fontSize: 13, color: '#6F675C' }}>
+                    <span style={{ color: '#4A7C59', marginTop: 1, flexShrink: 0 }}>✓</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex-shrink-0 px-4 pt-3" style={{ borderTop: '1px solid #F5F1EB', paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
+          {/* Action buttons */}
+          <div className="flex gap-2 mb-2">
+            <a href={googleCalendarUrl({ ...booking, meetingPoint: meetingPoint ?? undefined, duration: duration ?? undefined, includes })} target="_blank" rel="noopener noreferrer"
+              className="flex-1 flex items-center justify-center gap-1.5 hover:opacity-80 transition-opacity"
+              style={{ height: 40, borderRadius: 8, border: '1px solid #C8A97E', backgroundColor: '#FEF9EC', color: '#C8A97E', fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
+              <CalendarDays size={13} /> Add to Calendar
+            </a>
+            <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((meetingPoint || booking.area) + ', Bali')}`}
+              target="_blank" rel="noopener noreferrer"
+              className="flex-1 flex items-center justify-center gap-1.5 hover:opacity-80 transition-opacity"
+              style={{ height: 40, borderRadius: 8, border: '1px solid #4A7C59', backgroundColor: '#F0F7F2', color: '#4A7C59', fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
+              <MapPin size={13} /> Open Maps
+            </a>
+          </div>
+          {/* Primary buttons */}
+          <div className="flex gap-2">
+            <a href={`/experiences/${booking.slug}`}
+              className="flex-1 flex items-center justify-center hover:opacity-90 transition-opacity"
+              style={{ height: 44, borderRadius: 10, backgroundColor: '#111111', color: 'white', fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>
+              View experience
+            </a>
+            <button onClick={onClose}
+              style={{ flex: 1, height: 44, border: '1px solid #E8E4DE', backgroundColor: 'white', borderRadius: 10, fontSize: 14, color: '#6F675C', cursor: 'pointer' }}>
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Bookings tab ───────────────────────────────────────────────────────────────
+
+function BookingsTab({ dbBookings, onRefresh }: { dbBookings?: Booking[]; onRefresh: () => void }) {
+  const [cancelled, setCancelled] = useState<Set<string>>(new Set())
+  const [cancelling, setCancelling] = useState<string | null>(null)
+  const [reviewing, setReviewing] = useState<Booking | null>(null)
+  const [detailBooking, setDetailBooking] = useState<Booking | null>(null)
+
+  const cancel = async (b: Booking) => {
+    setCancelling(b.id)
+    const res = await cancelBookingAction(b.id)
+    setCancelling(null)
+    if (res.ok) {
+      setCancelled(s => new Set(s).add(b.id))
+    } else {
+      alert(res.error ?? 'Failed to cancel booking.')
+    }
+  }
+
+  // Signed in: DB bookings only. Signed out: demo data.
+  const allBookings = dbBookings ?? BOOKINGS
 
   return (
     <div className="space-y-4">
@@ -268,8 +392,6 @@ function BookingsTab({ reviews, onReview, dbBookings }: { reviews: SubmittedRevi
       ) : allBookings.map(b => {
         const isCancelled = cancelled.has(b.id)
         const effectiveStatus = isCancelled ? 'Cancelled' : b.status
-        const submitted = reviews.find(r => r.bookingId === b.id)
-        const displayRating = submitted ? submitted.rating : b.rating
         return (
         <div key={b.id} className="bg-white rounded-xl p-4" style={{ border: '1px solid #E8E4DE', opacity: isCancelled ? 0.6 : 1, transition: 'opacity 0.2s' }}>
           <div className="flex gap-4">
@@ -292,10 +414,15 @@ function BookingsTab({ reviews, onReview, dbBookings }: { reviews: SubmittedRevi
                 <span style={{ fontSize: 12, color: '#6F675C' }}>👤 {b.guests} guest{b.guests > 1 ? 's' : ''}</span>
                 <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>IDR {b.total.toLocaleString('id-ID')}</span>
               </div>
+              <button onClick={() => setDetailBooking({ ...b, status: effectiveStatus })}
+                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 12, color: '#C8A97E', fontWeight: 600, marginTop: 6 }}
+                className="hover:opacity-75 transition-opacity">
+                View details →
+              </button>
               {effectiveStatus === 'Completed' && (
-                displayRating ? (
+                b.rating ? (
                   <div className="flex items-center gap-1 mt-2">
-                    {[1,2,3,4,5].map(i => <Star key={i} size={11} fill={i <= displayRating ? '#C8A97E' : '#E8E4DE'} color={i <= displayRating ? '#C8A97E' : '#E8E4DE'} />)}
+                    {[1,2,3,4,5].map(i => <Star key={i} size={11} fill={i <= b.rating! ? '#C8A97E' : '#E8E4DE'} color={i <= b.rating! ? '#C8A97E' : '#E8E4DE'} />)}
                     <span style={{ fontSize: 12, color: '#6F675C', marginLeft: 2 }}>You rated this</span>
                   </div>
                 ) : (
@@ -316,10 +443,16 @@ function BookingsTab({ reviews, onReview, dbBookings }: { reviews: SubmittedRevi
                   >
                     View experience
                   </a>
-                  <button onClick={() => cancel(b.id)} style={{ height: 32, padding: '0 14px', border: '1px solid #FECACA', borderRadius: 6, fontSize: 12, color: '#B66A45', backgroundColor: 'white', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}>
-                    Cancel
+                  <button
+                    onClick={() => cancel(b)}
+                    disabled={cancelling === b.id}
+                    style={{ height: 32, padding: '0 14px', border: '1px solid #FECACA', borderRadius: 6, fontSize: 12, color: '#B66A45', backgroundColor: 'white', cursor: cancelling === b.id ? 'default' : 'pointer', opacity: cancelling === b.id ? 0.6 : 1, fontFamily: 'var(--font-inter)' }}>
+                    {cancelling === b.id ? 'Cancelling…' : 'Cancel'}
                   </button>
                 </div>
+              )}
+              {effectiveStatus === 'Pending' && (
+                <p className="mt-2" style={{ fontSize: 12, color: '#C8A97E' }}>Awaiting payment confirmation</p>
               )}
             </div>
           </div>
@@ -330,9 +463,12 @@ function BookingsTab({ reviews, onReview, dbBookings }: { reviews: SubmittedRevi
       {reviewing && (
         <ReviewModal
           booking={reviewing}
-          onSubmit={r => { onReview(r); setReviewing(null) }}
           onClose={() => setReviewing(null)}
+          onRefresh={onRefresh}
         />
+      )}
+      {detailBooking && (
+        <BookingDetailModal booking={detailBooking} onClose={() => setDetailBooking(null)} />
       )}
     </div>
   )
@@ -429,19 +565,9 @@ const STATIC_REVIEWS = [
   },
 ]
 
-function ReviewsTab({ reviews, dbReviews }: { reviews: SubmittedReview[]; dbReviews?: UserData['reviews'] }) {
-  const submittedSlugs = new Set(reviews.map(r => r.slug))
-  const dbSlugs = new Set((dbReviews ?? []).map(r => r.slug))
-
-  // DB reviews first, then local submitted, then static (filtered for no-dupe)
-  const merged = [
-    ...(dbReviews ?? []),
-    ...reviews
-      .filter(r => !dbSlugs.has(r.slug))
-      .map(r => ({ experience: r.experience, slug: r.slug, date: r.reviewDate, rating: r.rating, comment: r.comment, image: r.image })),
-    // Only show demo reviews when not signed in (dbReviews is undefined until DB is fetched)
-    ...(dbReviews === undefined ? STATIC_REVIEWS.filter(r => !submittedSlugs.has(r.slug)) : []),
-  ]
+function ReviewsTab({ dbReviews }: { dbReviews?: UserData['reviews'] }) {
+  // Signed in: DB reviews only. Signed out (dbReviews undefined): show demo reviews.
+  const merged = dbReviews ?? STATIC_REVIEWS
 
   return (
     <div>
@@ -595,24 +721,22 @@ export default function ProfilePage() {
   const isLoaded = status !== 'loading'
   const isSignedIn = status === 'authenticated'
   const [activeTab, setActiveTab] = useState('bookings')
-  const [reviews, setReviews] = useState<SubmittedReview[]>(() => lsp('balible_user_reviews', []))
   const [dbData, setDbData] = useState<UserData | null>(null)
-  const [localBookingCount, setLocalBookingCount] = useState(0)
   const [localWishlistCount, setLocalWishlistCount] = useState(0)
 
-  useEffect(() => {
-    if (isLoaded && isSignedIn) {
+  const loadDb = () => {
+    if (isSignedIn) {
       getUserData().then(data => { if (data) setDbData(data) }).catch(() => {})
     }
-    setLocalBookingCount(lsp<Booking[]>('balible_bookings', []).length)
-    setLocalWishlistCount(lsp<string[]>('balible_wishlist', []).length)
-  }, [isLoaded, isSignedIn])
-
-  const addReview = (r: SubmittedReview) => {
-    const updated = [r, ...reviews.filter(x => x.bookingId !== r.bookingId)]
-    setReviews(updated)
-    localStorage.setItem('balible_user_reviews', JSON.stringify(updated))
   }
+
+  useEffect(() => {
+    if (isLoaded) {
+      loadDb()
+      setLocalWishlistCount(lsp<string[]>('balible_wishlist', []).length)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoaded, isSignedIn])
 
   // Clerk user info with graceful fallbacks
   const displayName  = session?.user?.name || dbData?.name || 'Traveler'
@@ -621,17 +745,17 @@ export default function ProfilePage() {
   const memberSince: string | null = null
 
   // Stats derived from real data
-  const tripsCount    = dbData?.bookings?.length ?? (localBookingCount || BOOKINGS.length)
-  const reviewsCount  = (dbData?.reviews?.length ?? 0) + reviews.length || STATIC_REVIEWS.length
+  const tripsCount    = dbData?.bookings?.length ?? BOOKINGS.length
+  const reviewsCount  = dbData?.reviews?.length ?? STATIC_REVIEWS.length
   const wishlistCount = dbData?.wishlistSlugs?.length ?? localWishlistCount
 
   const renderTab = () => {
     switch (activeTab) {
-      case 'bookings': return <BookingsTab reviews={reviews} onReview={addReview} dbBookings={dbData?.bookings} />
+      case 'bookings': return <BookingsTab dbBookings={dbData?.bookings} onRefresh={loadDb} />
       case 'wishlist': return <WishlistTab dbSlugs={dbData?.wishlistSlugs} />
-      case 'reviews':  return <ReviewsTab reviews={reviews} dbReviews={dbData?.reviews} />
+      case 'reviews':  return <ReviewsTab dbReviews={dbData?.reviews} />
       case 'settings': return <SettingsTab clerkName={displayName} clerkEmail={displayEmail} />
-      default:         return <BookingsTab reviews={reviews} onReview={addReview} dbBookings={dbData?.bookings} />
+      default:         return <BookingsTab dbBookings={dbData?.bookings} onRefresh={loadDb} />
     }
   }
 

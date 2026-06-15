@@ -65,6 +65,7 @@ export async function getUserWishlist(): Promise<string[]> {
 export type CreateBookingInput = {
   slug: string
   rawDate: string
+  rawTime?: string
   guests: number
   guestName: string
   guestEmail: string
@@ -92,6 +93,7 @@ export async function createBookingAction(
         userId: user.id,
         experienceId: exp.id,
         date: new Date(input.rawDate),
+        time: input.rawTime ?? null,
         guests,
         totalPrice,
         guestName: input.guestName,
@@ -517,6 +519,11 @@ export type UserData = {
     rating: number | null
     image: string
     slug: string
+    duration: string
+    meetingPoint: string
+    includes: string[]
+    latitude: number
+    longitude: number
   }[]
   reviews: {
     experience: string
@@ -541,7 +548,7 @@ export async function getUserData(): Promise<UserData | null> {
       prisma.booking.findMany({
         where: { userId: user.id },
         include: {
-          experience: { select: { title: true, area: true, images: true, slug: true } },
+          experience: { select: { title: true, area: true, images: true, slug: true, duration: true, meetingPoint: true, includes: true, latitude: true, longitude: true } },
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -558,7 +565,7 @@ export async function getUserData(): Promise<UserData | null> {
       CONFIRMED: 'Upcoming',
       COMPLETED: 'Completed',
       CANCELLED: 'Cancelled',
-      PENDING: 'Upcoming',
+      PENDING: 'Pending',
     }
 
     return {
@@ -574,9 +581,14 @@ export async function getUserData(): Promise<UserData | null> {
         guests: b.guests,
         total: b.totalPrice,
         status: statusMap[String(b.status)] ?? 'Upcoming',
-        rating: null,
+        rating: reviews.find(r => r.experienceId === b.experienceId)?.rating ?? null,
         image: (b.experience.images as string[])[0] ?? '',
         slug: b.experience.slug,
+        duration: b.experience.duration,
+        meetingPoint: b.experience.meetingPoint,
+        includes: b.experience.includes as string[],
+        latitude: b.experience.latitude,
+        longitude: b.experience.longitude,
       })),
       reviews: reviews.map(r => ({
         experience: r.experience.title,
@@ -966,13 +978,13 @@ export async function adminDeleteEventAction(id: string): Promise<{ ok: boolean 
 
 // ── Checkout experience lookup ────────────────────────────────────────────────
 
-export type ExpCheckoutMeta = { title: string; area: string; price: number; image: string; serviceFeeRate: number }
+export type ExpCheckoutMeta = { title: string; area: string; price: number; image: string; serviceFeeRate: number; meetingPoint: string }
 
 export async function getExperienceForCheckout(slug: string): Promise<ExpCheckoutMeta | null> {
   try {
     const exp = await prisma.experience.findUnique({
       where: { slug },
-      select: { title: true, area: true, price: true, images: true },
+      select: { title: true, area: true, price: true, images: true, meetingPoint: true },
     })
     if (!exp) return null
     return {
@@ -981,6 +993,7 @@ export async function getExperienceForCheckout(slug: string): Promise<ExpCheckou
       price: exp.price,
       image: (exp.images as string[])[0] ?? '',
       serviceFeeRate: SERVICE_FEE_RATE,
+      meetingPoint: exp.meetingPoint ?? '',
     }
   } catch {
     return null
@@ -1020,6 +1033,48 @@ export async function getExperiencesForWishlist(slugs: string[]): Promise<ExpWis
     return [...dbResults, ...staticResults]
   } catch {
     return slugs.map(s => STATIC_EXP_MAP.get(s)).filter((e): e is ExpWishlistMeta => e !== undefined)
+  }
+}
+
+export async function submitReviewAction(slug: string, rating: number, comment: string): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const user = await getSessionUser()
+    if (!user) return { ok: false, error: 'Not signed in' }
+    const exp = await prisma.experience.findUnique({ where: { slug }, select: { id: true } })
+    if (!exp) return { ok: false, error: 'Experience not found' }
+    const existing = await prisma.review.findFirst({ where: { userId: user.id, experienceId: exp.id } })
+    if (existing) return { ok: false, error: 'You have already reviewed this experience' }
+    await prisma.review.create({ data: { userId: user.id, experienceId: exp.id, rating, comment } })
+    const allRatings = await prisma.review.findMany({ where: { experienceId: exp.id }, select: { rating: true } })
+    const avg = allRatings.reduce((a, r) => a + r.rating, 0) / allRatings.length
+    await prisma.experience.update({
+      where: { id: exp.id },
+      data: { rating: Math.round(avg * 10) / 10, totalReviews: allRatings.length },
+    })
+    return { ok: true }
+  } catch {
+    return { ok: false, error: 'Failed to submit review' }
+  }
+}
+
+export async function getExperienceMetaForModal(slug: string): Promise<{
+  meetingPoint: string | null
+  duration: string | null
+  includes: string[]
+} | null> {
+  try {
+    const exp = await prisma.experience.findUnique({
+      where: { slug },
+      select: { meetingPoint: true, duration: true, includes: true },
+    })
+    if (!exp) return null
+    return {
+      meetingPoint: exp.meetingPoint ?? null,
+      duration: exp.duration ?? null,
+      includes: (exp.includes as string[]) ?? [],
+    }
+  } catch {
+    return null
   }
 }
 
@@ -1508,7 +1563,8 @@ export async function getOperatorPayoutsAction(): Promise<OperatorPayout[]> {
   } catch { return [] }
 }
 
-export async function requestPayoutAction(): Promise<{ ok: boolean; error?: string }> {
+// requestedNet: the net amount the host wants to receive (after commission)
+export async function requestPayoutAction(requestedNet: number): Promise<{ ok: boolean; error?: string }> {
   try {
     const user = await getSessionUser()
     if (!user) return { ok: false, error: 'Not signed in' }
@@ -1523,12 +1579,11 @@ export async function requestPayoutAction(): Promise<{ ok: boolean; error?: stri
     const existing = await prisma.payout.findUnique({
       where: { operatorId_periodStart_periodEnd: { operatorId: operator.id, periodStart, periodEnd } },
     })
-    if ((existing?.status as string) === 'PAID') return { ok: false, error: 'This period is already paid.' }
+    if ((existing?.status as string) === 'PAID')      return { ok: false, error: 'This period is already paid.' }
     if ((existing?.status as string) === 'REQUESTED') return { ok: false, error: 'Payout already requested.' }
 
     const [commissionRate, allBookings, paidPayouts] = await Promise.all([
       getCommissionRate(),
-      // All confirmed/completed bookings ever
       prisma.booking.findMany({
         where: {
           experience: { operatorId: operator.id },
@@ -1536,25 +1591,28 @@ export async function requestPayoutAction(): Promise<{ ok: boolean; error?: stri
         },
         select: { totalPrice: true },
       }),
-      // Already-paid payouts to exclude
       prisma.payout.findMany({
         where: { operatorId: operator.id, status: 'PAID' as any },
         select: { gross: true },
       }),
     ])
 
-    const totalEarned = allBookings.reduce((a, b) => a + b.totalPrice, 0)
-    const totalPaid   = paidPayouts.reduce((a, p) => a + p.gross, 0)
-    const gross       = totalEarned - totalPaid
+    const totalEarned    = allBookings.reduce((a, b) => a + b.totalPrice, 0)
+    const totalPaid      = paidPayouts.reduce((a, p) => a + p.gross, 0)
+    const outstandingNet = Math.round((totalEarned - totalPaid) * (1 - commissionRate))
 
-    if (gross <= 0) return { ok: false, error: 'No outstanding earnings to pay out.' }
-
-    const commission = Math.round(gross * commissionRate)
-    const net        = gross - commission
-
-    if (net < PAYOUT_MIN_NET) {
-      return { ok: false, error: `Minimum payout is IDR ${PAYOUT_MIN_NET.toLocaleString()}. Your net outstanding is IDR ${net.toLocaleString()}.` }
+    if (outstandingNet <= 0) return { ok: false, error: 'No outstanding earnings to pay out.' }
+    if (requestedNet < PAYOUT_MIN_NET) {
+      return { ok: false, error: `Minimum payout is IDR ${PAYOUT_MIN_NET.toLocaleString()}.` }
     }
+    if (requestedNet > outstandingNet) {
+      return { ok: false, error: `Maximum payout is IDR ${outstandingNet.toLocaleString()} (your outstanding net).` }
+    }
+
+    // Back-calculate gross from the requested net
+    const gross      = Math.round(requestedNet / (1 - commissionRate))
+    const commission = gross - requestedNet
+    const net        = requestedNet
 
     await prisma.payout.upsert({
       where: { operatorId_periodStart_periodEnd: { operatorId: operator.id, periodStart, periodEnd } },
@@ -1564,6 +1622,62 @@ export async function requestPayoutAction(): Promise<{ ok: boolean; error?: stri
     return { ok: true }
   } catch (e: any) {
     return { ok: false, error: e.message }
+  }
+}
+
+// ── Booking management ───────────────────────────────────────────────────────
+
+export async function updateBookingStatusAction(
+  bookingRef: string,
+  status: 'CONFIRMED' | 'CANCELLED',
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const user = await getSessionUser()
+    if (!user) return { ok: false, error: 'Not signed in' }
+
+    const operator = await prisma.operator.findUnique({ where: { userId: user.id } })
+    if (!operator) return { ok: false, error: 'Not an operator' }
+
+    const booking = await prisma.booking.findUnique({
+      where: { bookingRef },
+      include: { experience: { select: { operatorId: true } } },
+    })
+    if (!booking) return { ok: false, error: 'Booking not found' }
+    if (booking.experience.operatorId !== operator.id) return { ok: false, error: 'Unauthorised' }
+
+    await prisma.booking.update({ where: { bookingRef }, data: { status } })
+    return { ok: true }
+  } catch (err) {
+    console.error('[updateBookingStatus]', err)
+    return { ok: false, error: 'Something went wrong.' }
+  }
+}
+
+export async function getBookingStatusAction(bookingRef: string): Promise<{ status: string } | null> {
+  try {
+    const booking = await prisma.booking.findUnique({
+      where: { bookingRef },
+      select: { status: true },
+    })
+    return booking ? { status: String(booking.status) } : null
+  } catch { return null }
+}
+
+export async function cancelBookingAction(bookingRef: string): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const user = await getSessionUser()
+    if (!user) return { ok: false, error: 'Not signed in' }
+
+    const booking = await prisma.booking.findUnique({ where: { bookingRef } })
+    if (!booking) return { ok: false, error: 'Booking not found' }
+    if (booking.userId !== user.id) return { ok: false, error: 'Unauthorised' }
+    if (booking.status !== 'CONFIRMED') return { ok: false, error: 'Only confirmed bookings can be cancelled.' }
+
+    await prisma.booking.update({ where: { bookingRef }, data: { status: 'CANCELLED' } })
+    return { ok: true }
+  } catch (err) {
+    console.error('[cancelBooking]', err)
+    return { ok: false, error: 'Something went wrong.' }
   }
 }
 

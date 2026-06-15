@@ -210,6 +210,28 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
                   </ul>
                 </div>
               )}
+
+              {exp.meetingPoint && (
+                <div className="mt-6">
+                  <h4 className="mb-3" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111' }}>Meeting point</h4>
+                  <div className="flex items-start gap-3 p-3 rounded-xl" style={{ backgroundColor: '#F5F1EB', border: '1px solid #E8E4DE' }}>
+                    <MapPin size={15} style={{ color: '#C8A97E', flexShrink: 0, marginTop: 2 }} />
+                    <div className="flex-1 min-w-0">
+                      <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', fontWeight: 500, lineHeight: 1.5 }}>{exp.meetingPoint}</p>
+                      <a
+                        href={`https://maps.google.com/?q=${encodeURIComponent(exp.meetingPoint + ', Bali, Indonesia')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 mt-1.5 hover:opacity-70 transition-opacity"
+                        style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 600, color: '#C8A97E', textDecoration: 'none' }}
+                      >
+                        <ExternalLink size={11} />
+                        Open in Google Maps
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Host card */}

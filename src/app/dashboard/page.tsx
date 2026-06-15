@@ -19,6 +19,7 @@ import {
   updateExperienceStatusAction, deleteExperienceAction,
   getOperatorPayoutsAction, type OperatorPayout,
   requestPayoutAction,
+  updateBookingStatusAction,
   type DashExp, type DashBooking, type DashReview, type EarningsByMonth,
 } from '@/lib/actions'
 import { PAYOUT_MIN_NET } from '@/lib/constants'
@@ -877,6 +878,7 @@ function BookingsPanel({ initialBookings }: { initialBookings?: DashBooking[] })
   const [statusFilter, setStatusFilter] = useState('All')
   const [search, setSearch]             = useState('')
   const [bookings, setBookings]         = useState<DashBooking[]>(initialBookings ?? BOOKINGS_DATA)
+  const [updating, setUpdating]         = useState<string | null>(null)
 
   const statuses = ['All', 'Pending', 'Confirmed', 'Completed', 'Cancelled']
   const filtered = bookings.filter(b => {
@@ -886,8 +888,16 @@ function BookingsPanel({ initialBookings }: { initialBookings?: DashBooking[] })
     return matchStatus && matchSearch
   })
 
-  const confirm = (id: string) => setBookings(p => p.map(b => b.id === id ? { ...b, status: 'Confirmed' } : b))
-  const cancel  = (id: string) => setBookings(p => p.map(b => b.id === id ? { ...b, status: 'Cancelled' } : b))
+  const updateStatus = async (b: DashBooking, status: 'CONFIRMED' | 'CANCELLED') => {
+    setUpdating(b.id)
+    const res = await updateBookingStatusAction(b.ref, status)
+    setUpdating(null)
+    if (res.ok) {
+      setBookings(p => p.map(x => x.id === b.id ? { ...x, status: status === 'CONFIRMED' ? 'Confirmed' : 'Cancelled' } : x))
+    } else {
+      alert(res.error ?? 'Failed to update booking.')
+    }
+  }
 
   return (
     <div>
@@ -943,7 +953,7 @@ function BookingsPanel({ initialBookings }: { initialBookings?: DashBooking[] })
                 </div>
                 <p className="mt-1.5" style={{ fontSize: 13, color: '#111111', fontWeight: 500 }}>{b.experience}</p>
                 <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
-                  <span style={{ fontSize: 12, color: '#6F675C' }}>📅 {b.date} · {b.time}</span>
+                  <span style={{ fontSize: 12, color: '#6F675C' }}>📅 {b.date}{b.time ? ` · ${b.time}` : ''}</span>
                   <span style={{ fontSize: 12, color: '#6F675C' }}>👤 {b.guests} guest{b.guests > 1 ? 's' : ''}</span>
                   <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>IDR {b.total.toLocaleString('id-ID')}</span>
                 </div>
@@ -952,12 +962,14 @@ function BookingsPanel({ initialBookings }: { initialBookings?: DashBooking[] })
             </div>
             {b.status === 'Pending' && (
               <div className="flex gap-2 mt-3 pt-3" style={{ borderTop: '1px solid #F5F1EB' }}>
-                <button onClick={() => confirm(b.id)} className="flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity"
-                  style={{ height: 36, flex: 1, borderRadius: 8, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-                  <CheckCircle size={13} /> Confirm
+                <button onClick={() => updateStatus(b, 'CONFIRMED')} disabled={updating === b.id}
+                  className="flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity"
+                  style={{ height: 36, flex: 1, borderRadius: 8, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 13, fontWeight: 600, cursor: updating === b.id ? 'default' : 'pointer', opacity: updating === b.id ? 0.6 : 1 }}>
+                  <CheckCircle size={13} /> {updating === b.id ? 'Saving…' : 'Confirm'}
                 </button>
-                <button onClick={() => cancel(b.id)} className="flex items-center justify-center gap-1.5 hover:bg-red-50 transition-colors"
-                  style={{ height: 36, flex: 1, borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', color: '#B66A45', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                <button onClick={() => updateStatus(b, 'CANCELLED')} disabled={updating === b.id}
+                  className="flex items-center justify-center gap-1.5 hover:bg-red-50 transition-colors"
+                  style={{ height: 36, flex: 1, borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', color: '#B66A45', fontSize: 13, fontWeight: 600, cursor: updating === b.id ? 'default' : 'pointer', opacity: updating === b.id ? 0.6 : 1 }}>
                   <XCircle size={13} /> Decline
                 </button>
               </div>
@@ -980,8 +992,10 @@ function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBo
   pendingPayout?: number
   payouts?: OperatorPayout[]
 }) {
-  const [requesting, setRequesting] = useState(false)
-  const [requestMsg, setRequestMsg] = useState<{ ok: boolean; text: string } | null>(null)
+  const [showPayoutForm, setShowPayoutForm] = useState(false)
+  const [payoutInput, setPayoutInput]       = useState('')
+  const [requesting, setRequesting]         = useState(false)
+  const [requestMsg, setRequestMsg]         = useState<{ ok: boolean; text: string } | null>(null)
 
   const netMult = (100 - commissionRate) / 100
   const hasLive = liveEarningsByMonth !== undefined
@@ -1024,11 +1038,21 @@ function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBo
   const belowMin    = hasLive && pendingNet > 0 && pendingNet < PAYOUT_MIN_NET
 
   const handleRequestPayout = async () => {
+    const amt = parseInt(payoutInput.replace(/\D/g, ''), 10)
+    if (!amt || amt < PAYOUT_MIN_NET) {
+      setRequestMsg({ ok: false, text: `Enter at least IDR ${PAYOUT_MIN_NET.toLocaleString()}` })
+      return
+    }
     setRequesting(true)
     setRequestMsg(null)
-    const res = await requestPayoutAction()
+    const res = await requestPayoutAction(amt)
     setRequesting(false)
-    setRequestMsg({ ok: res.ok, text: res.ok ? 'Payout requested! Balible will process within 3 business days.' : (res.error ?? 'Something went wrong.') })
+    if (res.ok) {
+      setShowPayoutForm(false)
+      setRequestMsg({ ok: true, text: `IDR ${amt.toLocaleString()} requested! Balible will process within 3 business days.` })
+    } else {
+      setRequestMsg({ ok: false, text: res.error ?? 'Something went wrong.' })
+    }
   }
 
   return (
@@ -1071,11 +1095,34 @@ function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBo
             </p>
           ) : hasLive && pendingNet > 0 ? (
             <>
-              <button onClick={handleRequestPayout} disabled={requesting}
-                className="mt-2 w-full flex items-center justify-center gap-1"
-                style={{ height: 28, borderRadius: 8, border: 'none', backgroundColor: '#C8A97E', color: 'white', fontSize: 11, fontWeight: 600, cursor: requesting ? 'default' : 'pointer', opacity: requesting ? 0.7 : 1 }}>
-                {requesting ? 'Requesting…' : 'Request Payout'}
-              </button>
+              {!showPayoutForm ? (
+                <button onClick={() => { setShowPayoutForm(true); setRequestMsg(null) }}
+                  className="mt-2 w-full flex items-center justify-center gap-1"
+                  style={{ height: 28, borderRadius: 8, border: 'none', backgroundColor: '#C8A97E', color: 'white', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>
+                  Request Payout
+                </button>
+              ) : (
+                <div className="mt-2 space-y-1">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder={`Amount (min ${fmt(PAYOUT_MIN_NET)})`}
+                    value={payoutInput}
+                    onChange={e => setPayoutInput(e.target.value.replace(/\D/g, ''))}
+                    style={{ width: '100%', height: 28, borderRadius: 6, border: '1px solid #D4CFC9', padding: '0 8px', fontSize: 11, outline: 'none', boxSizing: 'border-box' }}
+                  />
+                  <div className="flex gap-1">
+                    <button onClick={handleRequestPayout} disabled={requesting}
+                      style={{ flex: 1, height: 26, borderRadius: 6, border: 'none', backgroundColor: '#C8A97E', color: 'white', fontSize: 11, fontWeight: 600, cursor: requesting ? 'default' : 'pointer', opacity: requesting ? 0.7 : 1 }}>
+                      {requesting ? 'Requesting…' : 'Confirm'}
+                    </button>
+                    <button onClick={() => { setShowPayoutForm(false); setPayoutInput(''); setRequestMsg(null) }} disabled={requesting}
+                      style={{ flex: 1, height: 26, borderRadius: 6, border: '1px solid #D4CFC9', backgroundColor: 'white', fontSize: 11, color: '#6F675C', cursor: 'pointer' }}>
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
               <p className="mt-1" style={{ fontSize: 10, color: '#9B9690', textAlign: 'center' }}>
                 Min {fmt(PAYOUT_MIN_NET)} · Max {fmt(pendingNet)}
               </p>

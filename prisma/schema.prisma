@@ -122,7 +122,9 @@ model Booking {
   guestName    String
   guestEmail   String
   guestPhone       String?
+  time             String?
   reviewRequested  Boolean       @default(false)
+  reminderSent     Boolean       @default(false)
   createdAt        DateTime      @default(now())
 }
 

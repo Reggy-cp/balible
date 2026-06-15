@@ -1,0 +1,22 @@
+name: Activity Reminders
+
+on:
+  schedule:
+    # Every hour at :00 UTC — reminder logic converts to Bali time (UTC+8) internally
+    - cron: '0 * * * *'
+  workflow_dispatch: # allow manual trigger from GitHub UI
+
+jobs:
+  send-reminders:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger reminder cron
+        run: |
+          STATUS=$(curl -s -o /tmp/response.json -w "%{http_code}" \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            "https://balible.com/api/cron/reminders")
+          cat /tmp/response.json
+          if [ "$STATUS" != "200" ]; then
+            echo "Cron returned HTTP $STATUS" && exit 1
+          fi
