@@ -19,6 +19,7 @@ type ExpData = {
   slug: string; title: string; area: string; price: number; duration: string;
   level: string; language: string; maxGuests: number; rating: number; totalReviews: number;
   description: string; highlights: string[]; includes: string[]; excludes: string[];
+  itinerary?: { time: string; activity: string }[];
   meetingPoint: string; images: string[];
   operator: { businessName: string; description: string; avatar?: string | null; rating: number; totalReviews: number; user: { name: string; image?: string | null } };
   reviews: { id: string; rating: number; comment: string; createdAt: Date; user: { name: string; image?: string | null } }[];
