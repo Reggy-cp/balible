@@ -201,6 +201,7 @@ export type HostListingInput = {
   meetingPoint: string
   includes: string[]
   excludes: string[]
+  itinerary: { time: string; activity: string }[]
   imageUrl?: string
 }
 
@@ -242,6 +243,7 @@ export async function saveHostListingAction(
       highlights: [],
       includes: input.includes,
       excludes: input.excludes,
+      itinerary: input.itinerary,
       meetingPoint: input.meetingPoint || '',
       latitude: 0,
       longitude: 0,
@@ -287,6 +289,7 @@ export async function submitHostListingAction(
       highlights: [],
       includes: input.includes,
       excludes: input.excludes,
+      itinerary: input.itinerary,
       meetingPoint: input.meetingPoint || '',
       latitude: 0,
       longitude: 0,
@@ -417,6 +420,11 @@ export async function getHostExperiencesAction(): Promise<DashExp[] | null> {
       status: statusDisplay[String(e.status)] ?? 'Draft',
       image: (e.images as string[])[0] ?? '',
       earnings: (e.bookings as { totalPrice: number }[]).reduce((a, b) => a + b.totalPrice, 0),
+      description: e.description,
+      meetingPoint: e.meetingPoint,
+      includes: e.includes,
+      excludes: e.excludes,
+      itinerary: Array.isArray(e.itinerary) ? (e.itinerary as { time: string; activity: string }[]) : [],
     }))
   } catch { return null }
 }
@@ -1085,6 +1093,9 @@ export type DashExp = {
   price: number; duration: string; maxGuests: number
   rating: number; totalReviews: number; bookings: number; status: string
   image: string; earnings: number
+  description: string; meetingPoint: string
+  includes: string[]; excludes: string[]
+  itinerary: { time: string; activity: string }[]
 }
 
 export type DashBooking = {
@@ -1211,6 +1222,11 @@ export async function getHostDashboardData(): Promise<HostDashboardData | null> 
       status: expStatusDisplay[String(e.status)] ?? 'Draft',
       image: (e.images as string[])[0] ?? '',
       earnings: (e.bookings as { totalPrice: number }[]).reduce((a, b) => a + b.totalPrice, 0),
+      description: e.description,
+      meetingPoint: e.meetingPoint,
+      includes: e.includes,
+      excludes: e.excludes,
+      itinerary: Array.isArray(e.itinerary) ? (e.itinerary as { time: string; activity: string }[]) : [],
     }))
 
     const bookings: DashBooking[] = dbBookings.map((b, i) => ({

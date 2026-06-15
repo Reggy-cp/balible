@@ -1957,13 +1957,15 @@ function AnalyticsPanel() {
       </div>
 
       {/* Sub-tabs */}
-      <div className="flex gap-0 mb-6" style={{ borderBottom: `2px solid ${SAND}` }}>
-        {TABS.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            style={{ padding: '8px 18px', fontSize: 13, fontWeight: tab === t.id ? 600 : 400, color: tab === t.id ? CHARCOAL : COCONUT, background: 'none', border: 'none', cursor: 'pointer', borderBottom: tab === t.id ? `2px solid ${CHARCOAL}` : '2px solid transparent', marginBottom: -2 }}>
-            {t.label}
-          </button>
-        ))}
+      <div className="mb-6 overflow-x-auto" style={{ borderBottom: `2px solid ${SAND}` }}>
+        <div className="flex gap-0" style={{ minWidth: 'max-content' }}>
+          {TABS.map(t => (
+            <button key={t.id} onClick={() => setTab(t.id)}
+              style={{ padding: '8px 16px', fontSize: 13, fontWeight: tab === t.id ? 600 : 400, color: tab === t.id ? CHARCOAL : COCONUT, background: 'none', border: 'none', cursor: 'pointer', borderBottom: tab === t.id ? `2px solid ${CHARCOAL}` : '2px solid transparent', marginBottom: -2, whiteSpace: 'nowrap', flexShrink: 0 }}>
+              {t.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {loading && (
@@ -1987,7 +1989,7 @@ function AnalyticsPanel() {
           {/* Dual-line charts */}
           <div className="grid lg:grid-cols-2 gap-5 mb-6">
             <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                 <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL }}>Bookings over time</h2>
                 <div className="flex items-center gap-3">
                   <span className="flex items-center gap-1.5" style={{ fontSize: 11, color: COCONUT }}><span style={{ width: 16, height: 2, display: 'inline-block', backgroundColor: FOREST, borderRadius: 1 }} /> Current</span>
@@ -1997,7 +1999,7 @@ function AnalyticsPanel() {
               <DualLineChart data={data.bookingTrend} color={FOREST} />
             </div>
             <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                 <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL }}>Revenue over time</h2>
                 <div className="flex items-center gap-3">
                   <span className="flex items-center gap-1.5" style={{ fontSize: 11, color: COCONUT }}><span style={{ width: 16, height: 2, display: 'inline-block', backgroundColor: GOLD, borderRadius: 1 }} /> Current</span>
@@ -2104,7 +2106,7 @@ function AnalyticsPanel() {
           </div>
 
           <div className="bg-white rounded-xl p-5 mb-5" style={{ border: `1px solid ${SAND}` }}>
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
               <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL }}>Revenue over time</h2>
               <div className="flex items-center gap-3">
                 <span className="flex items-center gap-1.5" style={{ fontSize: 11, color: COCONUT }}><span style={{ width: 16, height: 2, display: 'inline-block', backgroundColor: GOLD, borderRadius: 1 }} /> Current</span>
@@ -2234,7 +2236,7 @@ function AnalyticsPanel() {
 
               {/* Trend chart */}
               <div className="bg-white rounded-xl p-5 mb-5" style={{ border: `1px solid ${SAND}` }}>
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                   <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL }}>Sessions & Users over time</h2>
                   <div className="flex items-center gap-4">
                     <span className="flex items-center gap-1.5" style={{ fontSize: 11, color: COCONUT }}><span style={{ width: 16, height: 2, display: 'inline-block', backgroundColor: GOLD, borderRadius: 1 }} /> Sessions</span>

@@ -92,6 +92,7 @@ model Experience {
   highlights     String[]
   includes       String[]
   excludes       String[]
+  itinerary      Json       @default("[]")
   meetingPoint   String
   latitude       Float
   longitude      Float

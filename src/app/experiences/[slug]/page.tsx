@@ -1617,6 +1617,7 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
         rating: dbExp.rating, totalReviews: dbExp.totalReviews,
         description: dbExp.description, highlights: dbExp.highlights,
         includes: dbExp.includes, excludes: dbExp.excludes,
+        itinerary: Array.isArray(dbExp.itinerary) ? (dbExp.itinerary as { time: string; activity: string }[]) : [],
         meetingPoint: dbExp.meetingPoint, images: dbExp.images,
         operator: {
           businessName: dbExp.operator.businessName,

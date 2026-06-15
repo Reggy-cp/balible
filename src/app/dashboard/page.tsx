@@ -26,14 +26,14 @@ import { PAYOUT_MIN_NET } from '@/lib/constants'
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
-const EXPERIENCES = [
+const EXPERIENCES: DashExp[] = [
   {
     id: 1, slug: 'pottery-making-class',
     title: 'Pottery Making Class', category: 'Art & Craft', area: 'Ubud',
     price: 450000, duration: '2.5 hours', maxGuests: 8,
     rating: 4.9, totalReviews: 128, bookings: 87, status: 'Active',
     image: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=200&auto=format&fit=crop&q=80',
-    earnings: 39150000,
+    earnings: 39150000, description: '', meetingPoint: '', includes: [], excludes: [], itinerary: [],
   },
   {
     id: 2, slug: 'batik-painting-workshop',
@@ -41,7 +41,7 @@ const EXPERIENCES = [
     price: 380000, duration: '3 hours', maxGuests: 6,
     rating: 4.7, totalReviews: 64, bookings: 41, status: 'Active',
     image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=200&auto=format&fit=crop&q=80',
-    earnings: 15580000,
+    earnings: 15580000, description: '', meetingPoint: '', includes: [], excludes: [], itinerary: [],
   },
   {
     id: 3, slug: 'clay-sculpture-session',
@@ -49,7 +49,7 @@ const EXPERIENCES = [
     price: 520000, duration: '4 hours', maxGuests: 4,
     rating: 4.8, totalReviews: 19, bookings: 12, status: 'Draft',
     image: 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=200&auto=format&fit=crop&q=80',
-    earnings: 6240000,
+    earnings: 6240000, description: '', meetingPoint: '', includes: [], excludes: [], itinerary: [],
   },
   {
     id: 4, slug: 'wooden-mask-carving',
@@ -57,7 +57,7 @@ const EXPERIENCES = [
     price: 600000, duration: '5 hours', maxGuests: 4,
     rating: 4.6, totalReviews: 9, bookings: 5, status: 'Paused',
     image: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=200&auto=format&fit=crop&q=80',
-    earnings: 3000000,
+    earnings: 3000000, description: '', meetingPoint: '', includes: [], excludes: [], itinerary: [],
   },
 ]
 
@@ -407,12 +407,12 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
   const updateSchedule = (i: number, field: 'open' | 'close', val: string) =>
     setSchedule(prev => prev.map((d, j) => j === i ? { ...d, [field]: val } : d))
 
-  const openEdit = (exp: typeof EXPERIENCES[0]) => {
+  const openEdit = (exp: DashExp) => {
     setEditingExp(exp)
     setImagePreview(exp.image)
     setFormStep(1)
-    const savedData = (() => { try { const v = localStorage.getItem(`balible_exp_data_${exp.slug}`); return v ? JSON.parse(v) : {} } catch { return {} } })()
-    setFormData({ title: exp.title, category: exp.category, subcategory: savedData.subcategory || SUBCATEGORY_MAP[exp.category]?.[0] || '', area: exp.area, price: String(exp.price), duration: exp.duration, maxGuests: String(exp.maxGuests), minGuests: String(savedData.minGuests || 1), meetingPoint: savedData.meetingPoint || '', description: savedData.description || '', includes: (savedData.includes ?? []).join('\n'), excludes: (savedData.excludes ?? []).join('\n') })
+    setFormData({ title: exp.title, category: exp.category, subcategory: SUBCATEGORY_MAP[exp.category]?.[0] || '', area: exp.area, price: String(exp.price), duration: exp.duration, maxGuests: String(exp.maxGuests), minGuests: '1', meetingPoint: exp.meetingPoint || '', description: exp.description || '', includes: (exp.includes ?? []).join('\n'), excludes: (exp.excludes ?? []).join('\n') })
+    setItinerary(exp.itinerary?.length ? exp.itinerary : [{ time: '', activity: '' }])
     const saved = localStorage.getItem(`balible_schedule_${exp.slug}`)
     if (saved) setSchedule(JSON.parse(saved))
     else setSchedule(WEEK.map(day => ({ day, enabled: false, open: '09:00', close: '17:00' })))
@@ -437,6 +437,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
       meetingPoint: formData.meetingPoint || '',
       includes: toLines(formData.includes),
       excludes: toLines(formData.excludes),
+      itinerary: itinerary.filter(s => s.time || s.activity),
       imageUrl: imagePreview ?? undefined,
     }
     const res = action === 'submit'

@@ -397,58 +397,48 @@ function BookingsTab({ dbBookings, onRefresh }: { dbBookings?: Booking[]; onRefr
           <div className="flex gap-4">
             <img src={b.image} alt={b.title} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2 flex-wrap">
-                <div>
-                  <a href={`/experiences/${b.slug}`} style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 600, color: '#111111', textDecoration: 'none' }} className="hover:opacity-70 transition-opacity">
-                    {b.title}
-                  </a>
-                  <div className="flex items-center gap-1 mt-0.5">
-                    <MapPin size={11} style={{ color: '#6F675C' }} />
-                    <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>{b.area}</span>
-                  </div>
-                </div>
-                <StatusBadge status={effectiveStatus} />
+              <div className="flex items-start justify-between gap-2">
+                <a href={`/experiences/${b.slug}`} style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 600, color: '#111111', textDecoration: 'none', lineHeight: 1.3 }} className="hover:opacity-70 transition-opacity">
+                  {b.title}
+                </a>
+                <div className="flex-shrink-0"><StatusBadge status={effectiveStatus} /></div>
+              </div>
+              <div className="flex items-center gap-1 mt-0.5">
+                <MapPin size={11} style={{ color: '#6F675C' }} />
+                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>{b.area}</span>
               </div>
               <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1.5">
                 <span style={{ fontSize: 12, color: '#6F675C' }}>📅 {b.date}{b.time ? ` · ${b.time}` : ''}</span>
                 <span style={{ fontSize: 12, color: '#6F675C' }}>👤 {b.guests} guest{b.guests > 1 ? 's' : ''}</span>
                 <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>IDR {b.total.toLocaleString('id-ID')}</span>
               </div>
-              <button onClick={() => setDetailBooking({ ...b, status: effectiveStatus })}
-                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 12, color: '#C8A97E', fontWeight: 600, marginTop: 6 }}
-                className="hover:opacity-75 transition-opacity">
-                View details →
-              </button>
-              {effectiveStatus === 'Completed' && (
-                b.rating ? (
-                  <div className="flex items-center gap-1 mt-2">
-                    {[1,2,3,4,5].map(i => <Star key={i} size={11} fill={i <= b.rating! ? '#C8A97E' : '#E8E4DE'} color={i <= b.rating! ? '#C8A97E' : '#E8E4DE'} />)}
-                    <span style={{ fontSize: 12, color: '#6F675C', marginLeft: 2 }}>You rated this</span>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setReviewing(b)}
-                    className="mt-2 hover:opacity-80 transition-opacity"
-                    style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'var(--font-inter)', fontSize: 13, color: '#C8A97E', fontWeight: 600 }}>
-                    ★ Leave a review
+              {/* Button row */}
+              <div className="flex flex-wrap gap-2 mt-2">
+                <button onClick={() => setDetailBooking({ ...b, status: effectiveStatus })}
+                  style={{ backgroundColor: '#FEF9EC', border: '1px solid #E8D9C4', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12, color: '#C8A97E', fontWeight: 600 }}
+                  className="hover:opacity-75 transition-opacity">
+                  View details
+                </button>
+                {effectiveStatus === 'Completed' && !b.rating && (
+                  <button onClick={() => setReviewing(b)}
+                    style={{ backgroundColor: '#FEF9EC', border: '1px solid #E8D9C4', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12, color: '#C8A97E', fontWeight: 600 }}
+                    className="hover:opacity-80 transition-opacity">
+                    Leave a review
                   </button>
-                )
-              )}
-              {effectiveStatus === 'Upcoming' && (
-                <div className="flex gap-2 mt-3">
-                  <a
-                    href={`/experiences/${b.slug}`}
-                    style={{ height: 32, display: 'inline-flex', alignItems: 'center', padding: '0 14px', backgroundColor: '#111111', color: 'white', borderRadius: 6, fontSize: 12, fontWeight: 500, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}
-                    className="hover:opacity-90 transition-opacity"
-                  >
-                    View experience
-                  </a>
+                )}
+                {effectiveStatus === 'Upcoming' && (
                   <button
                     onClick={() => cancel(b)}
                     disabled={cancelling === b.id}
-                    style={{ height: 32, padding: '0 14px', border: '1px solid #FECACA', borderRadius: 6, fontSize: 12, color: '#B66A45', backgroundColor: 'white', cursor: cancelling === b.id ? 'default' : 'pointer', opacity: cancelling === b.id ? 0.6 : 1, fontFamily: 'var(--font-inter)' }}>
+                    style={{ height: 29, padding: '0 12px', border: '1px solid #FECACA', borderRadius: 6, fontSize: 12, color: '#B66A45', backgroundColor: 'white', cursor: cancelling === b.id ? 'default' : 'pointer', opacity: cancelling === b.id ? 0.6 : 1 }}>
                     {cancelling === b.id ? 'Cancelling…' : 'Cancel'}
                   </button>
+                )}
+              </div>
+              {effectiveStatus === 'Completed' && b.rating && (
+                <div className="flex items-center gap-1 mt-2">
+                  {[1,2,3,4,5].map(i => <Star key={i} size={11} fill={i <= b.rating! ? '#C8A97E' : '#E8E4DE'} color={i <= b.rating! ? '#C8A97E' : '#E8E4DE'} />)}
+                  <span style={{ fontSize: 12, color: '#6F675C', marginLeft: 2 }}>You rated this</span>
                 </div>
               )}
               {effectiveStatus === 'Pending' && (
