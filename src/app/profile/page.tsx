@@ -21,68 +21,7 @@ type Booking = {
   latitude?: number; longitude?: number
 }
 
-// ── Mock data ──────────────────────────────────────────────────────────────────
-
-const PROFILE = {
-  name: 'Sarah Kim',
-  email: 'sarah.kim@email.com',
-  joined: 'March 2024',
-  avatar: null as string | null,
-  tripsCount: 3,
-  reviewsCount: 2,
-  wishlistCount: 3,
-}
-
-const BOOKINGS: Booking[] = [
-  {
-    id: 'BAL-001',
-    title: 'Pottery Making Class',
-    area: 'Ubud',
-    date: 'May 18, 2024',
-    guests: 2,
-    total: 900000,
-    status: 'Completed',
-    rating: 5,
-    image: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=200&auto=format&fit=crop&q=80',
-    slug: 'pottery-making-class',
-  },
-  {
-    id: 'BAL-002',
-    title: 'Sound Healing Journey',
-    area: 'Ubud',
-    date: 'Jun 8, 2024',
-    guests: 1,
-    total: 350000,
-    status: 'Upcoming',
-    rating: null,
-    image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=200&auto=format&fit=crop&q=80',
-    slug: 'sound-healing-journey',
-  },
-  {
-    id: 'BAL-003',
-    title: 'Silver Jewelry Workshop',
-    area: 'Canggu',
-    date: 'Apr 12, 2024',
-    guests: 2,
-    total: 1100000,
-    status: 'Completed',
-    rating: 5,
-    image: 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=200&auto=format&fit=crop&q=80',
-    slug: 'silver-jewelry-workshop',
-  },
-  {
-    id: 'BAL-004',
-    title: 'Uluwatu Sunset & Kecak',
-    area: 'Uluwatu',
-    date: 'May 25, 2024',
-    guests: 2,
-    total: 900000,
-    status: 'Completed',
-    rating: null,
-    image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=200&auto=format&fit=crop&q=80',
-    slug: 'uluwatu-kecak-sunset',
-  },
-]
+// ── Nav tabs ───────────────────────────────────────────────────────────────────
 
 const NAV_TABS = [
   { id: 'bookings',  label: 'Bookings',  Icon: CalendarDays },
@@ -377,8 +316,7 @@ function BookingsTab({ dbBookings, onRefresh }: { dbBookings?: Booking[]; onRefr
     }
   }
 
-  // Signed in: DB bookings only. Signed out: demo data.
-  const allBookings = dbBookings ?? BOOKINGS
+  const allBookings = dbBookings ?? []
 
   return (
     <div className="space-y-4">
@@ -536,35 +474,17 @@ function WishlistTab({ dbSlugs }: { dbSlugs?: string[] }) {
 
 // ── Reviews tab ────────────────────────────────────────────────────────────────
 
-const STATIC_REVIEWS = [
-  {
-    experience: 'Pottery Making Class',
-    slug: 'pottery-making-class',
-    date: 'May 18, 2024',
-    rating: 5,
-    comment: 'Absolutely magical. Made is an incredible teacher — patient, encouraging, and full of beautiful stories about her family\'s craft. I made a small bowl that I treasure deeply.',
-    image: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=200&auto=format&fit=crop&q=80',
-  },
-  {
-    experience: 'Silver Jewelry Workshop',
-    slug: 'silver-jewelry-workshop',
-    date: 'Apr 12, 2024',
-    rating: 5,
-    comment: 'Ketut is an absolute master. I made a silver ring and could not believe how beautiful it turned out. The studio atmosphere was incredible — real Balinese charm.',
-    image: 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=200&auto=format&fit=crop&q=80',
-  },
-]
-
 function ReviewsTab({ dbReviews }: { dbReviews?: UserData['reviews'] }) {
-  // Signed in: DB reviews only. Signed out (dbReviews undefined): show demo reviews.
-  const merged = dbReviews ?? STATIC_REVIEWS
+  const merged = dbReviews ?? []
 
   return (
     <div>
       <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', marginBottom: 16 }}>My Reviews</h2>
       {merged.length === 0 ? (
         <div className="bg-white rounded-xl p-10 text-center" style={{ border: '1px solid #E8E4DE' }}>
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>No reviews yet. Complete a booking to leave your first review.</p>
+          <Star size={28} style={{ color: '#C8A97E', margin: '0 auto 12px' }} strokeWidth={1.5} />
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>No reviews yet.</p>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#9E9A94', marginTop: 4 }}>Complete a booking to leave your first review.</p>
         </div>
       ) : (
       <div className="space-y-4">
@@ -735,8 +655,8 @@ export default function ProfilePage() {
   const memberSince: string | null = null
 
   // Stats derived from real data
-  const tripsCount    = dbData?.bookings?.length ?? BOOKINGS.length
-  const reviewsCount  = dbData?.reviews?.length ?? STATIC_REVIEWS.length
+  const tripsCount    = dbData?.bookings?.length ?? 0
+  const reviewsCount  = dbData?.reviews?.length ?? 0
   const wishlistCount = dbData?.wishlistSlugs?.length ?? localWishlistCount
 
   const renderTab = () => {
