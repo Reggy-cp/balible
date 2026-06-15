@@ -28,6 +28,7 @@ const translations = {
     mob_explore:          'Explore',
     mob_ai_guide:         'AI Guide',
     mob_profile:          'Profile',
+    mob_dashboard:        'Dashboard',
     // Categories
     cat_wellness:         'Wellness & Healing',
     cat_art:              'Art & Craft',
@@ -112,6 +113,7 @@ const translations = {
     mob_explore:          'Jelajahi',
     mob_ai_guide:         'Panduan AI',
     mob_profile:          'Profil',
+    mob_dashboard:        'Dasbor',
     // Categories
     cat_wellness:         'Kesehatan & Penyembuhan',
     cat_art:              'Seni & Kerajinan',
@@ -196,6 +198,7 @@ const translations = {
     mob_explore:          'Обзор',
     mob_ai_guide:         'ИИ-гид',
     mob_profile:          'Профиль',
+    mob_dashboard:        'Панель',
     // Categories
     cat_wellness:         'Здоровье и исцеление',
     cat_art:              'Искусство и ремёсла',

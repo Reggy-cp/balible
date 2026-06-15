@@ -3,20 +3,29 @@
 import React from 'react'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Home, Search, User } from 'lucide-react'
+import { Home, Search, User, LayoutDashboard } from 'lucide-react'
+import { useSession } from 'next-auth/react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import type { TranslationKey } from '@/lib/i18n'
 
-const NAV: { Icon?: React.ElementType; favicon?: boolean; labelKey: TranslationKey; href: string | null }[] = [
+const BASE_NAV: { Icon?: React.ElementType; favicon?: boolean; labelKey: TranslationKey; href: string | null }[] = [
   { Icon: Home,    labelKey: 'mob_home',     href: '/' },
   { Icon: Search,  labelKey: 'mob_explore',  href: '/search' },
   { favicon: true, labelKey: 'mob_ai_guide', href: null },
-  { Icon: User,    labelKey: 'mob_profile',  href: '/profile' },
 ]
 
 export default function MobileNav() {
   const pathname = usePathname()
   const { t } = useLanguage()
+  const { data: session } = useSession()
+  const isHost = session?.user?.role === 'OPERATOR' || session?.user?.role === 'ADMIN'
+
+  const lastItem = isHost
+    ? { Icon: LayoutDashboard, favicon: false as const, labelKey: 'mob_dashboard' as TranslationKey, href: '/dashboard' }
+    : { Icon: User,            favicon: false as const, labelKey: 'mob_profile'   as TranslationKey, href: '/profile' }
+
+  const NAV = [...BASE_NAV, lastItem]
+
   const isActive = (href: string | null) => href && (href === '/' ? pathname === '/' : pathname.startsWith(href))
 
   return (
