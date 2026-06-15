@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
 
   const bookings = await prisma.booking.findMany({
     where: {
-      status: 'CONFIRMED',
+      status: { in: ['CONFIRMED', 'COMPLETED'] as any[] },
       date: { gte: from, lte: to },
       reviewRequested: false,
     },
