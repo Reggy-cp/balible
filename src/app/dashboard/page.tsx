@@ -21,7 +21,7 @@ import {
   getOperatorPayoutsAction, type OperatorPayout,
   requestPayoutAction,
   updateBookingStatusAction,
-  type DashExp, type DashBooking, type DashReview, type EarningsByMonth,
+  type DashExp, type DashBooking, type DashReview, type EarningsByMonth, type HostProfile,
 } from '@/lib/actions'
 import { PAYOUT_MIN_NET } from '@/lib/constants'
 
@@ -1489,7 +1489,7 @@ const HOST_PROFILE_DEFAULTS = {
   area: 'Ubud', languages: 'English, Bahasa Indonesia',
 }
 
-function ProfilePanel() {
+function ProfilePanel({ profile: liveProfile }: { profile?: HostProfile }) {
   const readOnly = useContext(ReadOnlyContext)
   const { data: session } = useSession()
   const sessionDefaults = {
@@ -1497,8 +1497,26 @@ function ProfilePanel() {
     name: session?.user?.name ?? '',
     email: session?.user?.email ?? '',
   }
-  const [profile, setProfile] = useState(() => lsh('balible_host_profile', sessionDefaults))
+  // In admin read-only view start blank (no local fallback to the admin's own
+  // saved profile); the real host data is overlaid once it loads below.
+  const [profile, setProfile] = useState(() => readOnly ? HOST_PROFILE_DEFAULTS : lsh('balible_host_profile', sessionDefaults))
   const [saved, setSaved]     = useState(false)
+
+  // In admin read-only view, overlay the host's real persisted fields
+  // (name, email, business, bio) from the DB once they arrive. The host's own
+  // view keeps its existing localStorage-backed behavior so edits don't revert.
+  useEffect(() => {
+    if (!liveProfile || !readOnly) return
+    setProfile(p => ({
+      ...p,
+      name: liveProfile.name,
+      email: liveProfile.email,
+      businessName: liveProfile.businessName,
+      bio: liveProfile.bio,
+    }))
+  }, [liveProfile, readOnly])
+
+  const avatarSrc = (readOnly ? liveProfile?.image : session?.user?.image) ?? null
 
   const save = () => {
     if (readOnly) return
@@ -1519,26 +1537,28 @@ function ProfilePanel() {
         <div className="bg-white rounded-xl p-6 flex flex-col items-center text-center" style={{ border: '1px solid #E8E4DE' }}>
           <div className="relative mb-4">
             <div className="w-24 h-24 rounded-full overflow-hidden" style={{ border: '3px solid #C8A97E' }}>
-              {session?.user?.image
-                ? <img src={session.user.image} alt={profile.name} className="w-full h-full object-cover" />
+              {avatarSrc
+                ? <img src={avatarSrc} alt={profile.name} className="w-full h-full object-cover" />
                 : <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: '#C8A97E' }}>
                     <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 36, fontWeight: 700, color: 'white' }}>
-                      {(profile.name || session?.user?.name || 'H').charAt(0).toUpperCase()}
+                      {(profile.name || liveProfile?.name || session?.user?.name || 'H').charAt(0).toUpperCase()}
                     </span>
                   </div>
               }
             </div>
+            {!readOnly && (
             <button className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center"
               style={{ backgroundColor: '#111111', border: 'none', cursor: 'pointer' }}>
               <Camera size={12} style={{ color: 'white' }} />
             </button>
+            )}
           </div>
-          <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>{profile.name || session?.user?.name}</h3>
+          <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>{profile.name || liveProfile?.name || session?.user?.name}</h3>
           <p style={{ fontSize: 13, color: '#6F675C', marginTop: 2 }}>Operator · {profile.area}</p>
         </div>
 
         <div className="lg:col-span-2 bg-white rounded-xl p-6" style={{ border: '1px solid #E8E4DE' }}>
-          <h2 className="mb-5" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Edit Profile</h2>
+          <h2 className="mb-5" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>{readOnly ? 'Profile' : 'Edit Profile'}</h2>
           <div className="grid sm:grid-cols-2 gap-4">
             {([
               { label: 'Full Name',     key: 'name' as const },
@@ -1548,28 +1568,29 @@ function ProfilePanel() {
             ]).map(f => (
               <div key={f.key}>
                 <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{f.label}</label>
-                <input value={profile[f.key]} onChange={set(f.key)}
-                  style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }} />
+                <input value={profile[f.key]} onChange={set(f.key)} disabled={readOnly}
+                  style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none', backgroundColor: readOnly ? '#F8F6F2' : 'white' }} />
               </div>
             ))}
             <div className="sm:col-span-2">
               <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Bio</label>
-              <textarea rows={4} value={profile.bio} onChange={set('bio')}
-                style={{ width: '100%', borderRadius: 10, border: '1px solid #E8E4DE', padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', resize: 'none', outline: 'none', lineHeight: 1.6 }} />
+              <textarea rows={4} value={profile.bio} onChange={set('bio')} disabled={readOnly}
+                style={{ width: '100%', borderRadius: 10, border: '1px solid #E8E4DE', padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', resize: 'none', outline: 'none', lineHeight: 1.6, backgroundColor: readOnly ? '#F8F6F2' : 'white' }} />
             </div>
             <div>
               <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Primary Area</label>
-              <select value={profile.area} onChange={set('area')}
-                style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none', backgroundColor: 'white', cursor: 'pointer' }}>
+              <select value={profile.area} onChange={set('area')} disabled={readOnly}
+                style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none', backgroundColor: readOnly ? '#F8F6F2' : 'white', cursor: readOnly ? 'default' : 'pointer' }}>
                 {['Ubud','Canggu','Kuta','Seminyak','Uluwatu','Gianyar','Sanur','Nusa Dua','Amed','Jimbaran','Kintamani','Sidemen','Medewi'].map(a => <option key={a}>{a}</option>)}
               </select>
             </div>
             <div>
               <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Languages</label>
-              <input value={profile.languages} onChange={set('languages')}
-                style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }} />
+              <input value={profile.languages} onChange={set('languages')} disabled={readOnly}
+                style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none', backgroundColor: readOnly ? '#F8F6F2' : 'white' }} />
             </div>
           </div>
+          {!readOnly && (
           <div className="flex items-center gap-3 mt-6">
             <button onClick={save} className="flex items-center gap-2 hover:opacity-90 transition-opacity"
               style={{ height: 44, paddingInline: 24, borderRadius: 10, border: 'none', backgroundColor: saved ? '#4A7C59' : '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s', minWidth: 140 }}>
@@ -1577,6 +1598,7 @@ function ProfilePanel() {
             </button>
             <button onClick={discard} style={{ height: 44, paddingInline: 24, borderRadius: 10, border: '1px solid #E8E4DE', background: 'none', fontSize: 14, color: '#6F675C', cursor: 'pointer' }}>Discard</button>
           </div>
+          )}
         </div>
       </div>
     </div>
@@ -2464,6 +2486,7 @@ export default function DashboardPage() {
   const [livePendingPayout, setLivePendingPayout] = useState<number | undefined>(undefined)
   const [livePayouts, setLivePayouts]             = useState<OperatorPayout[] | undefined>(undefined)
   const [liveCommissionRate, setLiveCommissionRate] = useState<number | undefined>(undefined)
+  const [liveProfile, setLiveProfile] = useState<HostProfile | undefined>(undefined)
   const commissionRate = liveCommissionRate ?? Math.max(0, Math.min(100, parseInt(String(lsh('balible_commission', '10')), 10) || 10))
 
   // Admin read-only view: /dashboard?operator=<id> loads that host's data.
@@ -2484,6 +2507,7 @@ export default function DashboardPage() {
       setLiveTotalGross(data.totalGross)
       setLivePendingPayout(data.pendingPayout)
       setLiveCommissionRate(data.commissionRate)
+      setLiveProfile(data.profile)
     }).catch(() => {})
     getOperatorPayoutsAction(opId).then(setLivePayouts).catch(() => {})
   }, [])
@@ -2498,7 +2522,7 @@ export default function DashboardPage() {
       case 'earnings':      return <EarningsPanel commissionRate={commissionRate} experiences={liveExperiences} bookings={liveBookings} earningsByMonth={liveEarningsByMonth} totalGross={liveTotalGross} pendingPayout={livePendingPayout} payouts={livePayouts} />
       case 'photos':        return <PhotosPanel experiences={liveExperiences} />
       case 'reviews':       return <ReviewsPanel initialReviews={liveReviews} />
-      case 'profile':       return <ProfilePanel />
+      case 'profile':       return <ProfilePanel profile={liveProfile} />
       case 'settings':      return <SettingsPanel />
       default:              return <OverviewPanel onNav={setActiveNav} commissionRate={commissionRate} experiences={liveExperiences} bookings={liveBookings} reviews={liveReviews} hostName={liveHostName} earningsByMonth={liveEarningsByMonth} />
     }

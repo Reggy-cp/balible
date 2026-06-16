@@ -1143,6 +1143,14 @@ export type DashReview = { id: string; guest: string; experience: string; rating
 
 export type EarningsByMonth = { month: string; gross: number }
 
+export type HostProfile = {
+  name: string
+  email: string
+  image: string | null
+  businessName: string
+  bio: string
+}
+
 export type HostDashboardData = {
   hostName: string
   commissionRate: number
@@ -1152,6 +1160,7 @@ export type HostDashboardData = {
   earningsByMonth: EarningsByMonth[]
   totalGross: number
   pendingPayout: number
+  profile: HostProfile
 }
 
 export async function getHostDashboardData(viewOperatorId?: string): Promise<HostDashboardData | null> {
@@ -1164,7 +1173,7 @@ export async function getHostDashboardData(viewOperatorId?: string): Promise<Hos
     const isAdminView = !!viewOperatorId && (user as any).role === 'ADMIN'
     const operator = await prisma.operator.findUnique({
       where: isAdminView ? { id: viewOperatorId } : { userId: user.id },
-      include: { user: { select: { name: true } } },
+      include: { user: { select: { name: true, email: true, image: true } } },
     })
     if (!operator) return null
 
@@ -1290,7 +1299,14 @@ export async function getHostDashboardData(viewOperatorId?: string): Promise<Hos
       date: r.createdAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
     }))
 
-    return { hostName: operator.user.name, commissionRate: Math.round(commRateDecimal * 100), experiences, bookings, reviews, earningsByMonth, totalGross, pendingPayout }
+    const profile: HostProfile = {
+      name: operator.user.name,
+      email: operator.user.email,
+      image: operator.avatar ?? operator.user.image ?? null,
+      businessName: operator.businessName,
+      bio: operator.description,
+    }
+    return { hostName: operator.user.name, commissionRate: Math.round(commRateDecimal * 100), experiences, bookings, reviews, earningsByMonth, totalGross, pendingPayout, profile }
   } catch {
     return null
   }
