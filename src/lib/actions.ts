@@ -616,6 +616,14 @@ export async function getUserData(): Promise<UserData | null> {
 
 import { COMMISSION_RATE, PAYOUT_MIN_NET } from './constants'
 
+// Server actions are individually addressable RPC endpoints — middleware route
+// protection does NOT cover them, so every admin action must authorize itself.
+async function requireAdmin() {
+  const user = await getSessionUser()
+  if (!user || (user as any).role !== 'ADMIN') throw new Error('Unauthorized')
+  return user
+}
+
 async function getCommissionRate(): Promise<number> {
   try {
     const s = await prisma.setting.findUnique({ where: { key: 'commission_rate' } })
@@ -650,6 +658,7 @@ export type AdminStats = {
 }
 
 export async function getAdminStatsAction(): Promise<AdminStats> {
+  await requireAdmin()
   try {
     const [totalUsers, totalExperiences, totalBookings, rev, pendingListings, pendingHosts, activeHosts] = await Promise.all([
       prisma.user.count({ where: { role: { not: 'ADMIN' as any } } }),
@@ -673,6 +682,7 @@ export type AdminExp = {
 }
 
 export async function getAdminExperiencesAction(): Promise<AdminExp[]> {
+  await requireAdmin()
   try {
     const rows = await prisma.experience.findMany({
       include: {
@@ -695,6 +705,7 @@ export async function getAdminExperiencesAction(): Promise<AdminExp[]> {
 }
 
 export async function adminUpdateExperienceStatusAction(id: string, status: string): Promise<{ ok: boolean }> {
+  await requireAdmin()
   try { await prisma.experience.update({ where: { id }, data: { status: status as any } }); return { ok: true } }
   catch { return { ok: false } }
 }
@@ -709,6 +720,7 @@ export type AdminHost = {
 }
 
 export async function getAdminHostsAction(): Promise<AdminHost[]> {
+  await requireAdmin()
   try {
     const rows = await prisma.operator.findMany({
       include: {
@@ -755,6 +767,7 @@ export type AdminBooking = {
 }
 
 export async function getAdminBookingsAction(): Promise<AdminBooking[]> {
+  await requireAdmin()
   try {
     const rows = await prisma.booking.findMany({
       include: {
@@ -784,11 +797,13 @@ export async function getAdminBookingsAction(): Promise<AdminBooking[]> {
 }
 
 export async function adminUpdateBookingStatusAction(ref: string, status: string): Promise<{ ok: boolean }> {
+  await requireAdmin()
   try { await prisma.booking.update({ where: { bookingRef: ref }, data: { status: status as any } }); return { ok: true } }
   catch { return { ok: false } }
 }
 
 export async function adminCompleteBookingAction(ref: string): Promise<{ ok: boolean }> {
+  await requireAdmin()
   try { await prisma.booking.update({ where: { bookingRef: ref }, data: { status: 'COMPLETED' } }); return { ok: true } }
   catch { return { ok: false } }
 }
@@ -799,6 +814,7 @@ export type AdminUser = {
 }
 
 export async function getAdminUsersAction(): Promise<AdminUser[]> {
+  await requireAdmin()
   try {
     const rows = await prisma.user.findMany({
       where: { role: { not: 'ADMIN' as any } },
@@ -821,6 +837,7 @@ export type AdminReview = {
 }
 
 export async function getAdminReviewsAction(): Promise<AdminReview[]> {
+  await requireAdmin()
   try {
     const rows = await prisma.review.findMany({
       include: {
@@ -841,31 +858,37 @@ export async function getAdminReviewsAction(): Promise<AdminReview[]> {
 }
 
 export async function adminDeleteReviewAction(id: string): Promise<{ ok: boolean }> {
+  await requireAdmin()
   try { await prisma.review.delete({ where: { id } }); return { ok: true } }
   catch { return { ok: false } }
 }
 
 export async function adminApproveReviewAction(id: string): Promise<{ ok: boolean }> {
+  await requireAdmin()
   try { await prisma.review.update({ where: { id }, data: { flagged: false, hidden: false } }); return { ok: true } }
   catch { return { ok: false } }
 }
 
 export async function adminFlagReviewAction(id: string): Promise<{ ok: boolean }> {
+  await requireAdmin()
   try { await prisma.review.update({ where: { id }, data: { flagged: true } }); return { ok: true } }
   catch { return { ok: false } }
 }
 
 export async function adminHideReviewAction(id: string): Promise<{ ok: boolean }> {
+  await requireAdmin()
   try { await prisma.review.update({ where: { id }, data: { hidden: true, flagged: false } }); return { ok: true } }
   catch { return { ok: false } }
 }
 
 export async function adminDeleteExperienceAction(id: string): Promise<{ ok: boolean }> {
+  await requireAdmin()
   try { await prisma.experience.delete({ where: { id } }); return { ok: true } }
   catch { return { ok: false } }
 }
 
 export async function adminUpdateUserAction(id: string, data: { name: string; email: string; role: string }): Promise<{ ok: boolean; error?: string }> {
+  await requireAdmin()
   try {
     await prisma.user.update({ where: { id }, data: { name: data.name, email: data.email, role: data.role as any } })
     return { ok: true }
@@ -873,6 +896,7 @@ export async function adminUpdateUserAction(id: string, data: { name: string; em
 }
 
 export async function adminUpdateHostAction(id: string, data: { businessName: string; description: string; payoutBank: string; payoutAccountNumber: string; payoutAccountName: string }): Promise<{ ok: boolean; error?: string }> {
+  await requireAdmin()
   try {
     await prisma.operator.update({ where: { id }, data })
     return { ok: true }
@@ -890,6 +914,7 @@ export type AdminAnalytics = {
 }
 
 export async function getAdminAnalyticsAction(): Promise<AdminAnalytics> {
+  await requireAdmin()
   try {
     const now = new Date()
     const months: string[] = []
@@ -958,6 +983,7 @@ export type AdminEvent = {
 }
 
 export async function getAdminEventsAction(): Promise<AdminEvent[]> {
+  await requireAdmin()
   try {
     const rows = await prisma.event.findMany({
       include: { operator: { include: { user: { select: { name: true } } } } },
@@ -975,11 +1001,13 @@ export async function getAdminEventsAction(): Promise<AdminEvent[]> {
 }
 
 export async function adminUpdateEventStatusAction(id: string, status: string): Promise<{ ok: boolean }> {
+  await requireAdmin()
   try { await prisma.event.update({ where: { id }, data: { status: status as any } }); return { ok: true } }
   catch { return { ok: false } }
 }
 
 export async function adminDeleteEventAction(id: string): Promise<{ ok: boolean }> {
+  await requireAdmin()
   try { await prisma.event.delete({ where: { id } }); return { ok: true } }
   catch { return { ok: false } }
 }
@@ -1459,6 +1487,7 @@ export type AdminRealPayout = {
 }
 
 export async function getAdminRealPayoutsAction(): Promise<AdminRealPayout[]> {
+  await requireAdmin()
   try {
     const twoMonthsAgo = new Date()
     twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2)
@@ -1510,6 +1539,7 @@ export async function adminMarkPayoutPaidAction(input: {
   operatorId: string; periodStart: string; periodEnd: string
   gross: number; commission: number; net: number; bookings: number
 }): Promise<{ ok: boolean; id?: string }> {
+  await requireAdmin()
   try {
     const payout = await prisma.payout.upsert({
       where: {
@@ -1533,6 +1563,7 @@ export async function adminMarkPayoutPaidAction(input: {
 }
 
 export async function getAdminPayoutsAction(): Promise<AdminPayout[]> {
+  await requireAdmin()
   try {
     const rows = await prisma.payout.findMany({
       include: { operator: { include: { user: { select: { name: true } } } } },
