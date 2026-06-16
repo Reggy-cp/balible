@@ -2503,9 +2503,9 @@ export default function DashboardPage() {
           <button onClick={() => setSidebarOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
             <Menu size={22} style={{ color: '#111111' }} />
           </button>
-          <a href="/" style={{ textDecoration: 'none' }}>
-            <img src="/logo-dark.png" alt="Balible" style={{ height: 24, width: 'auto', objectFit: 'contain', display: 'block' }} />
-          </a>
+          <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>
+            {NAV_ITEMS.find(n => n.id === activeNav)?.label ?? 'Dashboard'}
+          </span>
           <HostNotifBell onSettings={() => setActiveNav('settings')} align="right" dark />
         </div>
 

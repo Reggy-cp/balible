@@ -3517,9 +3517,9 @@ export default function AdminPage() {
           <button onClick={() => setSidebarOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
             <Menu size={22} style={{ color: CHARCOAL }} />
           </button>
-          <a href="/" style={{ textDecoration: 'none' }}>
-            <img src="/logo-dark.png" alt="Balible" style={{ height: 24, width: 'auto', objectFit: 'contain', display: 'block' }} />
-          </a>
+          <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL }}>
+            {NAV_ITEMS.find(n => n.id === activeNav)?.label ?? 'Dashboard'}
+          </span>
           <AdminNotifBell onNavigate={setActiveNav} align="right" dark pendingHosts={pendingHosts} pendingListings={pendingListings} />
         </div>
 
