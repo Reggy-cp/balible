@@ -21,6 +21,7 @@ import {
   getOperatorPayoutsAction, type OperatorPayout,
   requestPayoutAction,
   updateBookingStatusAction,
+  updateHostProfileAction,
   type DashExp, type DashBooking, type DashReview, type EarningsByMonth, type HostProfile,
 } from '@/lib/actions'
 import { PAYOUT_MIN_NET } from '@/lib/constants'
@@ -1497,34 +1498,40 @@ function ProfilePanel({ profile: liveProfile }: { profile?: HostProfile }) {
     name: session?.user?.name ?? '',
     email: session?.user?.email ?? '',
   }
-  // In admin read-only view start blank (no local fallback to the admin's own
-  // saved profile); the real host data is overlaid once it loads below.
-  const [profile, setProfile] = useState(() => readOnly ? HOST_PROFILE_DEFAULTS : lsh('balible_host_profile', sessionDefaults))
+  const [profile, setProfile] = useState(() => readOnly ? HOST_PROFILE_DEFAULTS : sessionDefaults)
   const [saved, setSaved]     = useState(false)
+  const [saving, setSaving]   = useState(false)
 
-  // In admin read-only view, overlay the host's real persisted fields
-  // (name, email, business, bio) from the DB once they arrive. The host's own
-  // view keeps its existing localStorage-backed behavior so edits don't revert.
+  // Profile is DB-backed: overlay the host's real persisted fields once they
+  // load (works for both the host's own view and admin read-only view).
   useEffect(() => {
-    if (!liveProfile || !readOnly) return
+    if (!liveProfile) return
     setProfile(p => ({
       ...p,
       name: liveProfile.name,
       email: liveProfile.email,
       businessName: liveProfile.businessName,
       bio: liveProfile.bio,
+      phone: liveProfile.phone,
+      area: liveProfile.area || p.area,
+      languages: liveProfile.languages,
     }))
-  }, [liveProfile, readOnly])
+  }, [liveProfile])
 
-  const avatarSrc = (readOnly ? liveProfile?.image : session?.user?.image) ?? null
+  const avatarSrc = (liveProfile?.image ?? session?.user?.image) ?? null
 
-  const save = () => {
-    if (readOnly) return
-    localStorage.setItem('balible_host_profile', JSON.stringify(profile))
+  const save = async () => {
+    if (readOnly || saving) return
+    setSaving(true)
+    await updateHostProfileAction({
+      name: profile.name, businessName: profile.businessName, bio: profile.bio,
+      phone: profile.phone, area: profile.area, languages: profile.languages,
+    }).catch(() => {})
+    setSaving(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
-  const discard = () => setProfile(lsh('balible_host_profile', HOST_PROFILE_DEFAULTS))
+  const discard = () => liveProfile && setProfile(p => ({ ...p, ...liveProfile }))
 
   const set = (key: keyof typeof HOST_PROFILE_DEFAULTS) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setProfile(p => ({ ...p, [key]: e.target.value }))
@@ -1568,8 +1575,8 @@ function ProfilePanel({ profile: liveProfile }: { profile?: HostProfile }) {
             ]).map(f => (
               <div key={f.key}>
                 <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{f.label}</label>
-                <input value={profile[f.key]} onChange={set(f.key)} disabled={readOnly}
-                  style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none', backgroundColor: readOnly ? '#F8F6F2' : 'white' }} />
+                <input value={profile[f.key]} onChange={set(f.key)} disabled={readOnly || f.key === 'email'}
+                  style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none', backgroundColor: (readOnly || f.key === 'email') ? '#F8F6F2' : 'white' }} />
               </div>
             ))}
             <div className="sm:col-span-2">
@@ -1592,9 +1599,9 @@ function ProfilePanel({ profile: liveProfile }: { profile?: HostProfile }) {
           </div>
           {!readOnly && (
           <div className="flex items-center gap-3 mt-6">
-            <button onClick={save} className="flex items-center gap-2 hover:opacity-90 transition-opacity"
-              style={{ height: 44, paddingInline: 24, borderRadius: 10, border: 'none', backgroundColor: saved ? '#4A7C59' : '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s', minWidth: 140 }}>
-              {saved ? <><Check size={14} /> Saved!</> : 'Save Changes'}
+            <button onClick={save} disabled={saving} className="flex items-center gap-2 hover:opacity-90 transition-opacity"
+              style={{ height: 44, paddingInline: 24, borderRadius: 10, border: 'none', backgroundColor: saved ? '#4A7C59' : '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: saving ? 'default' : 'pointer', transition: 'background 0.2s', minWidth: 140, opacity: saving ? 0.7 : 1 }}>
+              {saved ? <><Check size={14} /> Saved!</> : saving ? 'Saving…' : 'Save Changes'}
             </button>
             <button onClick={discard} style={{ height: 44, paddingInline: 24, borderRadius: 10, border: '1px solid #E8E4DE', background: 'none', fontSize: 14, color: '#6F675C', cursor: 'pointer' }}>Discard</button>
           </div>

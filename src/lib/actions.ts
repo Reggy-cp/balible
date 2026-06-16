@@ -1149,6 +1149,9 @@ export type HostProfile = {
   image: string | null
   businessName: string
   bio: string
+  phone: string
+  area: string
+  languages: string
 }
 
 export type HostDashboardData = {
@@ -1305,10 +1308,44 @@ export async function getHostDashboardData(viewOperatorId?: string): Promise<Hos
       image: operator.avatar ?? operator.user.image ?? null,
       businessName: operator.businessName,
       bio: operator.description,
+      phone: operator.phone ?? '',
+      area: operator.area ?? '',
+      languages: operator.languages ?? '',
     }
     return { hostName: operator.user.name, commissionRate: Math.round(commRateDecimal * 100), experiences, bookings, reviews, earningsByMonth, totalGross, pendingPayout, profile }
   } catch {
     return null
+  }
+}
+
+// Host updates their own profile. Scoped to the caller's own operator — never
+// accepts an operatorId, so a host can only ever edit themselves.
+export async function updateHostProfileAction(input: {
+  name?: string; businessName?: string; bio?: string
+  phone?: string; area?: string; languages?: string
+}): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const user = await getSessionUser()
+    if (!user) return { ok: false, error: 'Not signed in' }
+    const operator = await prisma.operator.findUnique({ where: { userId: user.id } })
+    if (!operator) return { ok: false, error: 'No operator account' }
+
+    await prisma.operator.update({
+      where: { id: operator.id },
+      data: {
+        ...(input.businessName !== undefined ? { businessName: input.businessName.trim() } : {}),
+        ...(input.bio !== undefined ? { description: input.bio.trim() } : {}),
+        phone: input.phone?.trim() || null,
+        area: input.area?.trim() || null,
+        languages: input.languages?.trim() || null,
+      },
+    })
+    if (input.name?.trim()) {
+      await prisma.user.update({ where: { id: user.id }, data: { name: input.name.trim() } })
+    }
+    return { ok: true }
+  } catch (e: any) {
+    return { ok: false, error: e.message }
   }
 }
 

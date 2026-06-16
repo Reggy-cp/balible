@@ -62,6 +62,9 @@ model Operator {
   businessName String
   description  String
   avatar       String?
+  phone        String?
+  area         String?
+  languages    String?
   verified            Boolean  @default(false)
   rating              Float    @default(0)
   totalReviews        Int      @default(0)
