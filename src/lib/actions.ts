@@ -401,7 +401,7 @@ export async function getHostExperiencesAction(): Promise<DashExp[] | null> {
     if (!operator) return null
     const rows = await prisma.experience.findMany({
       where: { operatorId: operator.id },
-      include: { bookings: { select: { totalPrice: true } }, _count: { select: { bookings: true } } },
+      include: { bookings: { where: { status: { in: ['CONFIRMED', 'COMPLETED'] } }, select: { totalPrice: true } }, _count: { select: { bookings: true } } },
       orderBy: { createdAt: 'asc' },
     })
     const statusDisplay: Record<string, string> = { ACTIVE: 'Active', DRAFT: 'Draft', PENDING_REVIEW: 'Pending Review', PAUSED: 'Paused' }
@@ -664,7 +664,7 @@ export async function getAdminStatsAction(): Promise<AdminStats> {
       prisma.user.count({ where: { role: { not: 'ADMIN' as any } } }),
       prisma.experience.count(),
       prisma.booking.count(),
-      prisma.booking.aggregate({ _sum: { totalPrice: true } }),
+      prisma.booking.aggregate({ _sum: { totalPrice: true }, where: { status: { in: ['CONFIRMED', 'COMPLETED'] } } }),
       prisma.experience.count({ where: { status: 'PENDING_REVIEW' as any } }),
       prisma.operator.count({ where: { verified: false } }),
       prisma.operator.count({ where: { verified: true } }),
@@ -726,7 +726,7 @@ export async function getAdminHostsAction(): Promise<AdminHost[]> {
       include: {
         user: { select: { name: true, createdAt: true } },
         experiences: {
-          include: { _count: { select: { bookings: true } }, bookings: { select: { totalPrice: true } } },
+          include: { _count: { select: { bookings: true } }, bookings: { where: { status: { in: ['CONFIRMED', 'COMPLETED'] } }, select: { totalPrice: true } } },
         },
       },
       orderBy: { user: { createdAt: 'asc' } },
@@ -818,7 +818,7 @@ export async function getAdminUsersAction(): Promise<AdminUser[]> {
   try {
     const rows = await prisma.user.findMany({
       where: { role: { not: 'ADMIN' as any } },
-      include: { bookings: { select: { totalPrice: true } }, _count: { select: { bookings: true } } },
+      include: { bookings: { where: { status: { in: ['CONFIRMED', 'COMPLETED'] } }, select: { totalPrice: true } }, _count: { select: { bookings: true } } },
       orderBy: { createdAt: 'desc' },
     })
     return rows.map(u => ({
@@ -928,7 +928,7 @@ export async function getAdminAnalyticsAction(): Promise<AdminAnalytics> {
       const end = new Date(d.getFullYear(), d.getMonth() + 1, 1)
       const [count, rev] = await Promise.all([
         prisma.booking.count({ where: { createdAt: { gte: start, lt: end } } }),
-        prisma.booking.aggregate({ _sum: { totalPrice: true }, where: { createdAt: { gte: start, lt: end } } }),
+        prisma.booking.aggregate({ _sum: { totalPrice: true }, where: { createdAt: { gte: start, lt: end }, status: { in: ['CONFIRMED', 'COMPLETED'] } } }),
       ])
       monthlyBookings.push(count)
       monthlyRevenue.push(rev._sum.totalPrice ?? 0)
