@@ -1121,6 +1121,11 @@ function HostsPanel() {
 
             {/* Actions row */}
             <div className="flex flex-wrap gap-2 mt-3 pt-3" style={{ borderTop: `1px solid ${IVORY}` }}>
+                <a href={`/dashboard?operator=${host.id}`} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 hover:opacity-80"
+                  style={{ height: 32, padding: '0 14px', borderRadius: 8, border: `1px solid ${SAND}`, backgroundColor: 'white', color: CHARCOAL, fontSize: 12, fontWeight: 600, cursor: 'pointer', textDecoration: 'none' }}>
+                  <LayoutDashboard size={12} /> View dashboard
+                </a>
                 <button onClick={() => setEditing(host)} className="flex items-center gap-1.5 hover:opacity-80"
                   style={{ height: 32, padding: '0 14px', borderRadius: 8, border: `1px solid ${SAND}`, backgroundColor: 'white', color: CHARCOAL, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
                   <Edit2 size={12} /> Edit

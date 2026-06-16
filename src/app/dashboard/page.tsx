@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useRef, useEffect, useMemo, createContext, useContext } from 'react'
 import { useSession } from 'next-auth/react'
 import {
   LayoutDashboard, Compass, CalendarDays, TrendingUp, Star,
@@ -24,6 +24,10 @@ import {
   type DashExp, type DashBooking, type DashReview, type EarningsByMonth,
 } from '@/lib/actions'
 import { PAYOUT_MIN_NET } from '@/lib/constants'
+
+// True when an admin is viewing another host's dashboard read-only — gates all
+// mutation controls. Defaults false (a host viewing their own dashboard).
+const ReadOnlyContext = createContext(false)
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
@@ -185,6 +189,7 @@ function WithdrawModal({ onClose, pendingNet, commissionRate, isRequested, isPai
   isRequested?: boolean
   isPaid?: boolean
 }) {
+  const readOnly = useContext(ReadOnlyContext)
   const available = pendingNet ?? 0
   const [amount, setAmount]         = useState(available > 0 ? String(available) : '')
   const [requesting, setRequesting] = useState(false)
@@ -199,7 +204,7 @@ function WithdrawModal({ onClose, pendingNet, commissionRate, isRequested, isPai
     : null : null
 
   const handleConfirm = async () => {
-    if (!isValid) return
+    if (!isValid || readOnly) return
     setRequesting(true)
     const res = await requestPayoutAction(parsedAmt)
     setRequesting(false)
@@ -356,6 +361,7 @@ function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences, bo
   experiences?: DashExp[]; bookings?: DashBooking[]; reviews?: DashReview[]; hostName?: string
   earningsByMonth?: EarningsByMonth[]; pendingPayout?: number; payouts?: OperatorPayout[]
 }) {
+  const readOnly = useContext(ReadOnlyContext)
   const [period, setPeriod]       = useState('This Month')
   const [withdrawOpen, setWithdrawOpen] = useState(false)
   const netMult = (100 - commissionRate) / 100
@@ -491,12 +497,14 @@ function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences, bo
               {labels.map(m => <span key={m} style={{ fontSize: 9, color: '#6F675C' }}>{m}</span>)}
             </div>
 
-            {/* Withdraw button — always visible, modal handles all states */}
+            {/* Withdraw button — hidden in admin read-only view */}
+            {!readOnly && (
             <button onClick={() => setWithdrawOpen(true)}
               className="w-full flex items-center justify-center hover:opacity-90 transition-opacity"
               style={{ height: 36, borderRadius: 9, border: isPayoutRequested || isPayoutPaid ? '1px solid #E8E4DE' : 'none', backgroundColor: isPayoutRequested || isPayoutPaid ? 'white' : '#111111', color: isPayoutRequested || isPayoutPaid ? '#6F675C' : 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
               {isPayoutPaid ? 'Payout Sent ✓' : isPayoutRequested ? 'Withdrawal Pending ⏳' : pendingNet !== null && pendingNet > 0 ? `Withdraw ${fmt(pendingNet)}` : 'Withdraw Earnings'}
             </button>
+            )}
           </div>
 
           <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
@@ -523,6 +531,7 @@ function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences, bo
 // ── Experiences Panel ─────────────────────────────────────────────────────────
 
 function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRate: number; initialExperiences?: DashExp[] }) {
+  const readOnly = useContext(ReadOnlyContext)
   const [filter, setFilter]   = useState('All')
   const [exps, setExps]       = useState<DashExp[]>(initialExperiences ?? [])
   const [showForm, setShowForm] = useState(false)
@@ -595,6 +604,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
     setSchedule(prev => prev.map((d, j) => j === i ? { ...d, [field]: val } : d))
 
   const openEdit = (exp: DashExp) => {
+    if (readOnly) return
     setEditingExp(exp)
     setImagePreview(exp.image)
     setFormStep(1)
@@ -607,7 +617,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
   }
 
   const saveAndClose = async (action: 'draft' | 'submit' = 'draft') => {
-    if (submitting) return
+    if (submitting || readOnly) return
     setSaveError('')
     setSubmitting(true)
     const slug = editingExp?.slug ?? (formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'new-experience')
@@ -656,6 +666,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
 
   const STATUS_TO_ENUM: Record<string, 'ACTIVE' | 'PAUSED' | 'DRAFT'> = { Active: 'ACTIVE', Paused: 'PAUSED', Draft: 'DRAFT' }
   const setStatus = (exp: DashExp, s: string) => {
+    if (readOnly) return
     setExps(prev => prev.map(e => e.id === exp.id ? { ...e, status: s } : e))
     setMenuOpen(null)
     updateExperienceStatusAction(exp.slug, STATUS_TO_ENUM[s] ?? 'DRAFT').catch(() => {})
@@ -666,13 +677,13 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
       <PageHeader
         title="My Experiences"
         subtitle={`${exps.length} total listings`}
-        action={
+        action={readOnly ? undefined : (
           <button onClick={() => setShowForm(true)}
             className="hidden sm:flex items-center gap-2 hover:opacity-90 transition-opacity"
             style={{ height: 42, backgroundColor: '#111111', color: 'white', border: 'none', borderRadius: 8, padding: '0 18px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
             <Plus size={15} /> New Experience
           </button>
-        }
+        )}
       />
 
       {/* Filter tabs */}
@@ -743,6 +754,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                 </button>
               )}
               <button onClick={() => {
+                  if (readOnly) return
                   setExps(prev => prev.filter(e => e.id !== exp.id))
                   deleteExperienceAction(exp.slug).catch(() => {})
                 }}
@@ -755,7 +767,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
         ))}
       </div>
 
-      <div className="sm:hidden mt-4">
+      <div className="sm:hidden mt-4" style={{ display: readOnly ? 'none' : undefined }}>
         <button onClick={() => setShowForm(true)} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl"
           style={{ backgroundColor: '#111111', color: 'white', fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
           <Plus size={15} /> New Experience
@@ -1063,6 +1075,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
 // ── Bookings Panel ────────────────────────────────────────────────────────────
 
 function BookingsPanel({ initialBookings }: { initialBookings?: DashBooking[] }) {
+  const readOnly = useContext(ReadOnlyContext)
   const [statusFilter, setStatusFilter] = useState('All')
   const [search, setSearch]             = useState('')
   const [bookings, setBookings]         = useState<DashBooking[]>(initialBookings ?? [])
@@ -1077,6 +1090,7 @@ function BookingsPanel({ initialBookings }: { initialBookings?: DashBooking[] })
   })
 
   const updateStatus = async (b: DashBooking, status: 'CONFIRMED' | 'CANCELLED') => {
+    if (readOnly) return
     setUpdating(b.id)
     const res = await updateBookingStatusAction(b.ref, status)
     setUpdating(null)
@@ -1148,7 +1162,7 @@ function BookingsPanel({ initialBookings }: { initialBookings?: DashBooking[] })
                 <p style={{ fontSize: 11, color: '#C8C4BE', marginTop: 3 }}>{b.ref} · Booked {b.bookedOn}</p>
               </div>
             </div>
-            {b.status === 'Pending' && (
+            {b.status === 'Pending' && !readOnly && (
               <div className="flex gap-2 mt-3 pt-3" style={{ borderTop: '1px solid #F5F1EB' }}>
                 <button onClick={() => updateStatus(b, 'CONFIRMED')} disabled={updating === b.id}
                   className="flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity"
@@ -1180,6 +1194,7 @@ function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBo
   pendingPayout?: number
   payouts?: OperatorPayout[]
 }) {
+  const readOnly = useContext(ReadOnlyContext)
   const [withdrawOpen, setWithdrawOpen] = useState(false)
 
   const netMult = (100 - commissionRate) / 100
@@ -1233,13 +1248,13 @@ function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBo
     )}
     <div>
       <PageHeader title="Earnings" subtitle="Track your revenue and payout history"
-        action={
+        action={readOnly ? undefined : (
           <button onClick={() => setWithdrawOpen(true)}
             className="flex items-center gap-2 hover:opacity-90 transition-opacity flex-shrink-0"
             style={{ height: 38, backgroundColor: isRequested || isPaid ? 'white' : '#111111', color: isRequested || isPaid ? '#6F675C' : 'white', border: isRequested || isPaid ? '1px solid #E8E4DE' : 'none', borderRadius: 9, padding: '0 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
             {isPaid ? 'Paid ✓' : isRequested ? 'Pending ⏳' : 'Withdraw'}
           </button>
-        }
+        )}
       />
 
       {/* Commission info banner */}
@@ -1475,6 +1490,7 @@ const HOST_PROFILE_DEFAULTS = {
 }
 
 function ProfilePanel() {
+  const readOnly = useContext(ReadOnlyContext)
   const { data: session } = useSession()
   const sessionDefaults = {
     ...HOST_PROFILE_DEFAULTS,
@@ -1485,6 +1501,7 @@ function ProfilePanel() {
   const [saved, setSaved]     = useState(false)
 
   const save = () => {
+    if (readOnly) return
     localStorage.setItem('balible_host_profile', JSON.stringify(profile))
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
@@ -1572,12 +1589,14 @@ const HOST_NOTIF_DEFAULTS  = { newBooking: true, cancellation: true, review: fal
 const HOST_PAYOUT_DEFAULTS = { bankName: '', accountNumber: '', accountHolder: '' }
 
 function SettingsPanel() {
+  const readOnly = useContext(ReadOnlyContext)
   const [notifs, setNotifs]       = useState(() => lsh('balible_host_notifs',  HOST_NOTIF_DEFAULTS))
   const [payout, setPayout]       = useState(() => lsh('balible_host_payout',  HOST_PAYOUT_DEFAULTS))
   const [saved, setSaved]         = useState(false)
   const [notifSaved, setNotifSaved] = useState(false)
 
   const save = () => {
+    if (readOnly) return
     localStorage.setItem('balible_host_notifs',  JSON.stringify(notifs))
     localStorage.setItem('balible_host_payout',  JSON.stringify(payout))
     setSaved(true)
@@ -1688,6 +1707,7 @@ function saveEvents(evs: EventRow[]) {
 }
 
 function EventsPanel() {
+  const readOnly = useContext(ReadOnlyContext)
   const [events, setEvents] = useState<EventRow[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -1754,6 +1774,7 @@ function EventsPanel() {
   }
 
   async function handleSave() {
+    if (readOnly) return
     setSaveError('')
     if (!form.title.trim()) { setSaveError('Event title is required.'); return }
     if (!form.date) { setSaveError('Date & time is required.'); return }
@@ -1791,12 +1812,14 @@ function EventsPanel() {
   }
 
   function handleDelete(id: string) {
+    if (readOnly) return
     if (!confirm('Delete this event?')) return
     deleteEvent(id).catch(() => {})
     setAndSave(events.filter(e => e.id !== id))
   }
 
   function toggleStatus(ev: EventRow) {
+    if (readOnly) return
     const next = ev.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED'
     updateEvent(ev.id, { status: next as EventInput['status'] }).catch(() => {})
     setAndSave(events.map(e => e.id === ev.id ? { ...e, status: next } : e))
@@ -2209,6 +2232,7 @@ function AvailabilityPanel({ bookings }: { bookings?: DashBooking[] }) {
 // ── Photos Panel ──────────────────────────────────────────────────────────────
 
 function PhotosPanel({ experiences }: { experiences?: DashExp[] }) {
+  const readOnly = useContext(ReadOnlyContext)
   const exps = experiences ?? []
   const [galleries, setGalleries] = useState<Record<number, string[]>>(() => {
     try {
@@ -2240,6 +2264,7 @@ function PhotosPanel({ experiences }: { experiences?: DashExp[] }) {
     })
 
   const handleFile = (expId: number, file: File) => {
+    if (readOnly) return
     if (!file.type.startsWith('image/')) return
     setUploading(u => ({ ...u, [expId]: true }))
     const reader = new FileReader()
@@ -2441,8 +2466,15 @@ export default function DashboardPage() {
   const [liveCommissionRate, setLiveCommissionRate] = useState<number | undefined>(undefined)
   const commissionRate = liveCommissionRate ?? Math.max(0, Math.min(100, parseInt(String(lsh('balible_commission', '10')), 10) || 10))
 
+  // Admin read-only view: /dashboard?operator=<id> loads that host's data.
+  // Non-admins are ignored server-side, so this is safe to read from the URL.
+  const [adminViewId, setAdminViewId] = useState<string | undefined>(undefined)
+  const readOnly = !!adminViewId
+
   useEffect(() => {
-    getHostDashboardData().then(data => {
+    const opId = new URLSearchParams(window.location.search).get('operator') ?? undefined
+    setAdminViewId(opId)
+    getHostDashboardData(opId).then(data => {
       if (!data) return
       setLiveExperiences(data.experiences)
       setLiveBookings(data.bookings)
@@ -2453,7 +2485,7 @@ export default function DashboardPage() {
       setLivePendingPayout(data.pendingPayout)
       setLiveCommissionRate(data.commissionRate)
     }).catch(() => {})
-    getOperatorPayoutsAction().then(setLivePayouts).catch(() => {})
+    getOperatorPayoutsAction(opId).then(setLivePayouts).catch(() => {})
   }, [])
 
   const renderPanel = () => {
@@ -2473,6 +2505,7 @@ export default function DashboardPage() {
   }
 
   return (
+    <ReadOnlyContext.Provider value={readOnly}>
     <div className="flex" style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
 
       {/* Mobile sidebar overlay */}
@@ -2497,6 +2530,20 @@ export default function DashboardPage() {
 
       {/* Main content */}
       <main className="flex-1 min-w-0 p-5 lg:p-8 pb-20 lg:pb-8">
+
+        {/* Admin read-only view banner */}
+        {readOnly && (
+          <div className="flex items-center justify-between gap-3 mb-5 px-4 py-3 rounded-xl flex-wrap"
+            style={{ backgroundColor: '#FDF8F4', border: '1px solid #E8D4B8' }}>
+            <div className="flex items-center gap-2" style={{ minWidth: 0 }}>
+              <Eye size={16} style={{ color: '#B98948', flexShrink: 0 }} />
+              <span style={{ fontSize: 13, color: '#6F675C' }}>
+                Viewing <strong style={{ color: '#111111' }}>{liveHostName ?? 'this host'}</strong>&apos;s dashboard as admin — <strong style={{ color: '#B98948' }}>read-only</strong>
+              </span>
+            </div>
+            <a href="/admin" style={{ fontSize: 12, fontWeight: 600, color: '#B98948', textDecoration: 'none', flexShrink: 0 }}>← Back to admin</a>
+          </div>
+        )}
 
         {/* Mobile top bar */}
         <div className="flex items-center justify-between mb-6 lg:hidden">
@@ -2528,5 +2575,6 @@ export default function DashboardPage() {
         })}
       </nav>
     </div>
+    </ReadOnlyContext.Provider>
   )
 }

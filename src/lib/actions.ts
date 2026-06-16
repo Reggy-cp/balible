@@ -1154,13 +1154,16 @@ export type HostDashboardData = {
   pendingPayout: number
 }
 
-export async function getHostDashboardData(): Promise<HostDashboardData | null> {
+export async function getHostDashboardData(viewOperatorId?: string): Promise<HostDashboardData | null> {
   try {
     const user = await getSessionUser()
     if (!user) return null
 
+    // Admins may view a specific host's dashboard read-only by passing an
+    // operatorId. Anyone else can only ever see their own operator.
+    const isAdminView = !!viewOperatorId && (user as any).role === 'ADMIN'
     const operator = await prisma.operator.findUnique({
-      where: { userId: user.id },
+      where: isAdminView ? { id: viewOperatorId } : { userId: user.id },
       include: { user: { select: { name: true } } },
     })
     if (!operator) return null
@@ -1599,11 +1602,15 @@ export type OperatorPayout = {
   bookings: number; status: string; paidAt: string | null
 }
 
-export async function getOperatorPayoutsAction(): Promise<OperatorPayout[]> {
+export async function getOperatorPayoutsAction(viewOperatorId?: string): Promise<OperatorPayout[]> {
   try {
     const user = await getSessionUser()
     if (!user) return []
-    const operator = await prisma.operator.findUnique({ where: { userId: user.id } })
+    // Admin read-only view of a specific host's payouts; everyone else self-only.
+    const isAdminView = !!viewOperatorId && (user as any).role === 'ADMIN'
+    const operator = await prisma.operator.findUnique({
+      where: isAdminView ? { id: viewOperatorId } : { userId: user.id },
+    })
     if (!operator) return []
     const rows = await prisma.payout.findMany({
       where: { operatorId: operator.id },
