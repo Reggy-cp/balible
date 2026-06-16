@@ -48,7 +48,7 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.email || !credentials?.password) return null
 
         const ip = (req?.headers?.['x-forwarded-for'] as string) ?? 'unknown'
-        const { allowed } = checkRateLimit(`login:${ip}`, 10, 60_000)
+        const { allowed } = await checkRateLimit(`login:${ip}`, 10, 60_000)
         if (!allowed) throw new Error('Too many login attempts. Please try again in a minute.')
 
         const user = await prisma.user.findUnique({

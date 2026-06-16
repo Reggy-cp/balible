@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     // Throttle by IP — this endpoint spends Anthropic credits, so it's a
     // financial-DoS target if left open.
     const ip = headers().get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
-    const { allowed } = checkRateLimit(`chat:${ip}`, 20, 60_000)
+    const { allowed } = await checkRateLimit(`chat:${ip}`, 20, 60_000)
     if (!allowed) {
       return new Response('Too many messages. Please slow down and try again shortly.', { status: 429 })
     }

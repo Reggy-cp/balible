@@ -8,7 +8,7 @@ import { sendVerificationEmail } from '@/lib/email'
 
 export async function POST(req: Request) {
   const ip = headers().get('x-forwarded-for') ?? 'unknown'
-  const { allowed } = checkRateLimit(`signup:${ip}`, 5, 60_000)
+  const { allowed } = await checkRateLimit(`signup:${ip}`, 5, 60_000)
   if (!allowed) {
     return NextResponse.json({ error: 'Too many attempts. Please try again in a minute.' }, { status: 429 })
   }
