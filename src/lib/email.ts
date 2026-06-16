@@ -5,6 +5,9 @@ import { Resend } from 'resend'
 // and delivery only works to the Resend account owner's address (test mode).
 const FROM = process.env.EMAIL_FROM ?? 'Balible <hello@balible.com>'
 
+// Absolute base URL for assets in emails (logo, links). Emails can't use relative paths.
+const SITE_URL = process.env.NEXTAUTH_URL ?? 'https://balible.com'
+
 let resend: Resend | null = null
 function getClient(): Resend | null {
   if (!process.env.RESEND_API_KEY) return null
@@ -29,7 +32,9 @@ function layout(body: string) {
     <tr><td align="center">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background-color:${BRAND.card};border:1px solid ${BRAND.border};border-radius:12px;overflow:hidden;">
         <tr><td style="background-color:${BRAND.ink};padding:20px 32px;">
-          <span style="font-family:Georgia,'Times New Roman',serif;font-size:18px;font-weight:bold;color:#ffffff;letter-spacing:0.05em;">BALIBLE</span>
+          <a href="${SITE_URL}" style="text-decoration:none;">
+            <img src="${SITE_URL}/logo-light.png" alt="Balible" height="28" style="height:28px;width:auto;display:block;border:0;" />
+          </a>
         </td></tr>
         <tr><td style="padding:32px;">${body}</td></tr>
         <tr><td style="padding:20px 32px;border-top:1px solid ${BRAND.border};">

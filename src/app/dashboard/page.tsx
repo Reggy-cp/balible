@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import {
   LayoutDashboard, Compass, CalendarDays, TrendingUp, Star,
@@ -62,25 +62,6 @@ const EXPERIENCES: DashExp[] = [
   },
 ]
 
-const BOOKINGS_DATA = [
-  { id: 'B001', ref: 'BAL-2024-001', guest: 'Sarah Kim',     email: 'sarah.k@email.com',  experience: 'Pottery Making Class',    expImage: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=60&auto=format&fit=crop&q=80', date: 'Jun 8, 2024',  time: '10:00 AM', guests: 2, total: 900000,  status: 'Confirmed', bookedOn: 'May 28' },
-  { id: 'B002', ref: 'BAL-2024-002', guest: 'Thomas Reeves', email: 'treeves@email.com',   experience: 'Pottery Making Class',    expImage: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=60&auto=format&fit=crop&q=80', date: 'Jun 8, 2024',  time: '2:00 PM',  guests: 3, total: 1350000, status: 'Pending',   bookedOn: 'Jun 1'  },
-  { id: 'B003', ref: 'BAL-2024-003', guest: 'Priya Mehta',   email: 'priya.m@email.com',   experience: 'Batik Painting Workshop', expImage: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=60&auto=format&fit=crop&q=80', date: 'Jun 9, 2024',  time: '09:00 AM', guests: 1, total: 380000,  status: 'Confirmed', bookedOn: 'May 30' },
-  { id: 'B004', ref: 'BAL-2024-004', guest: 'Marco Bianchi', email: 'marco.b@email.com',   experience: 'Pottery Making Class',    expImage: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=60&auto=format&fit=crop&q=80', date: 'Jun 10, 2024', time: '11:00 AM', guests: 2, total: 900000,  status: 'Pending',   bookedOn: 'Jun 2'  },
-  { id: 'B005', ref: 'BAL-2024-005', guest: 'Yuki Tanaka',   email: 'yuki.t@email.com',    experience: 'Clay Sculpture Session',  expImage: 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=60&auto=format&fit=crop&q=80', date: 'Jun 12, 2024', time: '10:00 AM', guests: 2, total: 1040000, status: 'Confirmed', bookedOn: 'Jun 3'  },
-  { id: 'B006', ref: 'BAL-2024-006', guest: 'Alex Chen',     email: 'alex.c@email.com',    experience: 'Batik Painting Workshop', expImage: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=60&auto=format&fit=crop&q=80', date: 'Jun 6, 2024',  time: '2:00 PM',  guests: 4, total: 1520000, status: 'Completed', bookedOn: 'May 20' },
-  { id: 'B007', ref: 'BAL-2024-007', guest: 'Lisa Wagner',   email: 'lisa.w@email.com',    experience: 'Pottery Making Class',    expImage: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=60&auto=format&fit=crop&q=80', date: 'Jun 3, 2024',  time: '09:00 AM', guests: 1, total: 450000,  status: 'Completed', bookedOn: 'May 18' },
-  { id: 'B008', ref: 'BAL-2024-008', guest: 'James Park',    email: 'james.p@email.com',   experience: 'Pottery Making Class',    expImage: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=60&auto=format&fit=crop&q=80', date: 'Jun 1, 2024',  time: '11:00 AM', guests: 2, total: 900000,  status: 'Cancelled', bookedOn: 'May 15' },
-]
-
-const REVIEWS_DATA = [
-  { id: 'R1', guest: 'Sarah K.',  experience: 'Pottery Making Class',    rating: 5, comment: "Absolutely magical. Made is an incredible teacher — patient, encouraging, and full of beautiful stories about her family's craft. I made a small bowl that I treasure deeply.", date: 'May 12, 2024' },
-  { id: 'R2', guest: 'Thomas R.', experience: 'Pottery Making Class',    rating: 5, comment: "One of the best experiences I've had in Bali. The studio setting is serene, and you genuinely leave with something you shaped with your own hands.", date: 'Apr 18, 2024' },
-  { id: 'R3', guest: 'Priya M.',  experience: 'Pottery Making Class',    rating: 5, comment: 'The location alone is worth it — surrounded by rice paddies. Wonderful for couples or solo travellers. Made makes everyone feel at ease.', date: 'Mar 25, 2024' },
-  { id: 'R4', guest: 'Alex C.',   experience: 'Batik Painting Workshop', rating: 4, comment: 'Really enjoyed the batik experience. The patterns we made were beautiful and the instructor was knowledgeable. Would have loved a little more time on the design phase.', date: 'Jun 6, 2024' },
-  { id: 'R5', guest: 'Yuki T.',   experience: 'Clay Sculpture Session',  rating: 5, comment: "Incredible! The 4-hour session flew by. I created a miniature Ganesh that I'm so proud of. The space is peaceful and the instruction is world-class.", date: 'May 28, 2024' },
-  { id: 'R6', guest: 'Lisa W.',   experience: 'Pottery Making Class',    rating: 4, comment: 'Great experience overall. The pottery wheel is harder than it looks but Made was very patient with me. Left with a beautiful if slightly lopsided bowl!', date: 'Jun 3, 2024' },
-]
 
 // Area → approximate map coordinates (used when syncing new experiences to the map)
 const AREA_COORDS: Record<string, [number, number]> = {
@@ -195,31 +176,191 @@ function PageHeader({ title, subtitle, action }: { title: string; subtitle?: str
   )
 }
 
+// ── Withdraw Modal ────────────────────────────────────────────────────────────
+
+function WithdrawModal({ onClose, pendingNet, commissionRate, isRequested, isPaid }: {
+  onClose: () => void
+  pendingNet: number | null   // null = still loading
+  commissionRate: number
+  isRequested?: boolean
+  isPaid?: boolean
+}) {
+  const available = pendingNet ?? 0
+  const [amount, setAmount]         = useState(available > 0 ? String(available) : '')
+  const [requesting, setRequesting] = useState(false)
+  const [result, setResult]         = useState<{ ok: boolean; text: string } | null>(null)
+
+  const parsedAmt = parseInt(amount.replace(/\D/g, ''), 10) || 0
+  const canForm   = !isRequested && !isPaid && pendingNet !== null && available >= PAYOUT_MIN_NET
+  const isValid   = canForm && parsedAmt >= PAYOUT_MIN_NET && parsedAmt <= available
+  const validationMsg = canForm && parsedAmt > 0
+    ? parsedAmt < PAYOUT_MIN_NET ? `Minimum withdrawal is ${fmt(PAYOUT_MIN_NET)}`
+    : parsedAmt > available     ? `You can withdraw up to ${fmt(available)}`
+    : null : null
+
+  const handleConfirm = async () => {
+    if (!isValid) return
+    setRequesting(true)
+    const res = await requestPayoutAction(parsedAmt)
+    setRequesting(false)
+    if (res.ok) {
+      setResult({ ok: true, text: `Withdrawal of ${fmt(parsedAmt)} requested! Balible processes within 3 business days.` })
+    } else {
+      setResult({ ok: false, text: res.error ?? 'Something went wrong.' })
+    }
+  }
+
+  const closeBtn = (label = 'Close') => (
+    <button onClick={onClose} className="w-full mt-5 hover:opacity-90 transition-opacity"
+      style={{ height: 44, borderRadius: 10, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+      {label}
+    </button>
+  )
+
+  // Determine which body to show
+  const body = result?.ok ? (
+    <div className="p-6 text-center">
+      <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3" style={{ backgroundColor: '#F0F7F2' }}>
+        <CheckCircle size={28} style={{ color: '#4A7C59' }} />
+      </div>
+      <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111', marginBottom: 8 }}>Request Sent!</p>
+      <p style={{ fontSize: 13, color: '#6F675C', lineHeight: 1.55 }}>{result.text}</p>
+      {closeBtn('Done')}
+    </div>
+  ) : isPaid ? (
+    <div className="p-6 text-center">
+      <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3" style={{ backgroundColor: '#F0F7F2' }}>
+        <CheckCircle size={26} style={{ color: '#4A7C59' }} />
+      </div>
+      <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 8 }}>Payout Sent This Month</p>
+      <p style={{ fontSize: 13, color: '#6F675C', lineHeight: 1.55 }}>Your earnings for this period have already been paid out. Come back next month to request your next withdrawal.</p>
+      {closeBtn()}
+    </div>
+  ) : isRequested ? (
+    <div className="p-6 text-center">
+      <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3" style={{ backgroundColor: '#FDF8F4' }}>
+        <span style={{ fontSize: 28 }}>⏳</span>
+      </div>
+      <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 8 }}>Withdrawal In Progress</p>
+      <p style={{ fontSize: 13, color: '#6F675C', lineHeight: 1.55 }}>Your payout request is being processed. Balible will transfer your earnings within 3 business days.</p>
+      {closeBtn()}
+    </div>
+  ) : pendingNet === null ? (
+    <div className="p-10 text-center">
+      <p style={{ fontSize: 13, color: '#9E9A94' }}>Loading your balance…</p>
+    </div>
+  ) : available === 0 ? (
+    <div className="p-6 text-center">
+      <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 8 }}>No Earnings to Withdraw</p>
+      <p style={{ fontSize: 13, color: '#6F675C', lineHeight: 1.55 }}>You don't have any confirmed earnings yet. Earnings appear here once guests confirm their bookings.</p>
+      {closeBtn()}
+    </div>
+  ) : available < PAYOUT_MIN_NET ? (
+    <div className="p-5">
+      <div className="rounded-xl p-4 mb-4" style={{ backgroundColor: '#F5F1EB' }}>
+        <p style={{ fontSize: 12, color: '#6F675C' }}>Available balance</p>
+        <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: '#111111', marginTop: 2, lineHeight: 1.1 }}>{fmt(available)}</p>
+        <p style={{ fontSize: 11, color: '#9E9A94', marginTop: 3 }}>After {commissionRate}% platform commission</p>
+      </div>
+      <div className="rounded-xl p-4 mb-5" style={{ backgroundColor: '#FEF2F2', border: '1px solid #F5D5C5' }}>
+        <p style={{ fontSize: 13, color: '#B66A45', lineHeight: 1.55 }}>
+          Your balance is below the minimum withdrawal of <strong>{fmt(PAYOUT_MIN_NET)}</strong>.
+          Keep earning and come back once you've reached the minimum.
+        </p>
+      </div>
+      {closeBtn()}
+    </div>
+  ) : (
+    /* ── Form (can withdraw) ── */
+    <div className="p-5">
+      <div className="rounded-xl p-4 mb-5" style={{ backgroundColor: '#F5F1EB' }}>
+        <p style={{ fontSize: 12, color: '#6F675C' }}>Available to withdraw</p>
+        <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: '#111111', marginTop: 2, lineHeight: 1.1 }}>{fmt(available)}</p>
+        <p style={{ fontSize: 11, color: '#9E9A94', marginTop: 3 }}>After {commissionRate}% platform commission</p>
+      </div>
+
+      <p style={{ fontSize: 12, fontWeight: 600, color: '#6F675C', marginBottom: 6 }}>Amount to withdraw (IDR)</p>
+      <div className="relative">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2" style={{ fontSize: 12, color: '#9E9A94', pointerEvents: 'none' }}>IDR</span>
+        <input
+          type="text" inputMode="numeric" placeholder="0"
+          value={parsedAmt > 0 ? parsedAmt.toLocaleString('id-ID') : amount}
+          onChange={e => setAmount(e.target.value.replace(/\D/g, ''))}
+          style={{ width: '100%', height: 46, borderRadius: 10, border: `1px solid ${validationMsg ? '#B66A45' : '#E8E4DE'}`, paddingLeft: 42, paddingRight: 12, fontSize: 16, fontWeight: 600, color: '#111111', outline: 'none', boxSizing: 'border-box', fontFamily: 'var(--font-inter)' }}
+        />
+      </div>
+      {validationMsg && <p style={{ fontSize: 11, color: '#B66A45', marginTop: 4 }}>{validationMsg}</p>}
+
+      <div className="flex gap-2 mt-3 mb-4">
+        <button onClick={() => setAmount(String(available))}
+          style={{ flex: 1, height: 32, borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 12, color: '#6F675C', cursor: 'pointer', fontWeight: 500 }}>
+          Withdraw all
+        </button>
+        <button onClick={() => setAmount(String(Math.round(available / 2)))}
+          style={{ flex: 1, height: 32, borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 12, color: '#6F675C', cursor: 'pointer', fontWeight: 500 }}>
+          Half
+        </button>
+      </div>
+
+      <p style={{ fontSize: 11, color: '#9E9A94', marginBottom: 14, lineHeight: 1.5 }}>
+        Min {fmt(PAYOUT_MIN_NET)} · Processed within 3 business days to your registered bank account.
+      </p>
+
+      {result && !result.ok && <p style={{ fontSize: 12, color: '#B66A45', marginBottom: 12, lineHeight: 1.4 }}>{result.text}</p>}
+
+      <div className="flex gap-3">
+        <button onClick={onClose} disabled={requesting}
+          style={{ flex: 1, height: 44, borderRadius: 10, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 14, color: '#6F675C', cursor: 'pointer', fontWeight: 500 }}>
+          Cancel
+        </button>
+        <button onClick={handleConfirm} disabled={requesting || !isValid} className="hover:opacity-90 transition-opacity"
+          style={{ flex: 2, height: 44, borderRadius: 10, border: 'none', backgroundColor: isValid ? '#111111' : '#E8E4DE', color: isValid ? 'white' : '#9E9A94', fontSize: 14, fontWeight: 600, cursor: isValid && !requesting ? 'pointer' : 'default', transition: 'background 0.2s' }}>
+          {requesting ? 'Requesting…' : parsedAmt > 0 && isValid ? `Withdraw ${fmt(parsedAmt)}` : 'Withdraw'}
+        </button>
+      </div>
+    </div>
+  )
+
+  return (
+    <>
+      <div className="fixed inset-0 z-50 bg-black/40" onClick={result?.ok || isPaid || isRequested ? onClose : undefined} />
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm pointer-events-auto" style={{ border: '1px solid #E8E4DE' }}>
+          <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid #E8E4DE' }}>
+            <div className="flex items-center gap-2">
+              <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>Withdraw Earnings</span>
+            </div>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+              <X size={18} style={{ color: '#6F675C' }} />
+            </button>
+          </div>
+          {body}
+        </div>
+      </div>
+    </>
+  )
+}
+
 // ── Overview Panel ────────────────────────────────────────────────────────────
 
 const OVERVIEW_STATS = [
-  { label: 'Total Bookings',    value: '145',       change: '+12% from last month', up: true },
-  { label: 'Total Earnings',    value: 'IDR 63.9M', change: '+18% from last month', up: true },
-  { label: 'Upcoming Bookings', value: '18',        change: 'Next 7 days',          up: null },
-  { label: 'Average Rating',    value: '4.8',       change: 'From 220 reviews',     up: null },
+  { label: 'Total Bookings',    value: '—', change: 'Loading…', up: null },
+  { label: 'Total Earnings',    value: '—', change: 'Loading…', up: null },
+  { label: 'Upcoming Bookings', value: '—', change: 'Next 7 days', up: null },
+  { label: 'Average Rating',    value: '—', change: 'Loading…', up: null },
 ]
 
-const UPCOMING = [
-  { title: 'Pottery Making Class',    date: 'Jun 8, 2024 · 10:00 AM',  guests: 2, status: 'Confirmed', image: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=120&auto=format&fit=crop&q=80' },
-  { title: 'Pottery Making Class',    date: 'Jun 8, 2024 · 02:00 PM',  guests: 3, status: 'Confirmed', image: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=120&auto=format&fit=crop&q=80' },
-  { title: 'Batik Painting Workshop', date: 'Jun 9, 2024 · 09:00 AM',  guests: 1, status: 'Pending',   image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=120&auto=format&fit=crop&q=80' },
-  { title: 'Clay Sculpture Session',  date: 'Jun 12, 2024 · 10:00 AM', guests: 2, status: 'Confirmed', image: 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=120&auto=format&fit=crop&q=80' },
-]
 
-function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences, bookings: liveBookings, reviews: liveReviews, hostName }: {
+function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences, bookings: liveBookings, reviews: liveReviews, hostName, earningsByMonth: liveEarningsByMonth, pendingPayout: livePendingPayout, payouts: livePayouts }: {
   onNav: (id: string) => void; commissionRate: number
   experiences?: DashExp[]; bookings?: DashBooking[]; reviews?: DashReview[]; hostName?: string
+  earningsByMonth?: EarningsByMonth[]; pendingPayout?: number; payouts?: OperatorPayout[]
 }) {
-  const [period, setPeriod] = useState('This Month')
+  const [period, setPeriod]       = useState('This Month')
+  const [withdrawOpen, setWithdrawOpen] = useState(false)
   const netMult = (100 - commissionRate) / 100
   const expSource = liveExperiences ?? []
   const totalNetEarnings = expSource.reduce((a, e) => a + e.earnings, 0) * netMult
-  const lastMonthNet = MONTHLY_EARNINGS[MONTHLY_EARNINGS.length - 1] * netMult
 
   const totalBookings  = liveBookings !== undefined ? liveBookings.length : null
   const activeBookings = liveBookings !== undefined ? liveBookings.filter(b => b.status === 'Confirmed' || b.status === 'Pending').length : null
@@ -235,10 +376,36 @@ function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences, bo
     return s
   })
 
-  const slice  = period === 'This Month' ? MONTHLY_EARNINGS.slice(6)    : MONTHLY_EARNINGS.slice(0, 6)
-  const labels = period === 'This Month' ? MONTHS_SHORT.slice(6)        : MONTHS_SHORT.slice(0, 6)
+  const hasLiveChart = liveEarningsByMonth !== undefined && liveEarningsByMonth.length > 0
+  const allChartData   = hasLiveChart ? liveEarningsByMonth.map(m => m.gross) : MONTHLY_EARNINGS
+  const allChartLabels = hasLiveChart ? liveEarningsByMonth.map(m => m.month) : MONTHS_SHORT
+  const half = Math.floor(allChartData.length / 2)
+  const slice  = period === 'This Month' ? allChartData.slice(half)   : allChartData.slice(0, half)
+  const labels = period === 'This Month' ? allChartLabels.slice(half) : allChartLabels.slice(0, half)
+  const lastMonthGross = allChartData[allChartData.length - 1] ?? 0
+  const prevMonthGross = allChartData[allChartData.length - 2] ?? 0
+  const momPct = prevMonthGross > 0 ? Math.round(((lastMonthGross - prevMonthGross) / prevMonthGross) * 100) : null
+
+  // Payout / withdraw state
+  const pendingNet = livePendingPayout !== undefined ? Math.round(livePendingPayout * netMult) : null
+  const nowMonthLabel = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+  const thisMonthPayout = livePayouts?.find(p => p.periodLabel === nowMonthLabel)
+  const isPayoutRequested = thisMonthPayout?.status === 'Requested'
+  const isPayoutPaid      = thisMonthPayout?.status === 'Paid'
+  const belowMin = pendingNet !== null && pendingNet > 0 && pendingNet < PAYOUT_MIN_NET
+  const canWithdraw = pendingNet !== null && pendingNet >= PAYOUT_MIN_NET && !isPayoutRequested && !isPayoutPaid
 
   return (
+    <>
+    {withdrawOpen && (
+      <WithdrawModal
+        pendingNet={pendingNet}
+        commissionRate={commissionRate}
+        isRequested={isPayoutRequested}
+        isPaid={isPayoutPaid}
+        onClose={() => setWithdrawOpen(false)}
+      />
+    )}
     <div>
       <div className="flex items-start justify-between mb-6">
         <div>
@@ -279,17 +446,24 @@ function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences, bo
             </button>
           </div>
           <div className="space-y-3">
-            {UPCOMING.map((b, i) => (
-              <div key={i} className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: '#F5F1EB' }}>
-                <img src={b.image} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p style={{ fontSize: 13, fontWeight: 600, color: '#111111', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.title}</p>
-                  <p style={{ fontSize: 12, color: '#6F675C', marginTop: 2 }}>{b.date}</p>
-                  <p style={{ fontSize: 12, color: '#6F675C' }}>{b.guests} guest{b.guests > 1 ? 's' : ''}</p>
+            {liveBookings === undefined ? (
+              <p style={{ fontSize: 13, color: '#9E9A94', textAlign: 'center', padding: '20px 0' }}>Loading…</p>
+            ) : (() => {
+              const upcoming = liveBookings.filter(b => b.status === 'Confirmed' || b.status === 'Pending').slice(0, 4)
+              return upcoming.length === 0 ? (
+                <p style={{ fontSize: 13, color: '#9E9A94', textAlign: 'center', padding: '20px 0' }}>No upcoming bookings</p>
+              ) : upcoming.map((b, i) => (
+                <div key={b.id ?? i} className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: '#F5F1EB' }}>
+                  <img src={b.expImage} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p style={{ fontSize: 13, fontWeight: 600, color: '#111111', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.experience}</p>
+                    <p style={{ fontSize: 12, color: '#6F675C', marginTop: 2 }}>{b.date} · {b.time}</p>
+                    <p style={{ fontSize: 12, color: '#6F675C' }}>{b.guests} guest{b.guests > 1 ? 's' : ''}</p>
+                  </div>
+                  <StatusBadge status={b.status} />
                 </div>
-                <StatusBadge status={b.status} />
-              </div>
-            ))}
+              ))
+            })()}
           </div>
         </div>
 
@@ -305,13 +479,24 @@ function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences, bo
               </button>
             </div>
             <div className="flex items-baseline gap-2 my-2">
-              <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#111111' }}>{fmt(lastMonthNet)}</span>
-              <span style={{ fontSize: 12, color: '#4A7C59' }}>↑ 30%</span>
+              <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#111111' }}>{fmt(Math.round(lastMonthGross * netMult))}</span>
+              {momPct !== null && (
+                <span style={{ fontSize: 12, color: momPct >= 0 ? '#4A7C59' : '#B66A45' }}>
+                  {momPct >= 0 ? '↑' : '↓'} {Math.abs(momPct)}%
+                </span>
+              )}
             </div>
             <MiniChart data={slice} color="#C8A97E" />
-            <div className="flex justify-between mt-1">
+            <div className="flex justify-between mt-1 mb-3">
               {labels.map(m => <span key={m} style={{ fontSize: 9, color: '#6F675C' }}>{m}</span>)}
             </div>
+
+            {/* Withdraw button — always visible, modal handles all states */}
+            <button onClick={() => setWithdrawOpen(true)}
+              className="w-full flex items-center justify-center hover:opacity-90 transition-opacity"
+              style={{ height: 36, borderRadius: 9, border: isPayoutRequested || isPayoutPaid ? '1px solid #E8E4DE' : 'none', backgroundColor: isPayoutRequested || isPayoutPaid ? 'white' : '#111111', color: isPayoutRequested || isPayoutPaid ? '#6F675C' : 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+              {isPayoutPaid ? 'Payout Sent ✓' : isPayoutRequested ? 'Withdrawal Pending ⏳' : pendingNet !== null && pendingNet > 0 ? `Withdraw ${fmt(pendingNet)}` : 'Withdraw Earnings'}
+            </button>
           </div>
 
           <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
@@ -331,6 +516,7 @@ function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences, bo
         </div>
       </div>
     </div>
+    </>
   )
 }
 
@@ -879,7 +1065,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
 function BookingsPanel({ initialBookings }: { initialBookings?: DashBooking[] }) {
   const [statusFilter, setStatusFilter] = useState('All')
   const [search, setSearch]             = useState('')
-  const [bookings, setBookings]         = useState<DashBooking[]>(initialBookings ?? BOOKINGS_DATA)
+  const [bookings, setBookings]         = useState<DashBooking[]>(initialBookings ?? [])
   const [updating, setUpdating]         = useState<string | null>(null)
 
   const statuses = ['All', 'Pending', 'Confirmed', 'Completed', 'Cancelled']
@@ -994,10 +1180,7 @@ function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBo
   pendingPayout?: number
   payouts?: OperatorPayout[]
 }) {
-  const [showPayoutForm, setShowPayoutForm] = useState(false)
-  const [payoutInput, setPayoutInput]       = useState('')
-  const [requesting, setRequesting]         = useState(false)
-  const [requestMsg, setRequestMsg]         = useState<{ ok: boolean; text: string } | null>(null)
+  const [withdrawOpen, setWithdrawOpen] = useState(false)
 
   const netMult = (100 - commissionRate) / 100
   const hasLive = liveEarningsByMonth !== undefined
@@ -1032,34 +1215,32 @@ function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBo
   // Current-month payout status from DB records
   const nowMonthLabel = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
   const thisMonthPayout = livePayouts?.find(p => p.periodLabel === nowMonthLabel)
-  const isRequested = thisMonthPayout?.status === 'Requested' || requestMsg?.ok
+  const isRequested = thisMonthPayout?.status === 'Requested'
   const isPaid      = thisMonthPayout?.status === 'Paid'
 
-  // Payout limits
-  const pendingNet  = Math.round(pendingPayout * netMult)
-  const belowMin    = hasLive && pendingNet > 0 && pendingNet < PAYOUT_MIN_NET
-
-  const handleRequestPayout = async () => {
-    const amt = parseInt(payoutInput.replace(/\D/g, ''), 10)
-    if (!amt || amt < PAYOUT_MIN_NET) {
-      setRequestMsg({ ok: false, text: `Enter at least IDR ${PAYOUT_MIN_NET.toLocaleString()}` })
-      return
-    }
-    setRequesting(true)
-    setRequestMsg(null)
-    const res = await requestPayoutAction(amt)
-    setRequesting(false)
-    if (res.ok) {
-      setShowPayoutForm(false)
-      setRequestMsg({ ok: true, text: `IDR ${amt.toLocaleString()} requested! Balible will process within 3 business days.` })
-    } else {
-      setRequestMsg({ ok: false, text: res.error ?? 'Something went wrong.' })
-    }
-  }
+  const pendingNet = Math.round(pendingPayout * netMult)
 
   return (
+    <>
+    {withdrawOpen && (
+      <WithdrawModal
+        pendingNet={hasLive ? pendingNet : null}
+        commissionRate={commissionRate}
+        isRequested={isRequested}
+        isPaid={isPaid}
+        onClose={() => setWithdrawOpen(false)}
+      />
+    )}
     <div>
-      <PageHeader title="Earnings" subtitle="Track your revenue and payout history" />
+      <PageHeader title="Earnings" subtitle="Track your revenue and payout history"
+        action={
+          <button onClick={() => setWithdrawOpen(true)}
+            className="flex items-center gap-2 hover:opacity-90 transition-opacity flex-shrink-0"
+            style={{ height: 38, backgroundColor: isRequested || isPaid ? 'white' : '#111111', color: isRequested || isPaid ? '#6F675C' : 'white', border: isRequested || isPaid ? '1px solid #E8E4DE' : 'none', borderRadius: 9, padding: '0 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+            {isPaid ? 'Paid ✓' : isRequested ? 'Pending ⏳' : 'Withdraw'}
+          </button>
+        }
+      />
 
       {/* Commission info banner */}
       <div className="mb-5 px-4 py-3 rounded-xl flex items-center gap-3" style={{ backgroundColor: '#FDF8F4', border: '1px solid #E8D4B8' }}>
@@ -1083,58 +1264,13 @@ function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBo
           </div>
         ))}
 
-        {/* Pending Payout card — with Request Payout button */}
-        <div className="bg-white rounded-xl p-4 lg:p-5" style={{ border: `1px solid ${isPaid ? '#C8E6D6' : isRequested ? '#E8D4B8' : belowMin ? '#F5D5C5' : '#E8E4DE'}`, backgroundColor: isPaid ? '#F8FDF9' : isRequested ? '#FDFAF5' : 'white' }}>
+        {/* Pending Payout card */}
+        <div className="bg-white rounded-xl p-4 lg:p-5" style={{ border: `1px solid ${isPaid ? '#C8E6D6' : isRequested ? '#E8D4B8' : '#E8E4DE'}`, backgroundColor: isPaid ? '#F8FDF9' : isRequested ? '#FDFAF5' : 'white' }}>
           <p style={{ fontSize: 12, color: '#6F675C' }}>Pending Payout</p>
           <p className="mt-1" style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(14px,1.6vw,20px)', fontWeight: 700, color: '#111111', lineHeight: 1.2 }}>{fmt(pendingNet)}</p>
-          {isPaid ? (
-            <p className="mt-2" style={{ fontSize: 11, color: '#4A7C59', fontWeight: 600 }}>✓ Paid this month</p>
-          ) : isRequested ? (
-            <p className="mt-2" style={{ fontSize: 11, color: '#C8A97E', fontWeight: 600 }}>⏳ Requested — pending review</p>
-          ) : belowMin ? (
-            <p className="mt-2" style={{ fontSize: 11, color: '#B66A45' }}>
-              Below minimum ({fmt(PAYOUT_MIN_NET)} net required)
-            </p>
-          ) : hasLive && pendingNet > 0 ? (
-            <>
-              {!showPayoutForm ? (
-                <button onClick={() => { setShowPayoutForm(true); setRequestMsg(null) }}
-                  className="mt-2 w-full flex items-center justify-center gap-1"
-                  style={{ height: 28, borderRadius: 8, border: 'none', backgroundColor: '#C8A97E', color: 'white', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>
-                  Request Payout
-                </button>
-              ) : (
-                <div className="mt-2 space-y-1">
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    placeholder={`Amount (min ${fmt(PAYOUT_MIN_NET)})`}
-                    value={payoutInput}
-                    onChange={e => setPayoutInput(e.target.value.replace(/\D/g, ''))}
-                    style={{ width: '100%', height: 28, borderRadius: 6, border: '1px solid #D4CFC9', padding: '0 8px', fontSize: 11, outline: 'none', boxSizing: 'border-box' }}
-                  />
-                  <div className="flex gap-1">
-                    <button onClick={handleRequestPayout} disabled={requesting}
-                      style={{ flex: 1, height: 26, borderRadius: 6, border: 'none', backgroundColor: '#C8A97E', color: 'white', fontSize: 11, fontWeight: 600, cursor: requesting ? 'default' : 'pointer', opacity: requesting ? 0.7 : 1 }}>
-                      {requesting ? 'Requesting…' : 'Confirm'}
-                    </button>
-                    <button onClick={() => { setShowPayoutForm(false); setPayoutInput(''); setRequestMsg(null) }} disabled={requesting}
-                      style={{ flex: 1, height: 26, borderRadius: 6, border: '1px solid #D4CFC9', backgroundColor: 'white', fontSize: 11, color: '#6F675C', cursor: 'pointer' }}>
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              )}
-              <p className="mt-1" style={{ fontSize: 10, color: '#9B9690', textAlign: 'center' }}>
-                Min {fmt(PAYOUT_MIN_NET)} · Max {fmt(pendingNet)}
-              </p>
-            </>
-          ) : (
-            <p className="mt-2" style={{ fontSize: 11, color: '#C8A97E' }}>Confirmed earnings, not yet paid out</p>
-          )}
-          {requestMsg && (
-            <p className="mt-1" style={{ fontSize: 10, color: requestMsg.ok ? '#4A7C59' : '#B66A45', lineHeight: 1.4 }}>{requestMsg.text}</p>
-          )}
+          <p className="mt-1.5" style={{ fontSize: 11, color: isPaid ? '#4A7C59' : isRequested ? '#C8A97E' : '#6F675C', fontWeight: isPaid || isRequested ? 600 : 400 }}>
+            {isPaid ? '✓ Paid this month' : isRequested ? '⏳ Pending review' : 'Confirmed earnings, not yet paid out'}
+          </p>
         </div>
       </div>
 
@@ -1240,6 +1376,7 @@ function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBo
         </div>
       </div>
     </div>
+    </>
   )
 }
 
@@ -1247,7 +1384,7 @@ function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBo
 
 function ReviewsPanel({ initialReviews }: { initialReviews?: DashReview[] }) {
   const [starFilter, setStarFilter] = useState(0)
-  const reviews = initialReviews ?? REVIEWS_DATA
+  const reviews = initialReviews ?? []
 
   const avg     = reviews.length > 0 ? (reviews.reduce((a, r) => a + r.rating, 0) / reviews.length).toFixed(1) : '0.0'
   const visible = starFilter === 0 ? reviews : reviews.filter(r => r.rating === starFilter)
@@ -1927,9 +2064,18 @@ function EventsPanel() {
 
 // ── Availability Panel ────────────────────────────────────────────────────────
 
-const MOCK_BOOKED = new Set(['2026-06-08','2026-06-09','2026-06-12','2026-06-15','2026-06-20','2026-06-22','2026-07-04','2026-07-11','2026-07-18'])
+function AvailabilityPanel({ bookings }: { bookings?: DashBooking[] }) {
+  const bookedDates = useMemo<Set<string>>(() => {
+    if (!bookings) return new Set()
+    const s = new Set<string>()
+    bookings.forEach(b => {
+      if (b.status === 'Confirmed' || b.status === 'Pending') {
+        try { s.add(new Date(b.date).toISOString().split('T')[0]) } catch { /* skip */ }
+      }
+    })
+    return s
+  }, [bookings])
 
-function AvailabilityPanel() {
   const today = new Date()
   const [year,  setYear]  = useState(today.getFullYear())
   const [month, setMonth] = useState(today.getMonth())
@@ -1946,7 +2092,7 @@ function AvailabilityPanel() {
 
   const toggle = (d: number) => {
     const k = dayKey(d)
-    if (MOCK_BOOKED.has(k)) return
+    if (bookedDates.has(k)) return
     setBlocked(prev => {
       const next = new Set(prev)
       next.has(k) ? next.delete(k) : next.add(k)
@@ -1961,7 +2107,7 @@ function AvailabilityPanel() {
 
   const thisMonthPrefix = `${year}-${monthStr}-`
   const blockedThisMonth = Array.from(blocked).filter(k => k.startsWith(thisMonthPrefix))
-  const bookedThisMonth  = Array.from(MOCK_BOOKED).filter(k => k.startsWith(thisMonthPrefix))
+  const bookedThisMonth  = Array.from(bookedDates).filter(k => k.startsWith(thisMonthPrefix))
 
   const todayKey = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`
 
@@ -2012,7 +2158,7 @@ function AvailabilityPanel() {
           {Array.from({ length: daysInMonth }).map((_, i) => {
             const d    = i + 1
             const k    = dayKey(d)
-            const isBooked  = MOCK_BOOKED.has(k)
+            const isBooked  = bookedDates.has(k)
             const isBlocked = blocked.has(k)
             const isToday   = k === todayKey
             const isPast    = new Date(year, month, d) < new Date(today.getFullYear(), today.getMonth(), today.getDate())
@@ -2168,11 +2314,7 @@ function PhotosPanel({ experiences }: { experiences?: DashExp[] }) {
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 
-const HOST_NOTIFICATIONS = [
-  { id: 1, title: 'New booking received', body: 'Sarah Kim booked Pottery Making Class for Jun 15', time: '2 min ago', unread: true },
-  { id: 2, title: 'New 5★ review', body: 'Thomas R. left a review on Pottery Making Class', time: '1 hr ago', unread: true },
-  { id: 3, title: 'Booking confirmed', body: 'Priya M. confirmed her Batik Painting Workshop slot', time: 'Yesterday', unread: false },
-]
+const HOST_NOTIFICATIONS: { id: number; title: string; body: string; time: string; unread: boolean }[] = []
 
 function HostNotifBell({ onSettings, align = 'left', dark = false }: { onSettings: () => void; align?: 'left' | 'right'; dark?: boolean }) {
   const [notifOpen, setNotifOpen] = useState(false)
@@ -2239,8 +2381,8 @@ function SidebarInner({ activeNav, setActiveNav, hostName }: { activeNav: string
   return (
     <>
       <div className="flex items-center justify-between px-5 pt-6 pb-4">
-        <a href="/" className="flex flex-col leading-none" style={{ textDecoration: 'none' }}>
-          <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: 'white' }}>BALIBLE</span>
+        <a href="/" className="flex flex-col gap-1 leading-none" style={{ textDecoration: 'none' }}>
+          <img src="/logo-light.png" alt="Balible" style={{ height: 28, width: 'auto', objectFit: 'contain', display: 'block' }} />
           <span style={{ fontSize: 7, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>HOST DASHBOARD</span>
         </a>
       </div>
@@ -2316,17 +2458,17 @@ export default function DashboardPage() {
 
   const renderPanel = () => {
     switch (activeNav) {
-      case 'overview':      return <OverviewPanel onNav={setActiveNav} commissionRate={commissionRate} experiences={liveExperiences} bookings={liveBookings} reviews={liveReviews} hostName={liveHostName} />
+      case 'overview':      return <OverviewPanel onNav={setActiveNav} commissionRate={commissionRate} experiences={liveExperiences} bookings={liveBookings} reviews={liveReviews} hostName={liveHostName} earningsByMonth={liveEarningsByMonth} pendingPayout={livePendingPayout} payouts={livePayouts} />
       case 'experiences':   return <ExperiencesPanel commissionRate={commissionRate} initialExperiences={liveExperiences} />
       case 'events':        return <EventsPanel />
       case 'bookings':      return <BookingsPanel initialBookings={liveBookings} />
-      case 'availability':  return <AvailabilityPanel />
+      case 'availability':  return <AvailabilityPanel bookings={liveBookings} />
       case 'earnings':      return <EarningsPanel commissionRate={commissionRate} experiences={liveExperiences} bookings={liveBookings} earningsByMonth={liveEarningsByMonth} totalGross={liveTotalGross} pendingPayout={livePendingPayout} payouts={livePayouts} />
       case 'photos':        return <PhotosPanel experiences={liveExperiences} />
       case 'reviews':       return <ReviewsPanel initialReviews={liveReviews} />
       case 'profile':       return <ProfilePanel />
       case 'settings':      return <SettingsPanel />
-      default:              return <OverviewPanel onNav={setActiveNav} commissionRate={commissionRate} experiences={liveExperiences} bookings={liveBookings} reviews={liveReviews} hostName={liveHostName} />
+      default:              return <OverviewPanel onNav={setActiveNav} commissionRate={commissionRate} experiences={liveExperiences} bookings={liveBookings} reviews={liveReviews} hostName={liveHostName} earningsByMonth={liveEarningsByMonth} />
     }
   }
 
@@ -2361,9 +2503,9 @@ export default function DashboardPage() {
           <button onClick={() => setSidebarOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
             <Menu size={22} style={{ color: '#111111' }} />
           </button>
-          <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>
-            {NAV_ITEMS.find(n => n.id === activeNav)?.label ?? 'Dashboard'}
-          </span>
+          <a href="/" style={{ textDecoration: 'none' }}>
+            <img src="/logo-dark.png" alt="Balible" style={{ height: 24, width: 'auto', objectFit: 'contain', display: 'block' }} />
+          </a>
           <HostNotifBell onSettings={() => setActiveNav('settings')} align="right" dark />
         </div>
 

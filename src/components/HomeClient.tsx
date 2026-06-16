@@ -483,9 +483,9 @@ export default function HomeClient({ experiences, upcomingEvents }: { experience
                       </div>
                       <div style={{ padding: '14px 16px' }}>
                         <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 4 }}>{ev.title}</p>
-                        <p style={{ fontSize: 12, color: '#6F675C', marginBottom: 10 }}>⏰ {timeStr} · 📍 {ev.location.split(',')[0]}</p>
+                        <p style={{ fontSize: 12, color: '#6F675C', marginBottom: 10 }}>{timeStr} · {ev.location.split(',')[0]}</p>
                         <div className="flex items-center justify-between">
-                          <span style={{ fontSize: 13, color: '#6F675C' }}>👥 Up to {ev.capacity}</span>
+                          <span style={{ fontSize: 13, color: '#6F675C' }}>Up to {ev.capacity}</span>
                           <span style={{ fontSize: 14, fontWeight: 700, color: '#111111' }}>
                             {ev.price === 0 ? 'Free' : `IDR ${ev.price.toLocaleString('id-ID')}`}
                           </span>

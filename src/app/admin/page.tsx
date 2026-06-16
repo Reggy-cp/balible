@@ -43,36 +43,7 @@ const SAND = '#E8E4DE'
 const FOREST = '#4A7C59'
 const TERRACOTTA = '#B66A45'
 
-// ── Mock data ─────────────────────────────────────────────────────────────────
-
-const PLATFORM_STATS = [
-  { label: 'Total Bookings',    value: '1,248', change: '+16.2%', up: true  },
-  { label: 'Platform Revenue',  value: 'IDR 2.45B', change: '+18.3%', up: true  },
-  { label: 'Active Hosts',      value: '47',    change: '+12.5%', up: true  },
-  { label: 'Total Experiences', value: '31',    change: '+8.1%',  up: true  },
-]
-
-const BOOKING_CHART = [180, 220, 195, 260, 240, 290, 270, 310, 285, 340, 320, 380]
-const REVENUE_CHART = [3200000, 2800000, 4100000, 3600000, 4800000, 5200000, 4400000, 5800000, 5100000, 6200000, 5700000, 7400000]
-const MONTHS = ['Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun']
-
-const CATEGORY_DIST = [
-  { name: 'Wellness & Healing', pct: 32, color: FOREST },
-  { name: 'Art & Craft',       pct: 28, color: GOLD   },
-  { name: 'Culture',           pct: 16, color: TERRACOTTA },
-  { name: 'Nature & Outdoors', pct: 11, color: COCONUT },
-  { name: 'Culinary',          pct: 7,  color: CHARCOAL },
-  { name: 'Water Activities',  pct: 6,  color: '#3B82F6' },
-]
-
-
-const PAYOUTS = [
-  { id: 'P1', host: 'I Nyoman Arta',  period: 'May 1–31, 2024', gross: 89100000, commission: 8910000, net: 80190000, status: 'Paid',    date: 'Jun 5, 2024'  },
-  { id: 'P2', host: 'Nina Putri',     period: 'May 1–31, 2024', gross: 42000000, commission: 4200000, net: 37800000, status: 'Paid',    date: 'Jun 5, 2024'  },
-  { id: 'P3', host: 'Made Sari',      period: 'May 1–31, 2024', gross: 29250000, commission: 2925000, net: 26325000, status: 'Pending', date: 'Jun 10, 2024' },
-  { id: 'P4', host: 'Komang Surya',   period: 'May 1–31, 2024', gross: 54400000, commission: 5440000, net: 48960000, status: 'Pending', date: 'Jun 10, 2024' },
-  { id: 'P5', host: 'Wayan Surya',    period: 'Apr 1–30, 2024', gross: 68250000, commission: 6825000, net: 61425000, status: 'Paid',    date: 'May 5, 2024'  },
-]
+const MONTHS_FALLBACK = ['Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun']
 
 const NAV_ITEMS = [
   { id: 'overview',    label: 'Overview',    Icon: LayoutDashboard },
@@ -144,7 +115,7 @@ function MiniChart({ data, color }: { data: number[]; color: string }) {
   )
 }
 
-function DonutChart({ data, total }: { data: typeof CATEGORY_DIST; total: number }) {
+function DonutChart({ data, total }: { data: { name: string; pct: number; color: string }[]; total: number }) {
   const SIZE = 120, R = 44, STROKE = 20, CIRC = 2 * Math.PI * R
   let cumulative = 0
   const segments = data.map(cat => {
@@ -205,25 +176,46 @@ function SearchBar({ value, onChange, placeholder }: { value: string; onChange: 
 // ── Overview Panel ────────────────────────────────────────────────────────────
 
 function OverviewPanel({ onNav }: { onNav: (id: string) => void }) {
-  const { data: session }   = useSession()
-  const [period, setPeriod] = useState('This Month')
-  const [stats, setStats]   = useState<AdminStats | null>(null)
-  const [recent, setRecent] = useState<AdminBooking[]>([])
+  const { data: session }     = useSession()
+  const [period, setPeriod]   = useState('This Month')
+  const [stats, setStats]     = useState<AdminStats | null>(null)
+  const [recent, setRecent]   = useState<AdminBooking[]>([])
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
+  const [pendingPayoutsNet, setPendingPayoutsNet] = useState<number | null>(null)
 
   useEffect(() => {
     getAdminStatsAction().then(setStats)
     getAdminBookingsAction().then(b => setRecent(b.slice(0, 5)))
+    getAnalyticsDataAction(365).then(setAnalytics).catch(() => {})
+    getAdminRealPayoutsAction().then(q => setPendingPayoutsNet(q.reduce((a, p) => a + p.net, 0))).catch(() => {})
   }, [])
 
-  const slice  = period === 'This Month' ? BOOKING_CHART.slice(6)  : BOOKING_CHART.slice(0, 6)
-  const labels = period === 'This Month' ? MONTHS.slice(6)         : MONTHS.slice(0, 6)
+  const trendData   = analytics?.bookingTrend ?? []
+  const half        = Math.floor(trendData.length / 2) || 6
+  const trendSlice  = period === 'This Month' ? trendData.slice(half) : trendData.slice(0, half)
+  const slice       = trendSlice.length > 0 ? trendSlice.map(t => t.current) : [0, 0, 0, 0, 0, 0]
+  const labels      = trendSlice.length > 0 ? trendSlice.map(t => t.label)   : (period === 'This Month' ? MONTHS_FALLBACK.slice(6) : MONTHS_FALLBACK.slice(0, 6))
+
+  const bookingMom = analytics ? (() => {
+    const h = Math.floor(analytics.bookingTrend.length / 2)
+    const curr = analytics.bookingTrend.slice(h).reduce((a, t) => a + t.current, 0)
+    const prev = analytics.bookingTrend.slice(0, h).reduce((a, t) => a + t.current, 0)
+    return prev > 0 ? Math.round(((curr - prev) / prev) * 100) : null
+  })() : null
+
+  const catData = analytics?.categoryBreakdown ?? []
 
   const statCards = stats ? [
     { label: 'Total Bookings',    value: stats.totalBookings.toLocaleString(),               change: '', up: true },
     { label: 'Platform Revenue',  value: `IDR ${stats.totalRevenue.toLocaleString('id-ID')}`, change: '', up: true },
     { label: 'Active Hosts',      value: stats.activeHosts.toString(),                        change: '', up: true },
     { label: 'Total Experiences', value: stats.totalExperiences.toString(),                   change: '', up: true },
-  ] : PLATFORM_STATS
+  ] : [
+    { label: 'Total Bookings',    value: '—', change: '', up: true },
+    { label: 'Platform Revenue',  value: '—', change: '', up: true },
+    { label: 'Active Hosts',      value: '—', change: '', up: true },
+    { label: 'Total Experiences', value: '—', change: '', up: true },
+  ]
 
   return (
     <div>
@@ -268,8 +260,14 @@ function OverviewPanel({ onNav }: { onNav: (id: string) => void }) {
             </button>
           </div>
           <div className="flex items-baseline gap-2 my-2">
-            <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: CHARCOAL }}>1,248</span>
-            <span style={{ fontSize: 12, color: FOREST }}>↑ 16.2%</span>
+            <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: CHARCOAL }}>
+              {stats?.totalBookings.toLocaleString() ?? '—'}
+            </span>
+            {bookingMom !== null && (
+              <span style={{ fontSize: 12, color: bookingMom >= 0 ? FOREST : TERRACOTTA }}>
+                {bookingMom >= 0 ? '↑' : '↓'} {Math.abs(bookingMom)}%
+              </span>
+            )}
           </div>
           <MiniChart data={slice} color={FOREST} />
           <div className="flex justify-between mt-1">
@@ -280,7 +278,10 @@ function OverviewPanel({ onNav }: { onNav: (id: string) => void }) {
         {/* Category breakdown */}
         <div className="lg:col-span-2 bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
           <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: CHARCOAL }}>By Category</h2>
-          <DonutChart data={CATEGORY_DIST} total={1248} />
+          {catData.length > 0
+            ? <DonutChart data={catData} total={stats?.totalBookings ?? 0} />
+            : <p style={{ fontSize: 13, color: COCONUT, padding: '16px 0' }}>Loading…</p>
+          }
         </div>
       </div>
 
@@ -321,7 +322,7 @@ function OverviewPanel({ onNav }: { onNav: (id: string) => void }) {
         {[
           { label: 'Pending Listings',  value: stats?.pendingListings.toString() ?? '—',  sub: 'Awaiting review', color: GOLD, action: () => onNav('experiences') },
           { label: 'Pending Hosts',     value: stats?.pendingHosts.toString() ?? '—',     sub: 'Host applications', color: TERRACOTTA, action: () => onNav('hosts') },
-          { label: 'Pending Payouts',   value: fmt(PAYOUTS.filter(p => p.status === 'Pending').reduce((a, p) => a + p.net, 0)), sub: 'Awaiting payout', color: FOREST, action: () => onNav('payments') },
+          { label: 'Pending Payouts',   value: pendingPayoutsNet !== null ? fmt(pendingPayoutsNet) : '—', sub: 'Awaiting payout', color: FOREST, action: () => onNav('payments') },
         ].map(card => (
           <button key={card.label} onClick={card.action}
             className="text-left bg-white rounded-xl p-4 hover:shadow-md transition-shadow cursor-pointer w-full"
@@ -2864,23 +2865,7 @@ function FeaturedPanel() {
 
 // ── Activity Log Panel ────────────────────────────────────────────────────────
 
-const ACTIVITY_ITEMS = [
-  { id: 1,  type: 'booking', icon: '📅', actor: 'Sarah Kim',       action: 'booked Pottery Making Class',              time: '2 min ago'  },
-  { id: 2,  type: 'review',  icon: '⭐', actor: 'Thomas Reeves',   action: 'left a 5★ review on Pottery Making Class', time: '18 min ago' },
-  { id: 3,  type: 'host',    icon: '🧑', actor: 'Komang Surya',    action: 'applied to become a host',                 time: '1 hr ago'   },
-  { id: 4,  type: 'booking', icon: '📅', actor: 'Priya Mehta',     action: 'booked Batik Painting Workshop',           time: '2 hr ago'   },
-  { id: 5,  type: 'exp',     icon: '🏡', actor: 'I Nyoman Arta',   action: 'submitted a new listing for review',       time: '4 hr ago'   },
-  { id: 6,  type: 'cancel',  icon: '❌', actor: 'James Park',       action: 'cancelled booking BAL-2024-008',           time: '5 hr ago'   },
-  { id: 7,  type: 'user',    icon: '👤', actor: 'Yuki Tanaka',     action: 'created a new account',                    time: '6 hr ago'   },
-  { id: 8,  type: 'review',  icon: '⭐', actor: 'Lisa Wagner',     action: 'left a 4★ review on Batik Workshop',       time: '8 hr ago'   },
-  { id: 9,  type: 'host',    icon: '✅', actor: 'Made Sari',       action: 'was approved as a verified host',          time: '1 day ago'  },
-  { id: 10, type: 'booking', icon: '📅', actor: 'Marco Bianchi',   action: 'booked Pottery Making Class',              time: '1 day ago'  },
-  { id: 11, type: 'exp',     icon: '🟢', actor: 'Admin',           action: 'activated Wooden Mask Carving Class',      time: '1 day ago'  },
-  { id: 12, type: 'payout',  icon: '💸', actor: 'System',          action: 'processed payout IDR 80.2M → I Nyoman Arta', time: '2 days ago' },
-  { id: 13, type: 'user',    icon: '👤', actor: 'Alex Chen',       action: 'created a new account',                    time: '2 days ago' },
-  { id: 14, type: 'booking', icon: '📅', actor: 'Alex Chen',       action: 'booked Batik Painting Workshop',           time: '2 days ago' },
-  { id: 15, type: 'payout',  icon: '📢', actor: 'Admin',           action: 'sent broadcast to 234 users',              time: '3 days ago' },
-]
+const ACTIVITY_ITEMS: { id: number; type: string; icon: string; actor: string; action: string; time: string }[] = []
 
 const ACT_FILTERS = [
   { id: 'all',     label: 'All'      },
@@ -2942,7 +2927,10 @@ function ActivityLogPanel() {
 
       <div className="bg-white rounded-xl overflow-hidden" style={{ border: `1px solid ${SAND}` }}>
         {visible.length === 0 && (
-          <div className="py-12 text-center"><p style={{ fontSize: 13, color: COCONUT }}>No activity matches your filter.</p></div>
+          <div className="py-12 text-center">
+            <p style={{ fontSize: 13, color: COCONUT }}>No activity recorded yet.</p>
+            <p style={{ fontSize: 12, color: COCONUT, opacity: 0.6, marginTop: 4 }}>Activity log requires an audit table — bookings, reviews and host actions will appear here.</p>
+          </div>
         )}
         {visible.map((item, i) => (
           <div key={item.id} className="flex items-start gap-4 px-5 py-4 hover:bg-stone-50 transition-colors"
@@ -3417,8 +3405,8 @@ function Sidebar({ activeNav, setActiveNav, pendingHosts = 0, pendingListings = 
   return (
     <>
       <div className="flex items-center justify-between px-5 pt-6 pb-4">
-        <a href="/" className="flex flex-col leading-none" style={{ textDecoration: 'none' }}>
-          <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: 'white' }}>BALIBLE</span>
+        <a href="/" className="flex flex-col gap-1 leading-none" style={{ textDecoration: 'none' }}>
+          <img src="/logo-light.png" alt="Balible" style={{ height: 28, width: 'auto', objectFit: 'contain', display: 'block' }} />
           <span style={{ fontSize: 7, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>OWNER DASHBOARD</span>
         </a>
       </div>
@@ -3529,9 +3517,9 @@ export default function AdminPage() {
           <button onClick={() => setSidebarOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
             <Menu size={22} style={{ color: CHARCOAL }} />
           </button>
-          <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: CHARCOAL }}>
-            {NAV_ITEMS.find(n => n.id === activeNav)?.label ?? 'Dashboard'}
-          </span>
+          <a href="/" style={{ textDecoration: 'none' }}>
+            <img src="/logo-dark.png" alt="Balible" style={{ height: 24, width: 'auto', objectFit: 'contain', display: 'block' }} />
+          </a>
           <AdminNotifBell onNavigate={setActiveNav} align="right" dark pendingHosts={pendingHosts} pendingListings={pendingListings} />
         </div>
 
