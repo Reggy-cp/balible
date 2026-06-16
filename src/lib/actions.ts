@@ -422,6 +422,7 @@ export async function getHostExperiencesAction(): Promise<DashExp[] | null> {
       bookings: e._count.bookings,
       status: statusDisplay[String(e.status)] ?? 'Draft',
       image: (e.images as string[])[0] ?? '',
+      images: e.images as string[],
       earnings: (e.bookings as { totalPrice: number }[]).reduce((a, b) => a + b.totalPrice, 0),
       description: e.description,
       meetingPoint: e.meetingPoint,
@@ -1126,7 +1127,7 @@ export type DashExp = {
   id: number; slug: string; title: string; category: string; area: string
   price: number; duration: string; maxGuests: number
   rating: number; totalReviews: number; bookings: number; status: string
-  image: string; earnings: number
+  image: string; images: string[]; earnings: number
   description: string; meetingPoint: string
   includes: string[]; excludes: string[]
   itinerary: { time: string; activity: string }[]
@@ -1270,6 +1271,7 @@ export async function getHostDashboardData(viewOperatorId?: string): Promise<Hos
       bookings: e._count.bookings,
       status: expStatusDisplay[String(e.status)] ?? 'Draft',
       image: (e.images as string[])[0] ?? '',
+      images: e.images as string[],
       earnings: (e.bookings as { totalPrice: number }[]).reduce((a, b) => a + b.totalPrice, 0),
       description: e.description,
       meetingPoint: e.meetingPoint,
@@ -1992,4 +1994,139 @@ export async function getGADataAction(
     console.error('GA Data API error:', e)
     return null
   }
+}
+
+// ── Admin settings (Setting model) ───────────────────────────────────────────
+
+export async function getAdminSettingsAction(keys: string[]): Promise<Record<string, string | null>> {
+  await requireAdmin()
+  const rows = await prisma.setting.findMany({ where: { key: { in: keys } } })
+  const result: Record<string, string | null> = {}
+  for (const k of keys) result[k] = rows.find(r => r.key === k)?.value ?? null
+  return result
+}
+
+export async function saveAdminSettingsAction(settings: Record<string, string>): Promise<{ ok: boolean }> {
+  try {
+    await requireAdmin()
+    await Promise.all(
+      Object.entries(settings).map(([key, value]) =>
+        prisma.setting.upsert({ where: { key }, update: { value }, create: { key, value } })
+      )
+    )
+    return { ok: true }
+  } catch {
+    return { ok: false }
+  }
+}
+
+// ── Operator settings (notifs + payout bank + blocked dates) ─────────────────
+
+export type OperatorSettings = {
+  notifSettings: Record<string, boolean> | null
+  payoutBank: string
+  payoutAccountNumber: string
+  payoutAccountName: string
+  blockedDates: string[]
+}
+
+export async function getOperatorSettingsAction(): Promise<OperatorSettings | null> {
+  try {
+    const user = await getSessionUser()
+    if (!user) return null
+    const op = await prisma.operator.findUnique({
+      where: { userId: user.id },
+      select: { notifSettings: true, payoutBank: true, payoutAccountNumber: true, payoutAccountName: true, blockedDates: true },
+    })
+    if (!op) return null
+    return {
+      notifSettings: (op.notifSettings as Record<string, boolean> | null) ?? null,
+      payoutBank: op.payoutBank ?? '',
+      payoutAccountNumber: op.payoutAccountNumber ?? '',
+      payoutAccountName: op.payoutAccountName ?? '',
+      blockedDates: op.blockedDates as string[],
+    }
+  } catch { return null }
+}
+
+export async function updateOperatorSettingsAction(data: {
+  notifSettings?: Record<string, boolean>
+  payoutBank?: string
+  payoutAccountNumber?: string
+  payoutAccountName?: string
+  blockedDates?: string[]
+}): Promise<{ ok: boolean }> {
+  try {
+    const user = await getSessionUser()
+    if (!user) return { ok: false }
+    await prisma.operator.update({
+      where: { userId: user.id },
+      data: {
+        ...(data.notifSettings !== undefined && { notifSettings: data.notifSettings }),
+        ...(data.payoutBank !== undefined && { payoutBank: data.payoutBank || null }),
+        ...(data.payoutAccountNumber !== undefined && { payoutAccountNumber: data.payoutAccountNumber || null }),
+        ...(data.payoutAccountName !== undefined && { payoutAccountName: data.payoutAccountName || null }),
+        ...(data.blockedDates !== undefined && { blockedDates: data.blockedDates }),
+      },
+    })
+    return { ok: true }
+  } catch { return { ok: false } }
+}
+
+// ── Experience gallery images ─────────────────────────────────────────────────
+
+export async function updateExperienceImagesAction(slug: string, images: string[]): Promise<{ ok: boolean }> {
+  try {
+    const user = await getSessionUser()
+    if (!user) return { ok: false }
+    const op = await prisma.operator.findUnique({ where: { userId: user.id } })
+    if (!op) return { ok: false }
+    await prisma.experience.update({ where: { slug, operatorId: op.id }, data: { images } })
+    return { ok: true }
+  } catch { return { ok: false } }
+}
+
+// ── User profile settings (tourists) ─────────────────────────────────────────
+
+export type UserProfileSettings = {
+  phone: string
+  nationality: string
+  notifSettings: Record<string, boolean> | null
+}
+
+export async function getUserProfileSettingsAction(): Promise<UserProfileSettings | null> {
+  try {
+    const user = await getSessionUser()
+    if (!user) return null
+    const full = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { phone: true, nationality: true, notifSettings: true },
+    })
+    if (!full) return null
+    return {
+      phone: full.phone ?? '',
+      nationality: full.nationality ?? '',
+      notifSettings: (full.notifSettings as Record<string, boolean> | null) ?? null,
+    }
+  } catch { return null }
+}
+
+export async function updateUserProfileSettingsAction(data: {
+  phone?: string
+  nationality?: string
+  notifSettings?: Record<string, boolean>
+}): Promise<{ ok: boolean }> {
+  try {
+    const user = await getSessionUser()
+    if (!user) return { ok: false }
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        ...(data.phone !== undefined && { phone: data.phone || null }),
+        ...(data.nationality !== undefined && { nationality: data.nationality || null }),
+        ...(data.notifSettings !== undefined && { notifSettings: data.notifSettings }),
+      },
+    })
+    return { ok: true }
+  } catch { return { ok: false } }
 }

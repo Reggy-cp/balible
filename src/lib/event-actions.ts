@@ -24,6 +24,7 @@ export type EventRow = {
   price: number
   capacity: number
   coverImage: string | null
+  images: string[]
   status: string
   createdAt: string
 }
@@ -42,7 +43,7 @@ async function getOperator() {
 function toRow(e: {
   id: string; slug: string; title: string; description: string;
   date: Date; location: string; price: number; capacity: number;
-  coverImage: string | null; status: string; createdAt: Date
+  coverImage: string | null; images: string[]; status: string; createdAt: Date
 }): EventRow {
   return {
     id: e.id,
@@ -54,9 +55,19 @@ function toRow(e: {
     price: e.price,
     capacity: e.capacity,
     coverImage: e.coverImage,
+    images: e.images,
     status: e.status,
     createdAt: e.createdAt.toISOString(),
   }
+}
+
+export async function updateEventImagesAction(id: string, images: string[]): Promise<{ ok: boolean }> {
+  try {
+    const op = await getOperator()
+    if (!op) return { ok: false }
+    await prisma.event.update({ where: { id, operatorId: op.id }, data: { images } })
+    return { ok: true }
+  } catch { return { ok: false } }
 }
 
 export async function getHostEvents(): Promise<EventRow[]> {

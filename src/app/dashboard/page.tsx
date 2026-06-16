@@ -11,7 +11,7 @@ import {
   Ticket, Globe, Lock, ChevronLeft, ChevronRight, CalendarRange, Images,
 } from 'lucide-react'
 import {
-  getHostEvents, createEvent, updateEvent, deleteEvent,
+  getHostEvents, createEvent, updateEvent, deleteEvent, updateEventImagesAction,
   type EventRow, type EventInput,
 } from '@/lib/event-actions'
 import {
@@ -22,6 +22,8 @@ import {
   requestPayoutAction,
   updateBookingStatusAction,
   updateHostProfileAction,
+  getOperatorSettingsAction, updateOperatorSettingsAction,
+  updateExperienceImagesAction,
   type DashExp, type DashBooking, type DashReview, type EarningsByMonth, type HostProfile,
 } from '@/lib/actions'
 import { PAYOUT_MIN_NET } from '@/lib/constants'
@@ -39,7 +41,7 @@ const EXPERIENCES: DashExp[] = [
     price: 450000, duration: '2.5 hours', maxGuests: 8,
     rating: 4.9, totalReviews: 128, bookings: 87, status: 'Active',
     image: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=200&auto=format&fit=crop&q=80',
-    earnings: 39150000, description: '', meetingPoint: '', includes: [], excludes: [], itinerary: [],
+    earnings: 39150000, description: '', meetingPoint: '', includes: [], excludes: [], itinerary: [], images: [],
   },
   {
     id: 2, slug: 'batik-painting-workshop',
@@ -47,7 +49,7 @@ const EXPERIENCES: DashExp[] = [
     price: 380000, duration: '3 hours', maxGuests: 6,
     rating: 4.7, totalReviews: 64, bookings: 41, status: 'Active',
     image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=200&auto=format&fit=crop&q=80',
-    earnings: 15580000, description: '', meetingPoint: '', includes: [], excludes: [], itinerary: [],
+    earnings: 15580000, description: '', meetingPoint: '', includes: [], excludes: [], itinerary: [], images: [],
   },
   {
     id: 3, slug: 'clay-sculpture-session',
@@ -55,7 +57,7 @@ const EXPERIENCES: DashExp[] = [
     price: 520000, duration: '4 hours', maxGuests: 4,
     rating: 4.8, totalReviews: 19, bookings: 12, status: 'Draft',
     image: 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=200&auto=format&fit=crop&q=80',
-    earnings: 6240000, description: '', meetingPoint: '', includes: [], excludes: [], itinerary: [],
+    earnings: 6240000, description: '', meetingPoint: '', includes: [], excludes: [], itinerary: [], images: [],
   },
   {
     id: 4, slug: 'wooden-mask-carving',
@@ -63,7 +65,7 @@ const EXPERIENCES: DashExp[] = [
     price: 600000, duration: '5 hours', maxGuests: 4,
     rating: 4.6, totalReviews: 9, bookings: 5, status: 'Paused',
     image: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=200&auto=format&fit=crop&q=80',
-    earnings: 3000000, description: '', meetingPoint: '', includes: [], excludes: [], itinerary: [],
+    earnings: 3000000, description: '', meetingPoint: '', includes: [], excludes: [], itinerary: [], images: [],
   },
 ]
 
@@ -1615,28 +1617,39 @@ function ProfilePanel({ profile: liveProfile }: { profile?: HostProfile }) {
 // ── Settings Panel ────────────────────────────────────────────────────────────
 
 const HOST_NOTIF_DEFAULTS  = { newBooking: true, cancellation: true, review: false, reminders: true }
-const HOST_PAYOUT_DEFAULTS = { bankName: '', accountNumber: '', accountHolder: '' }
 
 function SettingsPanel() {
   const readOnly = useContext(ReadOnlyContext)
-  const [notifs, setNotifs]       = useState(() => lsh('balible_host_notifs',  HOST_NOTIF_DEFAULTS))
-  const [payout, setPayout]       = useState(() => lsh('balible_host_payout',  HOST_PAYOUT_DEFAULTS))
-  const [saved, setSaved]         = useState(false)
+  const [notifs, setNotifs]   = useState(HOST_NOTIF_DEFAULTS)
+  const [payout, setPayout]   = useState({ bankName: '', accountNumber: '', accountHolder: '' })
+  const [saved, setSaved]     = useState(false)
+  const [saving, setSaving]   = useState(false)
   const [notifSaved, setNotifSaved] = useState(false)
 
-  const save = () => {
+  useEffect(() => {
+    getOperatorSettingsAction().then(s => {
+      if (!s) return
+      if (s.notifSettings) setNotifs({ ...HOST_NOTIF_DEFAULTS, ...s.notifSettings } as typeof HOST_NOTIF_DEFAULTS)
+      setPayout({ bankName: s.payoutBank, accountNumber: s.payoutAccountNumber, accountHolder: s.payoutAccountName })
+    })
+  }, [])
+
+  const save = async () => {
     if (readOnly) return
-    localStorage.setItem('balible_host_notifs',  JSON.stringify(notifs))
-    localStorage.setItem('balible_host_payout',  JSON.stringify(payout))
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
+    setSaving(true)
+    await updateOperatorSettingsAction({
+      payoutBank: payout.bankName,
+      payoutAccountNumber: payout.accountNumber,
+      payoutAccountName: payout.accountHolder,
+    })
+    setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2000)
   }
-  const toggle = (key: keyof typeof notifs) => {
+  const toggle = async (key: keyof typeof notifs) => {
+    if (readOnly) return
     const next = { ...notifs, [key]: !notifs[key] }
     setNotifs(next)
-    localStorage.setItem('balible_host_notifs', JSON.stringify(next))
-    setNotifSaved(true)
-    setTimeout(() => setNotifSaved(false), 1500)
+    await updateOperatorSettingsAction({ notifSettings: next })
+    setNotifSaved(true); setTimeout(() => setNotifSaved(false), 1500)
   }
 
   return (
@@ -1711,9 +1724,9 @@ function SettingsPanel() {
           </div>
         </div>
 
-        <button onClick={save} className="flex items-center gap-2 hover:opacity-90 transition-opacity"
-          style={{ height: 44, paddingInline: 24, borderRadius: 10, border: 'none', backgroundColor: saved ? '#4A7C59' : '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s', minWidth: 140 }}>
-          {saved ? <><Check size={14} /> Saved!</> : 'Save Settings'}
+        <button onClick={save} disabled={saving || readOnly} className="flex items-center gap-2 hover:opacity-90 transition-opacity"
+          style={{ height: 44, paddingInline: 24, borderRadius: 10, border: 'none', backgroundColor: saved ? '#4A7C59' : '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: (saving || readOnly) ? 'default' : 'pointer', opacity: (saving || readOnly) ? 0.6 : 1, transition: 'background 0.2s', minWidth: 140 }}>
+          {saved ? <><Check size={14} /> Saved!</> : saving ? 'Saving…' : 'Save Settings'}
         </button>
       </div>
     </div>
@@ -1726,14 +1739,6 @@ const EMPTY_EVENT: EventInput = {
   title: '', description: '', date: '', location: '', price: 0, capacity: 10, coverImage: '', status: 'DRAFT',
 }
 
-const LS_EVENTS_KEY = 'balible_host_events'
-
-function lsEvents(): EventRow[] {
-  try { const v = localStorage.getItem(LS_EVENTS_KEY); return v ? JSON.parse(v) : [] } catch { return [] }
-}
-function saveEvents(evs: EventRow[]) {
-  try { localStorage.setItem(LS_EVENTS_KEY, JSON.stringify(evs)) } catch {}
-}
 
 function EventsPanel() {
   const readOnly = useContext(ReadOnlyContext)
@@ -1749,19 +1754,14 @@ function EventsPanel() {
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
-  // Load from DB, fall back to localStorage
   useEffect(() => {
-    getHostEvents().then(dbEvents => {
-      const local = lsEvents()
-      const merged = [...dbEvents]
-      local.forEach(lev => { if (!merged.find(e => e.id === lev.id)) merged.push(lev) })
-      merged.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      setEvents(merged)
+    getHostEvents().then(rows => {
+      setEvents(rows.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()))
       setLoading(false)
     })
   }, [])
 
-  const setAndSave = (next: EventRow[]) => { setEvents(next); saveEvents(next) }
+  const setAndSave = (next: EventRow[]) => setEvents(next)
 
   function openCreate() {
     setEditing(null); setForm(EMPTY_EVENT); setGalleryUrls(['', '', '', '', ''])
@@ -1775,7 +1775,7 @@ function EventsPanel() {
       location: ev.location, price: ev.price, capacity: ev.capacity,
       coverImage: ev.coverImage ?? '', status: ev.status as EventInput['status'],
     })
-    const savedGallery: string[] = (() => { try { const v = localStorage.getItem(`balible_event_gallery_${ev.slug}`); return v ? JSON.parse(v) : [] } catch { return [] } })()
+    const savedGallery = ev.images ?? []
     setGalleryUrls([...savedGallery, '', '', '', '', ''].slice(0, 5))
     setImagePreview(ev.coverImage ?? null)
     setImageMode(ev.coverImage?.startsWith('http') ? 'url' : 'upload')
@@ -1797,7 +1797,7 @@ function EventsPanel() {
       title: input.title, description: input.description,
       date: new Date(input.date).toISOString(),
       location: input.location, price: input.price, capacity: input.capacity,
-      coverImage: input.coverImage ?? null, status: input.status ?? 'DRAFT',
+      coverImage: input.coverImage ?? null, images: [], status: input.status ?? 'DRAFT',
       createdAt: new Date().toISOString(),
     }
   }
@@ -1810,30 +1810,20 @@ function EventsPanel() {
     if (!form.location.trim()) { setSaveError('Location is required.'); return }
 
     setSaving(true)
-    const slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + Math.random().toString(36).slice(2, 5)
-    const finalSlug = editing?.slug ?? slug
     const validGallery = galleryUrls.filter(u => u.trim())
-    if (validGallery.length > 0) {
-      try { localStorage.setItem(`balible_event_gallery_${finalSlug}`, JSON.stringify(validGallery)) } catch {}
-    }
 
     if (editing) {
       const res = await updateEvent(editing.id, form)
-      const updated = { ...editing, ...form, date: new Date(form.date).toISOString() }
-      if (res.ok) {
-        setAndSave(events.map(e => e.id === editing.id ? updated : e))
-      } else {
-        // DB failed — update locally
-        setAndSave(events.map(e => e.id === editing.id ? updated : e))
+      const updated = { ...editing, ...form, date: new Date(form.date).toISOString(), images: validGallery }
+      if (res.ok && validGallery.length > 0) {
+        await updateEventImagesAction(editing.id, validGallery)
       }
+      setAndSave(events.map(e => e.id === editing.id ? updated : e))
     } else {
       const res = await createEvent(form)
       if (res.ok && res.event) {
-        setAndSave([...events, res.event])
-      } else {
-        // DB failed — persist locally
-        const local = makeLocalRow(form, slug)
-        setAndSave([...events, local])
+        if (validGallery.length > 0) await updateEventImagesAction(res.event.id, validGallery)
+        setAndSave([...events, { ...res.event, images: validGallery }])
       }
     }
     setSaving(false)
@@ -2131,9 +2121,13 @@ function AvailabilityPanel({ bookings }: { bookings?: DashBooking[] }) {
   const today = new Date()
   const [year,  setYear]  = useState(today.getFullYear())
   const [month, setMonth] = useState(today.getMonth())
-  const [blocked, setBlocked] = useState<Set<string>>(() => {
-    try { const v = localStorage.getItem('balible_blocked'); return new Set(v ? JSON.parse(v) : []) } catch { return new Set() }
-  })
+  const [blocked, setBlocked] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    getOperatorSettingsAction().then(s => {
+      if (s?.blockedDates) setBlocked(new Set(s.blockedDates))
+    })
+  }, [])
 
   const monthStr  = String(month + 1).padStart(2, '0')
   const monthName = new Date(year, month, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' })
@@ -2148,11 +2142,15 @@ function AvailabilityPanel({ bookings }: { bookings?: DashBooking[] }) {
     setBlocked(prev => {
       const next = new Set(prev)
       next.has(k) ? next.delete(k) : next.add(k)
-      localStorage.setItem('balible_blocked', JSON.stringify(Array.from(next)))
+      updateOperatorSettingsAction({ blockedDates: Array.from(next) })
       return next
     })
   }
-  const unblock = (k: string) => setBlocked(prev => { const n = new Set(prev); n.delete(k); localStorage.setItem('balible_blocked', JSON.stringify(Array.from(n))); return n })
+  const unblock = (k: string) => setBlocked(prev => {
+    const n = new Set(prev); n.delete(k)
+    updateOperatorSettingsAction({ blockedDates: Array.from(n) })
+    return n
+  })
 
   const prevMonth = () => { if (month === 0) { setMonth(11); setYear(y => y - 1) } else setMonth(m => m - 1) }
   const nextMonth = () => { if (month === 11) { setMonth(0); setYear(y => y + 1) } else setMonth(m => m + 1) }
@@ -2263,20 +2261,15 @@ function AvailabilityPanel({ bookings }: { bookings?: DashBooking[] }) {
 function PhotosPanel({ experiences }: { experiences?: DashExp[] }) {
   const readOnly = useContext(ReadOnlyContext)
   const exps = experiences ?? []
-  const [galleries, setGalleries] = useState<Record<number, string[]>>(() => {
-    try {
-      return Object.fromEntries(exps.map(e => {
-        const v = localStorage.getItem(`balible_gallery_${e.slug}`)
-        return [e.id, v ? JSON.parse(v) : [e.image]]
-      }))
-    } catch { return Object.fromEntries(exps.map(e => [e.id, [e.image]])) }
-  })
+  const [galleries, setGalleries] = useState<Record<number, string[]>>(
+    Object.fromEntries(exps.map(e => [e.id, e.images.length > 0 ? e.images : [e.image].filter(Boolean)]))
+  )
   const [uploading, setUploading] = useState<Record<number, boolean>>({})
   const fileRefs = useRef<Record<number, HTMLInputElement | null>>({})
 
   const persist = (expId: number, arr: string[]) => {
     const exp = exps.find(e => e.id === expId)
-    if (exp) localStorage.setItem(`balible_gallery_${exp.slug}`, JSON.stringify(arr))
+    if (exp) updateExperienceImagesAction(exp.slug, arr)
   }
 
   const addPhoto = (expId: number, src: string) =>
@@ -2494,7 +2487,7 @@ export default function DashboardPage() {
   const [livePayouts, setLivePayouts]             = useState<OperatorPayout[] | undefined>(undefined)
   const [liveCommissionRate, setLiveCommissionRate] = useState<number | undefined>(undefined)
   const [liveProfile, setLiveProfile] = useState<HostProfile | undefined>(undefined)
-  const commissionRate = liveCommissionRate ?? Math.max(0, Math.min(100, parseInt(String(lsh('balible_commission', '10')), 10) || 10))
+  const commissionRate = liveCommissionRate ?? 10
 
   // Admin read-only view: /dashboard?operator=<id> loads that host's data.
   // Non-admins are ignored server-side, so this is safe to read from the URL.

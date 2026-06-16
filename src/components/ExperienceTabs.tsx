@@ -52,10 +52,6 @@ type ExperienceData = {
 const TABS = ['About', 'Itinerary', "What's included", 'Reviews', 'Host']
 const RATING_LABELS = ['', 'Disappointing', 'Below average', 'Good', 'Very good', 'Exceptional']
 
-function lsp<T>(key: string, fallback: T): T {
-  if (typeof window === 'undefined') return fallback
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback } catch { return fallback }
-}
 
 function ReviewForm({ onSubmit, onCancel }: {
   onSubmit: (rating: number, comment: string) => void
@@ -125,19 +121,15 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
   const [active, setActive] = useState('About')
   const [userReview, setUserReview] = useState<UserReview | null>(null)
   const [showForm, setShowForm] = useState(false)
-  const [includes, setIncludes] = useState<string[]>(exp.includes)
-  const [excludes, setExcludes] = useState<string[]>(exp.excludes)
+  const [submitError, setSubmitError] = useState('')
+  const [includes] = useState<string[]>(exp.includes)
+  const [excludes] = useState<string[]>(exp.excludes)
 
-  useEffect(() => {
-    const all: UserReview[] = lsp('balible_user_reviews', [])
-    setUserReview(all.find(r => r.slug === exp.slug) ?? null)
-    const saved = lsp<{ includes?: string[]; excludes?: string[] }>(`balible_exp_data_${exp.slug}`, {})
-    if (saved.includes?.length) setIncludes(saved.includes)
-    if (saved.excludes?.length) setExcludes(saved.excludes)
-  }, [exp.slug])
-
-  const submitReview = (rating: number, comment: string) => {
-    const newReview: UserReview = {
+  const submitReview = async (rating: number, comment: string) => {
+    setSubmitError('')
+    const res = await createReviewAction({ slug: exp.slug, rating, comment })
+    if (!res.ok) { setSubmitError('Could not submit review. Please try again.'); return }
+    setUserReview({
       bookingId: `exp-${exp.slug}`,
       experience: exp.title,
       slug: exp.slug,
@@ -145,14 +137,8 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
       rating,
       comment,
       image: exp.images[0] ?? '',
-    }
-    const prev: UserReview[] = lsp('balible_user_reviews', [])
-    const updated = [newReview, ...prev.filter(r => r.slug !== exp.slug)]
-    localStorage.setItem('balible_user_reviews', JSON.stringify(updated))
-    setUserReview(newReview)
+    })
     setShowForm(false)
-    // Persist to DB (best-effort)
-    createReviewAction({ slug: exp.slug, rating, comment }).catch(() => {})
   }
 
   return (
@@ -347,7 +333,10 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
             </div>
 
             {showForm && (
-              <ReviewForm onSubmit={submitReview} onCancel={() => setShowForm(false)} />
+              <>
+                <ReviewForm onSubmit={submitReview} onCancel={() => { setShowForm(false); setSubmitError('') }} />
+                {submitError && <p style={{ fontSize: 13, color: '#B66A45', marginTop: -8, marginBottom: 8 }}>{submitError}</p>}
+              </>
             )}
 
             <div className="space-y-6">

@@ -30,6 +30,7 @@ import {
   sendBroadcastAction,
   getGADataAction, type GAData,
   getCommissionRateAction, updateCommissionRateAction,
+  getAdminSettingsAction, saveAdminSettingsAction,
 } from '@/lib/actions'
 import { COMMISSION_RATE, PAYOUT_MIN_NET } from '@/lib/constants'
 
@@ -2737,12 +2738,19 @@ function BroadcastPanel() {
 
 function FeaturedPanel() {
   const [exps, setExps]       = useState<AdminExp[]>([])
-  const [featured, setFeatured] = useState<string[]>(() => {
-    try { const v = localStorage.getItem('balible_featured'); return v ? JSON.parse(v) : [] } catch { return [] }
-  })
+  const [featured, setFeatured] = useState<string[]>([])
   const [saved, setSaved] = useState(false)
+  const [saving, setSaving] = useState(false)
 
-  useEffect(() => { getAdminExperiencesAction().then(setExps) }, [])
+  useEffect(() => {
+    Promise.all([
+      getAdminExperiencesAction(),
+      getAdminSettingsAction(['featured_experience_ids']),
+    ]).then(([e, s]) => {
+      setExps(e)
+      try { setFeatured(s.featured_experience_ids ? JSON.parse(s.featured_experience_ids) : []) } catch { setFeatured([]) }
+    })
+  }, [])
 
   const active = exps.filter(e => e.status === 'Active')
   const orderedFeatured = featured.filter(id => active.find(e => e.id === id))
@@ -2752,14 +2760,18 @@ function FeaturedPanel() {
   const moveUp   = (id: string) => setFeatured(prev => { const i = prev.indexOf(id); if (i <= 0) return prev; const n = [...prev]; [n[i-1], n[i]] = [n[i], n[i-1]]; return n })
   const moveDown = (id: string) => setFeatured(prev => { const i = prev.indexOf(id); if (i >= prev.length - 1) return prev; const n = [...prev]; [n[i], n[i+1]] = [n[i+1], n[i]]; return n })
 
-  const save = () => { localStorage.setItem('balible_featured', JSON.stringify(featured)); setSaved(true); setTimeout(() => setSaved(false), 2000) }
+  const save = async () => {
+    setSaving(true)
+    await saveAdminSettingsAction({ featured_experience_ids: JSON.stringify(featured) })
+    setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2000)
+  }
 
   return (
     <div>
       <PageHeader title="Featured Content" sub={`${orderedFeatured.length}/6 slots · shown in the homepage spotlight`}
         action={
-          <button onClick={save} style={{ height: 38, padding: '0 20px', borderRadius: 10, border: 'none', backgroundColor: saved ? FOREST : CHARCOAL, color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s' }}>
-            {saved ? <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Check size={13} /> Saved</span> : 'Save Order'}
+          <button onClick={save} disabled={saving} style={{ height: 38, padding: '0 20px', borderRadius: 10, border: 'none', backgroundColor: saved ? FOREST : CHARCOAL, color: 'white', fontSize: 13, fontWeight: 600, cursor: saving ? 'default' : 'pointer', opacity: saving ? 0.7 : 1, transition: 'background 0.2s' }}>
+            {saved ? <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Check size={13} /> Saved</span> : saving ? 'Saving…' : 'Save Order'}
           </button>
         }
       />
@@ -2971,12 +2983,23 @@ type SEOKey = keyof typeof DEFAULT_SEO
 const SEO_LABELS: Record<SEOKey, string> = { home: 'Homepage', search: 'Search / Listings', experiences: 'Experience Detail', destinations: 'Destinations', for_hosts: 'For Hosts', about: 'About' }
 
 function SEOPanel() {
-  const [seo, setSeo]     = useState<typeof DEFAULT_SEO>(() => { try { const v = localStorage.getItem('balible_seo'); return v ? JSON.parse(v) : DEFAULT_SEO } catch { return DEFAULT_SEO } })
+  const [seo, setSeo]     = useState<typeof DEFAULT_SEO>(DEFAULT_SEO)
   const [active, setActive] = useState<SEOKey>('home')
   const [saved, setSaved]   = useState(false)
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    getAdminSettingsAction(['seo']).then(s => {
+      try { if (s.seo) setSeo(JSON.parse(s.seo)) } catch {}
+    })
+  }, [])
 
   const update = (key: string, val: string) => setSeo(s => ({ ...s, [active]: { ...s[active], [key]: val } }))
-  const save = () => { localStorage.setItem('balible_seo', JSON.stringify(seo)); setSaved(true); setTimeout(() => setSaved(false), 2000) }
+  const save = async () => {
+    setSaving(true)
+    await saveAdminSettingsAction({ seo: JSON.stringify(seo) })
+    setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2000)
+  }
   const current = seo[active]
 
   const inputStyle = { width: '100%', borderRadius: 10, border: `1px solid ${SAND}`, padding: '0 12px', fontSize: 13, fontFamily: 'var(--font-inter)', color: CHARCOAL, outline: 'none', boxSizing: 'border-box' as const }
@@ -2985,8 +3008,8 @@ function SEOPanel() {
     <div>
       <PageHeader title="SEO Settings" sub="Manage page titles, meta descriptions and keywords"
         action={
-          <button onClick={save} style={{ height: 38, padding: '0 20px', borderRadius: 10, border: 'none', backgroundColor: saved ? FOREST : CHARCOAL, color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s' }}>
-            {saved ? <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Check size={13} /> Saved</span> : 'Save All'}
+          <button onClick={save} disabled={saving} style={{ height: 38, padding: '0 20px', borderRadius: 10, border: 'none', backgroundColor: saved ? FOREST : CHARCOAL, color: 'white', fontSize: 13, fontWeight: 600, cursor: saving ? 'default' : 'pointer', opacity: saving ? 0.7 : 1, transition: 'background 0.2s' }}>
+            {saved ? <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Check size={13} /> Saved</span> : saving ? 'Saving…' : 'Save All'}
           </button>
         }
       />
@@ -3116,16 +3139,25 @@ type EmailKey = keyof typeof BASE_TEMPLATES
 
 function EmailsPanel() {
   const [active, setActive] = useState<EmailKey>('confirmation')
-  const [templates, setTemplates] = useState<typeof BASE_TEMPLATES>(() => {
-    try { const v = localStorage.getItem('balible_email_templates'); return v ? JSON.parse(v) : BASE_TEMPLATES } catch { return BASE_TEMPLATES }
-  })
+  const [templates, setTemplates] = useState<typeof BASE_TEMPLATES>(BASE_TEMPLATES)
   const [sending, setSending] = useState(false)
   const [sent, setSent]       = useState(false)
   const [saved, setSaved]     = useState(false)
+  const [saving, setSaving]   = useState(false)
+
+  useEffect(() => {
+    getAdminSettingsAction(['email_templates']).then(s => {
+      try { if (s.email_templates) setTemplates(JSON.parse(s.email_templates)) } catch {}
+    })
+  }, [])
 
   const current = templates[active]
   const update  = (key: 'subject' | 'body', val: string) => setTemplates(t => ({ ...t, [active]: { ...t[active], [key]: val } }))
-  const save    = () => { localStorage.setItem('balible_email_templates', JSON.stringify(templates)); setSaved(true); setTimeout(() => setSaved(false), 2000) }
+  const save    = async () => {
+    setSaving(true)
+    await saveAdminSettingsAction({ email_templates: JSON.stringify(templates) })
+    setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2000)
+  }
   const sendTest = async () => {
     setSending(true); await new Promise(r => setTimeout(r, 1200)); setSending(false)
     setSent(true); setTimeout(() => setSent(false), 3000)
@@ -3142,8 +3174,8 @@ function EmailsPanel() {
               style={{ height: 38, padding: '0 16px', borderRadius: 10, border: `1px solid ${SAND}`, backgroundColor: 'white', fontSize: 13, fontWeight: 600, color: sent ? FOREST : COCONUT, cursor: 'pointer' }}>
               {sending ? 'Sending…' : sent ? '✓ Test Sent' : 'Send Test'}
             </button>
-            <button onClick={save} style={{ height: 38, padding: '0 20px', borderRadius: 10, border: 'none', backgroundColor: saved ? FOREST : CHARCOAL, color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s' }}>
-              {saved ? '✓ Saved' : 'Save Templates'}
+            <button onClick={save} disabled={saving} style={{ height: 38, padding: '0 20px', borderRadius: 10, border: 'none', backgroundColor: saved ? FOREST : CHARCOAL, color: 'white', fontSize: 13, fontWeight: 600, cursor: saving ? 'default' : 'pointer', opacity: saving ? 0.7 : 1, transition: 'background 0.2s' }}>
+              {saved ? '✓ Saved' : saving ? 'Saving…' : 'Save Templates'}
             </button>
           </div>
         }
@@ -3216,33 +3248,40 @@ function EmailsPanel() {
   )
 }
 
-function ls<T>(key: string, fallback: T): T {
-  if (typeof window === 'undefined') return fallback
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback } catch { return fallback }
-}
-
 function SettingsPanel() {
-  const [commission, setCommission] = useState(() => ls('balible_commission', '10'))
-  const [serviceFee, setServiceFee] = useState(() => ls('balible_service_fee', '5'))
-  const [platform, setPlatform]     = useState(() => ls('balible_platform', PLATFORM_DEFAULTS))
-  const [notifs, setNotifs]         = useState(() => ls('balible_notifs', NOTIF_DEFAULTS))
+  const [commission, setCommission] = useState('10')
+  const [serviceFee, setServiceFee] = useState('5')
+  const [platform, setPlatform]     = useState(PLATFORM_DEFAULTS)
+  const [notifs, setNotifs]         = useState(NOTIF_DEFAULTS)
   const [saved, setSaved]           = useState(false)
   const [saving, setSaving]         = useState(false)
   const [saveErr, setSaveErr]       = useState<string | null>(null)
 
   useEffect(() => {
-    getCommissionRateAction().then(rate => setCommission(String(Math.round(rate * 100))))
+    Promise.all([
+      getCommissionRateAction(),
+      getAdminSettingsAction(['service_fee', 'platform', 'admin_notifs']),
+    ]).then(([rate, s]) => {
+      setCommission(String(Math.round(rate * 100)))
+      try { if (s.service_fee) setServiceFee(JSON.parse(s.service_fee)) } catch {}
+      try { if (s.platform) setPlatform(JSON.parse(s.platform)) } catch {}
+      try { if (s.admin_notifs) setNotifs(JSON.parse(s.admin_notifs)) } catch {}
+    })
   }, [])
 
   const save = async () => {
     setSaving(true); setSaveErr(null)
-    const res = await updateCommissionRateAction(parseInt(commission || '0', 10))
-    if (!res.ok) { setSaving(false); setSaveErr(res.error ?? 'Failed to save commission'); return }
-    localStorage.setItem('balible_service_fee', JSON.stringify(serviceFee))
-    localStorage.setItem('balible_platform',    JSON.stringify(platform))
-    localStorage.setItem('balible_notifs',      JSON.stringify(notifs))
-    setSaving(false); setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
+    const [res] = await Promise.all([
+      updateCommissionRateAction(parseInt(commission || '0', 10)),
+      saveAdminSettingsAction({
+        service_fee:  JSON.stringify(serviceFee),
+        platform:     JSON.stringify(platform),
+        admin_notifs: JSON.stringify(notifs),
+      }),
+    ])
+    setSaving(false)
+    if (!res.ok) { setSaveErr(res.error ?? 'Failed to save commission'); return }
+    setSaved(true); setTimeout(() => setSaved(false), 2000)
   }
   const toggle = (k: keyof typeof notifs) => setNotifs(n => ({ ...n, [k]: !n[k] }))
 

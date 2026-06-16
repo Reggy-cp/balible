@@ -9,7 +9,7 @@ import { useSession } from 'next-auth/react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
-import { getUserData, getExperiencesForWishlist, cancelBookingAction, getExperienceMetaForModal, submitReviewAction, type UserData, type ExpWishlistMeta } from '@/lib/actions'
+import { getUserData, getExperiencesForWishlist, cancelBookingAction, getExperienceMetaForModal, submitReviewAction, getUserProfileSettingsAction, updateUserProfileSettingsAction, type UserData, type ExpWishlistMeta } from '@/lib/actions'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -517,27 +517,24 @@ function ReviewsTab({ dbReviews }: { dbReviews?: UserData['reviews'] }) {
 
 const PROFILE_NOTIF_DEFAULTS = { bookingConfirm: true, reminders: true, offers: false }
 
-function lsp<T>(key: string, fallback: T): T {
-  if (typeof window === 'undefined') return fallback
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback } catch { return fallback }
-}
-
-function SettingsTab({ clerkName, clerkEmail }: { clerkName: string; clerkEmail: string }) { // props kept for backward compat
-  const EXTRA_DEFAULTS = { phone: '', nationality: '' }
-  const [extra, setExtra]   = useState(EXTRA_DEFAULTS)
+function SettingsTab({ clerkName, clerkEmail }: { clerkName: string; clerkEmail: string }) {
+  const [extra, setExtra]   = useState({ phone: '', nationality: '' })
   const [notifs, setNotifs] = useState(PROFILE_NOTIF_DEFAULTS)
+  const [saved, setSaved]   = useState(false)
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    setExtra(lsp('balible_profile_extra', EXTRA_DEFAULTS))
-    setNotifs(lsp('balible_profile_notifs', PROFILE_NOTIF_DEFAULTS))
+    getUserProfileSettingsAction().then(s => {
+      if (!s) return
+      setExtra({ phone: s.phone, nationality: s.nationality })
+      if (s.notifSettings) setNotifs({ ...PROFILE_NOTIF_DEFAULTS, ...s.notifSettings } as typeof PROFILE_NOTIF_DEFAULTS)
+    })
   }, [])
-  const [saved, setSaved] = useState(false)
 
-  const save = () => {
-    localStorage.setItem('balible_profile_extra',  JSON.stringify(extra))
-    localStorage.setItem('balible_profile_notifs', JSON.stringify(notifs))
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
+  const save = async () => {
+    setSaving(true)
+    await updateUserProfileSettingsAction({ phone: extra.phone, nationality: extra.nationality, notifSettings: notifs })
+    setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2000)
   }
 
   return (
@@ -615,10 +612,11 @@ function SettingsTab({ clerkName, clerkEmail }: { clerkName: string; clerkEmail:
 
       <button
         onClick={save}
+        disabled={saving}
         className="flex items-center gap-2 hover:opacity-90 transition-opacity"
-        style={{ height: 44, paddingInline: 24, borderRadius: 10, border: 'none', backgroundColor: saved ? '#4A7C59' : '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s', minWidth: 140 }}
+        style={{ height: 44, paddingInline: 24, borderRadius: 10, border: 'none', backgroundColor: saved ? '#4A7C59' : '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: saving ? 'default' : 'pointer', opacity: saving ? 0.7 : 1, transition: 'background 0.2s', minWidth: 140 }}
       >
-        {saved ? <><Check size={14} /> Saved!</> : 'Save Changes'}
+        {saved ? <><Check size={14} /> Saved!</> : saving ? 'Saving…' : 'Save Changes'}
       </button>
     </div>
   )
@@ -643,7 +641,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (isLoaded) {
       loadDb()
-      setLocalWishlistCount(lsp<string[]>('balible_wishlist', []).length)
+      try { setLocalWishlistCount(JSON.parse(localStorage.getItem('balible_wishlist') ?? '[]').length) } catch {}
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, isSignedIn])
