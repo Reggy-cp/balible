@@ -1,6 +1,12 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { headers } from 'next/headers'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+
+// Cap conversation size to bound Anthropic token cost per request
+const MAX_MESSAGES = 30
+const MAX_CHARS_PER_MESSAGE = 4000
 
 const SYSTEM_PROMPT = `You are Kala, a friendly and knowledgeable travel assistant for Balible — a curated experience booking platform in Bali, Indonesia.
 
@@ -25,9 +31,27 @@ Tone: warm, enthusiastic about Bali, concise. Keep responses under 150 words unl
 
 export async function POST(req: Request) {
   try {
+    // Throttle by IP — this endpoint spends Anthropic credits, so it's a
+    // financial-DoS target if left open.
+    const ip = headers().get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+    const { allowed } = checkRateLimit(`chat:${ip}`, 20, 60_000)
+    if (!allowed) {
+      return new Response('Too many messages. Please slow down and try again shortly.', { status: 429 })
+    }
+
     const { messages } = await req.json()
 
     if (!Array.isArray(messages) || messages.length === 0) {
+      return new Response('Invalid messages', { status: 400 })
+    }
+    if (messages.length > MAX_MESSAGES) {
+      return new Response('Conversation too long. Please start a new chat.', { status: 400 })
+    }
+    if (!messages.every((m: unknown) =>
+      m && typeof (m as any).content === 'string' &&
+      (m as any).content.length <= MAX_CHARS_PER_MESSAGE &&
+      ((m as any).role === 'user' || (m as any).role === 'assistant')
+    )) {
       return new Response('Invalid messages', { status: 400 })
     }
 

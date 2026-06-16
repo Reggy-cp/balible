@@ -1,8 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 export async function POST(req: NextRequest) {
   try {
+    // Throttle by IP — this endpoint spends Anthropic credits.
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+    const { allowed } = checkRateLimit(`recommendations:${ip}`, 30, 60_000)
+    if (!allowed) {
+      return NextResponse.json({ error: 'Too many requests.' }, { status: 429 })
+    }
+
     const { current, others } = await req.json()
+    if (!current || !Array.isArray(others)) {
+      return NextResponse.json({ recommendations: [] }, { status: 400 })
+    }
 
     if (!process.env.ANTHROPIC_API_KEY) {
       return NextResponse.json(
