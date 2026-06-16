@@ -322,6 +322,7 @@ export type PendingListing = {
 }
 
 export async function getPendingListingsAction(): Promise<PendingListing[]> {
+  await requireAdmin()
   try {
     const rows = await prisma.experience.findMany({
       where: { status: 'PENDING_REVIEW' as any },
@@ -346,6 +347,7 @@ export async function getPendingListingsAction(): Promise<PendingListing[]> {
 }
 
 export async function approveListingAction(id: string): Promise<{ ok: boolean }> {
+  await requireAdmin()
   try {
     await prisma.experience.update({ where: { id }, data: { status: 'ACTIVE' as any } })
     return { ok: true }
@@ -355,6 +357,7 @@ export async function approveListingAction(id: string): Promise<{ ok: boolean }>
 }
 
 export async function rejectListingAction(id: string): Promise<{ ok: boolean }> {
+  await requireAdmin()
   try {
     await prisma.experience.update({ where: { id }, data: { status: 'DRAFT' as any } })
     return { ok: true }
@@ -458,6 +461,7 @@ export type CreateExperienceInput = {
 export async function createExperienceAction(
   data: CreateExperienceInput,
 ): Promise<{ ok: boolean; slug?: string; error?: string }> {
+  await requireAdmin()
   try {
     const base = data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
     const existing = await prisma.experience.findUnique({ where: { slug: base } })
@@ -749,11 +753,13 @@ export async function getAdminHostsAction(): Promise<AdminHost[]> {
 }
 
 export async function approveHostAction(id: string): Promise<{ ok: boolean }> {
+  await requireAdmin()
   try { await prisma.operator.update({ where: { id }, data: { verified: true } }); return { ok: true } }
   catch { return { ok: false } }
 }
 
 export async function suspendHostAction(id: string): Promise<{ ok: boolean }> {
+  await requireAdmin()
   try { await prisma.operator.update({ where: { id }, data: { verified: false } }); return { ok: true } }
   catch { return { ok: false } }
 }
@@ -1321,6 +1327,7 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 export async function getAnalyticsDataAction(days: number): Promise<AnalyticsData> {
+  await requireAdmin()
   const empty: AnalyticsData = {
     metrics: { bookings: { value: 0, change: 0 }, revenue: { value: 0, change: 0 }, newUsers: { value: 0, change: 0 }, newHosts: { value: 0, change: 0 }, avgBookingValue: { value: 0, change: 0 }, cancelRate: { value: 0, change: 0 } },
     bookingTrend: [], revenueTrend: [], userGrowth: [],
@@ -1464,6 +1471,7 @@ export async function getAnalyticsDataAction(days: number): Promise<AnalyticsDat
 export type NewsletterSub = { id: string; email: string; source: string; joinedAt: string }
 
 export async function getNewsletterSubscribersAction(): Promise<NewsletterSub[]> {
+  await requireAdmin()
   try {
     const rows = await prisma.newsletterSubscriber.findMany({ orderBy: { createdAt: 'desc' } })
     return rows.map(r => ({
@@ -1474,6 +1482,7 @@ export async function getNewsletterSubscribersAction(): Promise<NewsletterSub[]>
 }
 
 export async function deleteNewsletterSubAction(id: string): Promise<{ ok: boolean }> {
+  await requireAdmin()
   try { await prisma.newsletterSubscriber.delete({ where: { id } }); return { ok: true } }
   catch { return { ok: false } }
 }
@@ -1736,6 +1745,7 @@ export async function sendBroadcastAction(
   body: string,
   href?: string,
 ): Promise<{ ok: boolean; count: number; error?: string }> {
+  await requireAdmin()
   try {
     const roleMap = { tourists: 'TOURIST', operators: 'OPERATOR' }
     const where = target === 'all' ? {} : { role: roleMap[target] as any }
@@ -1789,6 +1799,7 @@ export async function getGADataAction(
   customStart?: string,
   customEnd?: string,
 ): Promise<GAData | null> {
+  await requireAdmin()
   try {
     const propertyId = process.env.GOOGLE_GA4_PROPERTY_ID
     if (!propertyId) return null
