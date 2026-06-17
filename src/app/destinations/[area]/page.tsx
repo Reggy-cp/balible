@@ -328,11 +328,7 @@ const ALL_EXPERIENCES: Experience[] = [
   { slug: 'rattan-weaving-class', title: 'Rattan Weaving Class', area: 'Sidemen', rating: 4.7, reviews: 38, price: 350000, durationMins: 180, category: 'Art & Craft', photo: 'https://images.unsplash.com/photo-1519735777090-ec97162dc266?w=400&auto=format&fit=crop&q=80' },
 ]
 
-export const revalidate = 3600
-
-export function generateStaticParams() {
-  return Object.keys(AREAS).map(area => ({ area }))
-}
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }: { params: Promise<{ area: string }> }) {
   const { area } = await params

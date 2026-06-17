@@ -132,9 +132,7 @@ const STATIC_EXPERIENCES: CategoryExp[] = [
   { slug: 'kids-bicycle-rental',         title: 'Kids Bicycle & Family Set Rental', area: 'Canggu',     price: 40000,  rating: 4.8, reviews: 68,  duration: 'Per day',    maxGuests: 1,  image: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=600&auto=format&fit=crop&q=80', badge: null,         category: 'rentals', subcategory: 'Bicycle'              },
 ]
 
-export async function generateStaticParams() {
-  return ['art-craft', 'wellness', 'culture', 'nature', 'water-activities', 'culinary', 'local-experts', 'rentals'].map(category => ({ category }))
-}
+export const dynamic = 'force-dynamic'
 
 const WATER_ACTIVITY_SLUGS = new Set(['water-activities'])
 
