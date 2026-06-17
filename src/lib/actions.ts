@@ -183,7 +183,7 @@ const CATEGORY_TO_ENUM: Record<string, string> = {
   'Culinary': 'FOOD_DRINK',
   'Cooking': 'COOKING',
   'Nature & Outdoors': 'NATURE',
-  'Water Activities': 'SURF_WATER',
+  'Water Activities': 'WATER_ACTIVITIES',
   'Spiritual': 'CULTURE',
   'Local Experts': 'LOCAL_EXPERTS',
   'Rentals': 'RENTALS',

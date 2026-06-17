@@ -245,7 +245,7 @@ async function main() {
 
   const eSnorkeling = await prisma.experience.create({ data: {
     slug: 'snorkeling-amed', operatorId: opGedeArnawa.id,
-    title: 'Snorkeling at Amed Reef', category: 'DIVING', area: 'AMED',
+    title: 'Snorkeling at Amed Reef', category: 'WATER_ACTIVITIES', area: 'AMED',
     price: 420000, duration: '3 hours', level: 'All levels', language: 'English', maxGuests: 8,
     rating: 4.8, totalReviews: 67, featured: false, instantConfirm: true, ecoLabel: true, status: 'ACTIVE',
     latitude: -8.3449, longitude: 115.6578,
