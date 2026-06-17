@@ -324,8 +324,10 @@ export async function saveExperienceFullAction(
   mode: 'draft' | 'submit',
 ): Promise<{ ok: boolean; experiences?: DashExp[] }> {
   try {
+    console.log('[saveExperience] start', mode, input.slug)
     const session = await getServerSession(authOptions)
     const userId = session?.user?.id
+    console.log('[saveExperience] userId', userId ?? 'NONE')
     if (!userId) return { ok: false }
 
     // Fetch operator and existing experience in parallel
@@ -375,8 +377,10 @@ export async function saveExperienceFullAction(
       })
     }
 
+    console.log('[saveExperience] done ok')
     return { ok: true }
-  } catch {
+  } catch (e: any) {
+    console.error('[saveExperience] error', e?.message ?? e)
     return { ok: false }
   }
 }
