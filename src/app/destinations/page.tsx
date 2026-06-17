@@ -127,12 +127,9 @@ export default function DestinationsPage() {
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: 'rgba(255,255,255,0.65)', marginBottom: 28, maxWidth: 420, margin: '0 auto 28px' }}>
             Filter by category, area, price, and duration to find your perfect Bali moment.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <div className="flex justify-center">
             <a href="/search" style={{ height: 48, display: 'inline-flex', alignItems: 'center', padding: '0 32px', backgroundColor: '#C8A97E', color: 'white', borderRadius: 10, fontSize: 14, fontWeight: 600, textDecoration: 'none', fontFamily: 'var(--font-inter)' }} className="hover:opacity-90 transition-opacity">
               Browse experiences
-            </a>
-            <a href="/map" style={{ height: 48, display: 'inline-flex', alignItems: 'center', padding: '0 32px', border: '1px solid rgba(255,255,255,0.25)', color: 'white', borderRadius: 10, fontSize: 14, fontWeight: 500, textDecoration: 'none', fontFamily: 'var(--font-inter)' }} className="hover:bg-white/10 transition-colors">
-              View on map
             </a>
           </div>
         </div>
