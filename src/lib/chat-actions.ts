@@ -1,7 +1,8 @@
 'use server'
 
 import { prisma } from './prisma'
-import { getSessionUser } from '@/lib/user'
+import { getServerSession } from 'next-auth'
+import { authOptions } from './auth'
 import { sendNewMessageEmail } from './email'
 
 const SITE_URL = process.env.NEXTAUTH_URL ?? 'https://balible.com'
@@ -32,7 +33,8 @@ export async function sendMessageAction(
   conversationId: string,
   content: string,
 ): Promise<{ ok: boolean }> {
-  const user = await getSessionUser()
+  const session = await getServerSession(authOptions)
+  const user = session?.user as { id: string } | undefined
   if (!user || !content.trim()) return { ok: false }
 
   const conv = await prisma.conversation.findUnique({
@@ -55,11 +57,11 @@ export async function sendMessageAction(
     }),
   ])
 
-  // Notify the recipient only if this is their first unread in this batch
-  const senderUnread = await prisma.message.count({
-    where: { conversationId, senderId: user.id, read: false },
+  // Notify the recipient only on their first unread message in this batch
+  const recipientUnread = await prisma.message.count({
+    where: { conversationId, read: false, NOT: { senderId: conv.userId === user.id ? conv.userId : conv.operator.userId } },
   })
-  if (senderUnread === 1) {
+  if (recipientUnread === 1) {
     const senderIsCustomer = conv.userId === user.id
     const recipientId    = senderIsCustomer ? conv.operator.userId : conv.userId
     const recipientEmail = senderIsCustomer ? conv.operator.user.email : conv.user.email
@@ -91,7 +93,8 @@ export async function sendMessageAction(
 export async function getMessagesAction(
   conversationId: string,
 ): Promise<ChatMessage[] | null> {
-  const user = await getSessionUser()
+  const session = await getServerSession(authOptions)
+  const user = session?.user as { id: string } | undefined
   if (!user) return null
 
   const conv = await prisma.conversation.findUnique({
@@ -130,7 +133,8 @@ export async function getMessagesAction(
 export async function getOrCreateConversationAction(
   operatorId: string,
 ): Promise<{ ok: boolean; conversationId?: string }> {
-  const user = await getSessionUser()
+  const session = await getServerSession(authOptions)
+  const user = session?.user as { id: string } | undefined
   if (!user) return { ok: false }
 
   const conv = await prisma.conversation.upsert({
@@ -144,7 +148,8 @@ export async function getOrCreateConversationAction(
 // ── Customer: list own conversations ─────────────────────────────────────────
 
 export async function listUserConversationsAction(): Promise<ConversationSummary[] | null> {
-  const user = await getSessionUser()
+  const session = await getServerSession(authOptions)
+  const user = session?.user as { id: string } | undefined
   if (!user) return null
 
   const convs = await prisma.conversation.findMany({
@@ -170,7 +175,8 @@ export async function listUserConversationsAction(): Promise<ConversationSummary
 // ── Host: list conversations ──────────────────────────────────────────────────
 
 export async function listHostConversationsAction(): Promise<ConversationSummary[] | null> {
-  const user = await getSessionUser()
+  const session = await getServerSession(authOptions)
+  const user = session?.user as { id: string } | undefined
   if (!user) return null
 
   const op = await prisma.operator.findUnique({ where: { userId: user.id } })
@@ -199,7 +205,8 @@ export async function listHostConversationsAction(): Promise<ConversationSummary
 // ── Host: total unread count (for badge) ─────────────────────────────────────
 
 export async function getHostUnreadCountAction(): Promise<number> {
-  const user = await getSessionUser()
+  const session = await getServerSession(authOptions)
+  const user = session?.user as { id: string } | undefined
   if (!user) return 0
 
   const op = await prisma.operator.findUnique({ where: { userId: user.id } })
