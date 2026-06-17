@@ -1,7 +1,7 @@
-import { Star, ArrowRight } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
+import DestinationsGrid from './DestinationsGrid'
 
 const AREAS = [
   { slug: 'ubud',      name: 'Ubud',              tagline: 'Cultural Heart of Bali',        description: 'Nestled among rice terraces and jungle, Ubud is Bali\'s artistic and spiritual centre. Expect world-class galleries, traditional dance performances, healing rituals, and wellness retreats tucked down lush laneways.', highlights: ['Tegalalang Rice Terraces', 'Monkey Forest', 'Ubud Palace', 'Campuhan Ridge Walk', 'Art Market'], topCategory: 'Art & Craft', rating: 4.85, image: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=800&auto=format&fit=crop&q=80', color: '#4A7C59', bg: '#F0F7F2' },
@@ -51,70 +51,18 @@ export default function DestinationsPage() {
         </div>
       </div>
 
-      {/* AREA GRID */}
-      <div className="max-w-[1200px] mx-auto px-5 lg:px-8 py-16">
-        <div className="text-center mb-12">
-          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 3vw, 36px)', fontWeight: 700, color: '#111111', marginBottom: 10 }}>
-            13 Destinations, Endless Experiences
-          </h2>
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 16, color: '#6F675C', maxWidth: 520, margin: '0 auto', lineHeight: 1.7 }}>
-            We've handpicked experiences in each area so you can dive deep, wherever you land.
-          </p>
-        </div>
-
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {AREAS.map(area => (
-            <a
-              key={area.slug}
-              href={`/destinations/${area.slug}`}
-              className="bg-white rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 block"
-              style={{ border: '1px solid #E8E4DE', textDecoration: 'none' }}
-            >
-              {/* Image */}
-              <div className="relative" style={{ height: 200, overflow: 'hidden' }}>
-                <img src={area.image} alt={area.name} className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
-                <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0,0.55) 100%)' }} />
-                <div className="absolute bottom-0 left-0 p-4">
-                  <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: 'rgba(255,255,255,0.75)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 2 }}>
-                    {area.tagline}
-                  </p>
-                  <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: 'white', lineHeight: 1.2 }}>
-                    {area.name}
-                  </h3>
-                </div>
-              </div>
-
-              {/* Content */}
-              <div className="p-5">
-                <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', lineHeight: 1.7, marginBottom: 14 }}>
-                  {area.description.length > 120 ? area.description.slice(0, 120) + '…' : area.description}
-                </p>
-
-                {/* Highlights */}
-                <div className="flex flex-wrap gap-1.5 mb-4">
-                  {area.highlights.slice(0, 3).map(h => (
-                    <span key={h} className="px-2.5 py-0.5 rounded-full" style={{ backgroundColor: area.bg, color: area.color, fontSize: 11, fontWeight: 500 }}>
-                      {h}
-                    </span>
-                  ))}
-                </div>
-
-                {/* Footer */}
-                <div className="flex items-center justify-between pt-3" style={{ borderTop: '1px solid #F5F1EB' }}>
-                  <div className="flex items-center gap-1">
-                    <Star size={11} fill="#C8A97E" color="#C8A97E" />
-                    <span style={{ fontSize: 12, fontWeight: 700, color: '#111111' }}>{area.rating}</span>
-                    <span style={{ fontSize: 11, color: '#6F675C', marginLeft: 2 }}>{area.topCategory}</span>
-                  </div>
-                  <span className="flex items-center gap-1" style={{ fontSize: 12, color: area.color, fontWeight: 600 }}>
-                    Explore <ArrowRight size={11} />
-                  </span>
-                </div>
-              </div>
-            </a>
-          ))}
-        </div>
+      {/* SECTION HEADING */}
+      <div className="max-w-[1200px] mx-auto px-5 lg:px-8 pt-16 pb-4 text-center">
+        <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 3vw, 36px)', fontWeight: 700, color: '#111111', marginBottom: 10 }}>
+          13 Destinations, Endless Experiences
+        </h2>
+        <p style={{ fontFamily: 'var(--font-inter)', fontSize: 16, color: '#6F675C', maxWidth: 520, margin: '0 auto', lineHeight: 1.7 }}>
+          We&apos;ve handpicked experiences in each area so you can dive deep, wherever you land.
+        </p>
       </div>
+
+      {/* SEARCH + GRID (client component) */}
+      <DestinationsGrid areas={AREAS} />
 
       {/* CTA BANNER */}
       <div className="mx-5 lg:mx-16 mb-16 rounded-2xl overflow-hidden" style={{ maxWidth: 1200, marginLeft: 'auto', marginRight: 'auto' }}>
