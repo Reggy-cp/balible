@@ -573,22 +573,27 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
   const setField = (k: keyof typeof BLANK_FORM, v: string) => setFormData(p => ({ ...p, [k]: v }))
   const setCategory = (cat: string) => setFormData(p => ({ ...p, category: cat, subcategory: SUBCATEGORY_MAP[cat]?.[0] ?? '' }))
 
-  const handleImageFile = (file: File) => {
-    if (!file.type.startsWith('image/')) return
-    const reader = new FileReader()
-    reader.onload = e => setImagePreview(e.target?.result as string)
-    reader.readAsDataURL(file)
+  const uploadImage = async (file: File): Promise<string | null> => {
+    const fd = new FormData()
+    fd.append('file', file)
+    const res = await fetch('/api/upload-image', { method: 'POST', body: fd })
+    if (!res.ok) return null
+    const { url } = await res.json()
+    return url as string
   }
 
-  const handleGalleryFiles = (files: FileList | null) => {
+  const handleImageFile = async (file: File) => {
+    if (!file.type.startsWith('image/')) return
+    const url = await uploadImage(file)
+    if (url) setImagePreview(url)
+  }
+
+  const handleGalleryFiles = async (files: FileList | null) => {
     if (!files) return
     const slots = 8 - galleryPreviews.length
-    Array.from(files).slice(0, slots).forEach(file => {
-      if (!file.type.startsWith('image/')) return
-      const reader = new FileReader()
-      reader.onload = e => setGalleryPreviews(prev => [...prev, e.target?.result as string])
-      reader.readAsDataURL(file)
-    })
+    const toUpload = Array.from(files).filter(f => f.type.startsWith('image/')).slice(0, slots)
+    const urls = await Promise.all(toUpload.map(uploadImage))
+    setGalleryPreviews(prev => [...prev, ...(urls.filter(Boolean) as string[])])
   }
 
   const removeGalleryImage = (idx: number) =>
