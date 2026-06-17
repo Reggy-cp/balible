@@ -5,7 +5,7 @@ import Footer from '@/components/Footer'
 
 export const metadata = {
   title: 'Browse by Category — Balible',
-  description: 'Explore Bali through 9 categories — art & craft, wellness, culture, spiritual, food, nature, water activities, local experts, and rentals.',
+  description: 'Explore Bali through 8 categories — art & craft, wellness, culture & spiritual, culinary, nature, water activities, local experts, and rentals.',
 }
 
 const CATEGORIES = [
@@ -75,19 +75,6 @@ const CATEGORIES = [
     imageHeight: 'h-48',
   },
   {
-    slug: 'spiritual',
-    label: 'Spiritual',
-    tagline: 'Connect with the sacred',
-    description: 'Holy water rituals at Tirta Empul, traditional Balian healer sessions, temple offering ceremonies — Bali\'s spiritual life, open to respectful visitors.',
-    image: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=800&auto=format&fit=crop&q=80',
-    count: 6,
-    avgPrice: 433000,
-    featured: ['Tirta Empul Ritual', 'Balian Healer Session', 'Temple Offering'],
-    accent: '#9B7DB8',
-    span: 'lg:col-span-2',
-    imageHeight: 'h-48',
-  },
-  {
     slug: 'culinary',
     label: 'Culinary',
     tagline: 'Cook, taste, and discover',
@@ -151,7 +138,7 @@ export default function CategoriesPage() {
               Every way to experience Bali
             </h1>
             <p style={{ fontFamily: 'var(--font-inter)', fontSize: 16, color: '#6F675C', marginTop: 16, lineHeight: 1.75, maxWidth: 520 }}>
-              {totalExperiences} handpicked listings across 9 categories — art, wellness, culture, spiritual, culinary, nature, water activities, local experts, and rentals. Each one led by a local who knows their craft.
+              {totalExperiences} handpicked listings across 8 categories — art, wellness, culture & spiritual, culinary, nature, water activities, local experts, and rentals. Each one led by a local who knows their craft.
             </p>
           </div>
 
