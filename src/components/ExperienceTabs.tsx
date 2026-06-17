@@ -49,7 +49,7 @@ type ExperienceData = {
   totalReviews: number
 }
 
-const TABS = ['About', 'Itinerary', "What's included", 'Reviews', 'Host']
+const TABS = ['About', "What's included", 'Reviews', 'Host']
 const RATING_LABELS = ['', 'Disappointing', 'Below average', 'Good', 'Very good', 'Exceptional']
 
 
@@ -425,80 +425,6 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
           </div>
         )}
 
-        {active === 'Itinerary' && (
-          <div>
-            {exp.itinerary && exp.itinerary.length > 0 ? (
-              <div className="space-y-0">
-                {exp.itinerary.map((step, i) => (
-                  <div key={i} className="flex gap-5" style={{ paddingBottom: i < exp.itinerary!.length - 1 ? 28 : 0 }}>
-                    <div className="flex flex-col items-center flex-shrink-0">
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#F5F1EB', border: '2px solid #E8E4DE', flexShrink: 0 }}>
-                        <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 700, color: '#6F675C' }}>{i + 1}</span>
-                      </div>
-                      {i < exp.itinerary!.length - 1 && <div style={{ flex: 1, width: 1, backgroundColor: '#E8E4DE', marginTop: 4 }} />}
-                    </div>
-                    <div style={{ paddingTop: 4 }}>
-                      <div className="flex flex-wrap items-center gap-2 mb-1">
-                        {step.time && (
-                          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C', backgroundColor: '#F5F1EB', padding: '2px 8px', borderRadius: 20 }}>{step.time}</span>
-                        )}
-                      </div>
-                      <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', lineHeight: 1.75 }}>{step.activity}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              /* Fallback: generated itinerary derived from duration */
-              (() => {
-                const totalMins = (() => {
-                  const d = exp.duration.toLowerCase()
-                  if (d.includes('hour')) return Math.round(parseFloat(d) * 60)
-                  if (d.includes('min')) return parseInt(d)
-                  return 120
-                })()
-                const steps = [
-                  { label: 'Welcome & Introduction', mins: Math.max(10, Math.round(totalMins * 0.1)), desc: `Meet your host ${exp.operator.user.name} at ${exp.meetingPoint}. Get a brief introduction to the experience, the tools, and the cultural context behind what you're about to make or do.` },
-                  { label: 'Demonstration', mins: Math.max(15, Math.round(totalMins * 0.2)), desc: 'Watch your host demonstrate the core techniques with calm expertise. Ask as many questions as you like — this is where the real learning begins.' },
-                  { label: 'Hands-On Practice', mins: Math.max(30, Math.round(totalMins * 0.45)), desc: 'Now it\'s your turn. Your host guides you through the process step by step, offering individual feedback and encouragement. This is the heart of the experience.' },
-                  { label: 'Refinement & Finishing', mins: Math.max(10, Math.round(totalMins * 0.15)), desc: 'Add the finishing touches to your creation or practice. Your host shows you the final details that separate good from beautiful.' },
-                  { label: 'Reflection & Farewell', mins: Math.max(5, Math.round(totalMins * 0.1)), desc: 'Enjoy a brief moment of reflection with your host, hear the stories behind the craft, and take your creation (or experience) home with you.' },
-                ]
-                let elapsed = 0
-                const fmt = (m: number) => m < 60 ? `${m} min` : `${Math.floor(m / 60)}h ${m % 60 > 0 ? `${m % 60}m` : ''}`.trim()
-                return (
-                  <div className="space-y-0">
-                    {steps.map(({ label, mins, desc }, i) => {
-                      const start = elapsed
-                      elapsed += mins
-                      return (
-                        <div key={label} className="flex gap-5" style={{ paddingBottom: i < steps.length - 1 ? 28 : 0 }}>
-                          <div className="flex flex-col items-center flex-shrink-0">
-                            <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: i === 2 ? '#111111' : '#F5F1EB', border: '2px solid #E8E4DE', flexShrink: 0 }}>
-                              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 700, color: i === 2 ? '#C8A97E' : '#6F675C' }}>{i + 1}</span>
-                            </div>
-                            {i < steps.length - 1 && <div style={{ flex: 1, width: 1, backgroundColor: '#E8E4DE', marginTop: 4 }} />}
-                          </div>
-                          <div style={{ paddingTop: 4 }}>
-                            <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                              <h4 style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 700, color: '#111111' }}>{label}</h4>
-                              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C', backgroundColor: '#F5F1EB', padding: '2px 8px', borderRadius: 20 }}>{fmt(start)} – {fmt(start + mins)}</span>
-                              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#C8A97E' }}>~{fmt(mins)}</span>
-                            </div>
-                            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.75 }}>{desc}</p>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )
-              })()
-            )}
-            <p className="mt-6" style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', fontStyle: 'italic' }}>
-              * Times are approximate and may vary based on group pace and host discretion.
-            </p>
-          </div>
-        )}
       </div>
     </>
   )
