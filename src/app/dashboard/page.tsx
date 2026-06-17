@@ -787,7 +787,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
 
       {/* Create modal — step-by-step wizard */}
       {showForm && (() => {
-        const STEPS = ['Basics', 'Details', 'Photos', 'Itinerary', 'Schedule']
+        const STEPS = ['Basics', 'Details', 'Photos', 'Schedule']
         const inputStyle: React.CSSProperties = { width: '100%', borderRadius: 10, border: '1px solid #E8E4DE', padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }
         const labelStyle: React.CSSProperties = { display: 'block', fontSize: 13, fontWeight: 600, color: '#111111', marginBottom: 6 }
 
@@ -974,34 +974,8 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                 </div>
               )}
 
-              {/* Step 4 — Itinerary */}
+              {/* Step 4 — Schedule */}
               {formStep === 4 && (
-                <div className="px-5 sm:px-6">
-                  <p style={{ fontSize: 13, color: '#6F675C', marginBottom: 12, marginTop: 0 }}>Walk guests through the schedule, step by step.</p>
-                  <div className="space-y-2">
-                    {itinerary.map((step, i) => (
-                      <div key={i} className="flex gap-2 items-center">
-                        <input type="time" value={step.time} onChange={e => updateStep(i, 'time', e.target.value)}
-                          style={{ width: 110, flexShrink: 0, borderRadius: 10, border: '1px solid #E8E4DE', padding: '9px 10px', fontSize: 13, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }} />
-                        <input type="text" value={step.activity} onChange={e => updateStep(i, 'activity', e.target.value)}
-                          placeholder="Activity or description"
-                          style={{ flex: 1, borderRadius: 10, border: '1px solid #E8E4DE', padding: '9px 12px', fontSize: 13, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }} />
-                        <button onClick={() => removeStep(i)} disabled={itinerary.length === 1}
-                          style={{ flexShrink: 0, width: 28, height: 28, borderRadius: 8, border: '1px solid #E8E4DE', background: 'none', cursor: itinerary.length === 1 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: itinerary.length === 1 ? 0.35 : 1 }}>
-                          <X size={13} style={{ color: '#6F675C' }} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                  <button onClick={addStep}
-                    style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 600, color: '#C8A97E', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-                    <Plus size={14} /> Add step
-                  </button>
-                </div>
-              )}
-
-              {/* Step 5 — Schedule */}
-              {formStep === 5 && (
                 <div className="px-5 sm:px-6">
                   <p style={{ fontSize: 13, color: '#6F675C', marginBottom: 14, marginTop: 0 }}>
                     Set which days your experience is available and the operating hours.
