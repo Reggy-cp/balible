@@ -650,16 +650,19 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
       itinerary: itinerary.filter(s => s.time || s.activity),
       imageUrl: imagePreview ?? undefined,
     }
-    const res = await saveExperienceFullAction({ ...listingInput, schedule, images: allImages }, action)
-    if (!res.ok) {
-      setSubmitting(false)
+    try {
+      const res = await saveExperienceFullAction({ ...listingInput, schedule, images: allImages }, action)
+      if (!res.ok) {
+        setSaveError('Could not save. Check your connection and try again.')
+        return
+      }
+      closeForm()
+      getHostExperiencesAction().then(rows => { if (rows) setExps(rows) }).catch(() => {})
+    } catch {
       setSaveError('Could not save. Check your connection and try again.')
-      return
+    } finally {
+      setSubmitting(false)
     }
-    setSubmitting(false)
-    closeForm()
-    // Refresh list in background after modal closes
-    getHostExperiencesAction().then(rows => { if (rows) setExps(rows) }).catch(() => {})
   }
 
   const closeForm = () => {
