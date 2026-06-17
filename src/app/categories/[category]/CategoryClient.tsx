@@ -41,7 +41,7 @@ const CATEGORY_META: Record<string, {
     color: '#B66A45',
     subcategories: ['All', 'Pottery', 'Jewelry', 'Painting', 'Wood Carving', 'Textile', 'Weaving'],
   },
-  wellness: {
+  'wellness-healing': {
     label: 'Wellness & Healing',
     tagline: 'Restore mind, body and spirit',
     description: 'Restore your mind, body and soul with authentic Balinese healing practices — from sound healing bowls to traditional jamu rituals, guided by healers with decades of experience.',
@@ -57,29 +57,13 @@ const CATEGORY_META: Record<string, {
     color: '#6F675C',
     subcategories: ['All', 'Temple & Ceremony', 'Dance & Music', 'History Tour', 'Language'],
   },
-  nature: {
+  'nature-outdoors': {
     label: 'Nature & Outdoors',
     tagline: 'Bali beyond the beach',
     description: "Trek through volcanic landscapes, swim beneath hidden waterfalls, and watch the sunrise paint Mount Batur gold. The island's natural wonders, experienced with a local guide.",
     image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&auto=format&fit=crop&q=80',
     color: '#4A7C59',
     subcategories: ['All', 'Trekking', 'Waterfall', 'Sunrise', 'Rice Terrace', 'Wildlife'],
-  },
-  'surf-water': {
-    label: 'Water Activities',
-    tagline: 'Surf, dive, and explore the sea',
-    description: "Bali is surrounded by world-class water — from the surf breaks of Canggu to the technicolour reefs of Amed and the manta rays of Nusa Penida. All water experiences in one place.",
-    image: 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=1200&auto=format&fit=crop&q=80',
-    color: '#3B82F6',
-    subcategories: ['All', 'Surfing', 'Snorkelling', 'Freediving', 'Scuba Diving', 'Stand-Up Paddle'],
-  },
-  diving: {
-    label: 'Water Activities',
-    tagline: 'Surf, dive, and explore the sea',
-    description: "Bali is surrounded by world-class water — from the surf breaks of Canggu to the technicolour reefs of Amed and the manta rays of Nusa Penida. All water experiences in one place.",
-    image: 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=1200&auto=format&fit=crop&q=80',
-    color: '#3B82F6',
-    subcategories: ['All', 'Surfing', 'Snorkelling', 'Freediving', 'Scuba Diving', 'Stand-Up Paddle'],
   },
   'water-activities': {
     label: 'Water Activities',
@@ -88,14 +72,6 @@ const CATEGORY_META: Record<string, {
     image: 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=1200&auto=format&fit=crop&q=80',
     color: '#3B82F6',
     subcategories: ['All', 'Surfing', 'Snorkelling', 'Freediving', 'Scuba Diving', 'Stand-Up Paddle'],
-  },
-  spiritual: {
-    label: 'Spiritual',
-    tagline: 'Connect with the sacred heart of Bali',
-    description: "Bali's spiritual life is woven into every sunrise, every temple, every offering. Join real ceremonies, meet healers who have practised for generations, and leave with something that lasts beyond the trip.",
-    image: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=1200&auto=format&fit=crop&q=80',
-    color: '#9B7DB8',
-    subcategories: ['All', 'Temple & Ceremony', 'Healing Ritual', 'Holy Water', 'Blessing', 'Energy Work'],
   },
   culinary: {
     label: 'Culinary',
@@ -123,9 +99,8 @@ const CATEGORY_META: Record<string, {
   },
 }
 
-const ALL_CATEGORY_SLUGS = ['art-craft', 'wellness', 'culture', 'nature', 'surf-water', 'diving', 'water-activities', 'culinary', 'spiritual', 'local-experts', 'rentals'] as const
-// These are sub-categories hidden from the "Explore other categories" strip
-const SUB_CATEGORY_SLUGS = new Set(['surf-water', 'diving'])
+const ALL_CATEGORY_SLUGS = ['art-craft', 'wellness-healing', 'culture', 'nature-outdoors', 'water-activities', 'culinary', 'local-experts', 'rentals'] as const
+const SUB_CATEGORY_SLUGS = new Set<string>([])
 const SORT_OPTIONS = ['Most popular', 'Highest rated', 'Price: Low to High', 'Price: High to Low']
 
 // ── Experience card ────────────────────────────────────────────────────────────
