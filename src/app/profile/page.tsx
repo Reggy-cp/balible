@@ -392,7 +392,7 @@ function ChatModal({ operatorId, hostName, onClose }: { operatorId: string; host
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
               placeholder="Type a message…"
               disabled={!convId}
-              style={{ flex: 1, height: 40, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }}
+              style={{ flex: 1, height: 40, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 16, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }}
             />
             <button onClick={send} disabled={!input.trim() || sending || !convId}
               style={{ width: 40, height: 40, borderRadius: 10, border: 'none', backgroundColor: input.trim() && convId ? '#111111' : '#E8E4DE', cursor: input.trim() && convId ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -786,7 +786,7 @@ function MessagesTab() {
                     onChange={e => setInput(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
                     placeholder="Type a message…"
-                    style={{ flex: 1, height: 40, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }}
+                    style={{ flex: 1, height: 40, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 16, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }}
                     onFocus={e => (e.target.style.borderColor = '#C8A97E')}
                     onBlur={e => (e.target.style.borderColor = '#E8E4DE')}
                   />
