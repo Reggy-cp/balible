@@ -55,17 +55,31 @@ export async function sendMessageAction(
     }),
   ])
 
-  // Email the recipient only if this is their first unread in this batch
+  // Notify the recipient only if this is their first unread in this batch
   const senderUnread = await prisma.message.count({
     where: { conversationId, senderId: user.id, read: false },
   })
   if (senderUnread === 1) {
     const senderIsCustomer = conv.userId === user.id
+    const recipientId    = senderIsCustomer ? conv.operator.userId : conv.userId
     const recipientEmail = senderIsCustomer ? conv.operator.user.email : conv.user.email
     const recipientName  = senderIsCustomer ? (conv.operator.user.name ?? 'Host') : (conv.user.name ?? 'Guest')
     const senderName     = senderIsCustomer ? (conv.user.name ?? 'Guest') : (conv.operator.businessName || (conv.operator.user.name ?? 'Host'))
     const replyUrl       = senderIsCustomer ? `${SITE_URL}/dashboard` : `${SITE_URL}/profile`
+    const preview        = content.trim().length > 60 ? content.trim().slice(0, 60) + '…' : content.trim()
 
+    // In-app notification
+    prisma.notification.create({
+      data: {
+        userId: recipientId,
+        type: 'message',
+        title: `New message from ${senderName}`,
+        body: preview,
+        href: replyUrl,
+      },
+    }).catch(() => {})
+
+    // Email notification
     sendNewMessageEmail({ to: recipientEmail, recipientName, senderName, preview: content.trim(), replyUrl }).catch(() => {})
   }
 

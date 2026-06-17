@@ -2,12 +2,13 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
-import { Bell, CalendarCheck, CreditCard, Info } from 'lucide-react'
+import { Bell, CalendarCheck, CreditCard, Info, MessageCircle } from 'lucide-react'
 import { getMyNotifications, markMyNotificationsRead, type NotificationRow } from '@/lib/notification-actions'
 
 const TYPE_ICON: Record<string, typeof Bell> = {
   booking: CalendarCheck,
   payment: CreditCard,
+  message: MessageCircle,
   info: Info,
 }
 
