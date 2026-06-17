@@ -52,7 +52,7 @@ export default function DestinationsPage() {
       </div>
 
       {/* SECTION HEADING */}
-      <div className="max-w-[1200px] mx-auto px-5 lg:px-8 pt-16 pb-4 text-center">
+      <div className="max-w-[1200px] mx-auto px-5 lg:px-8 pt-12 pb-6 text-center">
         <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(26px, 3vw, 36px)', fontWeight: 700, color: '#111111', marginBottom: 10 }}>
           13 Destinations, Endless Experiences
         </h2>
