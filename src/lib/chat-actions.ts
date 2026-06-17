@@ -2,6 +2,9 @@
 
 import { prisma } from './prisma'
 import { getSessionUser } from '@/lib/user'
+import { sendNewMessageEmail } from './email'
+
+const SITE_URL = process.env.NEXTAUTH_URL ?? 'https://balible.com'
 
 export type ChatMessage = {
   id: string
@@ -34,7 +37,10 @@ export async function sendMessageAction(
 
   const conv = await prisma.conversation.findUnique({
     where: { id: conversationId },
-    include: { operator: { select: { userId: true } } },
+    include: {
+      operator: { select: { userId: true, businessName: true, user: { select: { email: true, name: true } } } },
+      user: { select: { email: true, name: true } },
+    },
   })
   if (!conv) return { ok: false }
   if (conv.userId !== user.id && conv.operator.userId !== user.id) return { ok: false }
@@ -48,6 +54,21 @@ export async function sendMessageAction(
       data: { lastMessageAt: new Date() },
     }),
   ])
+
+  // Email the recipient only if this is their first unread in this batch
+  const senderUnread = await prisma.message.count({
+    where: { conversationId, senderId: user.id, read: false },
+  })
+  if (senderUnread === 1) {
+    const senderIsCustomer = conv.userId === user.id
+    const recipientEmail = senderIsCustomer ? conv.operator.user.email : conv.user.email
+    const recipientName  = senderIsCustomer ? (conv.operator.user.name ?? 'Host') : (conv.user.name ?? 'Guest')
+    const senderName     = senderIsCustomer ? (conv.user.name ?? 'Guest') : (conv.operator.businessName || (conv.operator.user.name ?? 'Host'))
+    const replyUrl       = senderIsCustomer ? `${SITE_URL}/dashboard` : `${SITE_URL}/profile`
+
+    sendNewMessageEmail({ to: recipientEmail, recipientName, senderName, preview: content.trim(), replyUrl }).catch(() => {})
+  }
+
   return { ok: true }
 }
 

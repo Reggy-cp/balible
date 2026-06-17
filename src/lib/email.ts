@@ -463,6 +463,48 @@ export async function sendActivityReminder(input: ActivityReminderInput): Promis
   }
 }
 
+// ── New message notification ──────────────────────────────────────────────────
+
+export async function sendNewMessageEmail({
+  to, recipientName, senderName, preview, replyUrl,
+}: {
+  to: string
+  recipientName: string
+  senderName: string
+  preview: string
+  replyUrl: string
+}): Promise<{ sent: boolean }> {
+  const client = getClient()
+  if (!client) return { sent: false }
+  const safe = preview.length > 120 ? preview.slice(0, 120) + '…' : preview
+  try {
+    await client.emails.send({
+      from: FROM,
+      to,
+      subject: `New message from ${senderName} — Balible`,
+      html: layout(`
+        <h1 style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:24px;color:${BRAND.ink};">New message</h1>
+        <p style="margin:0 0 20px;font-size:15px;color:${BRAND.muted};line-height:1.7;">
+          Hi ${recipientName}, <strong style="color:${BRAND.ink};">${senderName}</strong> sent you a message on Balible.
+        </p>
+        <div style="margin:0 0 24px;padding:16px 20px;background-color:#F5F1EB;border-left:3px solid ${BRAND.gold};border-radius:6px;">
+          <p style="margin:0;font-size:14px;color:${BRAND.ink};line-height:1.7;font-style:italic;">"${safe}"</p>
+        </div>
+        <a href="${replyUrl}" style="display:inline-block;padding:14px 28px;background-color:${BRAND.ink};color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;border-radius:10px;">
+          Reply →
+        </a>
+        <p style="margin:24px 0 0;font-size:12px;color:#9E9A94;line-height:1.6;">
+          You're receiving this because someone messaged you on Balible.
+        </p>
+      `),
+    })
+    return { sent: true }
+  } catch (err) {
+    console.error('[email] new message notification failed:', err)
+    return { sent: false }
+  }
+}
+
 // ── Password reset ─────────────────────────────────────────────────────────────
 
 export async function sendPasswordResetEmail({ to, name, token }: { to: string; name: string; token: string }): Promise<{ sent: boolean }> {
