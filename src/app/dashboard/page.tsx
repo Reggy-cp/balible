@@ -2527,6 +2527,8 @@ function MessagesPanel() {
     setTimeout(() => inputRef.current?.focus(), 100)
   }
 
+  const closeThread = () => setSelected(null)
+
   const send = async () => {
     if (!selected || !input.trim() || sending) return
     setSending(true)
@@ -2552,8 +2554,8 @@ function MessagesPanel() {
       <PageHeader title="Messages" subtitle="Direct messages with your guests" />
       <div className="flex gap-4" style={{ height: 'calc(100vh - 200px)', minHeight: 400 }}>
 
-        {/* Conversation list */}
-        <div className="bg-white rounded-xl overflow-hidden flex-shrink-0" style={{ width: 280, border: '1px solid #E8E4DE', display: 'flex', flexDirection: 'column' }}>
+        {/* Conversation list — hidden on mobile when thread is open */}
+        <div className={`${selected ? 'hidden lg:flex' : 'flex'} bg-white rounded-xl overflow-hidden flex-shrink-0`} style={{ width: '100%', maxWidth: 280, border: '1px solid #E8E4DE', flexDirection: 'column' }}>
           <div style={{ padding: '14px 16px', borderBottom: '1px solid #F0EDE8' }}>
             <p style={{ fontSize: 13, fontWeight: 600, color: '#111111' }}>Conversations</p>
           </div>
@@ -2593,8 +2595,8 @@ function MessagesPanel() {
           </div>
         </div>
 
-        {/* Thread */}
-        <div className="bg-white rounded-xl flex flex-col flex-1 overflow-hidden" style={{ border: '1px solid #E8E4DE' }}>
+        {/* Thread — hidden on mobile when no conversation selected */}
+        <div className={`${selected ? 'flex' : 'hidden lg:flex'} bg-white rounded-xl flex-col flex-1 overflow-hidden`} style={{ border: '1px solid #E8E4DE' }}>
           {!selected ? (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#9E9A94' }}>
               <MessageCircle size={36} style={{ marginBottom: 10, color: '#D1CDC7' }} />
@@ -2603,11 +2605,15 @@ function MessagesPanel() {
           ) : (
             <>
               {/* Header */}
-              <div style={{ padding: '14px 20px', borderBottom: '1px solid #F0EDE8', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ padding: '14px 16px', borderBottom: '1px solid #F0EDE8', display: 'flex', alignItems: 'center', gap: 10 }}>
+                {/* Back button — mobile only */}
+                <button className="lg:hidden" onClick={closeThread} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center', color: '#6F675C', flexShrink: 0 }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+                </button>
                 {selectedConv?.otherImage ? (
-                  <img src={selectedConv.otherImage} alt="" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
+                  <img src={selectedConv.otherImage} alt="" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
                 ) : (
-                  <div style={{ width: 32, height: 32, borderRadius: '50%', backgroundColor: '#E8E4DE', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: 32, height: 32, borderRadius: '50%', backgroundColor: '#E8E4DE', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <span style={{ fontSize: 13, fontWeight: 600, color: '#6F675C' }}>{selectedConv?.otherName.charAt(0)}</span>
                   </div>
                 )}
@@ -2630,7 +2636,7 @@ function MessagesPanel() {
               </div>
 
               {/* Input */}
-              <div style={{ padding: '12px 16px', borderTop: '1px solid #F0EDE8', display: 'flex', gap: 8 }}>
+              <div style={{ padding: '12px 16px', paddingBottom: 'max(12px, env(safe-area-inset-bottom))', borderTop: '1px solid #F0EDE8', display: 'flex', gap: 8 }}>
                 <input
                   ref={inputRef}
                   value={input}

@@ -349,7 +349,7 @@ function ChatModal({ operatorId, hostName, onClose }: { operatorId: string; host
     <>
       <div className="fixed inset-0 z-50 bg-black/40" onClick={onClose} />
       <div className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center sm:p-4 pointer-events-none">
-        <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md pointer-events-auto flex flex-col" style={{ height: 480, border: '1px solid #E8E4DE', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }}>
+        <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md pointer-events-auto flex flex-col" style={{ height: 'min(480px, 85svh)', border: '1px solid #E8E4DE', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }}>
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 flex-shrink-0" style={{ borderBottom: '1px solid #F0EDE8' }}>
             <div className="flex items-center gap-2">
@@ -385,7 +385,7 @@ function ChatModal({ operatorId, hostName, onClose }: { operatorId: string; host
           </div>
 
           {/* Input */}
-          <div style={{ padding: '12px 16px', borderTop: '1px solid #F0EDE8', display: 'flex', gap: 8, flexShrink: 0 }}>
+          <div style={{ padding: '12px 16px', paddingBottom: 'max(12px, env(safe-area-inset-bottom))', borderTop: '1px solid #F0EDE8', display: 'flex', gap: 8, flexShrink: 0 }}>
             <input
               ref={inputRef}
               value={input}
@@ -780,7 +780,7 @@ function MessagesTab() {
                 </div>
 
                 {/* Input */}
-                <div style={{ padding: '12px 16px', borderTop: '1px solid #F0EDE8', display: 'flex', gap: 8, flexShrink: 0 }}>
+                <div style={{ padding: '12px 16px', paddingBottom: 'max(12px, env(safe-area-inset-bottom))', borderTop: '1px solid #F0EDE8', display: 'flex', gap: 8, flexShrink: 0 }}>
                   <input
                     ref={inputRef}
                     value={input}
