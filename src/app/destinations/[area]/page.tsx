@@ -1,9 +1,10 @@
 import { notFound } from 'next/navigation'
-import { MapPin, Star, Clock, ArrowRight, Users, ChevronRight } from 'lucide-react'
+import { MapPin, Star, ArrowRight, Users, ChevronRight } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
 import { getExperienceCards } from '@/lib/experiences'
+import DestinationExperiences from './DestinationExperiences'
 
 type Experience = {
   slug: string; title: string; area: string; rating: number; reviews: number
@@ -358,12 +359,6 @@ export default async function DestinationAreaPage({ params }: { params: Promise<
 
   const experiences = allExperiences.filter(e => data.experienceAreas.includes(e.area))
 
-  const formatDuration = (mins: number) => {
-    if (mins < 60) return `${mins} min`
-    const h = Math.floor(mins / 60), m = mins % 60
-    return m ? `${h}h ${m}m` : `${h} hours`
-  }
-
   return (
     <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
       <Navbar />
@@ -426,116 +421,13 @@ export default async function DestinationAreaPage({ params }: { params: Promise<
         </div>
 
         {/* EXPERIENCES */}
-        <div className="py-14" style={{ borderBottom: experiences.length ? '1px solid #E8E4DE' : 'none' }}>
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.15em', color: data.color, textTransform: 'uppercase', fontWeight: 700, marginBottom: 6 }}>Experiences</p>
-              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(22px, 2.5vw, 30px)', fontWeight: 700, color: '#111111' }}>
-                {experiences.length > 0 ? `${experiences.length} Experience${experiences.length !== 1 ? 's' : ''} in ${data.name.split(' ')[0]}` : `Explore ${data.name.split(' ')[0]}`}
-              </h2>
-            </div>
-            <a
-              href={`/search?location=${data.slug}`}
-              className="hidden sm:flex items-center gap-1.5 hover:opacity-80 transition-opacity"
-              style={{ fontSize: 13, color: data.color, fontWeight: 600, textDecoration: 'none' }}
-            >
-              View all <ArrowRight size={13} />
-            </a>
-          </div>
-
-          {experiences.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5">
-              {experiences.map(exp => (
-                <a
-                  key={exp.slug}
-                  href={`/experiences/${exp.slug}`}
-                  className="bg-white rounded-2xl overflow-hidden hover:shadow-md transition-all duration-200"
-                  style={{ border: '1px solid #E8E4DE', textDecoration: 'none' }}
-                >
-                  {/* Mobile: horizontal search-style */}
-                  <div className="md:hidden flex gap-3 p-3">
-                    <div className="relative flex-shrink-0 overflow-hidden rounded-lg" style={{ width: 100, height: 100 }}>
-                      <img src={exp.photo} alt={exp.title} className="w-full h-full object-cover" />
-                      <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded" style={{ backgroundColor: 'rgba(0,0,0,0.55)', color: 'white', fontSize: 10, fontWeight: 600 }}>
-                        {exp.category}
-                      </span>
-                    </div>
-                    <div className="flex flex-col justify-between flex-1 min-w-0 py-0.5">
-                      <div>
-                        <h3 className="line-clamp-2 leading-snug" style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 600, color: '#111111' }}>
-                          {exp.title}
-                        </h3>
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1">
-                          <div className="flex items-center gap-1">
-                            <MapPin size={10} style={{ color: '#6F675C' }} />
-                            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>{exp.area}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Star size={10} fill="#C8A97E" color="#C8A97E" />
-                            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 700, color: '#111111' }}>{exp.rating}</span>
-                            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>({exp.reviews})</span>
-                          </div>
-                          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>⏱ {formatDuration(exp.durationMins)}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between mt-2">
-                        <div>
-                          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>
-                            From <span style={{ color: '#C8A97E', fontWeight: 600 }}>IDR</span> <span style={{ fontWeight: 600 }}>{exp.price.toLocaleString('id-ID')}</span>
-                          </p>
-                          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#4A7C59', marginTop: 1 }}>✓ Free cancellation</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Desktop: vertical card */}
-                  <div className="hidden md:block">
-                    <div className="relative" style={{ height: 200, overflow: 'hidden' }}>
-                      <img src={exp.photo} alt={exp.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
-                      <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full" style={{ backgroundColor: 'rgba(17,17,17,0.7)', color: 'white', fontSize: 10, fontWeight: 600 }}>
-                        {exp.category}
-                      </span>
-                    </div>
-                    <div className="p-4">
-                      <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', lineHeight: 1.3, marginBottom: 8 }}>
-                        {exp.title}
-                      </h3>
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="flex items-center gap-1">
-                          <Star size={11} fill="#C8A97E" color="#C8A97E" />
-                          <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>{exp.rating}</span>
-                          <span style={{ fontSize: 12, color: '#6F675C' }}>({exp.reviews})</span>
-                        </div>
-                        <div style={{ width: 1, height: 12, backgroundColor: '#E8E4DE' }} />
-                        <div className="flex items-center gap-1">
-                          <Clock size={10} style={{ color: '#6F675C' }} />
-                          <span style={{ fontSize: 12, color: '#6F675C' }}>{formatDuration(exp.durationMins)}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between pt-3" style={{ borderTop: '1px solid #E8E4DE' }}>
-                        <div>
-                          <span style={{ fontSize: 11, color: '#6F675C' }}>From </span>
-                          <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: '#111111' }}>
-                            IDR {exp.price.toLocaleString('id-ID')}
-                          </span>
-                        </div>
-                        <span style={{ fontSize: 12, color: data.color, fontWeight: 600 }}>Book →</span>
-                      </div>
-                    </div>
-                  </div>
-                </a>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-10 rounded-2xl" style={{ backgroundColor: 'white', border: '1px solid #E8E4DE' }}>
-              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: '#6F675C', marginBottom: 12 }}>Browse all experiences in {data.name}</p>
-              <a href={`/search?location=${data.slug}`} className="inline-flex items-center gap-2 hover:opacity-90 transition-opacity" style={{ height: 42, padding: '0 20px', backgroundColor: '#111111', color: 'white', borderRadius: 8, fontSize: 13, fontWeight: 600, textDecoration: 'none', fontFamily: 'var(--font-inter)' }}>
-                Search experiences <ArrowRight size={13} />
-              </a>
-            </div>
-          )}
-        </div>
+        <DestinationExperiences
+          experiences={experiences}
+          areaName={data.name}
+          areaSlug={data.slug}
+          color={data.color}
+          bg={data.bg}
+        />
 
         {/* MUST SEE */}
         <div className="py-14" style={{ borderBottom: '1px solid #E8E4DE' }}>
