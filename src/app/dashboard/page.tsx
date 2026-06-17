@@ -16,7 +16,7 @@ import {
   type EventRow, type EventInput,
 } from '@/lib/event-actions'
 import {
-  saveHostListingAction, submitHostListingAction, type HostListingInput,
+  saveExperienceFullAction, type HostListingInput,
   getHostDashboardData, getHostExperiencesAction,
   updateExperienceStatusAction, deleteExperienceAction,
   getOperatorPayoutsAction, type OperatorPayout,
@@ -632,6 +632,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
     setSubmitting(true)
     const slug = editingExp?.slug ?? (formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'new-experience')
     const toLines = (s: string) => s.split('\n').map(l => l.trim()).filter(Boolean)
+    const allImages = [imagePreview, ...galleryPreviews].filter(Boolean) as string[]
     const listingInput: HostListingInput = {
       slug,
       title: formData.title || editingExp?.title || '',
@@ -649,23 +650,14 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
       itinerary: itinerary.filter(s => s.time || s.activity),
       imageUrl: imagePreview ?? undefined,
     }
-    const res = action === 'submit'
-      ? await submitHostListingAction(listingInput)
-      : await saveHostListingAction(listingInput)
+    const res = await saveExperienceFullAction({ ...listingInput, schedule, images: allImages }, action)
     if (!res.ok) {
       setSubmitting(false)
       setSaveError('Could not save. Check your connection and try again.')
       return
     }
-    // Await schedule and images so the DB refresh sees fresh data
-    await updateExperienceScheduleAction(slug, schedule)
-    if (editingExp || galleryPreviews.length > 0) {
-      const allImages = [imagePreview, ...galleryPreviews].filter(Boolean) as string[]
-      await updateExperienceImagesAction(slug, allImages)
-    }
-    const rows = await getHostExperiencesAction()
     setSubmitting(false)
-    if (rows) setExps(rows)
+    if (res.experiences) setExps(res.experiences)
     closeForm()
   }
 

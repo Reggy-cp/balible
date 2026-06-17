@@ -320,6 +320,98 @@ export async function submitHostListingAction(
   }
 }
 
+export async function saveExperienceFullAction(
+  input: HostListingInput & { schedule?: any; images?: string[] },
+  mode: 'draft' | 'submit',
+): Promise<{ ok: boolean; experiences?: DashExp[] }> {
+  try {
+    const user = await getSessionUser()
+    if (!user) return { ok: false }
+
+    const existing_op = await prisma.operator.findUnique({ where: { userId: user.id } })
+    const operator = existing_op ?? await prisma.operator.create({
+      data: { userId: user.id, businessName: input.title || user.name, description: '' },
+    })
+
+    const categoryEnum = CATEGORY_TO_ENUM[input.category] ?? 'ART_CRAFT'
+    const areaEnum = AREA_TO_ENUM[input.area] ?? 'UBUD'
+    const allImages = (input.images?.length ? input.images : (input.imageUrl ? [input.imageUrl] : []))
+
+    const data: any = {
+      operatorId: operator.id,
+      title: input.title,
+      description: input.description || '',
+      category: categoryEnum,
+      subcategory: input.subcategory || '',
+      area: areaEnum,
+      price: input.price || 0,
+      duration: input.duration || '',
+      level: 'All levels',
+      maxGuests: input.maxGuests || 8,
+      minGuests: input.minGuests || 1,
+      images: allImages,
+      highlights: [],
+      includes: input.includes,
+      excludes: input.excludes,
+      itinerary: input.itinerary,
+      meetingPoint: input.meetingPoint || '',
+      latitude: 0,
+      longitude: 0,
+      ...(input.schedule !== undefined && { schedule: input.schedule }),
+    }
+
+    const existing = await prisma.experience.findUnique({ where: { slug: input.slug } })
+    if (existing && existing.operatorId === operator.id) {
+      await prisma.experience.update({
+        where: { slug: input.slug },
+        data: { ...data, status: mode === 'submit' ? 'PENDING_REVIEW' : existing.status },
+      })
+    } else {
+      await prisma.experience.create({
+        data: { slug: input.slug, ...data, status: mode === 'submit' ? 'PENDING_REVIEW' : 'DRAFT' },
+      })
+    }
+
+    const rows = await prisma.experience.findMany({
+      where: { operatorId: operator.id },
+      include: {
+        bookings: { where: { status: { in: ['CONFIRMED', 'COMPLETED'] } }, select: { totalPrice: true } },
+        _count: { select: { bookings: true } },
+      },
+      orderBy: { createdAt: 'asc' },
+    })
+    const statusDisplay: Record<string, string> = { ACTIVE: 'Active', DRAFT: 'Draft', PENDING_REVIEW: 'Pending Review', PAUSED: 'Paused' }
+    const experiences: DashExp[] = rows.map((e, i) => ({
+      id: i + 1,
+      slug: e.slug,
+      title: e.title,
+      category: CATEGORY_DISPLAY[String(e.category)] ?? String(e.category),
+      area: AREA_DISPLAY[String(e.area)] ?? String(e.area),
+      price: e.price,
+      duration: e.duration,
+      maxGuests: e.maxGuests,
+      minGuests: (e as any).minGuests ?? 1,
+      subcategory: (e as any).subcategory ?? '',
+      rating: e.rating,
+      totalReviews: e.totalReviews,
+      bookings: e._count.bookings,
+      status: statusDisplay[String(e.status)] ?? 'Draft',
+      image: (e.images as string[])[0] ?? '',
+      images: e.images as string[],
+      schedule: e.schedule ?? null,
+      earnings: (e.bookings as { totalPrice: number }[]).reduce((a, b) => a + b.totalPrice, 0),
+      description: e.description,
+      meetingPoint: e.meetingPoint,
+      includes: e.includes,
+      excludes: e.excludes,
+      itinerary: Array.isArray(e.itinerary) ? (e.itinerary as { time: string; activity: string }[]) : [],
+    }))
+    return { ok: true, experiences }
+  } catch {
+    return { ok: false }
+  }
+}
+
 export type PendingListing = {
   id: string
   slug: string
