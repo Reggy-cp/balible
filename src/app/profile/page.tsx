@@ -7,7 +7,6 @@ import {
 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import Navbar from '@/components/Navbar'
-import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
 import { getUserData, getExperiencesForWishlist, cancelBookingAction, getExperienceMetaForModal, submitReviewAction, getUserProfileSettingsAction, updateUserProfileSettingsAction, requestPasswordResetAction, type UserData, type ExpWishlistMeta } from '@/lib/actions'
 import { getOrCreateConversationAction, getMessagesAction, sendMessageAction, listUserConversationsAction, type ChatMessage, type ConversationSummary } from '@/lib/chat-actions'
@@ -1110,33 +1109,45 @@ export default function ProfilePage() {
 
           {/* RIGHT — Content */}
           <main className="flex-1 min-w-0">
-            {/* Mobile tab bar */}
-            <div className="lg:hidden flex gap-2 mb-5 overflow-x-auto scrollbar-none">
-              {NAV_TABS.map(({ id, label, Icon }) => (
-                <button
-                  key={id}
-                  onClick={() => setActiveTab(id)}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-full flex-shrink-0 transition-all"
-                  style={{
-                    backgroundColor: activeTab === id ? '#111111' : 'white',
-                    color: activeTab === id ? 'white' : '#6F675C',
-                    border: `1px solid ${activeTab === id ? '#111111' : '#E8E4DE'}`,
-                    fontSize: 13, fontWeight: activeTab === id ? 600 : 400, cursor: 'pointer',
-                  }}
-                >
-                  <Icon size={13} /> {label}
-                </button>
-              ))}
-            </div>
-
             {renderTab()}
           </main>
         </div>
       </div>
 
       <Footer />
-      {/* MOBILE BOTTOM NAV */}
-      <MobileNav />
+
+      {/* Profile-specific mobile bottom nav */}
+      <nav
+        className="fixed bottom-0 left-0 right-0 bg-white md:hidden flex items-center z-50"
+        style={{ height: 64, borderTop: '1px solid #E8E4DE', paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
+        {[
+          { id: 'home',     label: 'Home',     Icon: Home,          href: '/' },
+          { id: 'messages', label: 'Chat',     Icon: MessageCircle, href: null },
+          { id: 'bookings', label: 'Bookings', Icon: CalendarDays,  href: null },
+          { id: 'wishlist', label: 'Wishlist', Icon: Heart,         href: null },
+          { id: 'settings', label: 'Settings', Icon: Settings,      href: null },
+        ].map(({ id, label, Icon, href }) => {
+          const active = href ? false : activeTab === id
+          const inner = (
+            <>
+              <Icon size={20} color={active ? '#C8A97E' : '#6F675C'} />
+              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 10, color: active ? '#C8A97E' : '#6F675C', fontWeight: active ? 600 : 400 }}>
+                {label}
+              </span>
+            </>
+          )
+          return href ? (
+            <a key={id} href={href} className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full" style={{ textDecoration: 'none' }}>
+              {inner}
+            </a>
+          ) : (
+            <button key={id} onClick={() => setActiveTab(id)} className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+              {inner}
+            </button>
+          )
+        })}
+      </nav>
     </div>
   )
 }
