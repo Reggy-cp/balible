@@ -203,7 +203,7 @@ async function main() {
 
   const eCooking = await prisma.experience.create({ data: {
     slug: 'balinese-cooking-class', operatorId: opPutuSari.id,
-    title: 'Balinese Cooking Class', category: 'FOOD_DRINK', area: 'SEMINYAK',
+    title: 'Balinese Cooking Class', category: 'CULINARY', area: 'SEMINYAK',
     price: 480000, duration: '3.5 hours', level: 'All levels', language: 'English', maxGuests: 8,
     rating: 4.8, totalReviews: 156, featured: false, instantConfirm: true, ecoLabel: false, status: 'ACTIVE',
     latitude: -8.6900, longitude: 115.1630,
@@ -217,7 +217,7 @@ async function main() {
 
   const eJimbaran = await prisma.experience.create({ data: {
     slug: 'jimbaran-seafood-sunset', operatorId: opMadeWidia.id,
-    title: 'Jimbaran Seafood & Sunset', category: 'FOOD_DRINK', area: 'JIMBARAN',
+    title: 'Jimbaran Seafood & Sunset', category: 'CULINARY', area: 'JIMBARAN',
     price: 350000, duration: '2 hours', level: 'All levels', language: 'English', maxGuests: 10,
     rating: 4.6, totalReviews: 89, featured: false, instantConfirm: true, ecoLabel: false, status: 'ACTIVE',
     latitude: -8.7847, longitude: 115.1661,
@@ -427,7 +427,7 @@ async function main() {
 
   const eCoffee = await prisma.experience.create({ data: {
     slug: 'coffee-plantation-tour', operatorId: opKetutWirawan.id,
-    title: 'Coffee Plantation & Tasting Tour', category: 'FOOD_DRINK', area: 'KINTAMANI',
+    title: 'Coffee Plantation & Tasting Tour', category: 'CULINARY', area: 'KINTAMANI',
     price: 320000, duration: '3 hours', level: 'Easy', language: 'English', maxGuests: 12,
     rating: 4.8, totalReviews: 143, featured: false, instantConfirm: true, ecoLabel: true, status: 'ACTIVE',
     latitude: -8.2429, longitude: 115.3758,
@@ -441,7 +441,7 @@ async function main() {
 
   const eFoodTour = await prisma.experience.create({ data: {
     slug: 'ubud-market-food-tour', operatorId: opPutuSari.id,
-    title: 'Ubud Market Food Tour', category: 'FOOD_DRINK', area: 'UBUD',
+    title: 'Ubud Market Food Tour', category: 'CULINARY', area: 'UBUD',
     price: 280000, duration: '3 hours', level: 'Easy', language: 'English', maxGuests: 8,
     rating: 4.8, totalReviews: 97, featured: false, instantConfirm: true, ecoLabel: false, status: 'ACTIVE',
     latitude: -8.5061, longitude: 115.2635,

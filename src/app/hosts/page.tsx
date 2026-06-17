@@ -19,9 +19,8 @@ type HostCard = {
 
 const CATEGORY_DISPLAY: Record<string, string> = {
   WELLNESS: 'Wellness & Healing', ART_CRAFT: 'Art & Craft', CULTURE: 'Culture',
-  FOOD_DRINK: 'Culinary', COOKING: 'Culinary', NATURE: 'Nature & Outdoors',
-  SURF_WATER: 'Water Activities', DIVING: 'Water Activities', SPIRITUAL: 'Spiritual',
-  LOCAL_EXPERTS: 'Local Experts', RENTALS: 'Rentals',
+  CULINARY: 'Culinary', NATURE: 'Nature & Outdoors',
+  WATER_ACTIVITIES: 'Water Activities', LOCAL_EXPERTS: 'Local Experts', RENTALS: 'Rentals',
 }
 const AREA_DISPLAY: Record<string, string> = {
   UBUD: 'Ubud', CANGGU: 'Canggu', SEMINYAK: 'Seminyak', KUTA: 'Kuta',

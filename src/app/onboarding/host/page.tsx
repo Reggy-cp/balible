@@ -9,7 +9,7 @@ const CATEGORIES = [
   { value: 'ART_CRAFT',        label: 'Art & Craft' },
   { value: 'WELLNESS',         label: 'Wellness & Healing' },
   { value: 'CULTURE',          label: 'Culture' },
-  { value: 'FOOD_DRINK',       label: 'Culinary' },
+  { value: 'CULINARY',       label: 'Culinary' },
   { value: 'NATURE',           label: 'Nature & Outdoors' },
   { value: 'WATER_ACTIVITIES', label: 'Water Activities' },
   { value: 'LOCAL_EXPERTS',    label: 'Local Experts' },

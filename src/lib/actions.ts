@@ -20,7 +20,7 @@ const AREA_DISPLAY: Record<string, string> = {
 
 const CATEGORY_DISPLAY: Record<string, string> = {
   WELLNESS: 'Wellness & Healing', ART_CRAFT: 'Art & Craft', CULTURE: 'Culture',
-  FOOD_DRINK: 'Culinary', NATURE: 'Nature & Outdoors',
+  CULINARY: 'Culinary', NATURE: 'Nature & Outdoors',
   WATER_ACTIVITIES: 'Water Activities', LOCAL_EXPERTS: 'Local Experts', RENTALS: 'Rentals',
 }
 
@@ -178,7 +178,7 @@ const CATEGORY_TO_ENUM: Record<string, string> = {
   'Art & Craft': 'ART_CRAFT',
   'Wellness & Healing': 'WELLNESS',
   'Culture': 'CULTURE',
-  'Culinary': 'FOOD_DRINK',
+  'Culinary': 'CULINARY',
   'Nature & Outdoors': 'NATURE',
   'Water Activities': 'WATER_ACTIVITIES',
   'Local Experts': 'LOCAL_EXPERTS',
@@ -403,7 +403,7 @@ export async function getPendingListingsAction(): Promise<PendingListing[]> {
       slug: r.slug,
       title: r.title,
       area: AREA_DISPLAY[String(r.area)] ?? String(r.area),
-      category: String(r.category).replace('_', ' & ').replace('FOOD_DRINK', 'Culinary'),
+      category: String(r.category).replace('_', ' & ').replace('CULINARY', 'Culinary'),
       price: r.price,
       duration: r.duration,
       hostName: r.operator.user.name,
@@ -1030,8 +1030,8 @@ export async function getAdminAnalyticsAction(): Promise<AdminAnalytics> {
 
     const catColors: Record<string, string> = {
       WELLNESS: '#4A7C59', ART_CRAFT: '#C8A97E', CULTURE: '#B66A45',
-      NATURE: '#6F675C', FOOD_DRINK: '#111111', SURF_WATER: '#3B82F6',
-      DIVING: '#0EA5E9', COOKING: '#D97706', LOCAL_EXPERTS: '#8B5CF6', RENTALS: '#EC4899',
+      NATURE: '#6F675C', CULINARY: '#111111', WATER_ACTIVITIES: '#3B82F6',
+      LOCAL_EXPERTS: '#8B5CF6', RENTALS: '#EC4899',
     }
     const catCounts = exps.reduce((acc, e) => {
       const k = String(e.category)
@@ -1460,8 +1460,8 @@ export type AnalyticsData = {
 
 const CAT_COLORS: Record<string, string> = {
   WELLNESS: '#4A7C59', ART_CRAFT: '#C8A97E', CULTURE: '#B66A45',
-  NATURE: '#6F675C', FOOD_DRINK: '#111111', SURF_WATER: '#3B82F6',
-  DIVING: '#0EA5E9', COOKING: '#D97706', LOCAL_EXPERTS: '#8B5CF6', RENTALS: '#EC4899',
+  NATURE: '#6F675C', CULINARY: '#111111', WATER_ACTIVITIES: '#3B82F6',
+  LOCAL_EXPERTS: '#8B5CF6', RENTALS: '#EC4899',
 }
 
 const STATUS_COLORS: Record<string, string> = {

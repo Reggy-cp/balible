@@ -56,12 +56,12 @@ async function main() {
     ],
   }})
 
-  // ── FOOD_DRINK: Morning market & warung tour ────────────────────────────────
+  // ── CULINARY: Morning market & warung tour ────────────────────────────────
   await prisma.experience.create({ data: {
     slug: 'sanur-morning-market-food-tour',
     operatorId: op.id,
     title: 'Sanur Morning Market & Warung Food Tour',
-    category: 'FOOD_DRINK',
+    category: 'CULINARY',
     area: 'SANUR',
     price: 350000,
     duration: '3 hours',
@@ -152,7 +152,7 @@ async function main() {
 
   console.log('✅ 3 more Sanur experiences added:')
   console.log('   • sanur-beach-yoga (WELLNESS)')
-  console.log('   • sanur-morning-market-food-tour (FOOD_DRINK)')
+  console.log('   • sanur-morning-market-food-tour (CULINARY)')
   console.log('   • sanur-heritage-walk-le-mayeur (CULTURE)')
 }
 

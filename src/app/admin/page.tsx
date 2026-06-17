@@ -344,12 +344,10 @@ const CATEGORIES = [
   { value: 'WELLNESS',      label: 'Wellness & Healing' },
   { value: 'ART_CRAFT',     label: 'Art & Craft' },
   { value: 'CULTURE',       label: 'Culture' },
-  { value: 'FOOD_DRINK',    label: 'Culinary' },
-  { value: 'NATURE',        label: 'Nature & Outdoors' },
-  { value: 'SURF_WATER',    label: 'Water Activities' },
-  { value: 'COOKING',       label: 'Cooking' },
-  { value: 'DIVING',        label: 'Diving' },
-  { value: 'LOCAL_EXPERTS', label: 'Local Experts' },
+  { value: 'CULINARY',       label: 'Culinary' },
+  { value: 'NATURE',         label: 'Nature & Outdoors' },
+  { value: 'WATER_ACTIVITIES', label: 'Water Activities' },
+  { value: 'LOCAL_EXPERTS',  label: 'Local Experts' },
   { value: 'RENTALS',       label: 'Rentals' },
 ]
 
