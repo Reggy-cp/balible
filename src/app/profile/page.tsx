@@ -307,18 +307,7 @@ function ChatModal({ operatorId, hostName, onClose }: { operatorId: string; host
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput]       = useState('')
   const [sending, setSending]   = useState(false)
-  const messagesEndRef           = useRef<HTMLDivElement>(null)
-  const scrollContainerRef       = useRef<HTMLDivElement>(null)
   const inputRef                 = useRef<HTMLInputElement>(null)
-
-  const isNearBottom = () => {
-    const el = scrollContainerRef.current
-    if (!el) return true
-    return el.scrollHeight - el.scrollTop - el.clientHeight < 120
-  }
-  const scrollToBottom = (force = false) => {
-    if (force || isNearBottom()) messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
 
   useEffect(() => {
     getOrCreateConversationAction(operatorId).then(r => {
@@ -338,7 +327,6 @@ function ChatModal({ operatorId, hostName, onClose }: { operatorId: string; host
     return () => clearInterval(id)
   }, [convId])
 
-  useEffect(() => { scrollToBottom() }, [messages])
   useEffect(() => { setTimeout(() => inputRef.current?.focus(), 150) }, [convId])
 
   const send = async () => {
@@ -350,7 +338,6 @@ function ChatModal({ operatorId, hostName, onClose }: { operatorId: string; host
     const updated = await getMessagesAction(convId)
     if (updated) setMessages(updated)
     setSending(false)
-    scrollToBottom(true)
   }
 
   const fmtTime = (d: Date) => new Date(d).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -372,7 +359,7 @@ function ChatModal({ operatorId, hostName, onClose }: { operatorId: string; host
           </div>
 
           {/* Messages */}
-          <div ref={scrollContainerRef} style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
             {!convId && <p style={{ fontSize: 13, color: '#9E9A94', textAlign: 'center', marginTop: 20 }}>Connecting…</p>}
             {convId && messages.length === 0 && (
               <div style={{ textAlign: 'center', marginTop: 30 }}>
@@ -391,7 +378,6 @@ function ChatModal({ operatorId, hostName, onClose }: { operatorId: string; host
                 </div>
               </div>
             ))}
-            <div ref={messagesEndRef} />
           </div>
 
           {/* Input */}
@@ -618,18 +604,7 @@ function MessagesTab() {
   const [messages, setMessages]     = useState<ChatMessage[]>([])
   const [input, setInput]           = useState('')
   const [sending, setSending]       = useState(false)
-  const messagesEndRef               = useRef<HTMLDivElement>(null)
-  const scrollContainerRef           = useRef<HTMLDivElement>(null)
   const inputRef                     = useRef<HTMLInputElement>(null)
-
-  const isNearBottom = () => {
-    const el = scrollContainerRef.current
-    if (!el) return true
-    return el.scrollHeight - el.scrollTop - el.clientHeight < 120
-  }
-  const scrollToBottom = (force = false) => {
-    if (force || isNearBottom()) messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
 
   const loadConvs = () =>
     listUserConversationsAction().then(r => { if (r) setConvs(r); setLoading(false) }).catch(() => setLoading(false))
@@ -651,7 +626,6 @@ function MessagesTab() {
     return () => clearInterval(t)
   }, [activeConv])
 
-  useEffect(() => { scrollToBottom() }, [messages])
   useEffect(() => { if (activeConv) setTimeout(() => inputRef.current?.focus(), 100) }, [activeConv])
 
   const openConv = (c: ConversationSummary) => {
@@ -670,7 +644,6 @@ function MessagesTab() {
     const updated = await getMessagesAction(activeConv.id)
     if (updated) setMessages(updated)
     setSending(false)
-    scrollToBottom(true)
     loadConvs()
   }
 
@@ -779,7 +752,7 @@ function MessagesTab() {
                 </div>
 
                 {/* Messages */}
-                <div ref={scrollContainerRef} style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {messages.length === 0 && (
                     <div style={{ textAlign: 'center', marginTop: 40 }}>
                       <p style={{ fontSize: 13, color: '#9E9A94' }}>No messages yet — say hello!</p>
@@ -797,7 +770,6 @@ function MessagesTab() {
                       </div>
                     </div>
                   ))}
-                  <div ref={messagesEndRef} />
                 </div>
 
                 {/* Input */}

@@ -2493,18 +2493,7 @@ function MessagesPanel() {
   const [messages, setMessages]     = useState<ChatMessage[]>([])
   const [input, setInput]           = useState('')
   const [sending, setSending]       = useState(false)
-  const messagesEndRef               = useRef<HTMLDivElement>(null)
-  const scrollContainerRef           = useRef<HTMLDivElement>(null)
   const inputRef                     = useRef<HTMLInputElement>(null)
-
-  const isNearBottom = () => {
-    const el = scrollContainerRef.current
-    if (!el) return true
-    return el.scrollHeight - el.scrollTop - el.clientHeight < 120
-  }
-  const scrollToBottom = (force = false) => {
-    if (force || isNearBottom()) messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
 
   // Load conversations
   useEffect(() => {
@@ -2520,11 +2509,6 @@ function MessagesPanel() {
     return () => clearInterval(id)
   }, [selected])
 
-  // Scroll to bottom only when near bottom (don't hijack manual scrolling)
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages])
-
   // Mark conversation unread badge as zero when selected
   useEffect(() => {
     if (!selected) return
@@ -2534,7 +2518,7 @@ function MessagesPanel() {
   const openConv = (id: string) => {
     setSelected(id)
     setMessages([])
-    setTimeout(() => { inputRef.current?.focus(); scrollToBottom(true) }, 100)
+    setTimeout(() => { inputRef.current?.focus() }, 100)
   }
 
   const closeThread = () => setSelected(null)
@@ -2548,7 +2532,6 @@ function MessagesPanel() {
     const updated = await getMessagesAction(selected)
     if (updated) setMessages(updated)
     setSending(false)
-    scrollToBottom(true)
   }
 
   const selectedConv = convs.find(c => c.id === selected)
@@ -2632,7 +2615,7 @@ function MessagesPanel() {
               </div>
 
               {/* Messages */}
-              <div ref={scrollContainerRef} style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {messages.map(m => (
                   <div key={m.id} style={{ display: 'flex', justifyContent: m.isOwn ? 'flex-end' : 'flex-start' }}>
                     <div style={{ maxWidth: '70%' }}>
@@ -2643,7 +2626,6 @@ function MessagesPanel() {
                     </div>
                   </div>
                 ))}
-                <div ref={messagesEndRef} />
               </div>
 
               {/* Input */}
