@@ -213,16 +213,15 @@ export type HostListingInput = {
 }
 
 async function getOrCreateOperator(businessName: string) {
-  const user = await getSessionUser()
-  if (!user) return null
-  const existing = await prisma.operator.findUnique({ where: { userId: user.id } })
+  const { getServerSession } = await import('next-auth')
+  const { authOptions } = await import('./auth')
+  const session = await getServerSession(authOptions)
+  const userId = session?.user?.id
+  if (!userId) return null
+  const existing = await prisma.operator.findUnique({ where: { userId } })
   if (existing) return existing
   return prisma.operator.create({
-    data: {
-      userId: user.id,
-      businessName: businessName || user.name,
-      description: '',
-    },
+    data: { userId, businessName: businessName || 'My Business', description: '' },
   })
 }
 
@@ -325,12 +324,19 @@ export async function saveExperienceFullAction(
   mode: 'draft' | 'submit',
 ): Promise<{ ok: boolean; experiences?: DashExp[] }> {
   try {
-    const user = await getSessionUser()
-    if (!user) return { ok: false }
+    const { getServerSession } = await import('next-auth')
+    const { authOptions } = await import('./auth')
+    const session = await getServerSession(authOptions)
+    const userId = session?.user?.id
+    if (!userId) return { ok: false }
 
-    const existing_op = await prisma.operator.findUnique({ where: { userId: user.id } })
+    // Fetch operator and existing experience in parallel
+    const [existing_op, existing] = await Promise.all([
+      prisma.operator.findUnique({ where: { userId } }),
+      prisma.experience.findUnique({ where: { slug: input.slug }, select: { operatorId: true, status: true } }),
+    ])
     const operator = existing_op ?? await prisma.operator.create({
-      data: { userId: user.id, businessName: input.title || user.name, description: '' },
+      data: { userId, businessName: input.title || 'My Business', description: '' },
     })
 
     const categoryEnum = CATEGORY_TO_ENUM[input.category] ?? 'ART_CRAFT'
@@ -360,7 +366,6 @@ export async function saveExperienceFullAction(
       ...(input.schedule !== undefined && { schedule: input.schedule }),
     }
 
-    const existing = await prisma.experience.findUnique({ where: { slug: input.slug } })
     if (existing && existing.operatorId === operator.id) {
       await prisma.experience.update({
         where: { slug: input.slug },
@@ -2196,9 +2201,12 @@ export async function updateOperatorSettingsAction(data: {
 
 export async function updateExperienceImagesAction(slug: string, images: string[]): Promise<{ ok: boolean }> {
   try {
-    const user = await getSessionUser()
-    if (!user) return { ok: false }
-    const op = await prisma.operator.findUnique({ where: { userId: user.id } })
+    const { getServerSession } = await import('next-auth')
+    const { authOptions } = await import('./auth')
+    const session = await getServerSession(authOptions)
+    const userId = session?.user?.id
+    if (!userId) return { ok: false }
+    const op = await prisma.operator.findUnique({ where: { userId } })
     if (!op) return { ok: false }
     await prisma.experience.update({ where: { slug, operatorId: op.id }, data: { images } })
     return { ok: true }
@@ -2281,9 +2289,12 @@ export async function getExperienceScheduleAction(slug: string): Promise<any | n
 
 export async function updateExperienceScheduleAction(slug: string, schedule: any): Promise<{ ok: boolean }> {
   try {
-    const user = await getSessionUser()
-    if (!user) return { ok: false }
-    const op = await prisma.operator.findUnique({ where: { userId: user.id } })
+    const { getServerSession } = await import('next-auth')
+    const { authOptions } = await import('./auth')
+    const session = await getServerSession(authOptions)
+    const userId = session?.user?.id
+    if (!userId) return { ok: false }
+    const op = await prisma.operator.findUnique({ where: { userId } })
     if (!op) return { ok: false }
     await prisma.experience.update({ where: { slug, operatorId: op.id }, data: { schedule } })
     return { ok: true }
