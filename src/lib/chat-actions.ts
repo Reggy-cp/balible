@@ -58,10 +58,10 @@ export async function sendMessageAction(
   ])
 
   // Notify the recipient only on their first unread message in this batch
-  const recipientUnread = await prisma.message.count({
-    where: { conversationId, read: false, NOT: { senderId: conv.userId === user.id ? conv.userId : conv.operator.userId } },
+  const senderUnread = await prisma.message.count({
+    where: { conversationId, senderId: user.id, read: false },
   })
-  if (recipientUnread === 1) {
+  if (senderUnread === 1) {
     const senderIsCustomer = conv.userId === user.id
     const recipientId    = senderIsCustomer ? conv.operator.userId : conv.userId
     const recipientEmail = senderIsCustomer ? conv.operator.user.email : conv.user.email

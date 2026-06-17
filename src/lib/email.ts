@@ -423,7 +423,10 @@ export type ActivityReminderInput = {
 
 export async function sendActivityReminder(input: ActivityReminderInput): Promise<{ sent: boolean }> {
   const client = getClient()
-  if (!client) return { sent: false }
+  if (!client) {
+    console.warn('[email] RESEND_API_KEY not set — skipping activity reminder to', input.to)
+    return { sent: false }
+  }
   try {
     const row = (label: string, value: string) => `
       <tr>
@@ -475,7 +478,10 @@ export async function sendNewMessageEmail({
   replyUrl: string
 }): Promise<{ sent: boolean }> {
   const client = getClient()
-  if (!client) return { sent: false }
+  if (!client) {
+    console.warn('[email] RESEND_API_KEY not set — skipping new message email to', to)
+    return { sent: false }
+  }
   const safe = preview.length > 120 ? preview.slice(0, 120) + '…' : preview
   try {
     await client.emails.send({
