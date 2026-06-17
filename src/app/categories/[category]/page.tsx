@@ -137,7 +137,7 @@ export async function generateStaticParams() {
 }
 
 // For water-activities we query both SURF_WATER and DIVING
-const WATER_ACTIVITY_SLUGS = new Set(['surf-water', 'diving'])
+const WATER_ACTIVITY_SLUGS = new Set(['surf-water', 'water-activities'])
 
 export default async function CategoryPage({ params }: { params: { category: string } }) {
   const { category } = params

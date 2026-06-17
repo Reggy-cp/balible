@@ -53,7 +53,7 @@ const CATEGORY_SLUG: Record<string, string> = {
   NATURE: 'nature',
   SURF_WATER: 'water-activities',
   ARCHITECTURE: 'nature',
-  DIVING: 'diving',
+  DIVING: 'water-activities',
   COOKING: 'culinary',
   LOCAL_EXPERTS: 'local-experts',
   RENTALS: 'rentals',
