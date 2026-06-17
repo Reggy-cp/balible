@@ -113,7 +113,7 @@ async function main() {
     slug: 'sanur-glass-boat-snorkel',
     operatorId: opKadekArtini.id,
     title: 'Glass-Bottom Boat & Snorkel at Sanur Reef',
-    category: 'SURF_WATER',
+    category: 'WATER_ACTIVITIES',
     area: 'SANUR',
     price: 320000,
     duration: '2.5 hours',

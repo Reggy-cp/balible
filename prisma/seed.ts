@@ -231,7 +231,7 @@ async function main() {
 
   const eSurfKuta = await prisma.experience.create({ data: {
     slug: 'beginner-surf-lesson', operatorId: opKomangSurya.id,
-    title: 'Beginner Surf Lesson', category: 'SURF_WATER', area: 'KUTA',
+    title: 'Beginner Surf Lesson', category: 'WATER_ACTIVITIES', area: 'KUTA',
     price: 320000, duration: '2 hours', level: 'Beginner', language: 'English', maxGuests: 6,
     rating: 4.7, totalReviews: 428, featured: true, instantConfirm: true, ecoLabel: false, status: 'ACTIVE',
     latitude: -8.7184, longitude: 115.1686,
@@ -497,7 +497,7 @@ async function main() {
 
   const eSurfCanggu = await prisma.experience.create({ data: {
     slug: 'surfing-lesson-canggu', operatorId: opKomangSurya.id,
-    title: 'Surfing Lesson for Beginners', category: 'SURF_WATER', area: 'CANGGU',
+    title: 'Surfing Lesson for Beginners', category: 'WATER_ACTIVITIES', area: 'CANGGU',
     price: 400000, duration: '2 hours', level: 'Beginner', language: 'English', maxGuests: 6,
     rating: 4.8, totalReviews: 176, featured: false, instantConfirm: true, ecoLabel: false, status: 'ACTIVE',
     latitude: -8.6510, longitude: 115.1337,
@@ -511,7 +511,7 @@ async function main() {
 
   const eSup = await prisma.experience.create({ data: {
     slug: 'sup-seminyak', operatorId: opKomangSurya.id,
-    title: 'Stand-Up Paddleboard at Seminyak', category: 'SURF_WATER', area: 'SEMINYAK',
+    title: 'Stand-Up Paddleboard at Seminyak', category: 'WATER_ACTIVITIES', area: 'SEMINYAK',
     price: 350000, duration: '1.5 hours', level: 'All levels', language: 'English', maxGuests: 6,
     rating: 4.6, totalReviews: 52, featured: false, instantConfirm: true, ecoLabel: false, status: 'ACTIVE',
     latitude: -8.6979, longitude: 115.1596,

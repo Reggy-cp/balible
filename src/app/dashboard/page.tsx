@@ -562,7 +562,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
     'Culture':            ['Temple & Ceremony', 'Dance & Music', 'History Tour', 'Language'],
     'Culinary':           ['Cooking Class', 'Spice & Herb', 'Market Tour', 'Coffee & Tea', 'Fermentation', 'Dessert & Sweets', 'Farm to Table'],
     'Nature & Outdoors':  ['Trekking', 'Waterfall', 'Sunrise', 'Rice Terrace', 'Wildlife'],
-    'Water Activities':   ['Surfing', 'Snorkelling', 'Freediving', 'Scuba Diving', 'Stand-Up Paddle'],
+    'Water Activities':   ['Surfing', 'Snorkelling', 'Freediving', 'Scuba Diving', 'Stand-Up Paddle', 'Diving'],
     'Local Experts':      ['Photographers', 'Guides', 'Wellness Practitioners', 'Childcare', 'Pet Care', 'Creative Mentors', 'Drivers'],
     'Rentals':            ['Scooter', 'Motorbike', 'Bicycle', 'E-Bike', 'Villa', 'Workspace', 'Studio', 'Surfboard', 'Camping Gear', 'Diving Equipment'],
   }
@@ -833,7 +833,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                     <div>
                       <label style={labelStyle}>Category</label>
                       <select value={formData.category} onChange={e => setCategory(e.target.value)} style={{ ...inputStyle, backgroundColor: 'white', cursor: 'pointer' }}>
-                        {['Art & Craft','Wellness & Healing','Culture','Culinary','Nature & Outdoors','Water Activities','Local Experts','Rentals'].map(c => <option key={c}>{c}</option>)}
+                        {['Art & Craft','Wellness & Healing','Culture','Culinary','Nature & Outdoors','Water Activities','Local Experts','Rentals'].map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
                     </div>
                     <div>

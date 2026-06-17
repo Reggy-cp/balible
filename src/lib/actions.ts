@@ -20,10 +20,8 @@ const AREA_DISPLAY: Record<string, string> = {
 
 const CATEGORY_DISPLAY: Record<string, string> = {
   WELLNESS: 'Wellness & Healing', ART_CRAFT: 'Art & Craft', CULTURE: 'Culture',
-  FOOD_DRINK: 'Culinary', NATURE: 'Nature & Outdoors', ARCHITECTURE: 'Nature & Outdoors',
-  SURF_WATER: 'Water Activities', WATER_ACTIVITIES: 'Water Activities', COOKING: 'Culinary',
-  LOCAL_EXPERTS: 'Local Experts',
-  RENTALS: 'Rentals',
+  FOOD_DRINK: 'Culinary', NATURE: 'Nature & Outdoors',
+  WATER_ACTIVITIES: 'Water Activities', LOCAL_EXPERTS: 'Local Experts', RENTALS: 'Rentals',
 }
 
 // ── Wishlist ──────────────────────────────────────────────────────────────────
@@ -181,10 +179,8 @@ const CATEGORY_TO_ENUM: Record<string, string> = {
   'Wellness & Healing': 'WELLNESS',
   'Culture': 'CULTURE',
   'Culinary': 'FOOD_DRINK',
-  'Cooking': 'COOKING',
   'Nature & Outdoors': 'NATURE',
   'Water Activities': 'WATER_ACTIVITIES',
-  'Spiritual': 'CULTURE',
   'Local Experts': 'LOCAL_EXPERTS',
   'Rentals': 'RENTALS',
 }

@@ -133,11 +133,10 @@ const STATIC_EXPERIENCES: CategoryExp[] = [
 ]
 
 export async function generateStaticParams() {
-  return ['art-craft', 'wellness', 'culture', 'nature', 'surf-water', 'diving', 'water-activities', 'culinary', 'spiritual', 'local-experts', 'rentals'].map(category => ({ category }))
+  return ['art-craft', 'wellness', 'culture', 'nature', 'water-activities', 'culinary', 'local-experts', 'rentals'].map(category => ({ category }))
 }
 
-// For water-activities we query both SURF_WATER and DIVING
-const WATER_ACTIVITY_SLUGS = new Set(['surf-water', 'water-activities'])
+const WATER_ACTIVITY_SLUGS = new Set(['water-activities'])
 
 export default async function CategoryPage({ params }: { params: { category: string } }) {
   const { category } = params
