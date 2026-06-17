@@ -657,8 +657,9 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
       return
     }
     setSubmitting(false)
-    if (res.experiences) setExps(res.experiences)
     closeForm()
+    // Refresh list in background after modal closes
+    getHostExperiencesAction().then(rows => { if (rows) setExps(rows) }).catch(() => {})
   }
 
   const closeForm = () => {

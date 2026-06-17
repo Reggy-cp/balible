@@ -2,6 +2,8 @@
 
 import { prisma } from './prisma'
 import { getSessionUser } from './user'
+import { getServerSession } from 'next-auth'
+import { authOptions } from './auth'
 import { createSnapTransaction } from './midtrans'
 import { SERVICE_FEE_RATE, computeBookingTotal } from './pricing'
 import { createNotification } from './notifications'
@@ -213,8 +215,6 @@ export type HostListingInput = {
 }
 
 async function getOrCreateOperator(businessName: string) {
-  const { getServerSession } = await import('next-auth')
-  const { authOptions } = await import('./auth')
   const session = await getServerSession(authOptions)
   const userId = session?.user?.id
   if (!userId) return null
@@ -324,8 +324,6 @@ export async function saveExperienceFullAction(
   mode: 'draft' | 'submit',
 ): Promise<{ ok: boolean; experiences?: DashExp[] }> {
   try {
-    const { getServerSession } = await import('next-auth')
-    const { authOptions } = await import('./auth')
     const session = await getServerSession(authOptions)
     const userId = session?.user?.id
     if (!userId) return { ok: false }
@@ -377,41 +375,7 @@ export async function saveExperienceFullAction(
       })
     }
 
-    const rows = await prisma.experience.findMany({
-      where: { operatorId: operator.id },
-      include: {
-        bookings: { where: { status: { in: ['CONFIRMED', 'COMPLETED'] } }, select: { totalPrice: true } },
-        _count: { select: { bookings: true } },
-      },
-      orderBy: { createdAt: 'asc' },
-    })
-    const statusDisplay: Record<string, string> = { ACTIVE: 'Active', DRAFT: 'Draft', PENDING_REVIEW: 'Pending Review', PAUSED: 'Paused' }
-    const experiences: DashExp[] = rows.map((e, i) => ({
-      id: i + 1,
-      slug: e.slug,
-      title: e.title,
-      category: CATEGORY_DISPLAY[String(e.category)] ?? String(e.category),
-      area: AREA_DISPLAY[String(e.area)] ?? String(e.area),
-      price: e.price,
-      duration: e.duration,
-      maxGuests: e.maxGuests,
-      minGuests: (e as any).minGuests ?? 1,
-      subcategory: (e as any).subcategory ?? '',
-      rating: e.rating,
-      totalReviews: e.totalReviews,
-      bookings: e._count.bookings,
-      status: statusDisplay[String(e.status)] ?? 'Draft',
-      image: (e.images as string[])[0] ?? '',
-      images: e.images as string[],
-      schedule: e.schedule ?? null,
-      earnings: (e.bookings as { totalPrice: number }[]).reduce((a, b) => a + b.totalPrice, 0),
-      description: e.description,
-      meetingPoint: e.meetingPoint,
-      includes: e.includes,
-      excludes: e.excludes,
-      itinerary: Array.isArray(e.itinerary) ? (e.itinerary as { time: string; activity: string }[]) : [],
-    }))
-    return { ok: true, experiences }
+    return { ok: true }
   } catch {
     return { ok: false }
   }
@@ -2201,8 +2165,6 @@ export async function updateOperatorSettingsAction(data: {
 
 export async function updateExperienceImagesAction(slug: string, images: string[]): Promise<{ ok: boolean }> {
   try {
-    const { getServerSession } = await import('next-auth')
-    const { authOptions } = await import('./auth')
     const session = await getServerSession(authOptions)
     const userId = session?.user?.id
     if (!userId) return { ok: false }
@@ -2289,8 +2251,6 @@ export async function getExperienceScheduleAction(slug: string): Promise<any | n
 
 export async function updateExperienceScheduleAction(slug: string, schedule: any): Promise<{ ok: boolean }> {
   try {
-    const { getServerSession } = await import('next-auth')
-    const { authOptions } = await import('./auth')
     const session = await getServerSession(authOptions)
     const userId = session?.user?.id
     if (!userId) return { ok: false }
