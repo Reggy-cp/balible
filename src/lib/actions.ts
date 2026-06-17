@@ -20,8 +20,8 @@ const AREA_DISPLAY: Record<string, string> = {
 
 const CATEGORY_DISPLAY: Record<string, string> = {
   WELLNESS: 'Wellness & Healing', ART_CRAFT: 'Art & Craft', CULTURE: 'Culture',
-  FOOD_DRINK: 'Culinary', NATURE: 'Nature & Outdoors', ARCHITECTURE: 'Architecture',
-  SURF_WATER: 'Water Activities', DIVING: 'Diving', COOKING: 'Cooking',
+  FOOD_DRINK: 'Culinary', NATURE: 'Nature & Outdoors', ARCHITECTURE: 'Nature & Outdoors',
+  SURF_WATER: 'Water Activities', WATER_ACTIVITIES: 'Water Activities', COOKING: 'Culinary',
   LOCAL_EXPERTS: 'Local Experts',
   RENTALS: 'Rentals',
 }
