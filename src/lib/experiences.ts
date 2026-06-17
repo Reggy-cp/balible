@@ -53,7 +53,7 @@ const CATEGORY_SLUG: Record<string, string> = {
   NATURE: 'nature',
   SURF_WATER: 'water-activities',
   ARCHITECTURE: 'nature',
-  DIVING: 'water-activities',
+  DIVING: 'diving',
   COOKING: 'culinary',
   LOCAL_EXPERTS: 'local-experts',
   RENTALS: 'rentals',
@@ -72,6 +72,7 @@ const AREA_DISPLAY: Record<string, string> = {
   MEDEWI: 'Medewi',
   JIMBARAN: 'Jimbaran',
   KINTAMANI: 'Kintamani',
+  SIDEMEN: 'Sidemen',
 }
 
 function parseDurationMins(d: string): number {
