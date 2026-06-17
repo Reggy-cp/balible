@@ -10,7 +10,7 @@ import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
 import { getUserData, getExperiencesForWishlist, cancelBookingAction, getExperienceMetaForModal, submitReviewAction, getUserProfileSettingsAction, updateUserProfileSettingsAction, requestPasswordResetAction, type UserData, type ExpWishlistMeta } from '@/lib/actions'
-import { getOrCreateConversationAction, getMessagesAction, sendMessageAction, type ChatMessage } from '@/lib/chat-actions'
+import { getOrCreateConversationAction, getMessagesAction, sendMessageAction, listUserConversationsAction, type ChatMessage, type ConversationSummary } from '@/lib/chat-actions'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -26,6 +26,7 @@ type Booking = {
 
 const NAV_TABS = [
   { id: 'bookings',  label: 'Bookings',  Icon: CalendarDays },
+  { id: 'messages',  label: 'Messages',  Icon: MessageCircle },
   { id: 'wishlist',  label: 'Wishlist',  Icon: Heart },
   { id: 'reviews',   label: 'Reviews',   Icon: Star },
   { id: 'settings',  label: 'Settings',  Icon: Settings },
@@ -598,6 +599,216 @@ function WishlistTab({ dbSlugs }: { dbSlugs?: string[] }) {
 
 // ── Reviews tab ────────────────────────────────────────────────────────────────
 
+// ── Messages tab ───────────────────────────────────────────────────────────────
+
+function MessagesTab() {
+  const [convs, setConvs]           = useState<ConversationSummary[]>([])
+  const [loading, setLoading]       = useState(true)
+  const [activeConv, setActiveConv] = useState<ConversationSummary | null>(null)
+  const [messages, setMessages]     = useState<ChatMessage[]>([])
+  const [input, setInput]           = useState('')
+  const [sending, setSending]       = useState(false)
+  const messagesEndRef               = useRef<HTMLDivElement>(null)
+  const inputRef                     = useRef<HTMLInputElement>(null)
+
+  const loadConvs = () =>
+    listUserConversationsAction().then(r => { if (r) setConvs(r); setLoading(false) }).catch(() => setLoading(false))
+
+  useEffect(() => { loadConvs() }, [])
+
+  // Poll conversation list every 30s
+  useEffect(() => {
+    const t = setInterval(loadConvs, 30_000)
+    return () => clearInterval(t)
+  }, [])
+
+  // Poll thread every 5s when open
+  useEffect(() => {
+    if (!activeConv) return
+    const poll = () => getMessagesAction(activeConv.id).then(m => { if (m) setMessages(m) }).catch(() => {})
+    poll()
+    const t = setInterval(poll, 5_000)
+    return () => clearInterval(t)
+  }, [activeConv])
+
+  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
+  useEffect(() => { if (activeConv) setTimeout(() => inputRef.current?.focus(), 100) }, [activeConv])
+
+  const openConv = (c: ConversationSummary) => {
+    setActiveConv(c)
+    setMessages([])
+    // optimistically clear unread badge in the list
+    setConvs(prev => prev.map(p => p.id === c.id ? { ...p, unreadCount: 0 } : p))
+  }
+
+  const send = async () => {
+    if (!activeConv || !input.trim() || sending) return
+    setSending(true)
+    const text = input.trim()
+    setInput('')
+    await sendMessageAction(activeConv.id, text)
+    const updated = await getMessagesAction(activeConv.id)
+    if (updated) setMessages(updated)
+    setSending(false)
+    loadConvs()
+  }
+
+  const fmtTime = (d: Date) => {
+    const date = new Date(d)
+    const now = new Date()
+    if (date.toDateString() === now.toDateString())
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric' })
+  }
+
+  const totalUnread = convs.reduce((s, c) => s + c.unreadCount, 0)
+
+  return (
+    <div>
+      <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', marginBottom: 16 }}>
+        Messages{totalUnread > 0 && <span style={{ marginLeft: 8, fontSize: 13, fontWeight: 600, color: '#C8A97E' }}>{totalUnread} unread</span>}
+      </h2>
+
+      <div className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid #E8E4DE', minHeight: 460 }}>
+        <div className="flex h-full" style={{ minHeight: 460 }}>
+
+          {/* Conversation list — hidden on mobile when thread is open */}
+          <div
+            className={`${activeConv ? 'hidden lg:flex' : 'flex'} flex-col`}
+            style={{ width: '100%', maxWidth: 280, borderRight: '1px solid #F0EDE8', flexShrink: 0 }}
+          >
+            {loading ? (
+              <div className="flex-1 flex items-center justify-center">
+                <p style={{ fontSize: 13, color: '#9E9A94' }}>Loading…</p>
+              </div>
+            ) : convs.length === 0 ? (
+              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+                <MessageCircle size={28} style={{ color: '#D1CDC7', marginBottom: 10 }} />
+                <p style={{ fontSize: 14, fontWeight: 600, color: '#111111', marginBottom: 4 }}>No messages yet</p>
+                <p style={{ fontSize: 13, color: '#9E9A94', lineHeight: 1.5 }}>
+                  Message a host from one of your booking cards.
+                </p>
+              </div>
+            ) : (
+              <div style={{ overflowY: 'auto', flex: 1 }}>
+                {convs.map(c => (
+                  <button
+                    key={c.id}
+                    onClick={() => openConv(c)}
+                    style={{
+                      width: '100%', textAlign: 'left', border: 'none', cursor: 'pointer', padding: '14px 16px',
+                      backgroundColor: activeConv?.id === c.id ? '#F5F1EB' : 'white',
+                      borderBottom: '1px solid #F5F1EB',
+                      display: 'flex', alignItems: 'center', gap: 12,
+                    }}
+                    className="hover:bg-stone-50 transition-colors"
+                  >
+                    <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: '#E8E4DE', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {c.otherImage
+                        ? <img src={c.otherImage} alt={c.otherName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        : <span style={{ fontSize: 16, color: '#6F675C' }}>{c.otherName[0]?.toUpperCase()}</span>}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 4 }}>
+                        <p style={{ fontSize: 13, fontWeight: c.unreadCount > 0 ? 700 : 600, color: '#111111', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.otherName}</p>
+                        <p style={{ fontSize: 11, color: '#9E9A94', flexShrink: 0 }}>{fmtTime(c.lastMessageAt)}</p>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                        <p style={{ fontSize: 12, color: c.unreadCount > 0 ? '#111111' : '#9E9A94', fontWeight: c.unreadCount > 0 ? 600 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                          {c.lastMessage || 'No messages yet'}
+                        </p>
+                        {c.unreadCount > 0 && (
+                          <span style={{ flexShrink: 0, minWidth: 18, height: 18, borderRadius: 9, backgroundColor: '#C8A97E', color: 'white', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 5px' }}>
+                            {c.unreadCount}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Thread panel */}
+          <div className={`${activeConv ? 'flex' : 'hidden lg:flex'} flex-col flex-1 min-w-0`}>
+            {!activeConv ? (
+              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+                <MessageCircle size={32} style={{ color: '#D1CDC7', marginBottom: 12 }} />
+                <p style={{ fontSize: 14, color: '#9E9A94' }}>Select a conversation</p>
+              </div>
+            ) : (
+              <>
+                {/* Thread header */}
+                <div style={{ padding: '14px 16px', borderBottom: '1px solid #F0EDE8', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+                  {/* Back button — mobile only */}
+                  <button
+                    className="lg:hidden"
+                    onClick={() => setActiveConv(null)}
+                    style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center', color: '#6F675C' }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+                  </button>
+                  <div style={{ width: 36, height: 36, borderRadius: '50%', backgroundColor: '#E8E4DE', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {activeConv.otherImage
+                      ? <img src={activeConv.otherImage} alt={activeConv.otherName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      : <span style={{ fontSize: 14, color: '#6F675C' }}>{activeConv.otherName[0]?.toUpperCase()}</span>}
+                  </div>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: '#111111', fontFamily: 'var(--font-inter)' }}>{activeConv.otherName}</p>
+                </div>
+
+                {/* Messages */}
+                <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {messages.length === 0 && (
+                    <div style={{ textAlign: 'center', marginTop: 40 }}>
+                      <p style={{ fontSize: 13, color: '#9E9A94' }}>No messages yet — say hello!</p>
+                    </div>
+                  )}
+                  {messages.map(m => (
+                    <div key={m.id} style={{ display: 'flex', justifyContent: m.isOwn ? 'flex-end' : 'flex-start' }}>
+                      <div style={{ maxWidth: '72%' }}>
+                        <div style={{ backgroundColor: m.isOwn ? '#111111' : '#F5F1EB', color: m.isOwn ? 'white' : '#111111', padding: '9px 14px', borderRadius: m.isOwn ? '16px 16px 4px 16px' : '16px 16px 16px 4px', fontSize: 14, lineHeight: 1.5 }}>
+                          {m.content}
+                        </div>
+                        <p style={{ fontSize: 10, color: '#9E9A94', marginTop: 3, textAlign: m.isOwn ? 'right' : 'left' }}>
+                          {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
+
+                {/* Input */}
+                <div style={{ padding: '12px 16px', borderTop: '1px solid #F0EDE8', display: 'flex', gap: 8, flexShrink: 0 }}>
+                  <input
+                    ref={inputRef}
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
+                    placeholder="Type a message…"
+                    style={{ flex: 1, height: 40, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }}
+                    onFocus={e => (e.target.style.borderColor = '#C8A97E')}
+                    onBlur={e => (e.target.style.borderColor = '#E8E4DE')}
+                  />
+                  <button
+                    onClick={send}
+                    disabled={!input.trim() || sending}
+                    style={{ width: 40, height: 40, borderRadius: 10, border: 'none', backgroundColor: input.trim() ? '#111111' : '#E8E4DE', cursor: input.trim() ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.15s' }}
+                  >
+                    <Send size={16} style={{ color: input.trim() ? 'white' : '#9E9A94' }} />
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function ReviewsTab({ dbReviews }: { dbReviews?: UserData['reviews'] }) {
   const merged = dbReviews ?? []
 
@@ -818,11 +1029,12 @@ export default function ProfilePage() {
 
   const renderTab = () => {
     switch (activeTab) {
-      case 'bookings': return <BookingsTab dbBookings={dbData?.bookings} onRefresh={loadDb} />
-      case 'wishlist': return <WishlistTab dbSlugs={dbData?.wishlistSlugs} />
-      case 'reviews':  return <ReviewsTab dbReviews={dbData?.reviews} />
-      case 'settings': return <SettingsTab clerkName={displayName} clerkEmail={displayEmail} />
-      default:         return <BookingsTab dbBookings={dbData?.bookings} onRefresh={loadDb} />
+      case 'bookings':  return <BookingsTab dbBookings={dbData?.bookings} onRefresh={loadDb} />
+      case 'messages':  return <MessagesTab />
+      case 'wishlist':  return <WishlistTab dbSlugs={dbData?.wishlistSlugs} />
+      case 'reviews':   return <ReviewsTab dbReviews={dbData?.reviews} />
+      case 'settings':  return <SettingsTab clerkName={displayName} clerkEmail={displayEmail} />
+      default:          return <BookingsTab dbBookings={dbData?.bookings} onRefresh={loadDb} />
     }
   }
 
