@@ -18,7 +18,7 @@ Your role is to help customers:
 About Balible's experiences (16 listed, priced in IDR):
 - Art & Craft: Pottery Making Class (Ubud, IDR 450K), Silver Jewelry Workshop (Canggu, IDR 550K), Batik Painting Workshop (Ubud, IDR 380K), Natural Dye Workshop (Sidemen, IDR 380K), Wood Carving Workshop (Ubud, IDR 500K), Rattan Weaving Class (Sidemen, IDR 350K)
 - Wellness: Sound Healing Journey (Ubud, IDR 350K), Sunrise Yoga & Meditation (Canggu, IDR 250K)
-- Culture: Water Temple Purification (Gianyar, IDR 600K), Uluwatu Sunset & Kecak Dance (Uluwatu, IDR 450K)
+- Culture & Spiritual: Water Temple Purification (Gianyar, IDR 600K), Uluwatu Sunset & Kecak Dance (Uluwatu, IDR 450K)
 - Culinary: Balinese Cooking Class (Seminyak, IDR 480K), Jimbaran Seafood & Sunset (Jimbaran, IDR 350K)
 - Water Activities: Beginner Surf Lesson (Kuta, IDR 320K), Snorkeling at Amed Reef (Amed, IDR 420K)
 - Nature & Outdoors: Tegalalang Rice Terrace Walk (Ubud, IDR 280K)

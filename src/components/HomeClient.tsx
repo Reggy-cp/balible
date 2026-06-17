@@ -19,15 +19,14 @@ import type { EventRow } from '@/lib/event-actions'
 
 
 const CAT_GRID = [
-  { label: 'Wellness & Healing', Icon: Leaf,  href: '/categories/wellness',   photo: 'https://images.unsplash.com/photo-1600334129128-685c5582fd35?w=400&auto=format&fit=crop&q=80' },
-  { label: 'Art & Craft',  Icon: Scissors,   href: '/categories/art-craft',  photo: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&auto=format&fit=crop&q=80' },
-  { label: 'Culture',      Icon: Landmark,   href: '/categories/culture',    photo: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=400&auto=format&fit=crop&q=80' },
-  { label: 'Culinary',     Icon: ChefHat,    href: '/categories/culinary',   photo: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=400&auto=format&fit=crop&q=80' },
-  { label: 'Nature & Outdoors', Icon: Mountain, href: '/categories/nature',   photo: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=400&auto=format&fit=crop&q=80' },
-  { label: 'Spiritual',    Icon: Sun,        href: '/categories/spiritual',  photo: 'https://images.unsplash.com/photo-1516690561799-46d8f74f9abf?w=400&auto=format&fit=crop&q=80' },
-  { label: 'Water Activities', Icon: Waves,  href: '/categories/water-activities', photo: 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=400&auto=format&fit=crop&q=80' },
-  { label: 'Local Experts', Icon: Users,     href: '/categories/local-experts', photo: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&auto=format&fit=crop&q=80' },
-  { label: 'Rentals',       Icon: Bike,      href: '/categories/rentals',       photo: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&auto=format&fit=crop&q=80' },
+  { label: 'Wellness & Healing',  Icon: Leaf,     href: '/categories/wellness-healing',   photo: 'https://images.unsplash.com/photo-1600334129128-685c5582fd35?w=400&auto=format&fit=crop&q=80' },
+  { label: 'Art & Craft',         Icon: Scissors, href: '/categories/art-craft',          photo: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&auto=format&fit=crop&q=80' },
+  { label: 'Culture & Spiritual', Icon: Landmark, href: '/categories/culture-spiritual',  photo: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=400&auto=format&fit=crop&q=80' },
+  { label: 'Culinary',            Icon: ChefHat,  href: '/categories/culinary',           photo: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=400&auto=format&fit=crop&q=80' },
+  { label: 'Nature & Outdoors',   Icon: Mountain, href: '/categories/nature-outdoors',    photo: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=400&auto=format&fit=crop&q=80' },
+  { label: 'Water Activities',    Icon: Waves,    href: '/categories/water-activities',   photo: 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=400&auto=format&fit=crop&q=80' },
+  { label: 'Local Experts',       Icon: Users,    href: '/categories/local-experts',      photo: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&auto=format&fit=crop&q=80' },
+  { label: 'Rentals',             Icon: Bike,     href: '/categories/rentals',            photo: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&auto=format&fit=crop&q=80' },
 ]
 
 const WHY_ITEMS = [

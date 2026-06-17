@@ -14,12 +14,11 @@ import { LOCALES, type TranslationKey } from '@/lib/i18n'
 
 type CategoryDef = { labelKey: TranslationKey; Icon: React.ElementType; slug: string }
 const CATEGORIES: CategoryDef[] = [
-  { labelKey: 'cat_wellness',  Icon: Leaf,      slug: 'wellness' },
+  { labelKey: 'cat_wellness',  Icon: Leaf,      slug: 'wellness-healing' },
   { labelKey: 'cat_art',       Icon: Scissors,  slug: 'art-craft' },
-  { labelKey: 'cat_culture',   Icon: Landmark,  slug: 'culture' },
+  { labelKey: 'cat_culture',   Icon: Landmark,  slug: 'culture-spiritual' },
   { labelKey: 'cat_culinary',  Icon: ChefHat,   slug: 'culinary' },
-  { labelKey: 'cat_spiritual', Icon: Sun,       slug: 'spiritual' },
-  { labelKey: 'cat_nature',    Icon: Mountain,  slug: 'nature' },
+  { labelKey: 'cat_nature',    Icon: Mountain,  slug: 'nature-outdoors' },
   { labelKey: 'cat_water',     Icon: Waves,     slug: 'water-activities' },
   { labelKey: 'cat_experts',   Icon: Users,     slug: 'local-experts' },
   { labelKey: 'cat_rentals',   Icon: Bike,      slug: 'rentals' },

@@ -33,7 +33,7 @@ const translations = {
     // Categories
     cat_wellness:         'Wellness & Healing',
     cat_art:              'Art & Craft',
-    cat_culture:          'Culture',
+    cat_culture:          'Culture & Spiritual',
     cat_culinary:         'Culinary',
     cat_spiritual:        'Spiritual',
     cat_nature:           'Nature & Outdoors',

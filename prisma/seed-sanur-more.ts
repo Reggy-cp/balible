@@ -108,7 +108,7 @@ async function main() {
     slug: 'sanur-heritage-walk-le-mayeur',
     operatorId: op.id,
     title: 'Sanur Heritage Walk & Le Mayeur Museum',
-    category: 'CULTURE',
+    category: 'CULTURE_SPIRITUAL',
     area: 'SANUR',
     price: 280000,
     duration: '2.5 hours',

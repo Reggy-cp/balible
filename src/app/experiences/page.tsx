@@ -13,7 +13,7 @@ const AREA_DISPLAY: Record<string, string> = {
 }
 
 const CATEGORY_DISPLAY: Record<string, string> = {
-  WELLNESS_HEALING: 'Wellness & Healing', ART_CRAFT: 'Art & Craft', CULTURE: 'Culture',
+  WELLNESS_HEALING: 'Wellness & Healing', ART_CRAFT: 'Art & Craft', CULTURE_SPIRITUAL: 'Culture & Spiritual',
   CULINARY: 'Culinary', NATURE_OUTDOORS: 'Nature & Outdoors',
   WATER_ACTIVITIES: 'Water Activities', LOCAL_EXPERTS: 'Local Experts', RENTALS: 'Rentals',
 }

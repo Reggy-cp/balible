@@ -95,8 +95,8 @@ const HOST_DB: Record<string, Host> = {
     languages: ['Balinese', 'Indonesian', 'English'],
     events: [],
     experiences: [
-      { slug: 'water-temple-purification', title: 'Water Temple Purification', area: 'Gianyar', price: 600000, duration: '4 hrs', rating: 4.8, reviews: 78, category: 'Culture', image: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=600&auto=format&fit=crop&q=80' },
-      { slug: 'blessing-ceremony-ubud', title: 'Blessing Ceremony in Ubud', area: 'Ubud', price: 480000, duration: '3 hrs', rating: 4.9, reviews: 45, category: 'Culture', image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&auto=format&fit=crop&q=80' },
+      { slug: 'water-temple-purification', title: 'Water Temple Purification', area: 'Gianyar', price: 600000, duration: '4 hrs', rating: 4.8, reviews: 78, category: 'Culture & Spiritual', image: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=600&auto=format&fit=crop&q=80' },
+      { slug: 'blessing-ceremony-ubud', title: 'Blessing Ceremony in Ubud', area: 'Ubud', price: 480000, duration: '3 hrs', rating: 4.9, reviews: 45, category: 'Culture & Spiritual', image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&auto=format&fit=crop&q=80' },
     ],
   },
   'i-nyoman-arta': {
@@ -107,8 +107,8 @@ const HOST_DB: Record<string, Host> = {
     languages: ['Balinese', 'Indonesian', 'English', 'Japanese'],
     events: [],
     experiences: [
-      { slug: 'uluwatu-kecak-sunset', title: 'Uluwatu Sunset & Kecak Dance', area: 'Uluwatu', price: 450000, duration: '3 hrs', rating: 4.9, reviews: 312, category: 'Culture', image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&auto=format&fit=crop&q=80' },
-      { slug: 'kecak-sunset-performance', title: 'Kecak Sunset Performance', area: 'Uluwatu', price: 380000, duration: '2 hrs', rating: 4.8, reviews: 156, category: 'Culture', image: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=600&auto=format&fit=crop&q=80' },
+      { slug: 'uluwatu-kecak-sunset', title: 'Uluwatu Sunset & Kecak Dance', area: 'Uluwatu', price: 450000, duration: '3 hrs', rating: 4.9, reviews: 312, category: 'Culture & Spiritual', image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&auto=format&fit=crop&q=80' },
+      { slug: 'kecak-sunset-performance', title: 'Kecak Sunset Performance', area: 'Uluwatu', price: 380000, duration: '2 hrs', rating: 4.8, reviews: 156, category: 'Culture & Spiritual', image: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=600&auto=format&fit=crop&q=80' },
     ],
   },
   'putu-sari': {
@@ -199,7 +199,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 async function getHostFromDB(slug: string): Promise<Host | null> {
   try {
     const CATEGORY_DISPLAY: Record<string, string> = {
-      WELLNESS_HEALING: 'Wellness & Healing', ART_CRAFT: 'Art & Craft', CULTURE: 'Culture', RENTALS: 'Rentals', LOCAL_EXPERTS: 'Local Experts',
+      WELLNESS_HEALING: 'Wellness & Healing', ART_CRAFT: 'Art & Craft', CULTURE_SPIRITUAL: 'Culture & Spiritual', RENTALS: 'Rentals', LOCAL_EXPERTS: 'Local Experts',
       CULINARY: 'Culinary', NATURE_OUTDOORS: 'Nature & Outdoors',
       WATER_ACTIVITIES: 'Water Activities',
     }

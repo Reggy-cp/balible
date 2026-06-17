@@ -24,7 +24,7 @@ export type SearchResult = {
   photo: string
 }
 
-const CATEGORIES  = ['All', 'Art & Craft', 'Wellness & Healing', 'Culture', 'Culinary', 'Spiritual', 'Nature & Outdoors', 'Water Activities', 'Local Experts', 'Rentals']
+const CATEGORIES  = ['All', 'Art & Craft', 'Wellness & Healing', 'Culture & Spiritual', 'Culinary', 'Nature & Outdoors', 'Water Activities', 'Local Experts', 'Rentals']
 const LOCATIONS   = ['All Locations', 'Ubud', 'Canggu', 'Seminyak', 'Gianyar', 'Jimbaran', 'Kuta', 'Uluwatu', 'Amed', 'Sidemen', 'Kintamani', 'Sanur', 'Nusa Dua', 'Medewi']
 const DURATIONS   = ['Any duration', 'Under 2 hours', '2–4 hours', '4+ hours']
 const SORT_OPTIONS = ['Recommended', 'Price: Low to High', 'Price: High to Low', 'Top Rated', 'Most Reviews']

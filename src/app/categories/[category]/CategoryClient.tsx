@@ -49,13 +49,13 @@ const CATEGORY_META: Record<string, {
     color: '#4A7C59',
     subcategories: ['All', 'Yoga', 'Meditation', 'Sound Healing', 'Spa & Ritual', 'Breathwork'],
   },
-  culture: {
-    label: 'Culture',
+  'culture-spiritual': {
+    label: 'Culture & Spiritual',
     tagline: 'Live the living tradition',
-    description: 'Immerse yourself in ancient Balinese traditions, ceremonies, and spiritual heritage. Join a real temple ceremony, learn sacred dances, or walk ancient history with a local guide.',
+    description: 'Immerse yourself in ancient Balinese traditions, ceremonies, and spiritual heritage. Join a real temple ceremony, learn sacred dances, meet healers, or walk ancient history with a local guide.',
     image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1200&auto=format&fit=crop&q=80',
     color: '#6F675C',
-    subcategories: ['All', 'Temple & Ceremony', 'Dance & Music', 'History Tour', 'Language'],
+    subcategories: ['All', 'Temple & Ceremony', 'Dance & Music', 'History Tour', 'Language', 'Healing Ritual', 'Holy Water', 'Blessing'],
   },
   'nature-outdoors': {
     label: 'Nature & Outdoors',
@@ -99,7 +99,7 @@ const CATEGORY_META: Record<string, {
   },
 }
 
-const ALL_CATEGORY_SLUGS = ['art-craft', 'wellness-healing', 'culture', 'nature-outdoors', 'water-activities', 'culinary', 'local-experts', 'rentals'] as const
+const ALL_CATEGORY_SLUGS = ['art-craft', 'wellness-healing', 'culture-spiritual', 'nature-outdoors', 'water-activities', 'culinary', 'local-experts', 'rentals'] as const
 const SUB_CATEGORY_SLUGS = new Set<string>([])
 const SORT_OPTIONS = ['Most popular', 'Highest rated', 'Price: Low to High', 'Price: High to Low']
 

@@ -175,7 +175,7 @@ async function main() {
 
   const eWaterTemple = await prisma.experience.create({ data: {
     slug: 'water-temple-purification', operatorId: opWayanGede.id,
-    title: 'Water Temple Purification', category: 'CULTURE', area: 'GIANYAR',
+    title: 'Water Temple Purification', category: 'CULTURE_SPIRITUAL', area: 'GIANYAR',
     price: 600000, duration: '4 hours', level: 'All levels', language: 'English', maxGuests: 8,
     rating: 4.8, totalReviews: 78, featured: true, instantConfirm: false, ecoLabel: true, status: 'ACTIVE',
     latitude: -8.4153, longitude: 115.3151,
@@ -189,7 +189,7 @@ async function main() {
 
   const eUluwatuKecak = await prisma.experience.create({ data: {
     slug: 'uluwatu-kecak-sunset', operatorId: opINyomanArta.id,
-    title: 'Uluwatu Sunset & Kecak Dance', category: 'CULTURE', area: 'ULUWATU',
+    title: 'Uluwatu Sunset & Kecak Dance', category: 'CULTURE_SPIRITUAL', area: 'ULUWATU',
     price: 450000, duration: '3 hours', level: 'All levels', language: 'English', maxGuests: 20,
     rating: 4.9, totalReviews: 312, featured: true, instantConfirm: false, ecoLabel: false, status: 'ACTIVE',
     latitude: -8.8291, longitude: 115.0849,
@@ -357,7 +357,7 @@ async function main() {
 
   const eMeditationTemple = await prisma.experience.create({ data: {
     slug: 'meditation-temple', operatorId: opWayanGede.id,
-    title: 'Guided Meditation at Tirta Empul', category: 'CULTURE', area: 'GIANYAR',
+    title: 'Guided Meditation at Tirta Empul', category: 'CULTURE_SPIRITUAL', area: 'GIANYAR',
     price: 320000, duration: '2 hours', level: 'All levels', language: 'English', maxGuests: 8,
     rating: 4.7, totalReviews: 88, featured: false, instantConfirm: false, ecoLabel: true, status: 'ACTIVE',
     latitude: -8.4153, longitude: 115.3151,
@@ -371,7 +371,7 @@ async function main() {
 
   const eWaterCeremony = await prisma.experience.create({ data: {
     slug: 'water-temple-ceremony', operatorId: opWayanGede.id,
-    title: 'Water Temple Purification', category: 'CULTURE', area: 'GIANYAR',
+    title: 'Water Temple Purification', category: 'CULTURE_SPIRITUAL', area: 'GIANYAR',
     price: 420000, duration: '3 hours', level: 'All levels', language: 'English', maxGuests: 10,
     rating: 4.7, totalReviews: 84, featured: false, instantConfirm: false, ecoLabel: true, status: 'ACTIVE',
     latitude: -8.4153, longitude: 115.3152,
@@ -385,7 +385,7 @@ async function main() {
 
   const eDanceClass = await prisma.experience.create({ data: {
     slug: 'traditional-dance-class', operatorId: opINyomanArta.id,
-    title: 'Legong Dance Masterclass', category: 'CULTURE', area: 'UBUD',
+    title: 'Legong Dance Masterclass', category: 'CULTURE_SPIRITUAL', area: 'UBUD',
     price: 390000, duration: '2 hours', level: 'All levels', language: 'English', maxGuests: 8,
     rating: 4.8, totalReviews: 61, featured: false, instantConfirm: true, ecoLabel: false, status: 'ACTIVE',
     latitude: -8.5276, longitude: 115.2671,
@@ -399,7 +399,7 @@ async function main() {
 
   const eKecakFire = await prisma.experience.create({ data: {
     slug: 'kecak-fire-dance', operatorId: opINyomanArta.id,
-    title: 'Kecak Fire Dance at Uluwatu', category: 'CULTURE', area: 'ULUWATU',
+    title: 'Kecak Fire Dance at Uluwatu', category: 'CULTURE_SPIRITUAL', area: 'ULUWATU',
     price: 250000, duration: '1.5 hours', level: 'All levels', language: 'English', maxGuests: 20,
     rating: 4.9, totalReviews: 318, featured: true, instantConfirm: false, ecoLabel: false, status: 'ACTIVE',
     latitude: -8.8291, longitude: 115.0850,
@@ -413,7 +413,7 @@ async function main() {
 
   const eHistoryTour = await prisma.experience.create({ data: {
     slug: 'balinese-history-tour', operatorId: opINyomanArta.id,
-    title: 'Old Bali Heritage Walk', category: 'CULTURE', area: 'GIANYAR',
+    title: 'Old Bali Heritage Walk', category: 'CULTURE_SPIRITUAL', area: 'GIANYAR',
     price: 350000, duration: '3 hours', level: 'Easy', language: 'English', maxGuests: 8,
     rating: 4.7, totalReviews: 42, featured: false, instantConfirm: true, ecoLabel: false, status: 'ACTIVE',
     latitude: -8.5430, longitude: 115.4017,

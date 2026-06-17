@@ -19,7 +19,7 @@ const AREA_DISPLAY: Record<string, string> = {
 }
 
 const CATEGORY_DISPLAY: Record<string, string> = {
-  WELLNESS_HEALING: 'Wellness & Healing', ART_CRAFT: 'Art & Craft', CULTURE: 'Culture',
+  WELLNESS_HEALING: 'Wellness & Healing', ART_CRAFT: 'Art & Craft', CULTURE_SPIRITUAL: 'Culture & Spiritual',
   CULINARY: 'Culinary', NATURE_OUTDOORS: 'Nature & Outdoors',
   WATER_ACTIVITIES: 'Water Activities', LOCAL_EXPERTS: 'Local Experts', RENTALS: 'Rentals',
 }
@@ -177,7 +177,7 @@ export async function createReviewAction(input: {
 const CATEGORY_TO_ENUM: Record<string, string> = {
   'Art & Craft': 'ART_CRAFT',
   'Wellness & Healing': 'WELLNESS_HEALING',
-  'Culture': 'CULTURE',
+  'Culture & Spiritual': 'CULTURE_SPIRITUAL',
   'Culinary': 'CULINARY',
   'Nature & Outdoors': 'NATURE_OUTDOORS',
   'Water Activities': 'WATER_ACTIVITIES',
@@ -1029,7 +1029,7 @@ export async function getAdminAnalyticsAction(): Promise<AdminAnalytics> {
       .map(e => ({ title: e.title, bookings: e._count.bookings }))
 
     const catColors: Record<string, string> = {
-      WELLNESS_HEALING: '#4A7C59', ART_CRAFT: '#C8A97E', CULTURE: '#B66A45',
+      WELLNESS_HEALING: '#4A7C59', ART_CRAFT: '#C8A97E', CULTURE_SPIRITUAL: '#B66A45',
       NATURE_OUTDOORS: '#6F675C', CULINARY: '#111111', WATER_ACTIVITIES: '#3B82F6',
       LOCAL_EXPERTS: '#8B5CF6', RENTALS: '#EC4899',
     }
@@ -1459,7 +1459,7 @@ export type AnalyticsData = {
 }
 
 const CAT_COLORS: Record<string, string> = {
-  WELLNESS_HEALING: '#4A7C59', ART_CRAFT: '#C8A97E', CULTURE: '#B66A45',
+  WELLNESS_HEALING: '#4A7C59', ART_CRAFT: '#C8A97E', CULTURE_SPIRITUAL: '#B66A45',
   NATURE_OUTDOORS: '#6F675C', CULINARY: '#111111', WATER_ACTIVITIES: '#3B82F6',
   LOCAL_EXPERTS: '#8B5CF6', RENTALS: '#EC4899',
 }

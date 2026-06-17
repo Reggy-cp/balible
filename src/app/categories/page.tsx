@@ -23,7 +23,7 @@ const CATEGORIES = [
     imageHeight: 'h-80 lg:h-full',
   },
   {
-    slug: 'wellness',
+    slug: 'wellness-healing',
     label: 'Wellness & Healing',
     tagline: 'Restore mind, body and spirit',
     description: 'Sound healing, yoga at sunrise, traditional jamu rituals — guided by healers with decades of experience.',
@@ -36,10 +36,10 @@ const CATEGORIES = [
     imageHeight: 'h-48',
   },
   {
-    slug: 'culture',
-    label: 'Culture',
+    slug: 'culture-spiritual',
+    label: 'Culture & Spiritual',
     tagline: 'Live the living tradition',
-    description: 'Sacred temple ceremonies, Legong dance, Kecak fire shows — ancient traditions, open to you.',
+    description: 'Sacred temple ceremonies, Legong dance, Kecak fire shows, and ancient healing rituals — open to you.',
     image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&auto=format&fit=crop&q=80',
     count: 4,
     avgPrice: 352500,
@@ -49,7 +49,7 @@ const CATEGORIES = [
     imageHeight: 'h-48',
   },
   {
-    slug: 'nature',
+    slug: 'nature-outdoors',
     label: 'Nature & Outdoors',
     tagline: 'Bali beyond the beach',
     description: 'Trek Mount Batur before dawn, swim in hidden waterfalls, wander emerald rice terraces.',

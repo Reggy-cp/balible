@@ -343,7 +343,7 @@ function OverviewPanel({ onNav }: { onNav: (id: string) => void }) {
 const CATEGORIES = [
   { value: 'WELLNESS_HEALING',      label: 'Wellness & Healing' },
   { value: 'ART_CRAFT',     label: 'Art & Craft' },
-  { value: 'CULTURE',       label: 'Culture' },
+  { value: 'CULTURE_SPIRITUAL', label: 'Culture & Spiritual' },
   { value: 'CULINARY',       label: 'Culinary' },
   { value: 'NATURE_OUTDOORS',         label: 'Nature & Outdoors' },
   { value: 'WATER_ACTIVITIES', label: 'Water Activities' },

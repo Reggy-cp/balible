@@ -8,7 +8,7 @@ import Link from 'next/link'
 const CATEGORIES = [
   { value: 'ART_CRAFT',        label: 'Art & Craft' },
   { value: 'WELLNESS_HEALING',         label: 'Wellness & Healing' },
-  { value: 'CULTURE',          label: 'Culture' },
+  { value: 'CULTURE_SPIRITUAL', label: 'Culture & Spiritual' },
   { value: 'CULINARY',       label: 'Culinary' },
   { value: 'NATURE_OUTDOORS',           label: 'Nature & Outdoors' },
   { value: 'WATER_ACTIVITIES', label: 'Water Activities' },
