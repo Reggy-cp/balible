@@ -1,20 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { X, ChevronLeft, ChevronRight } from 'lucide-react'
 
-export default function EventGallery({ images, title, slug }: { images: string[]; title: string; slug?: string }) {
-  const [localImages, setLocalImages] = useState<string[]>([])
-  useEffect(() => {
-    if (!slug) return
-    try {
-      const v = localStorage.getItem(`balible_event_gallery_${slug}`)
-      if (v) setLocalImages(JSON.parse(v))
-    } catch {}
-  }, [slug])
-
-  const merged = localImages.length > 0 ? localImages : images
-  const photos = Array.from(new Set(merged)).filter(Boolean).slice(0, 6)
+export default function EventGallery({ images, title }: { images: string[]; title: string; slug?: string }) {
+  const photos = Array.from(new Set(images)).filter(Boolean).slice(0, 6)
   const [lightbox, setLightbox] = useState<number | null>(null)
 
   if (photos.length === 0) return null

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight, Heart, AlertCircle } from 'lucide-react'
+import { getExperienceScheduleAction, getBookedSlotsAction } from '@/lib/actions'
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December']
 
@@ -137,17 +138,10 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
   const [wishlisted, setWishlisted] = useState(false)
   const [schedule, setSchedule] = useState<ScheduleDay[] | null>(null)
   const [bookedGuests, setBookedGuests] = useState<Record<string, number>>({})
-  const [expOverride, setExpOverride] = useState<{ price?: number; duration?: string; maxGuests?: number } | null>(null)
 
-  useEffect(() => {
-    if (!slug) return
-    const raw = localStorage.getItem(`balible_exp_data_${slug}`)
-    if (raw) setExpOverride(JSON.parse(raw))
-  }, [slug])
-
-  const effectivePrice     = expOverride?.price     ?? price
-  const effectiveDuration  = expOverride?.duration  ?? duration
-  const effectiveMaxGuests = expOverride?.maxGuests  ?? maxGuests
+  const effectivePrice     = price
+  const effectiveDuration  = duration
+  const effectiveMaxGuests = maxGuests
 
   const getNow = () => {
     const n = new Date()
@@ -165,15 +159,13 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
 
   useEffect(() => {
     if (!slug) return
-    const raw = localStorage.getItem(`balible_schedule_${slug}`)
-    if (raw) setSchedule(JSON.parse(raw))
+    getExperienceScheduleAction(slug).then(s => { if (s) setSchedule(s as ScheduleDay[]) })
   }, [slug])
 
   // Reload booked guest counts whenever the selected date changes
   useEffect(() => {
     if (!slug || !selectedDate) { setBookedGuests({}); return }
-    const raw = localStorage.getItem(`balible_booked_${slug}_${selectedDate}`)
-    setBookedGuests(raw ? JSON.parse(raw) : {})
+    getBookedSlotsAction(slug, selectedDate).then(setBookedGuests)
   }, [slug, selectedDate])
 
   // Clear selected date/time if no longer available

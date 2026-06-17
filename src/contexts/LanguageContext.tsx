@@ -1,7 +1,9 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
+import { useSession } from 'next-auth/react'
 import { type Locale, type TranslationKey, getT } from '@/lib/i18n'
+import { getUserLocaleAction, updateUserLocaleAction } from '@/lib/actions'
 
 type LanguageCtx = {
   locale: Locale
@@ -15,19 +17,38 @@ const LanguageContext = createContext<LanguageCtx>({
   t: getT('en'),
 })
 
+function isValidLocale(v: string | null | undefined): v is Locale {
+  return v === 'en' || v === 'id' || v === 'ru'
+}
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
+  const { data: session } = useSession()
   const [locale, setLocaleState] = useState<Locale>('en')
 
   useEffect(() => {
-    const stored = localStorage.getItem('balible_locale') as Locale | null
-    if (stored === 'en' || stored === 'id' || stored === 'ru') setLocaleState(stored)
-  }, [])
+    if (session?.user) {
+      // Signed in: load from DB, fall back to localStorage
+      getUserLocaleAction().then(dbLocale => {
+        if (isValidLocale(dbLocale)) {
+          setLocaleState(dbLocale)
+        } else {
+          const stored = localStorage.getItem('balible_locale')
+          if (isValidLocale(stored)) setLocaleState(stored)
+        }
+      })
+    } else {
+      // Anonymous: use localStorage only
+      const stored = localStorage.getItem('balible_locale')
+      if (isValidLocale(stored)) setLocaleState(stored)
+    }
+  }, [session?.user?.email])
 
   const setLocale = useCallback((l: Locale) => {
     setLocaleState(l)
     localStorage.setItem('balible_locale', l)
     document.documentElement.lang = l
-  }, [])
+    if (session?.user) updateUserLocaleAction(l)
+  }, [session?.user?.email])
 
   const t = useCallback((key: TranslationKey) => getT(locale)(key), [locale])
 

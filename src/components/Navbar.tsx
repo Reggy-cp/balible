@@ -30,7 +30,6 @@ const NAV_LINKS: NavLink[] = [
   { labelKey: 'nav_experiences',  href: '/search',       hasDropdown: true },
   { labelKey: 'nav_destinations', href: '/destinations', hasDropdown: false },
   { labelKey: 'nav_events',       href: '/events',       hasDropdown: false },
-  { labelKey: 'nav_for_hosts',    href: '/for-hosts',    hasDropdown: false },
 ]
 
 type MobileLink = { labelKey: TranslationKey; href: string }
@@ -38,7 +37,6 @@ const MOBILE_LINKS: MobileLink[] = [
   { labelKey: 'nav_experiences',  href: '/search' },
   { labelKey: 'nav_destinations', href: '/destinations' },
   { labelKey: 'nav_events',       href: '/events' },
-  { labelKey: 'nav_for_hosts',    href: '/for-hosts' },
 ]
 
 export default function Navbar() {

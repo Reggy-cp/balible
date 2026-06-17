@@ -4,14 +4,14 @@ import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { ChevronUp, Shield, Award, Clock, Edit2, Lock, MapPin } from 'lucide-react'
 import MobileNav from '@/components/MobileNav'
-import { createBookingAction, getExperienceForCheckout, getBookingStatusAction, type ExpCheckoutMeta } from '@/lib/actions'
+import { createBookingAction, getExperienceForCheckout, getBookingStatusAction, getExperienceScheduleAction, getBookedSlotsAction, type ExpCheckoutMeta } from '@/lib/actions'
 
 const STEPS = ['Experience & Date', 'Your Details', 'Payment', 'Confirmation']
 type Step = 0 | 1 | 2 | 3
 
 // ── Experience lookup (loaded from DB) ────────────────────────────────────────
 
-const LOADING_META: ExpCheckoutMeta = { title: 'Loading…', area: '', price: 0, image: '', serviceFeeRate: 0.1, meetingPoint: '' }
+const LOADING_META: ExpCheckoutMeta = { title: 'Loading…', area: '', price: 0, image: '', serviceFeeRate: 0.1, meetingPoint: '', minGuests: 1, maxGuests: 8 }
 
 function formatDate(s: string): string {
   if (!s) return 'Date not selected'
@@ -58,7 +58,7 @@ type BookingData = {
   title: string; area: string; image: string; meetingPoint: string
   date: string; time: string; rawTime: string
   pricePerPerson: number; serviceFeeRate: number
-  slug: string; rawDate: string; maxGuests: number
+  slug: string; rawDate: string; maxGuests: number; minGuests: number
 }
 
 // ── Step indicator ─────────────────────────────────────────────────────────────
@@ -300,8 +300,13 @@ function StepExperience({ booking, guests, setGuests, onNext, slots, selectedRaw
           className="outline-none"
           style={{ height: 44, border: '1px solid #E8E4DE', borderRadius: 8, padding: '0 14px', fontSize: 14, color: '#111111', backgroundColor: 'white', width: '100%', cursor: 'pointer' }}
         >
-          {[1,2,3,4,5,6,7,8].map(n => <option key={n} value={n}>{n} guest{n > 1 ? 's' : ''}</option>)}
+          {Array.from({ length: booking.maxGuests - booking.minGuests + 1 }, (_, i) => booking.minGuests + i).map(n => (
+            <option key={n} value={n}>{n} guest{n > 1 ? 's' : ''}</option>
+          ))}
         </select>
+        {booking.minGuests > 1 && (
+          <p style={{ fontSize: 12, color: '#6F675C', marginTop: 5 }}>Minimum {booking.minGuests} guests required for this experience.</p>
+        )}
       </div>
 
       <div className="flex items-start gap-2 p-3 rounded-lg mb-4" style={{ backgroundColor: '#F0F7F2' }}>
@@ -555,19 +560,21 @@ function CheckoutInner() {
   // the charged amount is recomputed server-side in createBookingAction
   useEffect(() => {
     getExperienceForCheckout(slug).then(data => {
-      if (data) setExpMeta(data)
+      if (data) {
+        setExpMeta(data)
+        // Clamp current guest count to [minGuests, maxGuests] once real values load
+        setGuests(g => Math.max(data.minGuests, Math.min(data.maxGuests, g)))
+      }
     }).catch(() => {})
   }, [slug])
 
   useEffect(() => {
-    const raw = localStorage.getItem(`balible_schedule_${slug}`)
-    if (raw) setSchedule(JSON.parse(raw))
+    getExperienceScheduleAction(slug).then(s => { if (s) setSchedule(s as ScheduleDay[]) })
   }, [slug])
 
   useEffect(() => {
     if (!rawDate) return
-    const raw = localStorage.getItem(`balible_booked_${slug}_${rawDate}`)
-    setBookedGuests(raw ? JSON.parse(raw) : {})
+    getBookedSlotsAction(slug, rawDate).then(setBookedGuests)
   }, [slug, rawDate])
 
   // Build available time slots for the booked date
@@ -584,7 +591,7 @@ function CheckoutInner() {
     const now = new Date()
     const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`
     const nowMins = now.getHours() * 60 + now.getMinutes()
-    return generateSlots(open, close, bookedGuests, maxGuests)
+    return generateSlots(open, close, bookedGuests, expMeta.maxGuests || maxGuests)
       .filter(slot => rawDate !== todayStr || parseTimeMins(slot) > nowMins)
   })()
 
@@ -592,7 +599,7 @@ function CheckoutInner() {
     title: expMeta.title, area: expMeta.area, image: expMeta.image, meetingPoint: expMeta.meetingPoint,
     date: formatDate(rawDate), time: formatTime(selectedRawTime), rawTime: selectedRawTime,
     pricePerPerson: expMeta.price, serviceFeeRate: expMeta.serviceFeeRate,
-    slug, rawDate, maxGuests,
+    slug, rawDate, maxGuests: expMeta.maxGuests || maxGuests, minGuests: expMeta.minGuests || 1,
   }
 
   const sub   = booking.pricePerPerson * guests
@@ -617,17 +624,6 @@ function CheckoutInner() {
     document.body.appendChild(s)
   }, [])
 
-  const trackSlot = (ref: string) => {
-    try {
-      if (booking.rawTime) {
-        const slotKey = `balible_booked_${booking.slug}_${booking.rawDate}`
-        const prevSlots: Record<string, number> = JSON.parse(localStorage.getItem(slotKey) ?? '{}')
-        prevSlots[booking.rawTime] = (prevSlots[booking.rawTime] ?? 0) + guests
-        localStorage.setItem(slotKey, JSON.stringify(prevSlots))
-      }
-    } catch {}
-  }
-
   const startPayment = async () => {
     if (paying) return
     setPaying(true)
@@ -641,6 +637,7 @@ function CheckoutInner() {
         guestName: contact.fullName || 'Guest',
         guestEmail: contact.email || '',
         guestPhone: contact.phone || undefined,
+        notes: contact.requests || undefined,
       })
       if (!res.ok || !res.snapToken || !res.bookingRef) {
         setPayError(res.error ?? 'Could not start payment. Please try again.')
@@ -655,8 +652,8 @@ function CheckoutInner() {
       }
       const ref = res.bookingRef
       snap.pay(res.snapToken, {
-        onSuccess: () => { trackSlot(ref); setPaidRef(ref); setPayStatus('paid'); setStep(3); setPaying(false) },
-        onPending: () => { trackSlot(ref); setPaidRef(ref); setPayStatus('pending'); setStep(3); setPaying(false) },
+        onSuccess: () => { setPaidRef(ref); setPayStatus('paid'); setStep(3); setPaying(false) },
+        onPending: () => { setPaidRef(ref); setPayStatus('pending'); setStep(3); setPaying(false) },
         onError:   () => { setPayError('Payment failed — you have not been charged. Please try again.'); setPaying(false) },
         onClose:   () => { setPaying(false) },
       })

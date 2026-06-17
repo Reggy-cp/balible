@@ -462,3 +462,41 @@ export async function sendActivityReminder(input: ActivityReminderInput): Promis
     return { sent: false }
   }
 }
+
+// ── Password reset ─────────────────────────────────────────────────────────────
+
+export async function sendPasswordResetEmail({ to, name, token }: { to: string; name: string; token: string }): Promise<{ sent: boolean }> {
+  const client = getClient()
+  if (!client) {
+    console.warn('[email] RESEND_API_KEY not set — skipping password reset email to', to)
+    return { sent: false }
+  }
+  const resetUrl = `${SITE_URL}/reset-password?token=${token}`
+  try {
+    await client.emails.send({
+      from: FROM,
+      to,
+      subject: 'Reset your Balible password',
+      html: layout(`
+        <h1 style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:24px;color:${BRAND.ink};">Reset your password</h1>
+        <p style="margin:0 0 24px;font-size:15px;color:${BRAND.muted};line-height:1.7;">
+          Hi ${name}, we received a request to reset the password for your Balible account.
+          Click the button below to choose a new password.
+        </p>
+        <a href="${resetUrl}" style="display:inline-block;padding:14px 28px;background-color:${BRAND.ink};color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;border-radius:10px;">
+          Reset my password →
+        </a>
+        <p style="margin:28px 0 0;font-size:13px;color:${BRAND.muted};line-height:1.6;">
+          This link expires in 1 hour. If you didn't request a password reset, you can safely ignore this email — your password won't change.
+        </p>
+        <p style="margin:16px 0 0;font-size:12px;color:#9E9A94;line-height:1.6;word-break:break-all;">
+          Can't click? Copy this link: ${resetUrl}
+        </p>
+      `),
+    })
+    return { sent: true }
+  } catch (err) {
+    console.error('[email] password reset email failed:', err)
+    return { sent: false }
+  }
+}

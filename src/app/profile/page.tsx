@@ -1,15 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   User, Heart, CalendarDays, Settings, Star, MapPin, Clock,
-  Edit2, Camera, Check, Home, Search, Map, X,
+  Edit2, Camera, Check, Home, Search, Map, X, MessageCircle, Send,
 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
-import { getUserData, getExperiencesForWishlist, cancelBookingAction, getExperienceMetaForModal, submitReviewAction, getUserProfileSettingsAction, updateUserProfileSettingsAction, type UserData, type ExpWishlistMeta } from '@/lib/actions'
+import { getUserData, getExperiencesForWishlist, cancelBookingAction, getExperienceMetaForModal, submitReviewAction, getUserProfileSettingsAction, updateUserProfileSettingsAction, requestPasswordResetAction, type UserData, type ExpWishlistMeta } from '@/lib/actions'
+import { getOrCreateConversationAction, getMessagesAction, sendMessageAction, type ChatMessage } from '@/lib/chat-actions'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -18,7 +19,7 @@ type Booking = {
   guests: number; total: number; status: string
   rating: number | null; image: string; slug: string
   duration?: string; meetingPoint?: string; includes?: string[]
-  latitude?: number; longitude?: number
+  latitude?: number; longitude?: number; operatorId?: string; host?: string
 }
 
 // ── Nav tabs ───────────────────────────────────────────────────────────────────
@@ -299,11 +300,119 @@ function BookingDetailModal({ booking, onClose }: { booking: Booking; onClose: (
 
 // ── Bookings tab ───────────────────────────────────────────────────────────────
 
+// ── Chat modal ────────────────────────────────────────────────────────────────
+
+function ChatModal({ operatorId, hostName, onClose }: { operatorId: string; hostName: string; onClose: () => void }) {
+  const [convId, setConvId]     = useState<string | null>(null)
+  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [input, setInput]       = useState('')
+  const [sending, setSending]   = useState(false)
+  const messagesEndRef           = useRef<HTMLDivElement>(null)
+  const inputRef                 = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    getOrCreateConversationAction(operatorId).then(r => {
+      if (r.ok && r.conversationId) {
+        setConvId(r.conversationId)
+        getMessagesAction(r.conversationId).then(m => { if (m) setMessages(m) })
+      }
+    })
+  }, [operatorId])
+
+  // Poll every 5 s
+  useEffect(() => {
+    if (!convId) return
+    const id = setInterval(() => {
+      getMessagesAction(convId).then(m => { if (m) setMessages(m) })
+    }, 5000)
+    return () => clearInterval(id)
+  }, [convId])
+
+  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
+  useEffect(() => { setTimeout(() => inputRef.current?.focus(), 150) }, [convId])
+
+  const send = async () => {
+    if (!convId || !input.trim() || sending) return
+    setSending(true)
+    const text = input.trim()
+    setInput('')
+    await sendMessageAction(convId, text)
+    const updated = await getMessagesAction(convId)
+    if (updated) setMessages(updated)
+    setSending(false)
+  }
+
+  const fmtTime = (d: Date) => new Date(d).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+
+  return (
+    <>
+      <div className="fixed inset-0 z-50 bg-black/40" onClick={onClose} />
+      <div className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center sm:p-4 pointer-events-none">
+        <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md pointer-events-auto flex flex-col" style={{ height: 480, border: '1px solid #E8E4DE', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }}>
+          {/* Header */}
+          <div className="flex items-center justify-between px-5 py-4 flex-shrink-0" style={{ borderBottom: '1px solid #F0EDE8' }}>
+            <div className="flex items-center gap-2">
+              <MessageCircle size={16} style={{ color: '#C8A97E' }} />
+              <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111' }}>{hostName}</span>
+            </div>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+              <X size={18} style={{ color: '#6F675C' }} />
+            </button>
+          </div>
+
+          {/* Messages */}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {!convId && <p style={{ fontSize: 13, color: '#9E9A94', textAlign: 'center', marginTop: 20 }}>Connecting…</p>}
+            {convId && messages.length === 0 && (
+              <div style={{ textAlign: 'center', marginTop: 30 }}>
+                <MessageCircle size={28} style={{ color: '#D1CDC7', margin: '0 auto 8px' }} />
+                <p style={{ fontSize: 13, color: '#9E9A94' }}>Start the conversation!</p>
+                <p style={{ fontSize: 12, color: '#C8C4BE', marginTop: 4 }}>Ask your host about the experience, meeting point, or anything else.</p>
+              </div>
+            )}
+            {messages.map(m => (
+              <div key={m.id} style={{ display: 'flex', justifyContent: m.isOwn ? 'flex-end' : 'flex-start' }}>
+                <div style={{ maxWidth: '75%' }}>
+                  <div style={{ backgroundColor: m.isOwn ? '#111111' : '#F5F1EB', color: m.isOwn ? 'white' : '#111111', padding: '9px 14px', borderRadius: m.isOwn ? '16px 16px 4px 16px' : '16px 16px 16px 4px', fontSize: 14, lineHeight: 1.5 }}>
+                    {m.content}
+                  </div>
+                  <p style={{ fontSize: 10, color: '#9E9A94', marginTop: 3, textAlign: m.isOwn ? 'right' : 'left' }}>{fmtTime(m.createdAt)}</p>
+                </div>
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input */}
+          <div style={{ padding: '12px 16px', borderTop: '1px solid #F0EDE8', display: 'flex', gap: 8, flexShrink: 0 }}>
+            <input
+              ref={inputRef}
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
+              placeholder="Type a message…"
+              disabled={!convId}
+              style={{ flex: 1, height: 40, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }}
+            />
+            <button onClick={send} disabled={!input.trim() || sending || !convId}
+              style={{ width: 40, height: 40, borderRadius: 10, border: 'none', backgroundColor: input.trim() && convId ? '#111111' : '#E8E4DE', cursor: input.trim() && convId ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Send size={16} style={{ color: input.trim() && convId ? 'white' : '#9E9A94' }} />
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
+
+// ── Bookings tab ───────────────────────────────────────────────────────────────
+
 function BookingsTab({ dbBookings, onRefresh }: { dbBookings?: Booking[]; onRefresh: () => void }) {
   const [cancelled, setCancelled] = useState<Set<string>>(new Set())
   const [cancelling, setCancelling] = useState<string | null>(null)
   const [reviewing, setReviewing] = useState<Booking | null>(null)
   const [detailBooking, setDetailBooking] = useState<Booking | null>(null)
+  const [chatBooking, setChatBooking] = useState<Booking | null>(null)
 
   const cancel = async (b: Booking) => {
     setCancelling(b.id)
@@ -357,6 +466,14 @@ function BookingsTab({ dbBookings, onRefresh }: { dbBookings?: Booking[]; onRefr
                   className="hover:opacity-75 transition-opacity">
                   View details
                 </button>
+                {b.operatorId && (
+                  <button onClick={() => setChatBooking(b)}
+                    style={{ backgroundColor: '#F5F1EB', border: '1px solid #E8E4DE', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12, color: '#6F675C', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}
+                    className="hover:opacity-75 transition-opacity">
+                    <MessageCircle size={12} />
+                    Message Host
+                  </button>
+                )}
                 {effectiveStatus === 'Completed' && !b.rating && (
                   <button onClick={() => setReviewing(b)}
                     style={{ backgroundColor: '#FEF9EC', border: '1px solid #E8D9C4', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12, color: '#C8A97E', fontWeight: 600 }}
@@ -397,6 +514,13 @@ function BookingsTab({ dbBookings, onRefresh }: { dbBookings?: Booking[]; onRefr
       )}
       {detailBooking && (
         <BookingDetailModal booking={detailBooking} onClose={() => setDetailBooking(null)} />
+      )}
+      {chatBooking?.operatorId && (
+        <ChatModal
+          operatorId={chatBooking.operatorId}
+          hostName={chatBooking.host ?? 'Host'}
+          onClose={() => setChatBooking(null)}
+        />
       )}
     </div>
   )
@@ -521,7 +645,10 @@ function SettingsTab({ clerkName, clerkEmail }: { clerkName: string; clerkEmail:
   const [extra, setExtra]   = useState({ phone: '', nationality: '' })
   const [notifs, setNotifs] = useState(PROFILE_NOTIF_DEFAULTS)
   const [saved, setSaved]   = useState(false)
+  const [saveError, setSaveError] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [resetSent, setResetSent]   = useState(false)
+  const [resetSending, setResetSending] = useState(false)
 
   useEffect(() => {
     getUserProfileSettingsAction().then(s => {
@@ -533,8 +660,11 @@ function SettingsTab({ clerkName, clerkEmail }: { clerkName: string; clerkEmail:
 
   const save = async () => {
     setSaving(true)
-    await updateUserProfileSettingsAction({ phone: extra.phone, nationality: extra.nationality, notifSettings: notifs })
-    setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2000)
+    setSaveError(false)
+    const res = await updateUserProfileSettingsAction({ phone: extra.phone, nationality: extra.nationality, notifSettings: notifs })
+    setSaving(false)
+    if (res.ok) { setSaved(true); setTimeout(() => setSaved(false), 2000) }
+    else { setSaveError(true); setTimeout(() => setSaveError(false), 3000) }
   }
 
   return (
@@ -610,14 +740,43 @@ function SettingsTab({ clerkName, clerkEmail }: { clerkName: string; clerkEmail:
         </div>
       </div>
 
-      <button
-        onClick={save}
-        disabled={saving}
-        className="flex items-center gap-2 hover:opacity-90 transition-opacity"
-        style={{ height: 44, paddingInline: 24, borderRadius: 10, border: 'none', backgroundColor: saved ? '#4A7C59' : '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: saving ? 'default' : 'pointer', opacity: saving ? 0.7 : 1, transition: 'background 0.2s', minWidth: 140 }}
-      >
-        {saved ? <><Check size={14} /> Saved!</> : saving ? 'Saving…' : 'Save Changes'}
-      </button>
+      {/* Reset Password */}
+      <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
+        <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111', marginBottom: 6 }}>Password</h3>
+        <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', marginBottom: 14 }}>
+          We'll send a reset link to <strong style={{ color: '#111111' }}>{clerkEmail}</strong>. The link expires in 1 hour.
+        </p>
+        {resetSent ? (
+          <div className="flex items-center gap-2" style={{ color: '#4A7C59', fontSize: 13, fontFamily: 'var(--font-inter)' }}>
+            <Check size={14} /> Reset link sent — check your inbox
+          </div>
+        ) : (
+          <button
+            onClick={async () => {
+              setResetSending(true)
+              await requestPasswordResetAction(clerkEmail)
+              setResetSending(false)
+              setResetSent(true)
+            }}
+            disabled={resetSending}
+            style={{ height: 38, paddingInline: 18, borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', color: '#111111', fontSize: 13, fontWeight: 500, cursor: resetSending ? 'default' : 'pointer', opacity: resetSending ? 0.6 : 1, fontFamily: 'var(--font-inter)' }}
+          >
+            {resetSending ? 'Sending…' : 'Send reset link'}
+          </button>
+        )}
+      </div>
+
+      <div className="flex items-center gap-3">
+        <button
+          onClick={save}
+          disabled={saving}
+          className="flex items-center gap-2 hover:opacity-90 transition-opacity"
+          style={{ height: 44, paddingInline: 24, borderRadius: 10, border: 'none', backgroundColor: saved ? '#4A7C59' : saveError ? '#B66A45' : '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: saving ? 'default' : 'pointer', opacity: saving ? 0.7 : 1, transition: 'background 0.2s', minWidth: 140 }}
+        >
+          {saved ? <><Check size={14} /> Saved!</> : saving ? 'Saving…' : saveError ? 'Save failed' : 'Save Changes'}
+        </button>
+        {saveError && <span style={{ fontSize: 13, color: '#B66A45' }}>Could not save. Please try again.</span>}
+      </div>
     </div>
   )
 }

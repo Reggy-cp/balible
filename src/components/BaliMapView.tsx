@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { Search, X, Star, MapPin, Clock, ArrowLeft, SlidersHorizontal, ChevronLeft, ChevronRight } from 'lucide-react'
 import Image from 'next/image'
 import WishlistHeart from '@/components/WishlistHeart'
+import { getMapExperiencesAction, type MapExp } from '@/lib/actions'
 
 // ── Experience data with coordinates ─────────────────────────────────────────
 
@@ -49,7 +50,7 @@ function fmtPrice(p: number) {
   return `IDR ${Math.round(p / 1000)}K`
 }
 
-function markerHtml(exp: typeof MAP_EXPERIENCES[0], selected: boolean) {
+function markerHtml(exp: MapExp, selected: boolean) {
   const bg    = selected ? '#C8A97E' : '#111111'
   const color = selected ? '#111111' : '#ffffff'
   const scale = selected ? 'scale(1.15)' : 'scale(1)'
@@ -86,16 +87,13 @@ export default function BaliMapView() {
   const [showFilters, setShowFilters] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [mapLocked, setMapLocked] = useState(true)
-  const [hostExps, setHostExps]   = useState<typeof MAP_EXPERIENCES>([])
+  const [dbExps, setDbExps] = useState<MapExp[]>([])
 
   useEffect(() => {
-    try {
-      const stored = JSON.parse(localStorage.getItem('balible_host_new_experiences') ?? '[]')
-      setHostExps(stored)
-    } catch {}
+    getMapExperiencesAction().then(setDbExps)
   }, [])
 
-  const allExperiences = [...MAP_EXPERIENCES, ...hostExps]
+  const allExperiences = dbExps.length > 0 ? dbExps : MAP_EXPERIENCES
 
   const visible = allExperiences.filter(e => {
     const matchCat = category === 'All' || e.category === category

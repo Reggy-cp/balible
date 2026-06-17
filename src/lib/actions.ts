@@ -6,6 +6,8 @@ import { createSnapTransaction } from './midtrans'
 import { SERVICE_FEE_RATE, computeBookingTotal } from './pricing'
 import { createNotification } from './notifications'
 import { STATIC_EXP_MAP } from './static-experiences'
+import crypto from 'crypto'
+import bcrypt from 'bcryptjs'
 
 const AREA_DISPLAY: Record<string, string> = {
   UBUD: 'Ubud', CANGGU: 'Canggu', SEMINYAK: 'Seminyak', KUTA: 'Kuta',
@@ -70,6 +72,7 @@ export type CreateBookingInput = {
   guestName: string
   guestEmail: string
   guestPhone?: string
+  notes?: string
 }
 
 export async function createBookingAction(
@@ -83,7 +86,8 @@ export async function createBookingAction(
     if (!exp) return { ok: false, error: 'This experience is not available for online payment yet.' }
 
     // Price is computed server-side from the DB; client-supplied totals are never trusted
-    const guests = Math.max(1, Math.min(exp.maxGuests, Math.trunc(input.guests) || 1))
+    const minG = (exp as any).minGuests ?? 1
+    const guests = Math.max(minG, Math.min(exp.maxGuests, Math.trunc(input.guests) || minG))
     const totalPrice = computeBookingTotal(exp.price, guests)
 
     // Booking starts PENDING; the Midtrans webhook flips it to CONFIRMED on
@@ -99,6 +103,7 @@ export async function createBookingAction(
         guestName: input.guestName,
         guestEmail: input.guestEmail,
         guestPhone: input.guestPhone ?? null,
+        notes: input.notes ?? null,
         status: 'PENDING',
       },
     })
@@ -194,10 +199,12 @@ export type HostListingInput = {
   title: string
   description: string
   category: string
+  subcategory: string
   area: string
   price: number
   duration: string
   maxGuests: number
+  minGuests: number
   meetingPoint: string
   includes: string[]
   excludes: string[]
@@ -234,11 +241,13 @@ export async function saveHostListingAction(
       title: input.title,
       description: input.description || '',
       category: categoryEnum as any,
+      subcategory: input.subcategory || '',
       area: areaEnum as any,
       price: input.price || 0,
       duration: input.duration || '',
       level: 'All levels',
       maxGuests: input.maxGuests || 8,
+      minGuests: input.minGuests || 1,
       images: input.imageUrl ? [input.imageUrl] : [],
       highlights: [],
       includes: input.includes,
@@ -252,9 +261,10 @@ export async function saveHostListingAction(
 
     const existing = await prisma.experience.findUnique({ where: { slug: input.slug } })
     if (existing && existing.operatorId === operator.id) {
+      // Preserve existing status — don't demote an active listing back to draft on save
       const updated = await prisma.experience.update({
         where: { slug: input.slug },
-        data: { ...data, status: existing.status === 'PENDING_REVIEW' ? 'PENDING_REVIEW' : 'DRAFT' as any },
+        data: { ...data, status: existing.status },
       })
       return { ok: true, id: updated.id }
     }
@@ -280,11 +290,13 @@ export async function submitHostListingAction(
       title: input.title,
       description: input.description || '',
       category: categoryEnum as any,
+      subcategory: input.subcategory || '',
       area: areaEnum as any,
       price: input.price || 0,
       duration: input.duration || '',
       level: 'All levels',
       maxGuests: input.maxGuests || 8,
+      minGuests: input.minGuests || 1,
       images: input.imageUrl ? [input.imageUrl] : [],
       highlights: [],
       includes: input.includes,
@@ -417,12 +429,15 @@ export async function getHostExperiencesAction(): Promise<DashExp[] | null> {
       price: e.price,
       duration: e.duration,
       maxGuests: e.maxGuests,
+      minGuests: (e as any).minGuests ?? 1,
+      subcategory: (e as any).subcategory ?? '',
       rating: e.rating,
       totalReviews: e.totalReviews,
       bookings: e._count.bookings,
       status: statusDisplay[String(e.status)] ?? 'Draft',
       image: (e.images as string[])[0] ?? '',
       images: e.images as string[],
+      schedule: e.schedule ?? null,
       earnings: (e.bookings as { totalPrice: number }[]).reduce((a, b) => a + b.totalPrice, 0),
       description: e.description,
       meetingPoint: e.meetingPoint,
@@ -537,6 +552,9 @@ export type UserData = {
     includes: string[]
     latitude: number
     longitude: number
+    operatorId: string
+    host: string
+    time?: string
   }[]
   reviews: {
     experience: string
@@ -561,7 +579,7 @@ export async function getUserData(): Promise<UserData | null> {
       prisma.booking.findMany({
         where: { userId: user.id },
         include: {
-          experience: { select: { title: true, area: true, images: true, slug: true, duration: true, meetingPoint: true, includes: true, latitude: true, longitude: true } },
+          experience: { select: { title: true, area: true, images: true, slug: true, duration: true, meetingPoint: true, includes: true, latitude: true, longitude: true, operatorId: true, operator: { select: { businessName: true } } } },
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -602,6 +620,9 @@ export async function getUserData(): Promise<UserData | null> {
         includes: b.experience.includes as string[],
         latitude: b.experience.latitude,
         longitude: b.experience.longitude,
+        operatorId: b.experience.operatorId,
+        host: b.experience.operator.businessName,
+        time: b.time ?? undefined,
       })),
       reviews: reviews.map(r => ({
         experience: r.experience.title,
@@ -1021,13 +1042,13 @@ export async function adminDeleteEventAction(id: string): Promise<{ ok: boolean 
 
 // ── Checkout experience lookup ────────────────────────────────────────────────
 
-export type ExpCheckoutMeta = { title: string; area: string; price: number; image: string; serviceFeeRate: number; meetingPoint: string }
+export type ExpCheckoutMeta = { title: string; area: string; price: number; image: string; serviceFeeRate: number; meetingPoint: string; minGuests: number; maxGuests: number }
 
 export async function getExperienceForCheckout(slug: string): Promise<ExpCheckoutMeta | null> {
   try {
     const exp = await prisma.experience.findUnique({
       where: { slug },
-      select: { title: true, area: true, price: true, images: true, meetingPoint: true },
+      select: { title: true, area: true, price: true, images: true, meetingPoint: true, maxGuests: true, minGuests: true },
     })
     if (!exp) return null
     return {
@@ -1037,6 +1058,8 @@ export async function getExperienceForCheckout(slug: string): Promise<ExpCheckou
       image: (exp.images as string[])[0] ?? '',
       serviceFeeRate: SERVICE_FEE_RATE,
       meetingPoint: exp.meetingPoint ?? '',
+      minGuests: (exp as any).minGuests ?? 1,
+      maxGuests: exp.maxGuests,
     }
   } catch {
     return null
@@ -1125,10 +1148,11 @@ export async function getExperienceMetaForModal(slug: string): Promise<{
 
 export type DashExp = {
   id: number; slug: string; title: string; category: string; area: string
-  price: number; duration: string; maxGuests: number
+  price: number; duration: string; maxGuests: number; minGuests: number; subcategory: string
   rating: number; totalReviews: number; bookings: number; status: string
   image: string; images: string[]; earnings: number
   description: string; meetingPoint: string
+  schedule: any | null
   includes: string[]; excludes: string[]
   itinerary: { time: string; activity: string }[]
 }
@@ -1266,12 +1290,15 @@ export async function getHostDashboardData(viewOperatorId?: string): Promise<Hos
       price: e.price,
       duration: e.duration,
       maxGuests: e.maxGuests,
+      minGuests: (e as any).minGuests ?? 1,
+      subcategory: (e as any).subcategory ?? '',
       rating: e.rating,
       totalReviews: e.totalReviews,
       bookings: e._count.bookings,
       status: expStatusDisplay[String(e.status)] ?? 'Draft',
       image: (e.images as string[])[0] ?? '',
       images: e.images as string[],
+      schedule: e.schedule ?? null,
       earnings: (e.bookings as { totalPrice: number }[]).reduce((a, b) => a + b.totalPrice, 0),
       description: e.description,
       meetingPoint: e.meetingPoint,
@@ -2129,4 +2156,141 @@ export async function updateUserProfileSettingsAction(data: {
     })
     return { ok: true }
   } catch { return { ok: false } }
+}
+
+// ── User locale preference ────────────────────────────────────────────────────
+
+export async function getUserLocaleAction(): Promise<string | null> {
+  try {
+    const user = await getSessionUser()
+    if (!user) return null
+    const row = await prisma.user.findUnique({ where: { id: user.id }, select: { locale: true } })
+    return row?.locale ?? null
+  } catch { return null }
+}
+
+export async function updateUserLocaleAction(locale: string): Promise<{ ok: boolean }> {
+  try {
+    const user = await getSessionUser()
+    if (!user) return { ok: false }
+    await prisma.user.update({ where: { id: user.id }, data: { locale } })
+    return { ok: true }
+  } catch { return { ok: false } }
+}
+
+// ── Experience schedule (availability) ───────────────────────────────────────
+
+export async function getExperienceScheduleAction(slug: string): Promise<any | null> {
+  try {
+    const exp = await prisma.experience.findUnique({ where: { slug }, select: { schedule: true } })
+    return exp?.schedule ?? null
+  } catch { return null }
+}
+
+export async function updateExperienceScheduleAction(slug: string, schedule: any): Promise<{ ok: boolean }> {
+  try {
+    const user = await getSessionUser()
+    if (!user) return { ok: false }
+    const op = await prisma.operator.findUnique({ where: { userId: user.id } })
+    if (!op) return { ok: false }
+    await prisma.experience.update({ where: { slug, operatorId: op.id }, data: { schedule } })
+    return { ok: true }
+  } catch { return { ok: false } }
+}
+
+// ── Booked slots (derived from Booking table) ─────────────────────────────────
+
+export async function getBookedSlotsAction(slug: string, date: string): Promise<Record<string, number>> {
+  try {
+    const exp = await prisma.experience.findUnique({ where: { slug }, select: { id: true } })
+    if (!exp) return {}
+    const start = new Date(date)
+    const end = new Date(date)
+    end.setDate(end.getDate() + 1)
+    const bookings = await prisma.booking.findMany({
+      where: {
+        experienceId: exp.id,
+        date: { gte: start, lt: end },
+        status: { in: ['CONFIRMED', 'PENDING'] as any },
+      },
+      select: { time: true, guests: true },
+    })
+    const result: Record<string, number> = {}
+    for (const b of bookings) {
+      if (b.time) result[b.time] = (result[b.time] ?? 0) + b.guests
+    }
+    return result
+  } catch { return {} }
+}
+
+// ── Map experiences (active DB experiences with coordinates) ─────────────────
+
+export type MapExp = {
+  id: number; slug: string; title: string; category: string; area: string
+  lat: number; lng: number; price: number; rating: number; reviews: number
+  duration: string; image: string
+}
+
+export async function getMapExperiencesAction(): Promise<MapExp[]> {
+  try {
+    const rows = await prisma.experience.findMany({
+      where: { status: 'ACTIVE' as any, latitude: { not: 0 } },
+      select: { id: true, slug: true, title: true, category: true, area: true, latitude: true, longitude: true, price: true, rating: true, totalReviews: true, duration: true, images: true },
+      orderBy: { createdAt: 'asc' },
+    })
+    return rows.map((e, i) => ({
+      id: i + 1,
+      slug: e.slug,
+      title: e.title,
+      category: CATEGORY_DISPLAY[String(e.category)] ?? String(e.category),
+      area: AREA_DISPLAY[String(e.area)] ?? String(e.area),
+      lat: e.latitude,
+      lng: e.longitude,
+      price: e.price,
+      rating: e.rating,
+      reviews: e.totalReviews,
+      duration: e.duration,
+      image: (e.images as string[])[0] ?? '',
+    }))
+  } catch { return [] }
+}
+
+// ── Password reset ─────────────────────────────────────────────────────────────
+
+export async function requestPasswordResetAction(email: string): Promise<{ ok: boolean }> {
+  try {
+    const user = await prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } })
+    // Always return ok to avoid email enumeration
+    if (!user || !user.password) return { ok: true }
+
+    const token = crypto.randomBytes(32).toString('hex')
+    const expiry = new Date(Date.now() + 1000 * 60 * 60) // 1 hour
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { resetToken: token, resetTokenExpiry: expiry },
+    })
+
+    const { sendPasswordResetEmail } = await import('./email')
+    await sendPasswordResetEmail({ to: user.email, name: user.name, token })
+    return { ok: true }
+  } catch { return { ok: true } }
+}
+
+export async function resetPasswordAction(token: string, newPassword: string): Promise<{ ok: boolean; error?: string }> {
+  try {
+    if (!token || newPassword.length < 8) return { ok: false, error: 'Password must be at least 8 characters.' }
+
+    const user = await prisma.user.findFirst({
+      where: { resetToken: token, resetTokenExpiry: { gt: new Date() } },
+    })
+    if (!user) return { ok: false, error: 'This link is invalid or has expired. Please request a new one.' }
+
+    const hashed = await bcrypt.hash(newPassword, 12)
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashed, resetToken: null, resetTokenExpiry: null },
+    })
+    return { ok: true }
+  } catch { return { ok: false, error: 'Something went wrong. Please try again.' } }
 }
