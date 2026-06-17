@@ -623,7 +623,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
     setImagePreview(exp.image || null)
     setGalleryPreviews(exp.images.slice(1))
     setFormStep(1)
-    setFormData({ title: exp.title, category: exp.category, subcategory: exp.subcategory || SUBCATEGORY_MAP[exp.category]?.[0] || '', area: exp.area, price: String(exp.price), duration: exp.duration, maxGuests: String(exp.maxGuests), minGuests: String(exp.minGuests ?? 1), meetingPoint: exp.meetingPoint || '', description: exp.description || '', includes: (exp.includes ?? []).join('\n'), excludes: (exp.excludes ?? []).join('\n') })
+    setFormData({ title: exp.title, category: exp.category, subcategory: exp.subcategory || SUBCATEGORY_MAP[exp.category]?.[0] || '', area: exp.area, price: String(exp.price), duration: exp.duration.match(/([\d.]+)/)?.[1] ?? '', maxGuests: String(exp.maxGuests), minGuests: String(exp.minGuests ?? 1), meetingPoint: exp.meetingPoint || '', description: exp.description || '', includes: (exp.includes ?? []).join('\n'), excludes: (exp.excludes ?? []).join('\n') })
     setItinerary(exp.itinerary?.length ? exp.itinerary : [{ time: '', activity: '' }])
     if (exp.schedule) setSchedule(exp.schedule as any)
     else setSchedule(WEEK.map(day => ({ day, enabled: false, open: '09:00', close: '17:00' })))
@@ -645,7 +645,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
       subcategory: formData.subcategory || '',
       area: formData.area,
       price: Number(formData.price) || editingExp?.price || 0,
-      duration: formData.duration || editingExp?.duration || '',
+      duration: formData.duration ? `${formData.duration} hours` : editingExp?.duration || '',
       maxGuests: Number(formData.maxGuests) || editingExp?.maxGuests || 8,
       minGuests: Number(formData.minGuests) || 1,
       meetingPoint: formData.meetingPoint || '',
@@ -868,8 +868,11 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                       <input type="number" value={formData.price} onChange={e => setField('price', e.target.value)} placeholder="450000" style={inputStyle} />
                     </div>
                     <div>
-                      <label style={labelStyle}>Duration</label>
-                      <input type="text" value={formData.duration} onChange={e => setField('duration', e.target.value)} placeholder="e.g. 2.5 hours" style={inputStyle} />
+                      <label style={labelStyle}>Duration (hours)</label>
+                      <div style={{ position: 'relative' }}>
+                        <input type="number" value={formData.duration} onChange={e => setField('duration', e.target.value)} placeholder="2" min="0.5" step="0.5" style={{ ...inputStyle, paddingRight: 48 }} />
+                        <span style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 12, color: '#9E9A94', pointerEvents: 'none', fontFamily: 'var(--font-inter)' }}>hrs</span>
+                      </div>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
