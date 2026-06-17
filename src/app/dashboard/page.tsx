@@ -567,7 +567,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
     'Rentals':            ['Scooter', 'Motorbike', 'Bicycle', 'E-Bike', 'Villa', 'Workspace', 'Studio', 'Surfboard', 'Camping Gear', 'Diving Equipment'],
   }
 
-  const BLANK_FORM = { title: '', category: 'Art & Craft', subcategory: 'Pottery', area: 'Ubud', price: '', duration: '', maxGuests: '', minGuests: '', meetingPoint: '', description: '', includes: '', excludes: '' }
+  const BLANK_FORM = { title: '', category: 'Art & Craft', subcategory: 'Pottery', area: 'Ubud', price: '', duration: '', maxGuests: '', minGuests: '', meetingPoint: '', description: '', includes: '', excludes: '', rentalPeriod: 'per day', deposit: '' }
   const [formData, setFormData] = useState(BLANK_FORM)
   const setField = (k: keyof typeof BLANK_FORM, v: string) => setFormData(p => ({ ...p, [k]: v }))
   const setCategory = (cat: string) => setFormData(p => ({ ...p, category: cat, subcategory: SUBCATEGORY_MAP[cat]?.[0] ?? '' }))
@@ -623,7 +623,11 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
     setImagePreview(exp.image || null)
     setGalleryPreviews(exp.images.slice(1))
     setFormStep(1)
-    setFormData({ title: exp.title, category: exp.category, subcategory: exp.subcategory || SUBCATEGORY_MAP[exp.category]?.[0] || '', area: exp.area, price: String(exp.price), duration: exp.duration.match(/([\d.]+)/)?.[1] ?? '', maxGuests: String(exp.maxGuests), minGuests: String(exp.minGuests ?? 1), meetingPoint: exp.meetingPoint || '', description: exp.description || '', includes: (exp.includes ?? []).join('\n'), excludes: (exp.excludes ?? []).join('\n') })
+    const isRental = exp.category === 'Rentals'
+    const depositLine = (exp.includes ?? []).find((l: string) => l.startsWith('Deposit:'))
+    const depositAmt = depositLine ? depositLine.replace(/[^0-9]/g, '') : ''
+    const nonDepositIncludes = (exp.includes ?? []).filter((l: string) => !l.startsWith('Deposit:'))
+    setFormData({ title: exp.title, category: exp.category, subcategory: exp.subcategory || SUBCATEGORY_MAP[exp.category]?.[0] || '', area: exp.area, price: String(exp.price), duration: isRental ? '' : (exp.duration.match(/([\d.]+)/)?.[1] ?? ''), maxGuests: String(exp.maxGuests), minGuests: String(exp.minGuests ?? 1), meetingPoint: exp.meetingPoint || '', description: exp.description || '', includes: nonDepositIncludes.join('\n'), excludes: (exp.excludes ?? []).join('\n'), rentalPeriod: isRental ? (exp.duration || 'per day') : 'per day', deposit: depositAmt })
     setItinerary(exp.itinerary?.length ? exp.itinerary : [{ time: '', activity: '' }])
     if (exp.schedule) setSchedule(exp.schedule as any)
     else setSchedule(WEEK.map(day => ({ day, enabled: false, open: '09:00', close: '17:00' })))
@@ -645,11 +649,18 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
       subcategory: formData.subcategory || '',
       area: formData.area,
       price: Number(formData.price) || editingExp?.price || 0,
-      duration: formData.duration ? `${formData.duration} hours` : editingExp?.duration || '',
-      maxGuests: Number(formData.maxGuests) || editingExp?.maxGuests || 8,
-      minGuests: Number(formData.minGuests) || 1,
+      duration: formData.category === 'Rentals'
+        ? (formData.rentalPeriod || 'per day')
+        : (formData.duration ? `${formData.duration} hours` : editingExp?.duration || ''),
+      maxGuests: formData.category === 'Rentals' ? 1 : (Number(formData.maxGuests) || editingExp?.maxGuests || 8),
+      minGuests: formData.category === 'Rentals' ? 1 : (Number(formData.minGuests) || 1),
       meetingPoint: formData.meetingPoint || '',
-      includes: toLines(formData.includes),
+      includes: [
+        ...(formData.category === 'Rentals' && formData.deposit
+          ? [`Deposit: IDR ${Number(formData.deposit).toLocaleString('id-ID')} (refundable)`]
+          : []),
+        ...toLines(formData.includes),
+      ],
       excludes: toLines(formData.excludes),
       itinerary: itinerary.filter(s => s.time || s.activity),
       imageUrl: imagePreview ?? undefined,
@@ -860,7 +871,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
               )}
 
               {/* Step 2 — Details */}
-              {formStep === 2 && (
+              {formStep === 2 && formData.category !== 'Rentals' && (
                 <div key={`details-${editingExp?.id ?? 'new'}`} className="space-y-4 px-5 sm:px-6">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
@@ -891,23 +902,72 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                   </div>
                   <div>
                     <label style={labelStyle}>What&apos;s included</label>
-                    <textarea
-                      value={formData.includes}
-                      onChange={e => setField('includes', e.target.value)}
-                      placeholder="One item per line&#10;e.g. All materials&#10;Welcome drink&#10;Take-home piece"
-                      rows={4}
-                      style={{ ...inputStyle, resize: 'none' }}
-                    />
+                    <textarea value={formData.includes} onChange={e => setField('includes', e.target.value)} placeholder={"One item per line\ne.g. All materials\nWelcome drink\nTake-home piece"} rows={4} style={{ ...inputStyle, resize: 'none' }} />
                   </div>
                   <div>
                     <label style={labelStyle}>What&apos;s not included</label>
-                    <textarea
-                      value={formData.excludes}
-                      onChange={e => setField('excludes', e.target.value)}
-                      placeholder="One item per line&#10;e.g. Transport to venue&#10;Gratuities&#10;Personal expenses"
-                      rows={4}
-                      style={{ ...inputStyle, resize: 'none' }}
-                    />
+                    <textarea value={formData.excludes} onChange={e => setField('excludes', e.target.value)} placeholder={"One item per line\ne.g. Transport to venue\nGratuities"} rows={4} style={{ ...inputStyle, resize: 'none' }} />
+                  </div>
+                </div>
+              )}
+
+              {/* Step 2 — Rental Details */}
+              {formStep === 2 && formData.category === 'Rentals' && (
+                <div key={`rental-${editingExp?.id ?? 'new'}`} className="space-y-4 px-5 sm:px-6">
+                  {/* Price + Period */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label style={labelStyle}>Price (IDR)</label>
+                      <input type="number" value={formData.price} onChange={e => setField('price', e.target.value)} placeholder="80000" style={inputStyle} />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Rental period</label>
+                      <select value={formData.rentalPeriod} onChange={e => setField('rentalPeriod', e.target.value)} style={{ ...inputStyle, backgroundColor: 'white', cursor: 'pointer' }}>
+                        {['per hour', 'per day', 'per night', 'per week'].map(p => <option key={p}>{p}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  {/* Deposit */}
+                  <div>
+                    <label style={labelStyle}>Deposit (IDR) <span style={{ fontWeight: 400, color: '#9E9A94' }}>— optional, refundable</span></label>
+                    <input type="number" value={formData.deposit} onChange={e => setField('deposit', e.target.value)} placeholder="500000" style={inputStyle} />
+                  </div>
+                  {/* Pickup location */}
+                  <div>
+                    <label style={labelStyle}>Pickup location</label>
+                    <input type="text" value={formData.meetingPoint} onChange={e => setField('meetingPoint', e.target.value)} placeholder="e.g. Jl. Batu Bolong No. 5, Canggu" style={inputStyle} />
+                  </div>
+                  {/* Condition */}
+                  <div>
+                    <label style={labelStyle}>Condition</label>
+                    <div className="flex gap-2">
+                      {['Excellent', 'Good', 'Fair'].map(c => (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => setField('minGuests', c)}
+                          style={{
+                            flex: 1, height: 38, borderRadius: 8, fontSize: 13, fontWeight: 500,
+                            fontFamily: 'var(--font-inter)', cursor: 'pointer', transition: 'all 0.15s',
+                            border: formData.minGuests === c ? '1.5px solid #111111' : '1.5px solid #E8E4DE',
+                            backgroundColor: formData.minGuests === c ? '#111111' : 'white',
+                            color: formData.minGuests === c ? 'white' : '#6F675C',
+                          }}
+                        >
+                          {c}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Included */}
+                  <div>
+                    <label style={labelStyle}>What&apos;s included</label>
+                    <textarea value={formData.includes} onChange={e => setField('includes', e.target.value)} placeholder={"One item per line\ne.g. Helmet\nLock & key\nPhone holder\nRain poncho"} rows={4} style={{ ...inputStyle, resize: 'none' }} />
+                  </div>
+                  {/* Not included */}
+                  <div>
+                    <label style={labelStyle}>What&apos;s not included</label>
+                    <textarea value={formData.excludes} onChange={e => setField('excludes', e.target.value)} placeholder={"One item per line\ne.g. Fuel\nInsurance\nDelivery"} rows={3} style={{ ...inputStyle, resize: 'none' }} />
                   </div>
                 </div>
               )}
