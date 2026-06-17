@@ -147,7 +147,7 @@ async function main() {
 
   const eSoundHealingJourney = await prisma.experience.create({ data: {
     slug: 'sound-healing-journey', operatorId: opNinaPutri.id,
-    title: 'Sound Healing Journey', category: 'WELLNESS', area: 'UBUD',
+    title: 'Sound Healing Journey', category: 'WELLNESS_HEALING', area: 'UBUD',
     price: 350000, duration: '90 minutes', level: 'All levels', language: 'English', maxGuests: 12,
     rating: 4.8, totalReviews: 178, featured: true, instantConfirm: true, ecoLabel: true, status: 'ACTIVE',
     latitude: -8.5074, longitude: 115.2544,
@@ -161,7 +161,7 @@ async function main() {
 
   const eSunriseYogaClass = await prisma.experience.create({ data: {
     slug: 'sunrise-yoga-class', operatorId: opKomangDewi.id,
-    title: 'Sunrise Yoga & Meditation', category: 'WELLNESS', area: 'CANGGU',
+    title: 'Sunrise Yoga & Meditation', category: 'WELLNESS_HEALING', area: 'CANGGU',
     price: 250000, duration: '75 minutes', level: 'All levels', language: 'English', maxGuests: 15,
     rating: 4.9, totalReviews: 203, featured: true, instantConfirm: true, ecoLabel: true, status: 'ACTIVE',
     latitude: -8.6479, longitude: 115.1361,
@@ -259,7 +259,7 @@ async function main() {
 
   const eRiceWalk = await prisma.experience.create({ data: {
     slug: 'rice-terrace-walk', operatorId: opGedeArnawa.id,
-    title: 'Tegalalang Rice Terrace Walk', category: 'NATURE', area: 'UBUD',
+    title: 'Tegalalang Rice Terrace Walk', category: 'NATURE_OUTDOORS', area: 'UBUD',
     price: 280000, duration: '2.5 hours', level: 'Easy', language: 'English', maxGuests: 8,
     rating: 4.8, totalReviews: 192, featured: true, instantConfirm: true, ecoLabel: true, status: 'ACTIVE',
     latitude: -8.4279, longitude: 115.2790,
@@ -315,7 +315,7 @@ async function main() {
 
   const eSoundSession = await prisma.experience.create({ data: {
     slug: 'sound-healing-session', operatorId: opNinaPutri.id,
-    title: 'Sound Healing Journey', category: 'WELLNESS', area: 'UBUD',
+    title: 'Sound Healing Journey', category: 'WELLNESS_HEALING', area: 'UBUD',
     price: 350000, duration: '90 minutes', level: 'All levels', language: 'English', maxGuests: 12,
     rating: 4.9, totalReviews: 212, featured: false, instantConfirm: true, ecoLabel: true, status: 'ACTIVE',
     latitude: -8.5074, longitude: 115.2544,
@@ -329,7 +329,7 @@ async function main() {
 
   const eJamu = await prisma.experience.create({ data: {
     slug: 'jamu-wellness-ritual', operatorId: opNinaPutri.id,
-    title: 'Traditional Jamu Ritual', category: 'WELLNESS', area: 'UBUD',
+    title: 'Traditional Jamu Ritual', category: 'WELLNESS_HEALING', area: 'UBUD',
     price: 480000, duration: '2 hours', level: 'All levels', language: 'English', maxGuests: 6,
     rating: 4.8, totalReviews: 73, featured: false, instantConfirm: true, ecoLabel: true, status: 'ACTIVE',
     latitude: -8.5032, longitude: 115.2548,
@@ -343,7 +343,7 @@ async function main() {
 
   const eSunriseYogaUbud = await prisma.experience.create({ data: {
     slug: 'sunrise-yoga-ubud', operatorId: opKomangDewi.id,
-    title: 'Sunrise Yoga in the Rice Fields', category: 'WELLNESS', area: 'UBUD',
+    title: 'Sunrise Yoga in the Rice Fields', category: 'WELLNESS_HEALING', area: 'UBUD',
     price: 280000, duration: '75 minutes', level: 'All levels', language: 'English', maxGuests: 10,
     rating: 4.9, totalReviews: 156, featured: false, instantConfirm: true, ecoLabel: true, status: 'ACTIVE',
     latitude: -8.5038, longitude: 115.2533,
@@ -455,7 +455,7 @@ async function main() {
 
   const eMountBatur = await prisma.experience.create({ data: {
     slug: 'mount-batur-sunrise', operatorId: opGedeArnawa.id,
-    title: 'Mount Batur Sunrise Trek', category: 'NATURE', area: 'KINTAMANI',
+    title: 'Mount Batur Sunrise Trek', category: 'NATURE_OUTDOORS', area: 'KINTAMANI',
     price: 650000, duration: '6 hours', level: 'Moderate', language: 'English', maxGuests: 10,
     rating: 4.8, totalReviews: 241, featured: true, instantConfirm: false, ecoLabel: false, status: 'ACTIVE',
     latitude: -8.2428, longitude: 115.3757,
@@ -469,7 +469,7 @@ async function main() {
 
   const eRiceTrek = await prisma.experience.create({ data: {
     slug: 'rice-terrace-trek', operatorId: opGedeArnawa.id,
-    title: 'Tegalalang Rice Terrace Trek', category: 'NATURE', area: 'UBUD',
+    title: 'Tegalalang Rice Terrace Trek', category: 'NATURE_OUTDOORS', area: 'UBUD',
     price: 320000, duration: '3 hours', level: 'Easy', language: 'English', maxGuests: 8,
     rating: 4.7, totalReviews: 103, featured: false, instantConfirm: true, ecoLabel: true, status: 'ACTIVE',
     latitude: -8.4279, longitude: 115.2791,
@@ -483,7 +483,7 @@ async function main() {
 
   const eWaterfall = await prisma.experience.create({ data: {
     slug: 'waterfall-hidden-canyon', operatorId: opGedeArnawa.id,
-    title: 'Hidden Waterfall Canyon Hike', category: 'NATURE', area: 'AMED',
+    title: 'Hidden Waterfall Canyon Hike', category: 'NATURE_OUTDOORS', area: 'AMED',
     price: 450000, duration: '5 hours', level: 'Moderate', language: 'English', maxGuests: 8,
     rating: 4.9, totalReviews: 89, featured: false, instantConfirm: false, ecoLabel: true, status: 'ACTIVE',
     latitude: -8.1187, longitude: 115.0916,

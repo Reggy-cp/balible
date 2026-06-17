@@ -199,8 +199,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 async function getHostFromDB(slug: string): Promise<Host | null> {
   try {
     const CATEGORY_DISPLAY: Record<string, string> = {
-      WELLNESS: 'Wellness & Healing', ART_CRAFT: 'Art & Craft', CULTURE: 'Culture', RENTALS: 'Rentals', LOCAL_EXPERTS: 'Local Experts',
-      CULINARY: 'Culinary', NATURE: 'Nature & Outdoors',
+      WELLNESS_HEALING: 'Wellness & Healing', ART_CRAFT: 'Art & Craft', CULTURE: 'Culture', RENTALS: 'Rentals', LOCAL_EXPERTS: 'Local Experts',
+      CULINARY: 'Culinary', NATURE_OUTDOORS: 'Nature & Outdoors',
       WATER_ACTIVITIES: 'Water Activities',
     }
     const AREA_DISPLAY: Record<string, string> = {

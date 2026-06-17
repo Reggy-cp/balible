@@ -32,22 +32,22 @@ export type FeaturedExp = {
 }
 
 const CATEGORY_DISPLAY: Record<string, string> = {
-  WELLNESS: 'Wellness & Healing',
+  WELLNESS_HEALING: 'Wellness & Healing',
   ART_CRAFT: 'Art & Craft',
   CULTURE: 'Culture',
   CULINARY: 'Culinary',
-  NATURE: 'Nature & Outdoors',
+  NATURE_OUTDOORS: 'Nature & Outdoors',
   WATER_ACTIVITIES: 'Water Activities',
   LOCAL_EXPERTS: 'Local Experts',
   RENTALS: 'Rentals',
 }
 
 const CATEGORY_SLUG: Record<string, string> = {
-  WELLNESS: 'wellness',
+  WELLNESS_HEALING: 'wellness',
   ART_CRAFT: 'art-craft',
   CULTURE: 'culture',
   CULINARY: 'culinary',
-  NATURE: 'nature',
+  NATURE_OUTDOORS: 'nature',
   WATER_ACTIVITIES: 'water-activities',
   LOCAL_EXPERTS: 'local-experts',
   RENTALS: 'rentals',

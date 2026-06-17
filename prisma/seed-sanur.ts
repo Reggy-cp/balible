@@ -20,7 +20,7 @@ async function main() {
     slug: 'sanur-sunrise-beach-walk',
     operatorId: opKadekArtini.id,
     title: 'Sanur Sunrise Beach Walk',
-    category: 'NATURE',
+    category: 'NATURE_OUTDOORS',
     area: 'SANUR',
     price: 250000,
     duration: '2 hours',

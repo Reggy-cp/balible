@@ -1692,7 +1692,7 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
 
   const currentForRec = {
     slug: experience.slug, title: experience.title,
-    category: 'WELLNESS', area: experience.area,
+    category: 'WELLNESS_HEALING', area: experience.area,
     price: experience.price, rating: experience.rating,
     totalReviews: experience.totalReviews, images: experience.images,
   }

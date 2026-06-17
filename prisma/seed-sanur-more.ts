@@ -9,12 +9,12 @@ async function main() {
   })
   if (!op) throw new Error('Sanur operator not found — run seed-sanur.ts first')
 
-  // ── WELLNESS: Beach yoga ────────────────────────────────────────────────────
+  // ── WELLNESS_HEALING: Beach yoga ────────────────────────────────────────────────────
   await prisma.experience.create({ data: {
     slug: 'sanur-beach-yoga',
     operatorId: op.id,
     title: 'Sunrise Beach Yoga in Sanur',
-    category: 'WELLNESS',
+    category: 'WELLNESS_HEALING',
     area: 'SANUR',
     price: 200000,
     duration: '1.5 hours',
@@ -151,7 +151,7 @@ async function main() {
   }})
 
   console.log('✅ 3 more Sanur experiences added:')
-  console.log('   • sanur-beach-yoga (WELLNESS)')
+  console.log('   • sanur-beach-yoga (WELLNESS_HEALING)')
   console.log('   • sanur-morning-market-food-tour (CULINARY)')
   console.log('   • sanur-heritage-walk-le-mayeur (CULTURE)')
 }

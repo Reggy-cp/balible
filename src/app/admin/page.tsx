@@ -341,11 +341,11 @@ function OverviewPanel({ onNav }: { onNav: (id: string) => void }) {
 // ── Add Experience Modal ──────────────────────────────────────────────────────
 
 const CATEGORIES = [
-  { value: 'WELLNESS',      label: 'Wellness & Healing' },
+  { value: 'WELLNESS_HEALING',      label: 'Wellness & Healing' },
   { value: 'ART_CRAFT',     label: 'Art & Craft' },
   { value: 'CULTURE',       label: 'Culture' },
   { value: 'CULINARY',       label: 'Culinary' },
-  { value: 'NATURE',         label: 'Nature & Outdoors' },
+  { value: 'NATURE_OUTDOORS',         label: 'Nature & Outdoors' },
   { value: 'WATER_ACTIVITIES', label: 'Water Activities' },
   { value: 'LOCAL_EXPERTS',  label: 'Local Experts' },
   { value: 'RENTALS',       label: 'Rentals' },
