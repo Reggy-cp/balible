@@ -39,7 +39,7 @@ const CATEGORY_META: Record<string, {
     description: "Discover Bali's artistic soul through hands-on workshops led by master craftspeople. From ancient pottery traditions to intricate silver work — every piece you make, you take home.",
     image: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=1200&auto=format&fit=crop&q=80',
     color: '#B66A45',
-    subcategories: ['All', 'Pottery', 'Jewelry', 'Painting', 'Wood Carving', 'Textile', 'Weaving', 'Batik', 'Leather Craft', 'Sculpture', 'Mosaic', 'Upcycling'],
+    subcategories: ['All', 'Pottery', 'Jewelry', 'Painting', 'Wood Carving', 'Textile', 'Weaving', 'Batik', 'Leather Craft', 'Sculpture', 'Mosaic', 'Upcycling', 'Candle Making', 'Soap Making', 'Macramé', 'Floral Arrangement', 'Tie-Dye', 'Resin Art', 'Block Printing', 'Eco Printing', 'Calligraphy', 'Glass Art'],
   },
   'wellness-healing': {
     label: 'Wellness & Healing',
@@ -47,7 +47,7 @@ const CATEGORY_META: Record<string, {
     description: 'Restore your mind, body and soul with authentic Balinese healing practices — from sound healing bowls to traditional jamu rituals, guided by healers with decades of experience.',
     image: 'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=1200&auto=format&fit=crop&q=80',
     color: '#4A7C59',
-    subcategories: ['All', 'Yoga', 'Meditation', 'Sound Healing', 'Spa & Ritual', 'Breathwork', 'Massage', 'Reiki', 'Balinese Healing', 'Pilates', 'Aerial Yoga', 'Herbal Medicine', 'Nutrition & Detox'],
+    subcategories: ['All', 'Yoga', 'Meditation', 'Sound Healing', 'Spa & Ritual', 'Breathwork', 'Massage', 'Reiki', 'Balinese Healing', 'Pilates', 'Aerial Yoga', 'Herbal Medicine', 'Nutrition & Detox', 'Acupuncture', 'Reflexology', 'Crystal Healing', 'Aromatherapy', 'Tai Chi', 'Qigong', 'Hot Stone', 'Hypnotherapy', 'Floatation'],
   },
   'culture-spiritual': {
     label: 'Culture & Spiritual',
@@ -55,7 +55,7 @@ const CATEGORY_META: Record<string, {
     description: 'Immerse yourself in ancient Balinese traditions, ceremonies, and spiritual heritage. Join a real temple ceremony, learn sacred dances, meet healers, or walk ancient history with a local guide.',
     image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1200&auto=format&fit=crop&q=80',
     color: '#6F675C',
-    subcategories: ['All', 'Temple & Ceremony', 'Dance & Music', 'History Tour', 'Language', 'Healing Ritual', 'Holy Water', 'Blessing', 'Gamelan', 'Offering Making', 'Kecak Dance', 'Photography Tour'],
+    subcategories: ['All', 'Temple & Ceremony', 'Dance & Music', 'History Tour', 'Language', 'Healing Ritual', 'Holy Water', 'Blessing', 'Gamelan', 'Offering Making', 'Kecak Dance', 'Photography Tour', 'Wayang Kulit', 'Barong Dance', 'Legong Dance', 'Traditional Costume', 'Subak Tour', 'Astrology', 'Balinese Calligraphy'],
   },
   'nature-outdoors': {
     label: 'Nature & Outdoors',
@@ -63,7 +63,7 @@ const CATEGORY_META: Record<string, {
     description: "Trek through volcanic landscapes, swim beneath hidden waterfalls, and watch the sunrise paint Mount Batur gold. The island's natural wonders, experienced with a local guide.",
     image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&auto=format&fit=crop&q=80',
     color: '#4A7C59',
-    subcategories: ['All', 'Trekking', 'Waterfall', 'Sunrise', 'Rice Terrace', 'Wildlife', 'Cycling', 'Bird Watching', 'Camping', 'Jungle Walk', 'Volcano', 'Beach Walk', 'Cave Exploration'],
+    subcategories: ['All', 'Trekking', 'Waterfall', 'Sunrise', 'Rice Terrace', 'Wildlife', 'Cycling', 'Bird Watching', 'Camping', 'Jungle Walk', 'Volcano', 'Beach Walk', 'Cave Exploration', 'Stargazing', 'Mangrove Tour', 'Organic Farming', 'Eco Tour', 'Night Safari', 'River Walk', 'Waterfall Rappelling', 'Cliff Walk', 'Permaculture'],
   },
   'water-activities': {
     label: 'Water Activities',
@@ -71,7 +71,7 @@ const CATEGORY_META: Record<string, {
     description: "Bali is surrounded by world-class water — from the surf breaks of Canggu to the technicolour reefs of Amed and the manta rays of Nusa Penida. All water experiences in one place.",
     image: 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=1200&auto=format&fit=crop&q=80',
     color: '#3B82F6',
-    subcategories: ['All', 'Surfing', 'Snorkelling', 'Freediving', 'Scuba Diving', 'Stand-Up Paddle', 'Kayaking', 'River Rafting', 'Jet Ski', 'Parasailing', 'Island Hopping', 'Wakeboarding', 'Kite Surfing'],
+    subcategories: ['All', 'Surfing', 'Snorkelling', 'Freediving', 'Scuba Diving', 'Stand-Up Paddle', 'Kayaking', 'River Rafting', 'Jet Ski', 'Parasailing', 'Island Hopping', 'Wakeboarding', 'Kite Surfing', 'Dolphin Watching', 'Cliff Jumping', 'Windsurfing', 'Boat Charter', 'Whale Watching', 'Open Water Swimming', 'Night Snorkelling'],
   },
   culinary: {
     label: 'Culinary',
@@ -79,7 +79,7 @@ const CATEGORY_META: Record<string, {
     description: "Go beyond eating — learn the spices, the techniques, and the stories behind Balinese food. From market foraging to hands-on cooking in a family compound, led by people who grew up in the kitchen.",
     image: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=1200&auto=format&fit=crop&q=80',
     color: '#C8A97E',
-    subcategories: ['All', 'Cooking Class', 'Spice & Herb', 'Market Tour', 'Coffee & Tea', 'Fermentation', 'Dessert & Sweets', 'Farm to Table', 'Cocktail & Mixology', 'Vegan & Plant-Based', 'Seafood', 'Bread & Pastry'],
+    subcategories: ['All', 'Cooking Class', 'Spice & Herb', 'Market Tour', 'Coffee & Tea', 'Fermentation', 'Dessert & Sweets', 'Farm to Table', 'Cocktail & Mixology', 'Vegan & Plant-Based', 'Seafood', 'Bread & Pastry', 'Chocolate Making', 'Juice & Smoothie', 'Wine & Spirits', 'Foraging', 'Street Food Tour', 'Night Market', 'Pizza Making', 'Jamu & Tonics'],
   },
   'local-experts': {
     label: 'Local Experts',
@@ -87,7 +87,7 @@ const CATEGORY_META: Record<string, {
     description: "Book trusted local professionals for the practical side of your trip — photographers who know the light, guides who know the back roads, childcare and pet care you can rely on, and drivers who make the island easy.",
     image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=1200&auto=format&fit=crop&q=80',
     color: '#34657F',
-    subcategories: ['All', 'Photographers', 'Guides', 'Wellness Practitioners', 'Childcare', 'Pet Care', 'Creative Mentors', 'Drivers', 'Translators', 'Wedding Planners', 'Event Planners', 'Personal Shoppers'],
+    subcategories: ['All', 'Photographers', 'Guides', 'Wellness Practitioners', 'Childcare', 'Pet Care', 'Creative Mentors', 'Drivers', 'Translators', 'Wedding Planners', 'Event Planners', 'Personal Shoppers', 'Fitness Trainers', 'Yoga Teachers', 'Surf Coaches', 'Music Teachers', 'Dive Instructors', 'Life Coaches', 'Makeup Artists', 'Hair Stylists', 'Butler Service', 'Nutritionists'],
   },
   rentals: {
     label: 'Rentals',
@@ -95,7 +95,7 @@ const CATEGORY_META: Record<string, {
     description: "Rent scooters, bikes, surfboards, villas, workspaces, and adventure gear from trusted local owners. Skip the tourist traps — get the right kit for your trip at honest prices.",
     image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&auto=format&fit=crop&q=80',
     color: '#D97706',
-    subcategories: ['All', 'Scooter', 'Motorbike', 'Bicycle', 'E-Bike', 'Car', 'ATV', 'Surfboard', 'Kayak', 'Jet Ski', 'Drone', 'Camera Gear', 'Villa', 'Workspace', 'Studio', 'Camping Gear', 'Diving Equipment', 'Baby Equipment', 'Boat'],
+    subcategories: ['All', 'Scooter', 'Motorbike', 'Bicycle', 'E-Bike', 'Car', 'ATV', 'Golf Cart', 'Surfboard', 'Kayak', 'Jet Ski', 'Drone', 'Camera Gear', 'Villa', 'Workspace', 'Studio', 'Camping Gear', 'Diving Equipment', 'Baby Equipment', 'Boat', 'Sound System', 'Projector', 'BBQ Equipment', 'Beach Equipment', 'Pool Float', 'Cooler Box'],
   },
 }
 
