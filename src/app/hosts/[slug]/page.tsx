@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Image from 'next/image'
+
+export const revalidate = 3600
 import { MapPin, Star, Clock, Users, Award, ChevronRight, CalendarDays, Ticket } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
@@ -58,7 +60,8 @@ async function getHostFromDB(slug: string): Promise<Host | null> {
     const AREA_DISPLAY: Record<string, string> = {
       UBUD: 'Ubud', CANGGU: 'Canggu', SEMINYAK: 'Seminyak', KUTA: 'Kuta',
       ULUWATU: 'Uluwatu', GIANYAR: 'Gianyar', KINTAMANI: 'Kintamani',
-      AMED: 'Amed', SIDEMEN: 'Sidemen',
+      AMED: 'Amed', SIDEMEN: 'Sidemen', SANUR: 'Sanur',
+      NUSA_DUA: 'Nusa Dua', JIMBARAN: 'Jimbaran', MEDEWI: 'Medewi',
     }
     const operators = await prisma.operator.findMany({
       include: {
@@ -91,7 +94,7 @@ async function getHostFromDB(slug: string): Promise<Host | null> {
       bio: op.description,
       rating: op.rating,
       totalReviews: op.totalReviews,
-      memberSince: String(new Date().getFullYear()),
+      memberSince: new Date(op.user.createdAt).getFullYear().toString(),
       responseRate: '—',
       languages: op.languages ? op.languages.split(',').map((l: string) => l.trim()) : ['English'],
       experiences: op.experiences.map(e => ({
@@ -302,7 +305,7 @@ export default async function HostPage({ params }: { params: { slug: string } })
                 {host.name}
               </h1>
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#9E9A94', marginBottom: 12 }}>
-                {host.businessName} · {host.area}, Bali
+                {host.businessName}{host.area ? ` · ${host.area}, Bali` : ', Bali'}
               </p>
               <div className="flex flex-wrap gap-4">
                 <div className="flex items-center gap-1.5">
