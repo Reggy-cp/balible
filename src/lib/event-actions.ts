@@ -158,17 +158,18 @@ export async function getPublishedEvents(): Promise<EventRow[]> {
   }
 }
 
-export async function getEventBySlug(slug: string): Promise<(EventRow & { operatorName: string; operatorAvatar: string | null }) | null> {
+export async function getEventBySlug(slug: string): Promise<(EventRow & { operatorName: string; operatorAvatar: string | null; operatorPhone: string | null }) | null> {
   try {
     const event = await prisma.event.findUnique({
       where: { slug },
-      include: { operator: { select: { businessName: true, avatar: true } } },
+      include: { operator: { select: { businessName: true, avatar: true, phone: true } } },
     })
     if (!event) return null
     return {
       ...toRow(event),
       operatorName: event.operator.businessName,
       operatorAvatar: event.operator.avatar,
+      operatorPhone: event.operator.phone ?? null,
     }
   } catch {
     return null

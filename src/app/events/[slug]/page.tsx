@@ -73,6 +73,10 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
   const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: TZ })
   const isPast = d < new Date()
 
+  const waPhone = event.operatorPhone ? event.operatorPhone.replace(/\D/g, '').replace(/^0/, '62') : null
+  const waMessage = encodeURIComponent(`Hi! I'd like to get tickets for "${event.title}" on ${dateStr} at ${timeStr}. Is there still availability?`)
+  const waUrl = waPhone ? `https://wa.me/${waPhone}?text=${waMessage}` : null
+
   return (
     <div style={{ fontFamily: 'var(--font-inter)' }}>
       <Navbar />
@@ -210,15 +214,30 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                 <div className="text-center py-3">
                   <p style={{ fontSize: 14, color: '#9E9A94', fontWeight: 500 }}>This event has already taken place</p>
                 </div>
+              ) : waUrl ? (
+                <>
+                  <a
+                    href={waUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ width: '100%', height: 50, borderRadius: 12, backgroundColor: '#25D366', color: 'white', fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, textDecoration: 'none' }}>
+                    <Ticket size={16} />
+                    Get tickets via WhatsApp
+                  </a>
+                  <p className="text-center mt-3" style={{ fontSize: 11, color: '#C8C4BE' }}>
+                    Free cancellation up to 24h before the event
+                  </p>
+                </>
               ) : (
                 <>
                   <button
-                    style={{ width: '100%', height: 50, borderRadius: 12, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 15, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                    disabled
+                    style={{ width: '100%', height: 50, borderRadius: 12, border: 'none', backgroundColor: '#E8E4DE', color: '#9E9A94', fontSize: 15, fontWeight: 700, cursor: 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                     <Ticket size={16} />
-                    Get tickets
+                    Contact host to book
                   </button>
                   <p className="text-center mt-3" style={{ fontSize: 11, color: '#C8C4BE' }}>
-                    Free cancellation up to 24h before the event
+                    Reach out to the host directly for tickets
                   </p>
                 </>
               )}
