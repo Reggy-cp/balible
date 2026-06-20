@@ -9,6 +9,15 @@ import { getEventBySlug, getPublishedEvents } from '@/lib/event-actions'
 
 export const revalidate = 3600
 
+export async function generateStaticParams() {
+  try {
+    const events = await getPublishedEvents()
+    return events.map(e => ({ slug: e.slug }))
+  } catch {
+    return []
+  }
+}
+
 const GALLERY: Record<string, string[]> = {
   'full-moon-sound-bath': [
     'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=900&auto=format&fit=crop&q=85',
