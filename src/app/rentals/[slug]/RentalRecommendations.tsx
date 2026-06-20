@@ -1,7 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Star, Heart } from 'lucide-react'
+import { useSession } from 'next-auth/react'
+import { toggleWishlistAction } from '@/lib/actions'
+
+const WISHLIST_KEY = 'balible_wishlist'
+function getWishlist(): string[] {
+  try { return JSON.parse(localStorage.getItem(WISHLIST_KEY) ?? '[]') } catch { return [] }
+}
 
 type RentalSummary = {
   slug: string
@@ -15,7 +22,11 @@ type RentalSummary = {
 }
 
 function RentalCard({ r }: { r: RentalSummary }) {
-  const [liked, setLiked] = useState(false)
+  const { status } = useSession()
+  const [wishlisted, setWishlisted] = useState(false)
+  useEffect(() => {
+    setWishlisted(getWishlist().includes(r.slug))
+  }, [r.slug])
   const fallback = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&auto=format&fit=crop&q=80'
   return (
     <a
@@ -27,9 +38,18 @@ function RentalCard({ r }: { r: RentalSummary }) {
         <img src={r.images[0] || fallback} alt={r.title} className="w-full h-full object-cover" />
         <button
           className="absolute top-2 right-2 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow"
-          onClick={e => { e.preventDefault(); setLiked(!liked) }}
+          onClick={async e => {
+            e.preventDefault()
+            const next = !wishlisted
+            setWishlisted(next)
+            const list = getWishlist()
+            const updated = next ? [...list, r.slug] : list.filter(s => s !== r.slug)
+            localStorage.setItem(WISHLIST_KEY, JSON.stringify(updated))
+            window.dispatchEvent(new CustomEvent('balible:wishlist', { detail: { slug: r.slug, saved: next } }))
+            if (status === 'authenticated') await toggleWishlistAction(r.slug)
+          }}
         >
-          <Heart size={12} fill={liked ? '#ef4444' : 'none'} color={liked ? '#ef4444' : '#111111'} />
+          <Heart size={12} fill={wishlisted ? '#ef4444' : 'none'} color={wishlisted ? '#ef4444' : '#111111'} />
         </button>
       </div>
       <div className="p-3">

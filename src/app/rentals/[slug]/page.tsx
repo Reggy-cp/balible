@@ -11,7 +11,19 @@ import RentalTabs from './RentalTabs'
 import RentalRecommendations from './RentalRecommendations'
 import { MapPin, Star, Camera, Clock, Package } from 'lucide-react'
 
-export const revalidate = 300
+export const revalidate = 3600
+
+export async function generateStaticParams() {
+  try {
+    const rentals = await prisma.experience.findMany({
+      where: { category: 'RENTALS', status: 'ACTIVE' },
+      select: { slug: true },
+    })
+    return rentals.map(r => ({ slug: r.slug }))
+  } catch {
+    return []
+  }
+}
 
 const AREA_LABEL: Record<string, string> = {
   UBUD: 'Ubud', CANGGU: 'Canggu', KUTA: 'Kuta', SEMINYAK: 'Seminyak',
@@ -39,13 +51,13 @@ export default async function RentalPage({ params }: { params: { slug: string } 
 
   const relatedSelect = { slug: true, title: true, area: true, price: true, duration: true, rating: true, totalReviews: true, images: true }
   const sameArea = await prisma.experience.findMany({
-    where: { category: 'RENTALS', slug: { not: params.slug }, area: rental.area ?? undefined },
+    where: { category: 'RENTALS', status: 'ACTIVE', slug: { not: params.slug }, area: rental.area ?? undefined },
     orderBy: { totalReviews: 'desc' },
     take: 6,
     select: relatedSelect,
   })
   const related = sameArea.length >= 4 ? sameArea : await prisma.experience.findMany({
-    where: { category: 'RENTALS', slug: { not: params.slug } },
+    where: { category: 'RENTALS', status: 'ACTIVE', slug: { not: params.slug } },
     orderBy: { totalReviews: 'desc' },
     take: 6,
     select: relatedSelect,
