@@ -4,10 +4,22 @@ import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
 import Link from 'next/link'
 
-export const revalidate = 300
+export const revalidate = 3600
+
+const TZ = 'Asia/Makassar' // Bali is WITA (UTC+8)
 
 export default async function EventsPage() {
-  const events = await getPublishedEvents()
+  const raw = await getPublishedEvents()
+  const now = new Date()
+  const events = [...raw].sort((a, b) => {
+    const aDate = new Date(a.date), bDate = new Date(b.date)
+    const aFuture = aDate >= now, bFuture = bDate >= now
+    if (aFuture && !bFuture) return -1
+    if (!aFuture && bFuture) return 1
+    return aFuture
+      ? aDate.getTime() - bDate.getTime()   // upcoming: soonest first
+      : bDate.getTime() - aDate.getTime()   // past: most-recent first
+  })
 
   return (
     <div style={{ fontFamily: 'var(--font-inter)' }}>
@@ -20,7 +32,7 @@ export default async function EventsPage() {
         {/* Page header */}
         <div style={{ marginBottom: 36 }}>
           <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px,4vw,42px)', fontWeight: 700, color: '#111111', marginBottom: 10 }}>
-            Upcoming Events in Bali
+            Events in Bali
           </h1>
           <p style={{ fontSize: 15, color: '#6F675C', maxWidth: 520 }}>
             One-time events hosted by local operators — workshops, festivals, and special experiences.
@@ -36,8 +48,8 @@ export default async function EventsPage() {
           <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', display: 'grid' }}>
             {events.map(ev => {
               const d = new Date(ev.date)
-              const dateStr = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
-              const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+              const dateStr = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: TZ })
+              const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: TZ })
               const isPast = d < new Date()
               return (
                 <Link key={ev.id} href={`/events/${ev.slug}`} style={{ textDecoration: 'none' }}>
