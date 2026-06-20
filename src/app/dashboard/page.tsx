@@ -747,6 +747,11 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                   <span className="flex items-center gap-1" style={{ fontSize: 11, color: '#6F675C' }}><MapPin size={10} />{exp.area}</span>
                   <span className="flex items-center gap-1" style={{ fontSize: 11, color: '#6F675C' }}><Clock size={10} />{exp.duration}</span>
                   <span className="flex items-center gap-1" style={{ fontSize: 11, color: '#6F675C' }}><Users size={10} />Up to {exp.maxGuests}</span>
+                  {exp.subcategory && (
+                    <span style={{ fontSize: 11, fontWeight: 500, color: '#C8A97E', backgroundColor: '#FEF9EC', border: '1px solid #F0DFC0', borderRadius: 5, padding: '1px 7px' }}>
+                      {exp.subcategory}
+                    </span>
+                  )}
                 </div>
                 <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1.5">
                   <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>IDR {exp.price.toLocaleString('id-ID')}<span style={{ fontWeight: 400, color: '#6F675C' }}>/person</span></span>
