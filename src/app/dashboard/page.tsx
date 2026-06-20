@@ -638,7 +638,10 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
     if (submitting || readOnly) return
     setSaveError('')
     setSubmitting(true)
-    const slug = editingExp?.slug ?? (formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'new-experience')
+    const slug = editingExp?.slug ?? (
+      (formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'experience') +
+      '-' + Math.random().toString(36).slice(2, 6)
+    )
     const toLines = (s: string) => s.split('\n').map(l => l.trim()).filter(Boolean)
     const allImages = [imagePreview, ...galleryPreviews].filter(Boolean) as string[]
     const listingInput: HostListingInput = {
@@ -1097,19 +1100,25 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
               )}
 
               {/* Footer nav */}
-              {saveError && formStep === STEPS.length && (
+              {saveError && (
                 <p style={{ fontSize: 12, color: '#B66A45', textAlign: 'center', margin: '0 20px 8px' }}>{saveError}</p>
               )}
               <div className="flex gap-2 mt-0 px-5 sm:px-6 pb-8 sm:pb-6">
                 {formStep > 1 ? (
-                  <button onClick={() => setFormStep(s => s - 1)}
+                  <button onClick={() => { setSaveError(''); setFormStep(s => s - 1) }}
                     style={{ flex: 1, height: 44, borderRadius: 10, border: '1px solid #E8E4DE', background: 'none', fontSize: 13, fontWeight: 600, color: '#6F675C', cursor: 'pointer' }}>Back</button>
                 ) : (
                   <button onClick={closeForm}
                     style={{ flex: 1, height: 44, borderRadius: 10, border: '1px solid #E8E4DE', background: 'none', fontSize: 13, fontWeight: 600, color: '#6F675C', cursor: 'pointer' }}>Cancel</button>
                 )}
                 {formStep < STEPS.length ? (
-                  <button onClick={() => setFormStep(s => s + 1)}
+                  <button onClick={() => {
+                    if (formStep === 1 && !formData.title.trim()) { setSaveError('Please enter a title for your experience.'); return }
+                    if (formStep === 2 && !formData.price) { setSaveError('Please enter a price.'); return }
+                    if (formStep === 2 && formData.category !== 'Rentals' && !formData.duration) { setSaveError('Please enter a duration.'); return }
+                    setSaveError('')
+                    setFormStep(s => s + 1)
+                  }}
                     style={{ flex: 2, height: 44, borderRadius: 10, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Next →</button>
                 ) : (
                   <>
