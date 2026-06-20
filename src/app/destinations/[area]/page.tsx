@@ -319,8 +319,8 @@ export function generateStaticParams() {
   ].map(area => ({ area }))
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ area: string }> }) {
-  const { area } = await params
+export async function generateMetadata({ params }: { params: { area: string } }) {
+  const { area } = params
   const data = AREAS[area]
   if (!data) return {}
   return {
@@ -329,8 +329,8 @@ export async function generateMetadata({ params }: { params: Promise<{ area: str
   }
 }
 
-export default async function DestinationAreaPage({ params }: { params: Promise<{ area: string }> }) {
-  const { area } = await params
+export default async function DestinationAreaPage({ params }: { params: { area: string } }) {
+  const { area } = params
   const data = AREAS[area]
   if (!data) notFound()
 

@@ -143,7 +143,7 @@ export default function DestinationExperiences({
               {filtered.map(exp => (
                 <a
                   key={exp.slug}
-                  href={`/experiences/${exp.slug}`}
+                  href={exp.category === 'Rentals' ? `/rentals/${exp.slug}` : `/experiences/${exp.slug}`}
                   className="bg-white rounded-2xl overflow-hidden hover:shadow-md transition-all duration-200"
                   style={{ border: '1px solid #E8E4DE', textDecoration: 'none' }}
                 >
