@@ -47,7 +47,7 @@ async function getHosts(): Promise<HostCard[]> {
       },
     })
 
-    return operators.map(op => {
+    return operators.filter(op => op.experiences.length > 0).map(op => {
       const exp = op.experiences[0]
       return {
         slug: toSlug(op.user.name),

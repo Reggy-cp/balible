@@ -199,11 +199,11 @@ function SkeletonCard() {
 // ── Result Card ───────────────────────────────────────────────────────────────
 
 function ResultCard({ r, date, guests }: { r: SearchResult; date: string; guests: number }) {
+  const h = Math.floor(r.durationMins / 60)
+  const m = r.durationMins % 60
   const durationLabel = r.durationMins < 60
     ? `${r.durationMins} min`
-    : r.durationMins % 60 === 0
-      ? `${r.durationMins / 60} hr`
-      : `${Math.floor(r.durationMins / 60)}.${(r.durationMins % 60) / 6} hr`
+    : m === 0 ? `${h} hr` : `${h}h ${m}m`
   const qs = [date && `date=${date}`, guests > 1 && `guests=${guests}`].filter(Boolean).join('&')
   const href = r.category === 'Rentals' ? `/rentals/${r.slug}` : `/experiences/${r.slug}${qs ? `?${qs}` : ''}`
 
@@ -273,7 +273,8 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
       if (search && !r.title.toLowerCase().includes(search.toLowerCase()) && !r.area.toLowerCase().includes(search.toLowerCase())) return false
       if (filters.category !== 'All' && r.category !== filters.category) return false
       if (filters.location !== 'All Locations' && r.area !== filters.location) return false
-      if (r.price < filters.priceRange[0] || r.price > filters.priceRange[1]) return false
+      if (r.price < filters.priceRange[0]) return false
+      if (filters.priceRange[1] < PRICE_MAX && r.price > filters.priceRange[1]) return false
       if (filters.duration === 'Under 2 hours' && r.durationMins >= 120) return false
       if (filters.duration === '2–4 hours'     && (r.durationMins < 120 || r.durationMins > 240)) return false
       if (filters.duration === '4+ hours'      && r.durationMins < 240) return false

@@ -1,10 +1,17 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Heart, Star, Clock, Users, ChevronDown, SlidersHorizontal, X, MapPin, ArrowRight, Search } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
+import { useSession } from 'next-auth/react'
+import { toggleWishlistAction } from '@/lib/actions'
+
+const WISHLIST_KEY = 'balible_wishlist'
+function getWishlist(): string[] {
+  try { return JSON.parse(localStorage.getItem(WISHLIST_KEY) ?? '[]') } catch { return [] }
+}
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -247,8 +254,24 @@ export default function CategoryClient({
   const [sort, setSort] = useState('Most popular')
   const [sortOpen, setSortOpen] = useState(false)
   const [wishlist, setWishlist] = useState<Record<string, boolean>>({})
+  const { status } = useSession()
 
-  const toggleWishlist = (s: string) => setWishlist(w => ({ ...w, [s]: !w[s] }))
+  useEffect(() => {
+    const list = getWishlist()
+    const map: Record<string, boolean> = {}
+    list.forEach(s => { map[s] = true })
+    setWishlist(map)
+  }, [])
+
+  const toggleWishlist = (slug: string) => {
+    const next = !wishlist[slug]
+    setWishlist(w => ({ ...w, [slug]: next }))
+    const list = getWishlist()
+    const updated = next ? [...list, slug] : list.filter(s => s !== slug)
+    localStorage.setItem(WISHLIST_KEY, JSON.stringify(updated))
+    window.dispatchEvent(new CustomEvent('balible:wishlist', { detail: { slug, saved: next } }))
+    if (status === 'authenticated') toggleWishlistAction(slug).catch(() => {})
+  }
 
   const results = useMemo(() => {
     let list = initialExperiences

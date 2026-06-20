@@ -7,7 +7,7 @@ import Footer from '@/components/Footer'
 import EventGallery from '@/components/EventGallery'
 import { getEventBySlug, getPublishedEvents } from '@/lib/event-actions'
 
-export const revalidate = 300
+export const revalidate = 3600
 
 const GALLERY: Record<string, string[]> = {
   'full-moon-sound-bath': [
@@ -59,8 +59,9 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
     .slice(0, 3)
 
   const d = new Date(event.date)
-  const dateStr = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
-  const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+  const TZ = 'Asia/Makassar' // Bali is WITA (UTC+8)
+  const dateStr = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: TZ })
+  const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: TZ })
   const isPast = d < new Date()
 
   return (
@@ -228,8 +229,8 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {otherEvents.map(ev => {
                 const d = new Date(ev.date)
-                const dateStr = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-                const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+                const dateStr = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: TZ })
+                const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: TZ })
                 return (
                   <Link key={ev.id} href={`/events/${ev.slug}`} style={{ textDecoration: 'none' }}>
                     <div className="bg-white rounded-2xl overflow-hidden hover:shadow-md transition-shadow" style={{ border: '1px solid #E8E4DE' }}>
