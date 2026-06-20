@@ -694,6 +694,7 @@ export type UserData = {
   name: string
   email: string
   image: string | null
+  createdAt: string
   wishlistSlugs: string[]
   bookings: {
     id: string
@@ -706,6 +707,7 @@ export type UserData = {
     rating: number | null
     image: string
     slug: string
+    category: string
     duration: string
     meetingPoint: string
     includes: string[]
@@ -738,7 +740,7 @@ export async function getUserData(): Promise<UserData | null> {
       prisma.booking.findMany({
         where: { userId: user.id },
         include: {
-          experience: { select: { title: true, area: true, images: true, slug: true, duration: true, meetingPoint: true, includes: true, latitude: true, longitude: true, operatorId: true, operator: { select: { businessName: true } } } },
+          experience: { select: { title: true, area: true, images: true, slug: true, category: true, duration: true, meetingPoint: true, includes: true, latitude: true, longitude: true, operatorId: true, operator: { select: { businessName: true } } } },
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -762,6 +764,9 @@ export async function getUserData(): Promise<UserData | null> {
       name: user.name,
       email: user.email,
       image: user.image,
+      createdAt: (user as any).createdAt
+        ? new Date((user as any).createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+        : '',
       wishlistSlugs: fullUser?.wishlistSlugs ?? [],
       bookings: bookings.map(b => ({
         id: b.bookingRef,
@@ -774,6 +779,7 @@ export async function getUserData(): Promise<UserData | null> {
         rating: reviews.find(r => r.experienceId === b.experienceId)?.rating ?? null,
         image: (b.experience.images as string[])[0] ?? '',
         slug: b.experience.slug,
+        category: String(b.experience.category),
         duration: b.experience.duration,
         meetingPoint: b.experience.meetingPoint,
         includes: b.experience.includes as string[],

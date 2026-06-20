@@ -16,7 +16,7 @@ import { getOrCreateConversationAction, getMessagesAction, sendMessageAction, li
 type Booking = {
   id: string; title: string; area: string; date: string; time?: string
   guests: number; total: number; status: string
-  rating: number | null; image: string; slug: string
+  rating: number | null; image: string; slug: string; category?: string
   duration?: string; meetingPoint?: string; includes?: string[]
   latitude?: number; longitude?: number; operatorId?: string; host?: string
 }
@@ -282,10 +282,10 @@ function BookingDetailModal({ booking, onClose }: { booking: Booking; onClose: (
           </div>
           {/* Primary buttons */}
           <div className="flex gap-2">
-            <a href={`/experiences/${booking.slug}`}
+            <a href={`/${booking.category === 'RENTALS' ? 'rentals' : 'experiences'}/${booking.slug}`}
               className="flex-1 flex items-center justify-center hover:opacity-90 transition-opacity"
               style={{ height: 44, borderRadius: 10, backgroundColor: '#111111', color: 'white', fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>
-              View experience
+              {booking.category === 'RENTALS' ? 'View rental' : 'View experience'}
             </a>
             <button onClick={onClose}
               style={{ flex: 1, height: 44, border: '1px solid #E8E4DE', backgroundColor: 'white', borderRadius: 10, fontSize: 14, color: '#6F675C', cursor: 'pointer' }}>
@@ -442,7 +442,7 @@ function BookingsTab({ dbBookings, onRefresh }: { dbBookings?: Booking[]; onRefr
             <img src={b.image} alt={b.title} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2">
-                <a href={`/experiences/${b.slug}`} style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 600, color: '#111111', textDecoration: 'none', lineHeight: 1.3 }} className="hover:opacity-70 transition-opacity">
+                <a href={`/${b.category === 'RENTALS' ? 'rentals' : 'experiences'}/${b.slug}`} style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 600, color: '#111111', textDecoration: 'none', lineHeight: 1.3 }} className="hover:opacity-70 transition-opacity">
                   {b.title}
                 </a>
                 <div className="flex-shrink-0"><StatusBadge status={effectiveStatus} /></div>
@@ -1049,7 +1049,14 @@ function SettingsTab({ sessionEmail }: { sessionEmail: string }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function ProfilePage() {
-  const { data: session, status } = useSession()
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      if (typeof window !== 'undefined') {
+        window.location.href = '/sign-in?callbackUrl=/profile'
+      }
+    },
+  })
   const isLoaded = status !== 'loading'
   const isSignedIn = status === 'authenticated'
   const [activeTab, setActiveTab] = useState('bookings')
@@ -1070,11 +1077,10 @@ export default function ProfilePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, isSignedIn])
 
-  // Clerk user info with graceful fallbacks
   const displayName  = session?.user?.name || dbData?.name || 'Traveler'
   const displayEmail = session?.user?.email || dbData?.email || ''
   const displayImage = session?.user?.image || dbData?.image || null
-  const memberSince: string | null = null
+  const memberSince  = dbData?.createdAt || null
 
   // Stats derived from real data
   const tripsCount    = dbData?.bookings?.length ?? 0
@@ -1090,6 +1096,14 @@ export default function ProfilePage() {
       case 'settings':  return <SettingsTab sessionEmail={displayEmail} />
       default:          return <BookingsTab dbBookings={dbData?.bookings} onRefresh={loadDb} />
     }
+  }
+
+  if (status === 'loading') {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F5F1EB', fontFamily: 'var(--font-inter)' }}>
+        <p style={{ color: '#6F675C', fontSize: 14 }}>Loading…</p>
+      </div>
+    )
   }
 
   return (
