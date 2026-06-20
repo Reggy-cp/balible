@@ -2262,8 +2262,14 @@ export async function updateExperienceImagesAction(slug: string, images: string[
 // ── User profile settings (tourists) ─────────────────────────────────────────
 
 export type UserProfileSettings = {
+  name: string
   phone: string
   nationality: string
+  bio: string
+  dateOfBirth: string
+  address: string
+  city: string
+  country: string
   notifSettings: Record<string, boolean> | null
 }
 
@@ -2273,20 +2279,32 @@ export async function getUserProfileSettingsAction(): Promise<UserProfileSetting
     if (!user) return null
     const full = await prisma.user.findUnique({
       where: { id: user.id },
-      select: { phone: true, nationality: true, notifSettings: true },
+      select: { name: true, phone: true, nationality: true, bio: true, dateOfBirth: true, address: true, city: true, country: true, notifSettings: true },
     })
     if (!full) return null
     return {
+      name: full.name ?? '',
       phone: full.phone ?? '',
       nationality: full.nationality ?? '',
+      bio: full.bio ?? '',
+      dateOfBirth: full.dateOfBirth ? full.dateOfBirth.toISOString().slice(0, 10) : '',
+      address: full.address ?? '',
+      city: full.city ?? '',
+      country: full.country ?? '',
       notifSettings: (full.notifSettings as Record<string, boolean> | null) ?? null,
     }
   } catch { return null }
 }
 
 export async function updateUserProfileSettingsAction(data: {
+  name?: string
   phone?: string
   nationality?: string
+  bio?: string
+  dateOfBirth?: string
+  address?: string
+  city?: string
+  country?: string
   notifSettings?: Record<string, boolean>
 }): Promise<{ ok: boolean }> {
   try {
@@ -2295,8 +2313,14 @@ export async function updateUserProfileSettingsAction(data: {
     await prisma.user.update({
       where: { id: user.id },
       data: {
+        ...(data.name?.trim() && { name: data.name.trim() }),
         ...(data.phone !== undefined && { phone: data.phone || null }),
         ...(data.nationality !== undefined && { nationality: data.nationality || null }),
+        ...(data.bio !== undefined && { bio: data.bio || null }),
+        ...(data.dateOfBirth !== undefined && { dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : null }),
+        ...(data.address !== undefined && { address: data.address || null }),
+        ...(data.city !== undefined && { city: data.city || null }),
+        ...(data.country !== undefined && { country: data.country || null }),
         ...(data.notifSettings !== undefined && { notifSettings: data.notifSettings }),
       },
     })

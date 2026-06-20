@@ -20,6 +20,11 @@ model User {
   phone         String?
   nationality   String?
   locale        String?
+  bio           String?
+  dateOfBirth   DateTime?
+  address       String?
+  city          String?
+  country       String?
   notifSettings      Json?
   resetToken         String?
   resetTokenExpiry   DateTime?

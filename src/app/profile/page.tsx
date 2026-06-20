@@ -845,29 +845,63 @@ function ReviewsTab({ dbReviews }: { dbReviews?: UserData['reviews'] }) {
 
 const PROFILE_NOTIF_DEFAULTS = { bookingConfirm: true, reminders: true, offers: false }
 
-function SettingsTab({ clerkName, clerkEmail }: { clerkName: string; clerkEmail: string }) {
-  const [extra, setExtra]   = useState({ phone: '', nationality: '' })
-  const [notifs, setNotifs] = useState(PROFILE_NOTIF_DEFAULTS)
-  const [saved, setSaved]   = useState(false)
+type ProfileFields = {
+  name: string; phone: string; nationality: string
+  bio: string; dateOfBirth: string
+  address: string; city: string; country: string
+}
+const PROFILE_EMPTY: ProfileFields = { name: '', phone: '', nationality: '', bio: '', dateOfBirth: '', address: '', city: '', country: '' }
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'var(--font-inter)' }}>
+        {label}
+      </label>
+      {children}
+    </div>
+  )
+}
+
+const inputCss: React.CSSProperties = {
+  width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE',
+  padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111',
+  outline: 'none', backgroundColor: 'white', boxSizing: 'border-box',
+}
+
+function SettingsTab({ sessionEmail }: { sessionEmail: string }) {
+  const [profile, setProfile] = useState<ProfileFields>(PROFILE_EMPTY)
+  const [notifs, setNotifs]   = useState(PROFILE_NOTIF_DEFAULTS)
+  const [saved, setSaved]     = useState(false)
   const [saveError, setSaveError] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [resetSent, setResetSent]   = useState(false)
+  const [saving, setSaving]   = useState(false)
+  const [resetSent, setResetSent]     = useState(false)
   const [resetSending, setResetSending] = useState(false)
 
   useEffect(() => {
     getUserProfileSettingsAction().then(s => {
       if (!s) return
-      setExtra({ phone: s.phone, nationality: s.nationality })
+      setProfile({
+        name: s.name, phone: s.phone, nationality: s.nationality,
+        bio: s.bio, dateOfBirth: s.dateOfBirth,
+        address: s.address, city: s.city, country: s.country,
+      })
       if (s.notifSettings) setNotifs({ ...PROFILE_NOTIF_DEFAULTS, ...s.notifSettings } as typeof PROFILE_NOTIF_DEFAULTS)
     })
   }, [])
 
+  const set = (key: keyof ProfileFields) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setProfile(p => ({ ...p, [key]: e.target.value }))
+
+  const focusBorder = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => (e.target.style.borderColor = '#C8A97E')
+  const blurBorder  = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => (e.target.style.borderColor = '#E8E4DE')
+
   const save = async () => {
     setSaving(true)
     setSaveError(false)
-    const res = await updateUserProfileSettingsAction({ phone: extra.phone, nationality: extra.nationality, notifSettings: notifs })
+    const res = await updateUserProfileSettingsAction({ ...profile, notifSettings: notifs })
     setSaving(false)
-    if (res.ok) { setSaved(true); setTimeout(() => setSaved(false), 2000) }
+    if (res.ok) { setSaved(true); setTimeout(() => setSaved(false), 2500) }
     else { setSaveError(true); setTimeout(() => setSaveError(false), 3000) }
   }
 
@@ -875,48 +909,74 @@ function SettingsTab({ clerkName, clerkEmail }: { clerkName: string; clerkEmail:
     <div className="space-y-5">
       <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111' }}>Account Settings</h2>
 
-      {/* Clerk-managed fields — read-only */}
+      {/* ── Personal info ── */}
       <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111' }}>Account Information</h3>
-          <span style={{ fontSize: 11, color: '#9E9A94', fontFamily: 'var(--font-inter)' }}>Managed via Clerk</span>
-        </div>
-        <div className="grid sm:grid-cols-2 gap-4">
-          {[{ label: 'Full Name', value: clerkName }, { label: 'Email', value: clerkEmail }].map(f => (
-            <div key={f.label}>
-              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{f.label}</label>
-              <div style={{ height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#6F675C', backgroundColor: '#F9F8F6', display: 'flex', alignItems: 'center' }}>
-                {f.value || <span style={{ color: '#C8C4BE' }}>—</span>}
+        <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111', marginBottom: 16 }}>Personal Information</h3>
+        <div className="space-y-4">
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Field label="Full name">
+              <input value={profile.name} onChange={set('name')} placeholder="Your name"
+                style={inputCss} onFocus={focusBorder} onBlur={blurBorder} />
+            </Field>
+            <Field label="Email">
+              <div style={{ ...inputCss, height: 42, display: 'flex', alignItems: 'center', backgroundColor: '#F9F8F6', color: '#6F675C' }}>
+                {sessionEmail || <span style={{ color: '#C8C4BE' }}>—</span>}
               </div>
-            </div>
-          ))}
+            </Field>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Field label="Phone number">
+              <input type="tel" value={profile.phone} onChange={set('phone')} placeholder="+62 812 345 6789"
+                style={inputCss} onFocus={focusBorder} onBlur={blurBorder} />
+            </Field>
+            <Field label="Date of birth">
+              <input type="date" value={profile.dateOfBirth} onChange={set('dateOfBirth')}
+                style={inputCss} onFocus={focusBorder} onBlur={blurBorder} />
+            </Field>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Field label="Nationality">
+              <input value={profile.nationality} onChange={set('nationality')} placeholder="e.g. Australian"
+                style={inputCss} onFocus={focusBorder} onBlur={blurBorder} />
+            </Field>
+          </div>
+          <Field label="About you">
+            <textarea
+              value={profile.bio}
+              onChange={e => { if (e.target.value.length <= 300) set('bio')(e) }}
+              placeholder="Tell hosts a little about yourself..."
+              rows={3}
+              style={{ ...inputCss, height: 'auto', padding: '10px 14px', resize: 'none', lineHeight: 1.6 }}
+              onFocus={focusBorder}
+              onBlur={blurBorder}
+            />
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#C8C4BE', marginTop: 2, textAlign: 'right' }}>{profile.bio.length}/300</p>
+          </Field>
         </div>
-        <p style={{ fontSize: 12, color: '#9E9A94', marginTop: 12, fontFamily: 'var(--font-inter)' }}>
-          To update your name or email, use the account menu in the top-right corner.
-        </p>
       </div>
 
-      {/* Extra fields saved locally */}
+      {/* ── Address ── */}
       <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
-        <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111', marginBottom: 16 }}>Additional Details</h3>
-        <div className="grid sm:grid-cols-2 gap-4">
-          {([{ label: 'Phone', key: 'phone' as const, placeholder: '+62 812 345 6789' }, { label: 'Nationality', key: 'nationality' as const, placeholder: 'e.g. Australian' }]).map(f => (
-            <div key={f.key}>
-              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{f.label}</label>
-              <input
-                value={extra[f.key]}
-                onChange={e => setExtra(p => ({ ...p, [f.key]: e.target.value }))}
-                placeholder={f.placeholder}
-                style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }}
-                onFocus={e => (e.target.style.borderColor = '#C8A97E')}
-                onBlur={e => (e.target.style.borderColor = '#E8E4DE')}
-              />
-            </div>
-          ))}
+        <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111', marginBottom: 16 }}>Address</h3>
+        <div className="space-y-4">
+          <Field label="Street address">
+            <input value={profile.address} onChange={set('address')} placeholder="Street, villa number, etc."
+              style={inputCss} onFocus={focusBorder} onBlur={blurBorder} />
+          </Field>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Field label="City / area">
+              <input value={profile.city} onChange={set('city')} placeholder="e.g. Canggu, Ubud"
+                style={inputCss} onFocus={focusBorder} onBlur={blurBorder} />
+            </Field>
+            <Field label="Country">
+              <input value={profile.country} onChange={set('country')} placeholder="e.g. Australia"
+                style={inputCss} onFocus={focusBorder} onBlur={blurBorder} />
+            </Field>
+          </div>
         </div>
       </div>
 
-      {/* Notifications */}
+      {/* ── Notifications ── */}
       <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
         <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111', marginBottom: 16 }}>Notifications</h3>
         <div className="space-y-4">
@@ -929,8 +989,8 @@ function SettingsTab({ clerkName, clerkEmail }: { clerkName: string; clerkEmail:
             return (
               <div key={key} className="flex items-center justify-between gap-4">
                 <div>
-                  <p style={{ fontSize: 14, fontWeight: 500, color: '#111111' }}>{label}</p>
-                  <p style={{ fontSize: 12, color: '#6F675C', marginTop: 1 }}>{desc}</p>
+                  <p style={{ fontSize: 14, fontWeight: 500, color: '#111111', fontFamily: 'var(--font-inter)' }}>{label}</p>
+                  <p style={{ fontSize: 12, color: '#6F675C', marginTop: 1, fontFamily: 'var(--font-inter)' }}>{desc}</p>
                 </div>
                 <button
                   onClick={() => setNotifs(n => ({ ...n, [key]: !n[key as keyof typeof notifs] }))}
@@ -944,11 +1004,11 @@ function SettingsTab({ clerkName, clerkEmail }: { clerkName: string; clerkEmail:
         </div>
       </div>
 
-      {/* Reset Password */}
+      {/* ── Password ── */}
       <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
         <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111', marginBottom: 6 }}>Password</h3>
         <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', marginBottom: 14 }}>
-          We'll send a reset link to <strong style={{ color: '#111111' }}>{clerkEmail}</strong>. The link expires in 1 hour.
+          We'll send a reset link to <strong style={{ color: '#111111' }}>{sessionEmail}</strong>. The link expires in 1 hour.
         </p>
         {resetSent ? (
           <div className="flex items-center gap-2" style={{ color: '#4A7C59', fontSize: 13, fontFamily: 'var(--font-inter)' }}>
@@ -958,7 +1018,7 @@ function SettingsTab({ clerkName, clerkEmail }: { clerkName: string; clerkEmail:
           <button
             onClick={async () => {
               setResetSending(true)
-              await requestPasswordResetAction(clerkEmail)
+              await requestPasswordResetAction(sessionEmail)
               setResetSending(false)
               setResetSent(true)
             }}
@@ -970,16 +1030,17 @@ function SettingsTab({ clerkName, clerkEmail }: { clerkName: string; clerkEmail:
         )}
       </div>
 
+      {/* ── Save ── */}
       <div className="flex items-center gap-3">
         <button
           onClick={save}
           disabled={saving}
           className="flex items-center gap-2 hover:opacity-90 transition-opacity"
-          style={{ height: 44, paddingInline: 24, borderRadius: 10, border: 'none', backgroundColor: saved ? '#4A7C59' : saveError ? '#B66A45' : '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: saving ? 'default' : 'pointer', opacity: saving ? 0.7 : 1, transition: 'background 0.2s', minWidth: 140 }}
+          style={{ height: 44, paddingInline: 24, borderRadius: 10, border: 'none', backgroundColor: saved ? '#4A7C59' : saveError ? '#B66A45' : '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: saving ? 'default' : 'pointer', opacity: saving ? 0.7 : 1, transition: 'background 0.2s', minWidth: 140, fontFamily: 'var(--font-inter)' }}
         >
           {saved ? <><Check size={14} /> Saved!</> : saving ? 'Saving…' : saveError ? 'Save failed' : 'Save Changes'}
         </button>
-        {saveError && <span style={{ fontSize: 13, color: '#B66A45' }}>Could not save. Please try again.</span>}
+        {saveError && <span style={{ fontSize: 13, color: '#B66A45', fontFamily: 'var(--font-inter)' }}>Could not save. Please try again.</span>}
       </div>
     </div>
   )
@@ -1026,7 +1087,7 @@ export default function ProfilePage() {
       case 'messages':  return <MessagesTab />
       case 'wishlist':  return <WishlistTab dbSlugs={dbData?.wishlistSlugs} />
       case 'reviews':   return <ReviewsTab dbReviews={dbData?.reviews} />
-      case 'settings':  return <SettingsTab clerkName={displayName} clerkEmail={displayEmail} />
+      case 'settings':  return <SettingsTab sessionEmail={displayEmail} />
       default:          return <BookingsTab dbBookings={dbData?.bookings} onRefresh={loadDb} />
     }
   }
