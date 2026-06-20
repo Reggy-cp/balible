@@ -42,7 +42,7 @@ function RecommendationCard({ exp }: { exp: ExpSummary }) {
 
   return (
     <a
-      href={`/experiences/${exp.slug}`}
+      href={exp.category === 'RENTALS' ? `/rentals/${exp.slug}` : `/experiences/${exp.slug}`}
       className="flex-shrink-0 rounded-xl overflow-hidden border hover:shadow-md transition-shadow block"
       style={{ width: 220, borderColor: '#E8E4DE', textDecoration: 'none' }}
     >

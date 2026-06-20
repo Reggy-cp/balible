@@ -486,7 +486,7 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
               )}
               {!!filters.date && (
                 <button onClick={() => updateFilters({ date: '' })} className="flex items-center gap-1 px-3 py-1 rounded-full" style={{ backgroundColor: '#111111', color: 'white', fontSize: 12, fontFamily: 'var(--font-inter)', border: 'none', cursor: 'pointer' }}>
-                  {filters.date} <X size={10} />
+                  {new Date(filters.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} <X size={10} />
                 </button>
               )}
             </div>
