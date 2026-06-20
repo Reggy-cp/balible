@@ -33,22 +33,6 @@ function toSlug(name: string) {
   return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
 }
 
-const STATIC_HOSTS: HostCard[] = [
-  { slug: 'made-sari',       name: 'Made Sari',       businessName: 'Made Sari Pottery Studio',   area: 'Ubud',     category: 'Art & Craft',        rating: 4.9, reviews: 128, avatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&auto=format&fit=crop&q=80', tagline: 'Third-generation Balinese potter sharing the ancient art of wheel-throwing.' },
-  { slug: 'ketut-suardana',  name: 'Ketut Suardana',  businessName: 'Ketut Silver Artistry',      area: 'Canggu',   category: 'Art & Craft',        rating: 4.8, reviews: 94,  avatar: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&auto=format&fit=crop&q=80', tagline: 'Master silversmith blending traditional Balinese craft with contemporary design.' },
-  { slug: 'ni-wayan-artini', name: 'Ni Wayan Artini', businessName: 'Ubud Batik Studio',          area: 'Ubud',     category: 'Art & Craft',        rating: 4.7, reviews: 148, avatar: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=400&auto=format&fit=crop&q=80', tagline: 'Sharing the UNESCO-recognised art of batik with visitors from around the world.' },
-  { slug: 'nina-putri',      name: 'Nina Putri',      businessName: 'Sukha Healing Space',        area: 'Ubud',     category: 'Wellness & Healing', rating: 4.9, reviews: 390, avatar: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&auto=format&fit=crop&q=80', tagline: 'Sound healing, breathwork and somatic therapies from the heart of Ubud.' },
-  { slug: 'komang-dewi',     name: 'Komang Dewi',     businessName: 'Jiwa Yoga Canggu',           area: 'Canggu',   category: 'Wellness & Healing', rating: 4.9, reviews: 203, avatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&auto=format&fit=crop&q=80', tagline: 'Rooftop sunrise yoga and breathwork for the wandering soul in Canggu.' },
-  { slug: 'wayan-gede',      name: 'Wayan Gede',      businessName: 'Sacred Bali Ceremonies',     area: 'Ubud',     category: 'Culture & Spiritual',            rating: 4.8, reviews: 78,  avatar: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=400&auto=format&fit=crop&q=80', tagline: 'Third-generation temple guide opening the sacred world of Balinese ceremony.' },
-  { slug: 'i-nyoman-arta',   name: 'I Nyoman Arta',   businessName: 'Bali Culture Tours',         area: 'Uluwatu', category: 'Culture & Spiritual',            rating: 4.9, reviews: 312, avatar: null, tagline: 'Specialist in Balinese cultural experiences with 18 years guiding guests.' },
-  { slug: 'putu-sari',       name: 'Putu Sari',       businessName: 'Warung Dapur Bali',          area: 'Seminyak', category: 'Culinary',           rating: 4.8, reviews: 156, avatar: null, tagline: 'Family-run cooking school teaching traditional Balinese cuisine for a decade.' },
-  { slug: 'komang-surya',    name: 'Komang Surya',    businessName: 'Kuta Surf Academy',          area: 'Kuta',     category: 'Water Activities',   rating: 4.7, reviews: 428, avatar: null, tagline: 'Bali\'s most-reviewed surf school with certified ISA instructors.' },
-  { slug: 'gede-arnawa',     name: 'Gede Arnawa',     businessName: 'Tegalalang Walking Tours',   area: 'Ubud',     category: 'Nature & Outdoors',  rating: 4.8, reviews: 192, avatar: null, tagline: 'Local farmer-guide sharing the living landscape of Tegalalang rice terraces.' },
-  { slug: 'ni-made-suari',   name: 'Ni Made Suari',   businessName: 'Sidemen Weave & Dye',       area: 'Sidemen',  category: 'Art & Craft',        rating: 4.7, reviews: 31,  avatar: null, tagline: 'Preserving ancient natural dyeing and traditional weaving in East Bali.' },
-  { slug: 'i-nyoman-karsa',  name: 'I Nyoman Karsa',  businessName: 'Karsa Wood Studio',          area: 'Ubud',     category: 'Art & Craft',        rating: 4.6, reviews: 47,  avatar: null, tagline: 'Third-generation wood carving family from Mas Village, Ubud.' },
-  { slug: 'ni-komang-ayu',   name: 'Ni Komang Ayu',   businessName: 'Sidemen Village Crafts',     area: 'Sidemen',  category: 'Art & Craft',        rating: 4.8, reviews: 29,  avatar: null, tagline: 'Women\'s weaving collective preserving traditional rattan craft in East Bali.' },
-]
-
 async function getHosts(): Promise<HostCard[]> {
   try {
     const operators = await prisma.operator.findMany({
@@ -63,32 +47,22 @@ async function getHosts(): Promise<HostCard[]> {
       },
     })
 
-    const staticSlugs = new Set(STATIC_HOSTS.map(h => h.slug))
-    const dbCards: HostCard[] = operators.map(op => {
-      const slug = toSlug(op.user.name)
+    return operators.map(op => {
       const exp = op.experiences[0]
-      const static_ = STATIC_HOSTS.find(h => h.slug === slug)
       return {
-        slug,
+        slug: toSlug(op.user.name),
         name: op.user.name,
         businessName: op.businessName,
-        area: static_?.area ?? (exp ? (AREA_DISPLAY[String(exp.area)] ?? String(exp.area)) : ''),
-        category: static_?.category ?? (exp ? (CATEGORY_DISPLAY[String(exp.category)] ?? String(exp.category)) : 'Culture'),
-        rating: op.rating > 0 ? op.rating : (static_?.rating ?? 4.8),
-        reviews: op.totalReviews > 0 ? op.totalReviews : (static_?.reviews ?? 0),
-        avatar: op.avatar ?? static_?.avatar ?? null,
-        tagline: static_?.tagline ?? op.description.slice(0, 120),
+        area: exp ? (AREA_DISPLAY[String(exp.area)] ?? String(exp.area)) : '',
+        category: exp ? (CATEGORY_DISPLAY[String(exp.category)] ?? String(exp.category)) : '',
+        rating: op.rating,
+        reviews: op.totalReviews,
+        avatar: op.avatar ?? null,
+        tagline: op.description.slice(0, 120),
       }
     })
-
-    // DB operators not already in static list
-    const dbOnly = dbCards.filter(h => !staticSlugs.has(h.slug))
-    // Static hosts whose DB record is now available get DB data merged in
-    const merged = STATIC_HOSTS.map(h => dbCards.find(d => d.slug === h.slug) ?? h)
-
-    return [...merged, ...dbOnly]
   } catch {
-    return STATIC_HOSTS
+    return []
   }
 }
 

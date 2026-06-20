@@ -10,7 +10,7 @@ import {
 } from 'lucide-react'
 import NotificationBell from '@/components/NotificationBell'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { LOCALES, type TranslationKey } from '@/lib/i18n'
+import { type TranslationKey, LOCALES } from '@/lib/i18n'
 
 type CategoryDef = { labelKey: TranslationKey; Icon: React.ElementType; slug: string }
 const CATEGORIES: CategoryDef[] = [
@@ -36,6 +36,7 @@ const MOBILE_LINKS: MobileLink[] = [
   { labelKey: 'nav_experiences',  href: '/search' },
   { labelKey: 'nav_destinations', href: '/destinations' },
   { labelKey: 'nav_events',       href: '/events' },
+  { labelKey: 'cat_rentals',      href: '/categories/rentals' },
 ]
 
 export default function Navbar() {
@@ -53,8 +54,8 @@ export default function Navbar() {
   const accountRef = useRef<HTMLDivElement>(null)
   const [langOpen, setLangOpen] = useState(false)
   const langRef = useRef<HTMLDivElement>(null)
-  const { locale, setLocale, t } = useLanguage()
-  const currentLocale = LOCALES.find(l => l.code === locale)!
+  const { t, locale, setLocale } = useLanguage()
+  const activeLang = LOCALES.find(l => l.code === locale) ?? LOCALES[0]
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -166,42 +167,42 @@ export default function Navbar() {
 
           {/* Right side */}
           <div className="flex items-center gap-2">
-            {isLoaded && isSignedIn && <NotificationBell />}
-
-            {/* Language dropdown */}
+            {/* Language switcher dropdown */}
             <div className="relative" ref={langRef}>
               <button
                 onClick={() => setLangOpen(o => !o)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-stone-50 transition-colors"
-                style={{ border: '1px solid #E8E4DE', background: 'white', cursor: 'pointer' }}
-                aria-label="Select language"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-stone-50 transition-colors"
+                style={{ border: '1.5px solid #111111', background: 'white', cursor: 'pointer', fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}
               >
-                <span style={{ fontSize: 15, lineHeight: 1 }}>{currentLocale.flag}</span>
-                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 600, color: '#111111' }}>
-                  {currentLocale.code.toUpperCase()}
-                </span>
-                <ChevronDown size={11} style={{ color: '#6F675C', transition: 'transform 0.15s', transform: langOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+                <span>{activeLang.flag}</span>
+                <span style={{ fontWeight: 600 }}>{activeLang.code.toUpperCase()}</span>
+                <ChevronDown size={12} style={{ color: '#111111', transition: 'transform 0.15s', transform: langOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
               </button>
               {langOpen && (
-                <div className="absolute right-0 mt-2 bg-white rounded-xl shadow-lg py-1" style={{ minWidth: 140, border: '1px solid #E8E4DE', zIndex: 200 }}>
-                  {LOCALES.map(loc => (
+                <div className="absolute right-0 mt-1.5 bg-white rounded-xl shadow-lg py-1" style={{ minWidth: 130, border: '1px solid #E8E4DE', zIndex: 200 }}>
+                  {LOCALES.map(({ code, flag, label }) => (
                     <button
-                      key={loc.code}
-                      onClick={() => { setLocale(loc.code); setLangOpen(false) }}
-                      className="flex w-full items-center gap-2.5 px-4 py-2.5 hover:bg-stone-50 transition-colors"
+                      key={code}
+                      onClick={() => { setLocale(code); setLangOpen(false) }}
+                      className="flex w-full items-center gap-2.5 px-3 py-2 hover:bg-stone-50 transition-colors"
                       style={{
                         fontFamily: 'var(--font-inter)', fontSize: 13, border: 'none', cursor: 'pointer', textAlign: 'left',
-                        background: locale === loc.code ? '#F5F1EB' : 'transparent',
-                        color: '#111111', fontWeight: locale === loc.code ? 600 : 400,
+                        color: locale === code ? '#C8A97E' : '#111111',
+                        fontWeight: locale === code ? 600 : 400,
+                        backgroundColor: 'transparent',
                       }}
                     >
-                      <span style={{ fontSize: 16 }}>{loc.flag}</span>
-                      {loc.label}
+                      <span>{flag}</span>
+                      <span>{label}</span>
+                      {locale === code && <span style={{ marginLeft: 'auto', width: 6, height: 6, borderRadius: '50%', backgroundColor: '#C8A97E', flexShrink: 0 }} />}
                     </button>
                   ))}
                 </div>
               )}
             </div>
+
+            {isLoaded && isSignedIn && <NotificationBell />}
+
             {!isLoaded ? (
               <div className="hidden sm:flex items-center gap-2">
                 <div style={{ width: 64, height: 34, borderRadius: 10, backgroundColor: '#F5F1EB' }} />

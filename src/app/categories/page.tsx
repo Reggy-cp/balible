@@ -2,6 +2,7 @@ import { ArrowRight } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
+import { prisma } from '@/lib/prisma'
 
 export const metadata = {
   title: 'Browse by Category — Balible',
@@ -115,15 +116,45 @@ const CATEGORIES = [
   },
 ]
 
+const SLUG_TO_ENUM: Record<string, string> = {
+  'art-craft':        'ART_CRAFT',
+  'wellness-healing': 'WELLNESS_HEALING',
+  'culture-spiritual':'CULTURE_SPIRITUAL',
+  'culinary':         'CULINARY',
+  'nature-outdoors':  'NATURE_OUTDOORS',
+  'water-activities': 'WATER_ACTIVITIES',
+  'local-experts':    'LOCAL_EXPERTS',
+  'rentals':          'RENTALS',
+}
+
+async function getCategoryCounts(): Promise<Record<string, number>> {
+  try {
+    const rows = await prisma.experience.groupBy({
+      by: ['category'],
+      where: { status: 'ACTIVE' },
+      _count: { _all: true },
+    })
+    return Object.fromEntries(rows.map(r => [String(r.category), r._count._all]))
+  } catch {
+    return {}
+  }
+}
+
 function formatIDR(n: number) {
   return 'IDR ' + Math.round(n).toLocaleString('id-ID')
 }
 
-export default function CategoriesPage() {
-  const totalExperiences = CATEGORIES.reduce((s, c) => s + c.count, 0)
+export const revalidate = 300
+
+export default async function CategoriesPage() {
+  const dbCounts = await getCategoryCounts()
+
+  const countFor = (slug: string) => dbCounts[SLUG_TO_ENUM[slug]] ?? 0
+
+  const totalExperiences = CATEGORIES.reduce((s, c) => s + countFor(c.slug), 0)
 
   return (
-    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: 'white', minHeight: '100vh' }}>
 
       <Navbar />
 
@@ -138,7 +169,7 @@ export default function CategoriesPage() {
               Every way to experience Bali
             </h1>
             <p style={{ fontFamily: 'var(--font-inter)', fontSize: 16, color: '#6F675C', marginTop: 16, lineHeight: 1.75, maxWidth: 520 }}>
-              {totalExperiences} handpicked listings across 8 categories — art, wellness, culture & spiritual, culinary, nature, water activities, local experts, and rentals. Each one led by a local who knows their craft.
+              {totalExperiences > 0 ? `${totalExperiences} handpicked` : 'Handpicked'} listings across 8 categories — art, wellness, culture & spiritual, culinary, nature, water activities, local experts, and rentals. Each one led by a local who knows their craft.
             </p>
           </div>
 
@@ -158,7 +189,7 @@ export default function CategoriesPage() {
         {/* Quick stats */}
         <div className="flex flex-wrap gap-8 mt-10 pt-8" style={{ borderTop: '1px solid #E8E4DE' }}>
           {[
-            { value: `${totalExperiences}+`, label: 'curated experiences' },
+            { value: totalExperiences > 0 ? `${totalExperiences}+` : '—', label: 'curated experiences' },
             { value: '9',   label: 'categories' },
             { value: '4.8', label: 'average rating' },
             { value: '10+', label: 'areas of Bali' },
@@ -213,7 +244,7 @@ export default function CategoriesPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div>
-                    <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: 'white' }}>{CATEGORIES[0].count}</p>
+                    <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: 'white' }}>{countFor(CATEGORIES[0].slug)}</p>
                     <p style={{ fontFamily: 'var(--font-inter)', fontSize: 10, color: 'rgba(255,255,255,0.55)', marginTop: 1 }}>experiences</p>
                   </div>
                   <div style={{ width: 1, height: 24, backgroundColor: 'rgba(255,255,255,0.2)' }} />
@@ -256,7 +287,7 @@ export default function CategoriesPage() {
                       {cat.label}
                     </h2>
                     <div className="flex items-center gap-3 flex-shrink-0 ml-4">
-                      <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>{cat.count} exp.</span>
+                      <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>{countFor(cat.slug)} exp.</span>
                       <div
                         className="w-8 h-8 rounded-full flex items-center justify-center group-hover:bg-white/30 transition-colors"
                         style={{ border: '1px solid rgba(255,255,255,0.4)' }}
@@ -303,7 +334,7 @@ export default function CategoriesPage() {
                       className="px-2.5 py-1 rounded-full"
                       style={{ backgroundColor: 'rgba(255,255,255,0.15)', color: 'white', fontSize: 11, fontFamily: 'var(--font-inter)' }}
                     >
-                      {cat.count} experiences
+                      {countFor(cat.slug)} experiences
                     </span>
                     <span
                       className="px-2.5 py-1 rounded-full"

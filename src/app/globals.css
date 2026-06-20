@@ -28,6 +28,23 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Google Translate widget cleanup */
+.goog-te-banner-frame { display: none !important; }
+body { top: 0 !important; }
+.goog-te-gadget { font-size: 0 !important; }
+.goog-te-gadget .goog-te-combo {
+  font-family: var(--font-inter), sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #111111 !important;
+  background: white !important;
+  border: 1px solid #E8E4DE !important;
+  border-radius: 8px !important;
+  padding: 5px 8px !important;
+  cursor: pointer !important;
+  outline: none !important;
+}
+
 /* Hide scrollbar but keep scroll functionality */
 .scrollbar-none {
   scrollbar-width: none;

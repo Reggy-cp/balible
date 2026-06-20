@@ -26,7 +26,7 @@ export const metadata = {
 
 export default function DestinationsPage() {
   return (
-    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: 'white', minHeight: '100vh' }}>
 
       <Navbar />
 

@@ -10,6 +10,7 @@ import Navbar from '@/components/Navbar'
 import WishlistHeart from '@/components/WishlistHeart'
 import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export type SearchResult = {
   id: number | string
@@ -70,6 +71,7 @@ function FilterLabel({ children }: { children: React.ReactNode }) {
 function FilterPanel({ filters, onChange, mobile = false, onClose }: {
   filters: Filters; onChange: (f: Partial<Filters>) => void; mobile?: boolean; onClose?: () => void
 }) {
+  const { t } = useLanguage()
   const hasActive = filters.location !== 'All Locations' || filters.duration !== 'Any duration' ||
     filters.priceRange[0] > 0 || filters.priceRange[1] < PRICE_MAX || filters.guests > 1
 
@@ -80,13 +82,13 @@ function FilterPanel({ filters, onChange, mobile = false, onClose }: {
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         {mobile
-          ? <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111' }}>Filters</span>
-          : <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>Filters</h3>
+          ? <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111' }}>{t('filters')}</span>
+          : <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>{t('filters')}</h3>
         }
         <div className="flex items-center gap-3">
           {hasActive && (
             <button onClick={clear} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter)', fontSize: 12, color: '#B66A45' }}>
-              Clear all
+              {t('clear_all')}
             </button>
           )}
           {mobile && <button onClick={onClose}><X size={20} style={{ color: '#111111' }} /></button>}
@@ -96,7 +98,7 @@ function FilterPanel({ filters, onChange, mobile = false, onClose }: {
       <div className="space-y-6">
         {/* Location */}
         <div>
-          <FilterLabel>Location</FilterLabel>
+          <FilterLabel>{t('location')}</FilterLabel>
           <select
             value={filters.location}
             onChange={e => onChange({ location: e.target.value })}
@@ -109,13 +111,13 @@ function FilterPanel({ filters, onChange, mobile = false, onClose }: {
 
         {/* Price */}
         <div>
-          <FilterLabel>Price per person</FilterLabel>
+          <FilterLabel>{t('price_per_person')}</FilterLabel>
           <PriceRange value={filters.priceRange} onChange={v => onChange({ priceRange: v })} />
         </div>
 
         {/* Duration */}
         <div>
-          <FilterLabel>Duration</FilterLabel>
+          <FilterLabel>{t('duration')}</FilterLabel>
           <div className="flex flex-col gap-2">
             {DURATIONS.map(d => (
               <button
@@ -136,7 +138,7 @@ function FilterPanel({ filters, onChange, mobile = false, onClose }: {
 
         {/* Guests */}
         <div>
-          <FilterLabel>Guests</FilterLabel>
+          <FilterLabel>{t('guests')}</FilterLabel>
           <div className="flex items-center gap-3">
             <button
               onClick={() => onChange({ guests: Math.max(1, filters.guests - 1) })}
@@ -144,7 +146,7 @@ function FilterPanel({ filters, onChange, mobile = false, onClose }: {
               style={{ border: '1px solid #E8E4DE', backgroundColor: 'white', cursor: 'pointer', fontSize: 16, color: '#111111' }}
             >−</button>
             <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111', minWidth: 60, textAlign: 'center' }}>
-              {filters.guests} {filters.guests === 1 ? 'guest' : 'guests'}
+              {filters.guests} {filters.guests === 1 ? t('guest') : t('guests')}
             </span>
             <button
               onClick={() => onChange({ guests: Math.min(20, filters.guests + 1) })}
@@ -159,11 +161,11 @@ function FilterPanel({ filters, onChange, mobile = false, onClose }: {
         <div className="mt-6 flex gap-3">
           {hasActive && (
             <button className="flex-1 py-3 rounded-lg" style={{ border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500, color: '#111111', backgroundColor: 'white', cursor: 'pointer' }} onClick={clear}>
-              Clear
+              {t('clear_all')}
             </button>
           )}
           <button className="flex-1 py-3 rounded-lg" style={{ backgroundColor: '#111111', color: 'white', fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500, border: 'none', cursor: 'pointer' }} onClick={onClose}>
-            View results
+            {t('view_results')}
           </button>
         </div>
       )}
@@ -203,7 +205,7 @@ function ResultCard({ r, date, guests }: { r: SearchResult; date: string; guests
       ? `${r.durationMins / 60} hr`
       : `${Math.floor(r.durationMins / 60)}.${(r.durationMins % 60) / 6} hr`
   const qs = [date && `date=${date}`, guests > 1 && `guests=${guests}`].filter(Boolean).join('&')
-  const href = `/experiences/${r.slug}${qs ? `?${qs}` : ''}`
+  const href = r.category === 'Rentals' ? `/rentals/${r.slug}` : `/experiences/${r.slug}${qs ? `?${qs}` : ''}`
 
   return (
     <a href={href} className="flex gap-4 p-4 bg-white rounded-xl hover:shadow-md transition-shadow" style={{ border: '1px solid #E8E4DE', textDecoration: 'none' }}>
@@ -254,13 +256,13 @@ const DEFAULT_FILTERS: Filters = {
   duration: 'Any duration', priceRange: [0, PRICE_MAX], date: '', guests: 1,
 }
 
-export default function SearchClient({ initialResults, initialQuery = '', initialDate = '' }: {
-  initialResults: SearchResult[]; initialQuery?: string; initialDate?: string
+export default function SearchClient({ initialResults, initialQuery = '', initialDate = '', initialLocation = 'All Locations' }: {
+  initialResults: SearchResult[]; initialQuery?: string; initialDate?: string; initialLocation?: string
 }) {
   const [filterOpen, setFilterOpen] = useState(false)
   const [search, setSearch]         = useState(initialQuery)
   const [sort, setSort]             = useState('Recommended')
-  const [filters, setFilters]       = useState<Filters>({ ...DEFAULT_FILTERS, date: initialDate })
+  const [filters, setFilters]       = useState<Filters>({ ...DEFAULT_FILTERS, date: initialDate, location: initialLocation })
   const [mounted, setMounted]       = useState(false)
   useEffect(() => setMounted(true), [])
 

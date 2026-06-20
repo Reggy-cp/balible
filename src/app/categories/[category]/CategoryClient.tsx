@@ -126,7 +126,7 @@ function ExperienceCard({
 
   return (
     <a
-      href={`/experiences/${exp.slug}`}
+      href={`${exp.category === 'rentals' ? '/rentals' : '/experiences'}/${exp.slug}`}
       className="group block bg-white overflow-hidden hover:shadow-lg transition-all duration-200"
       style={{ border: '1px solid #E8E4DE', textDecoration: 'none', borderRadius: 16 }}
     >
@@ -276,7 +276,7 @@ export default function CategoryClient({
   const totalReviews = initialExperiences.reduce((s, e) => s + e.reviews, 0)
 
   return (
-    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: 'white', minHeight: '100vh' }}>
 
       <Navbar />
 

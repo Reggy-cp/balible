@@ -309,26 +309,15 @@ const AREAS: Record<string, AreaData> = {
   },
 }
 
-const ALL_EXPERIENCES: Experience[] = [
-  { slug: 'pottery-making-class', title: 'Pottery Making Class', area: 'Ubud', rating: 4.9, reviews: 128, price: 450000, durationMins: 150, category: 'Art & Craft', photo: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&auto=format&fit=crop&q=80' },
-  { slug: 'silver-jewelry-workshop', title: 'Silver Jewelry Workshop', area: 'Canggu', rating: 4.8, reviews: 94, price: 550000, durationMins: 180, category: 'Art & Craft', photo: 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=400&auto=format&fit=crop&q=80' },
-  { slug: 'batik-painting-workshop', title: 'Batik Painting Workshop', area: 'Ubud', rating: 4.7, reviews: 64, price: 380000, durationMins: 180, category: 'Art & Craft', photo: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400&auto=format&fit=crop&q=80' },
-  { slug: 'traditional-batik-workshop', title: 'Traditional Batik Workshop', area: 'Ubud', rating: 4.7, reviews: 52, price: 420000, durationMins: 210, category: 'Art & Craft', photo: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400&auto=format&fit=crop&q=80' },
-  { slug: 'sound-healing-journey', title: 'Sound Healing Journey', area: 'Ubud', rating: 4.8, reviews: 178, price: 350000, durationMins: 90, category: 'Wellness & Healing', photo: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&auto=format&fit=crop&q=80' },
-  { slug: 'sunrise-yoga-class', title: 'Sunrise Yoga & Meditation', area: 'Canggu', rating: 4.9, reviews: 203, price: 250000, durationMins: 75, category: 'Wellness & Healing', photo: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=400&auto=format&fit=crop&q=80' },
-  { slug: 'water-temple-purification', title: 'Water Temple Purification', area: 'Gianyar', rating: 4.8, reviews: 78, price: 600000, durationMins: 240, category: 'Culture & Spiritual', photo: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=400&auto=format&fit=crop&q=80' },
-  { slug: 'uluwatu-kecak-sunset', title: 'Uluwatu Sunset & Kecak Dance', area: 'Uluwatu', rating: 4.9, reviews: 312, price: 450000, durationMins: 180, category: 'Culture & Spiritual', photo: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=400&auto=format&fit=crop&q=80' },
-  { slug: 'balinese-cooking-class', title: 'Balinese Cooking Class', area: 'Seminyak', rating: 4.8, reviews: 156, price: 480000, durationMins: 210, category: 'Culinary', photo: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&auto=format&fit=crop&q=80' },
-  { slug: 'jimbaran-seafood-sunset', title: 'Jimbaran Seafood & Sunset', area: 'Jimbaran', rating: 4.6, reviews: 89, price: 350000, durationMins: 120, category: 'Culinary', photo: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&auto=format&fit=crop&q=80' },
-  { slug: 'beginner-surf-lesson', title: 'Beginner Surf Lesson', area: 'Kuta', rating: 4.7, reviews: 428, price: 320000, durationMins: 120, category: 'Water Activities', photo: 'https://images.unsplash.com/photo-1530870110042-98b2cb110834?w=400&auto=format&fit=crop&q=80' },
-  { slug: 'snorkeling-amed', title: 'Snorkeling at Amed Reef', area: 'Amed', rating: 4.8, reviews: 67, price: 420000, durationMins: 180, category: 'Water Activities', photo: 'https://images.unsplash.com/photo-1560275619-4662e36fa65c?w=400&auto=format&fit=crop&q=80' },
-  { slug: 'rice-terrace-walk', title: 'Tegalalang Rice Terrace Walk', area: 'Ubud', rating: 4.8, reviews: 192, price: 280000, durationMins: 150, category: 'Nature & Outdoors', photo: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=400&auto=format&fit=crop&q=80' },
-  { slug: 'natural-dye-workshop', title: 'Natural Dye Workshop', area: 'Sidemen', rating: 4.7, reviews: 48, price: 380000, durationMins: 180, category: 'Art & Craft', photo: 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=400&auto=format&fit=crop&q=80' },
-  { slug: 'wood-carving-workshop', title: 'Wood Carving Workshop', area: 'Ubud', rating: 4.8, reviews: 72, price: 500000, durationMins: 240, category: 'Art & Craft', photo: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&auto=format&fit=crop&q=80' },
-  { slug: 'rattan-weaving-class', title: 'Rattan Weaving Class', area: 'Sidemen', rating: 4.7, reviews: 38, price: 350000, durationMins: 180, category: 'Art & Craft', photo: 'https://images.unsplash.com/photo-1519735777090-ec97162dc266?w=400&auto=format&fit=crop&q=80' },
-]
+export const revalidate = 3600
 
-export const dynamic = 'force-dynamic'
+export function generateStaticParams() {
+  return [
+    'ubud', 'canggu', 'uluwatu', 'seminyak', 'jimbaran',
+    'sidemen', 'kuta', 'gianyar', 'sanur', 'nusa-dua',
+    'amed', 'medewi', 'kintamani',
+  ].map(area => ({ area }))
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ area: string }> }) {
   const { area } = await params
@@ -346,19 +335,16 @@ export default async function DestinationAreaPage({ params }: { params: Promise<
   if (!data) notFound()
 
   const dbCards = await getExperienceCards()
-  const dbSlugs = new Set(dbCards.map(c => c.slug))
-  const dbMapped: Experience[] = dbCards.map(c => ({
-    slug: c.slug, title: c.title, area: c.area, rating: c.rating,
-    reviews: c.reviews, price: c.price, durationMins: c.durationMins,
-    category: c.category, photo: c.photo,
-  }))
-  const staticOnly = ALL_EXPERIENCES.filter(e => !dbSlugs.has(e.slug))
-  const allExperiences = [...dbMapped, ...staticOnly]
-
-  const experiences = allExperiences.filter(e => data.experienceAreas.includes(e.area))
+  const experiences: Experience[] = dbCards
+    .filter(c => data.experienceAreas.includes(c.area))
+    .map(c => ({
+      slug: c.slug, title: c.title, area: c.area, rating: c.rating,
+      reviews: c.reviews, price: c.price, durationMins: c.durationMins,
+      category: c.category, photo: c.photo,
+    }))
 
   return (
-    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: 'white', minHeight: '100vh' }}>
       <Navbar />
 
       {/* HERO */}
@@ -469,7 +455,7 @@ export default async function DestinationAreaPage({ params }: { params: Promise<
       {/* CTA BANNER */}
       <div className="mx-5 lg:mx-8 mb-16 rounded-2xl overflow-hidden max-w-[1100px] lg:mx-auto" style={{ maxWidth: 1100, margin: '0 auto 64px' }}>
         <div className="relative px-8 py-14 text-center" style={{ backgroundColor: '#111111' }}>
-          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: `radial-gradient(circle at 20% 50%, ${data.color} 0%, transparent 50%), radial-gradient(circle at 80% 50%, #C8A97E 0%, transparent 50%)` }} />
+          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: `radial-gradient(circle at 20% 50%, ${data.color} 0%, transparent 50%), radial-gradient(circle at 80% 50%, #C8A97E 0%, transparent 50%)`, pointerEvents: 'none' }} />
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.2em', color: '#C8A97E', textTransform: 'uppercase', marginBottom: 10 }}>
             Ready to explore?
           </p>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight, Heart, AlertCircle } from 'lucide-react'
 import { getExperienceScheduleAction, getBookedSlotsAction } from '@/lib/actions'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December']
 
@@ -132,6 +133,7 @@ function MiniCalendar({
 }
 
 export default function BookingWidget({ price, slug, duration, maxGuests = 8, embedded = false, rating, totalReviews }: { price: number; slug?: string; duration?: string; maxGuests?: number; embedded?: boolean; rating?: number; totalReviews?: number }) {
+  const { t } = useLanguage()
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
   const [guests, setGuests] = useState(1)
@@ -330,7 +332,7 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
 
       {/* Guests */}
       <div className="mt-5">
-        <p className="mb-1.5" style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>Guests</p>
+        <p className="mb-1.5" style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>{t('guests')}</p>
         <select value={guests} onChange={e => setGuests(Number(e.target.value))}
           className="w-full px-3 py-2.5 rounded-md outline-none appearance-none cursor-pointer"
           style={{ border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', backgroundColor: 'white' }}>
@@ -349,7 +351,7 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
       {selectedDate && selectedTime && (
         <div className="mt-4 p-3 rounded-lg" style={{ backgroundColor: '#F5F1EB' }}>
           <div className="flex justify-between mb-1">
-            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>Date & time</span>
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>{t('date_time')}</span>
             <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 600, color: '#111111' }}>
               {minsToLabel(parseTimeMins(selectedTime))} – {endTimeLabel(selectedTime)}
             </span>
@@ -380,11 +382,11 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
           color: selectedDate && selectedTime ? 'white' : '#9E9A94',
           cursor: selectedDate && selectedTime ? 'pointer' : 'not-allowed',
         }}>
-        {!selectedDate ? 'Select a date' : !selectedTime ? 'Select a time' : 'Book this experience'}
+        {!selectedDate ? t('select_date') : !selectedTime ? t('select_time') : t('book_experience')}
       </a>
 
       <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#4A7C59', textAlign: 'center', marginTop: 10 }}>
-        ✓ Free cancellation up to 24 hours before
+        ✓ {t('free_cancel_24h')}
       </p>
 
       <button className="w-full mt-3 flex items-center justify-center gap-1.5 hover:opacity-70 transition-opacity"

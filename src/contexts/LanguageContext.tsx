@@ -18,7 +18,7 @@ const LanguageContext = createContext<LanguageCtx>({
 })
 
 function isValidLocale(v: string | null | undefined): v is Locale {
-  return v === 'en' || v === 'id' || v === 'ru'
+  return v === 'en' || v === 'id'
 }
 
 export function LanguageProvider({ children }: { children: ReactNode }) {

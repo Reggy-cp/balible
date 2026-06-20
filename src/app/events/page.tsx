@@ -4,7 +4,7 @@ import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
 import Link from 'next/link'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 300
 
 export default async function EventsPage() {
   const events = await getPublishedEvents()
@@ -15,7 +15,7 @@ export default async function EventsPage() {
 
       <Navbar />
 
-      <div className="max-w-[1440px] mx-auto px-6 lg:px-16 py-10" style={{ backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
+      <div className="max-w-[1440px] mx-auto px-6 lg:px-16 py-10" style={{ minHeight: '100vh' }}>
 
         {/* Page header */}
         <div style={{ marginBottom: 36 }}>

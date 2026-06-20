@@ -28,167 +28,19 @@ type Host = {
   events: HostEvent[]
 }
 
-const HOST_DB: Record<string, Host> = {
-  'made-sari': {
-    slug: 'made-sari', name: 'Made Sari', businessName: 'Made Sari Pottery Studio',
-    area: 'Ubud', avatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&auto=format&fit=crop&q=80',
-    bio: 'Third-generation Balinese potter and artist based in the heart of Ubud. Made learned the craft from her grandmother and has been teaching visitors the ancient art of hand-building and wheel throwing for over 15 years. Her studio sits in a lush rice terrace compound where clay, creativity, and culture come together.',
-    rating: 4.9, totalReviews: 128, memberSince: '2019', responseRate: '98%',
-    languages: ['Balinese', 'Indonesian', 'English'],
-    events: [],
-    experiences: [
-      { slug: 'pottery-making-class', title: 'Pottery Making Class', area: 'Ubud', price: 450000, duration: '2.5 hrs', rating: 4.9, reviews: 128, category: 'Art & Craft', image: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=600&auto=format&fit=crop&q=80' },
-    ],
-  },
-  'ketut-suardana': {
-    slug: 'ketut-suardana', name: 'Ketut Suardana', businessName: 'Ketut Silver Artistry',
-    area: 'Canggu', avatar: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&auto=format&fit=crop&q=80',
-    bio: 'Second-generation Balinese silversmith with over 20 years of experience blending traditional craftsmanship with contemporary design. Ketut\'s studio is nestled in a coconut grove in Canggu, where he teaches guests the full arc of silversmithing — from raw metal to polished wearable art.',
-    rating: 4.8, totalReviews: 94, memberSince: '2020', responseRate: '95%',
-    languages: ['Balinese', 'Indonesian', 'English'],
-    events: [],
-    experiences: [
-      { slug: 'silver-jewelry-workshop', title: 'Silver Jewelry Workshop', area: 'Canggu', price: 550000, duration: '3 hrs', rating: 4.8, reviews: 94, category: 'Art & Craft', image: 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=600&auto=format&fit=crop&q=80' },
-    ],
-  },
-  'ni-wayan-artini': {
-    slug: 'ni-wayan-artini', name: 'Ni Wayan Artini', businessName: 'Ubud Batik Studio',
-    area: 'Ubud', avatar: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=400&auto=format&fit=crop&q=80',
-    bio: 'A family-run batik studio in the heart of Ubud sharing the UNESCO-recognised art of traditional Indonesian textile art with visitors from around the world. Wayan comes from a long line of Balinese artisans and brings warmth, patience and deep knowledge to every session.',
-    rating: 4.7, totalReviews: 148, memberSince: '2020', responseRate: '92%',
-    languages: ['Balinese', 'Indonesian', 'English'],
-    events: [],
-    experiences: [
-      { slug: 'batik-painting-workshop', title: 'Batik Painting Workshop', area: 'Ubud', price: 380000, duration: '3 hrs', rating: 4.7, reviews: 64, category: 'Art & Craft', image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=600&auto=format&fit=crop&q=80' },
-      { slug: 'traditional-batik-workshop', title: 'Traditional Batik Workshop', area: 'Ubud', price: 420000, duration: '3.5 hrs', rating: 4.7, reviews: 84, category: 'Art & Craft', image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=600&auto=format&fit=crop&q=80' },
-    ],
-  },
-  'nina-putri': {
-    slug: 'nina-putri', name: 'Nina Putri', businessName: 'Sukha Healing Space',
-    area: 'Ubud', avatar: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&auto=format&fit=crop&q=80',
-    bio: 'A sanctuary of stillness in the heart of Ubud offering sound healing, breathwork and somatic therapies with Bali\'s most experienced practitioners. Nina trained in traditional Balinese healing arts alongside modern sound therapy, weaving both into transformative experiences for every guest.',
-    rating: 4.9, totalReviews: 390, memberSince: '2018', responseRate: '99%',
-    languages: ['Balinese', 'Indonesian', 'English'],
-    events: [],
-    experiences: [
-      { slug: 'sound-healing-journey', title: 'Sound Healing Journey', area: 'Ubud', price: 350000, duration: '90 min', rating: 4.8, reviews: 178, category: 'Wellness & Healing', image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600&auto=format&fit=crop&q=80' },
-      { slug: 'breathwork-and-meditation', title: 'Breathwork & Meditation', area: 'Ubud', price: 280000, duration: '75 min', rating: 4.9, reviews: 212, category: 'Wellness & Healing', image: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=600&auto=format&fit=crop&q=80' },
-    ],
-  },
-  'komang-dewi': {
-    slug: 'komang-dewi', name: 'Komang Dewi', businessName: 'Jiwa Yoga Canggu',
-    area: 'Canggu', avatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&auto=format&fit=crop&q=80',
-    bio: 'A beloved Canggu yoga studio with rooftop sunrise classes, breathwork sessions and sound healing for the wandering soul. Komang has been teaching yoga for 12 years and brings a deeply personal, grounding approach to every class — whether you\'re a first-timer or a seasoned practitioner.',
-    rating: 4.9, totalReviews: 203, memberSince: '2019', responseRate: '97%',
-    languages: ['Balinese', 'Indonesian', 'English'],
-    events: [],
-    experiences: [
-      { slug: 'sunrise-yoga-class', title: 'Sunrise Yoga & Meditation', area: 'Canggu', price: 250000, duration: '75 min', rating: 4.9, reviews: 203, category: 'Wellness & Healing', image: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=600&auto=format&fit=crop&q=80' },
-      { slug: 'yoga-philosophy-workshop', title: 'Yoga Philosophy Workshop', area: 'Canggu', price: 320000, duration: '2 hrs', rating: 4.8, reviews: 67, category: 'Wellness & Healing', image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600&auto=format&fit=crop&q=80' },
-    ],
-  },
-  'wayan-gede': {
-    slug: 'wayan-gede', name: 'Wayan Gede', businessName: 'Sacred Bali Ceremonies',
-    area: 'Ubud', avatar: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=400&auto=format&fit=crop&q=80',
-    bio: 'Third-generation temple guide and Balinese priest offering authentic spiritual experiences at Bali\'s most sacred sites. Wayan holds deep knowledge of Balinese Hindu traditions and shares them with rare openness, helping visitors connect meaningfully with the island\'s living spiritual culture.',
-    rating: 4.8, totalReviews: 78, memberSince: '2021', responseRate: '90%',
-    languages: ['Balinese', 'Indonesian', 'English'],
-    events: [],
-    experiences: [
-      { slug: 'water-temple-purification', title: 'Water Temple Purification', area: 'Gianyar', price: 600000, duration: '4 hrs', rating: 4.8, reviews: 78, category: 'Culture & Spiritual', image: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=600&auto=format&fit=crop&q=80' },
-      { slug: 'blessing-ceremony-ubud', title: 'Blessing Ceremony in Ubud', area: 'Ubud', price: 480000, duration: '3 hrs', rating: 4.9, reviews: 45, category: 'Culture & Spiritual', image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&auto=format&fit=crop&q=80' },
-    ],
-  },
-  'i-nyoman-arta': {
-    slug: 'i-nyoman-arta', name: 'I Nyoman Arta', businessName: 'Bali Culture Tours',
-    area: 'Uluwatu', avatar: null,
-    bio: 'Specialist in Balinese cultural experiences with 18 years guiding guests through temple ceremonies, dance performances and sacred traditions across the island. Nyoman\'s deep network of local artists and priests allows him to offer access to experiences most visitors never see.',
-    rating: 4.9, totalReviews: 312, memberSince: '2018', responseRate: '94%',
-    languages: ['Balinese', 'Indonesian', 'English', 'Japanese'],
-    events: [],
-    experiences: [
-      { slug: 'uluwatu-kecak-sunset', title: 'Uluwatu Sunset & Kecak Dance', area: 'Uluwatu', price: 450000, duration: '3 hrs', rating: 4.9, reviews: 312, category: 'Culture & Spiritual', image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&auto=format&fit=crop&q=80' },
-      { slug: 'kecak-sunset-performance', title: 'Kecak Sunset Performance', area: 'Uluwatu', price: 380000, duration: '2 hrs', rating: 4.8, reviews: 156, category: 'Culture & Spiritual', image: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=600&auto=format&fit=crop&q=80' },
-    ],
-  },
-  'putu-sari': {
-    slug: 'putu-sari', name: 'Putu Sari', businessName: 'Warung Dapur Bali',
-    area: 'Seminyak', avatar: null,
-    bio: 'Family-run Balinese cooking school in Seminyak teaching the art of traditional island cuisine to food-loving travellers for over a decade. Putu begins every class at the local market at dawn, letting guests hand-pick their ingredients before cooking a full feast in a beautiful open kitchen.',
-    rating: 4.8, totalReviews: 156, memberSince: '2019', responseRate: '96%',
-    languages: ['Indonesian', 'English'],
-    events: [],
-    experiences: [
-      { slug: 'balinese-cooking-class', title: 'Balinese Cooking Class', area: 'Seminyak', price: 480000, duration: '3.5 hrs', rating: 4.8, reviews: 156, category: 'Culinary', image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&auto=format&fit=crop&q=80' },
-      { slug: 'balinese-raw-food-workshop', title: 'Balinese Raw Food Workshop', area: 'Seminyak', price: 380000, duration: '2.5 hrs', rating: 4.7, reviews: 42, category: 'Culinary', image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&auto=format&fit=crop&q=80' },
-    ],
-  },
-  'komang-surya': {
-    slug: 'komang-surya', name: 'Komang Surya', businessName: 'Kuta Surf Academy',
-    area: 'Kuta', avatar: null,
-    bio: 'Bali\'s most-reviewed surf school with certified ISA instructors, softboard lessons and surf coaching for all levels on Kuta and Legian Beach. Komang has been surfing since childhood and brings infectious enthusiasm and patience to every lesson, from total beginners to intermediate surfers.',
-    rating: 4.7, totalReviews: 428, memberSince: '2017', responseRate: '93%',
-    languages: ['Indonesian', 'English'],
-    events: [],
-    experiences: [
-      { slug: 'beginner-surf-lesson', title: 'Beginner Surf Lesson', area: 'Kuta', price: 320000, duration: '2 hrs', rating: 4.7, reviews: 428, category: 'Water Activities', image: 'https://images.unsplash.com/photo-1530870110042-98b2cb110834?w=600&auto=format&fit=crop&q=80' },
-      { slug: 'intermediate-surf-coaching', title: 'Intermediate Surf Coaching', area: 'Kuta', price: 420000, duration: '2.5 hrs', rating: 4.8, reviews: 89, category: 'Water Activities', image: 'https://images.unsplash.com/photo-1560275619-4662e36fa65c?w=600&auto=format&fit=crop&q=80' },
-      { slug: 'sunset-surf-session', title: 'Sunset Surf Session', area: 'Kuta', price: 350000, duration: '2 hrs', rating: 4.7, reviews: 63, category: 'Water Activities', image: 'https://images.unsplash.com/photo-1530870110042-98b2cb110834?w=600&auto=format&fit=crop&q=80' },
-    ],
-  },
-  'gede-arnawa': {
-    slug: 'gede-arnawa', name: 'Gede Arnawa', businessName: 'Tegalalang Walking Tours',
-    area: 'Ubud', avatar: null,
-    bio: 'Local farmer-guide sharing the living landscape of Tegalalang\'s famous rice terraces and the ancient subak irrigation system with curious travellers. Gede\'s family has farmed these terraces for generations, giving his tours an authenticity no guidebook can replicate.',
-    rating: 4.8, totalReviews: 192, memberSince: '2020', responseRate: '91%',
-    languages: ['Balinese', 'Indonesian', 'English'],
-    events: [],
-    experiences: [
-      { slug: 'rice-terrace-walk', title: 'Tegalalang Rice Terrace Walk', area: 'Ubud', price: 280000, duration: '2.5 hrs', rating: 4.8, reviews: 192, category: 'Nature & Outdoors', image: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=600&auto=format&fit=crop&q=80' },
-      { slug: 'mount-batur-sunrise-trek', title: 'Mount Batur Sunrise Trek', area: 'Kintamani', price: 650000, duration: '6 hrs', rating: 4.9, reviews: 134, category: 'Nature & Outdoors', image: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=600&auto=format&fit=crop&q=80' },
-    ],
-  },
-  'ni-made-suari': {
-    slug: 'ni-made-suari', name: 'Ni Made Suari', businessName: 'Sidemen Weave & Dye',
-    area: 'Sidemen', avatar: null,
-    bio: 'A family compound in Sidemen preserving the ancient art of natural dyeing and traditional weaving, welcoming visitors to learn and participate. Made draws pigments from plants grown in her own garden, creating vibrant colours the way her ancestors did for centuries.',
-    rating: 4.7, totalReviews: 31, memberSince: '2022', responseRate: '88%',
-    languages: ['Balinese', 'Indonesian'],
-    events: [],
-    experiences: [
-      { slug: 'natural-dye-workshop', title: 'Natural Dye Workshop', area: 'Sidemen', price: 380000, duration: '3 hrs', rating: 4.7, reviews: 31, category: 'Art & Craft', image: 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=600&auto=format&fit=crop&q=80' },
-    ],
-  },
-  'i-nyoman-karsa': {
-    slug: 'i-nyoman-karsa', name: 'I Nyoman Karsa', businessName: 'Karsa Wood Studio',
-    area: 'Ubud', avatar: null,
-    bio: 'Third-generation wood carving family in Mas Village, Ubud, teaching traditional Balinese carving to visitors in their family studio. Nyoman works primarily with hibiscus and albesia wood, creating pieces that range from small decorative totems to full temple ornaments.',
-    rating: 4.6, totalReviews: 47, memberSince: '2021', responseRate: '89%',
-    languages: ['Balinese', 'Indonesian', 'English'],
-    events: [],
-    experiences: [
-      { slug: 'wood-carving-workshop', title: 'Wood Carving Workshop', area: 'Ubud', price: 500000, duration: '4 hrs', rating: 4.8, reviews: 72, category: 'Art & Craft', image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&auto=format&fit=crop&q=80' },
-    ],
-  },
-  'ni-komang-ayu': {
-    slug: 'ni-komang-ayu', name: 'Ni Komang Ayu', businessName: 'Sidemen Village Crafts',
-    area: 'Sidemen', avatar: null,
-    bio: 'A women\'s weaving collective in Sidemen, East Bali, preserving traditional rattan craft and welcoming visitors to learn and support their community. Ayu and her collective have been weaving since childhood, and their hospitality is as warm as their craft is precise.',
-    rating: 4.8, totalReviews: 29, memberSince: '2022', responseRate: '87%',
-    languages: ['Balinese', 'Indonesian'],
-    events: [],
-    experiences: [
-      { slug: 'rattan-weaving-class', title: 'Rattan Weaving Class', area: 'Sidemen', price: 350000, duration: '3 hrs', rating: 4.7, reviews: 38, category: 'Art & Craft', image: 'https://images.unsplash.com/photo-1519735777090-ec97162dc266?w=600&auto=format&fit=crop&q=80' },
-    ],
-  },
-}
-
-export function generateStaticParams() {
-  return Object.keys(HOST_DB).map(slug => ({ slug }))
+export async function generateStaticParams() {
+  try {
+    const operators = await prisma.operator.findMany({ include: { user: { select: { name: true } } } })
+    return operators.map(op => ({
+      slug: op.user.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+    }))
+  } catch {
+    return []
+  }
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const host = HOST_DB[params.slug]
+  const host = await getHostFromDB(params.slug)
   if (!host) return { title: 'Host not found' }
   return {
     title: `${host.name} — ${host.businessName} | Balible`,
@@ -228,22 +80,20 @@ async function getHostFromDB(slug: string): Promise<Host | null> {
     })
     if (!op) return null
 
-    // Supplement DB fields with static data for fields not yet in schema
-    const staticFallback = HOST_DB[slug]
     const firstExpArea = op.experiences[0] ? AREA_DISPLAY[String(op.experiences[0].area)] ?? '' : ''
 
     return {
       slug,
       name: op.user.name,
       businessName: op.businessName,
-      area: staticFallback?.area ?? firstExpArea,
-      avatar: op.avatar ?? staticFallback?.avatar ?? null,
+      area: firstExpArea,
+      avatar: op.avatar ?? null,
       bio: op.description,
-      rating: op.rating > 0 ? op.rating : (staticFallback?.rating ?? 4.8),
-      totalReviews: op.totalReviews > 0 ? op.totalReviews : (staticFallback?.totalReviews ?? 0),
-      memberSince: staticFallback?.memberSince ?? String(new Date().getFullYear()),
-      responseRate: staticFallback?.responseRate ?? '90%',
-      languages: staticFallback?.languages ?? ['English'],
+      rating: op.rating,
+      totalReviews: op.totalReviews,
+      memberSince: String(new Date().getFullYear()),
+      responseRate: '—',
+      languages: op.languages ? op.languages.split(',').map((l: string) => l.trim()) : ['English'],
       experiences: op.experiences.map(e => ({
         slug: e.slug,
         title: e.title,
@@ -421,11 +271,10 @@ function EventCard({ ev }: { ev: HostEvent }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function HostPage({ params }: { params: { slug: string } }) {
-  const dbHost = await getHostFromDB(params.slug)
-  const host = dbHost ?? HOST_DB[params.slug]
+  const host = await getHostFromDB(params.slug)
   if (!host) notFound()
 
-  const totalReviews = host.experiences.reduce((s, e) => s + e.reviews, 0)
+  const totalReviews = host.experiences.reduce((s: number, e: Experience) => s + e.reviews, 0)
 
   return (
     <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
@@ -491,7 +340,7 @@ export default async function HostPage({ params }: { params: { slug: string } })
                 {host.bio}
               </p>
               <div className="flex flex-wrap gap-2 mt-4">
-                {host.languages.map(lang => (
+                {host.languages.map((lang: string) => (
                   <span key={lang} style={{ padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 500, backgroundColor: '#F5F1EB', color: '#6F675C', border: '1px solid #E8E4DE' }}>
                     {lang}
                   </span>
@@ -508,7 +357,7 @@ export default async function HostPage({ params }: { params: { slug: string } })
             </h2>
 
             <div className={`grid gap-5 ${host.experiences.length === 1 ? 'grid-cols-1 max-w-sm' : 'sm:grid-cols-2'}`}>
-              {host.experiences.map(exp => <ExpCard key={exp.slug} exp={exp} />)}
+              {host.experiences.map((exp: Experience) => <ExpCard key={exp.slug} exp={exp} />)}
             </div>
 
             {/* Events */}
@@ -521,7 +370,7 @@ export default async function HostPage({ params }: { params: { slug: string } })
                   </span>
                 </h2>
                 <div className={`grid gap-5 ${host.events.length === 1 ? 'grid-cols-1 max-w-sm' : 'sm:grid-cols-2'}`}>
-                  {host.events.map(ev => <EventCard key={ev.slug} ev={ev} />)}
+                  {host.events.map((ev: HostEvent) => <EventCard key={ev.slug} ev={ev} />)}
                 </div>
               </div>
             )}

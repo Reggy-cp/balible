@@ -7,7 +7,7 @@ import Footer from '@/components/Footer'
 import EventGallery from '@/components/EventGallery'
 import { getEventBySlug, getPublishedEvents } from '@/lib/event-actions'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 300
 
 const GALLERY: Record<string, string[]> = {
   'full-moon-sound-bath': [

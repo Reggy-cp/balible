@@ -14,6 +14,7 @@ import MobileNav from '@/components/MobileNav'
 import WishlistHeart from '@/components/WishlistHeart'
 import type { ExperienceCard } from '@/lib/experiences'
 import type { EventRow } from '@/lib/event-actions'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 // ── Static data ───────────────────────────────────────────────────────────────
 
@@ -55,7 +56,7 @@ const FOOTER_COLS = [
 function ExperienceCard({ exp }: { exp: ExperienceCard }) {
   return (
     <a
-      href={`/experiences/${exp.slug}`}
+      href={`${exp.categorySlug === 'rentals' ? '/rentals' : '/experiences'}/${exp.slug}`}
       className="rounded-xl overflow-hidden border hover:shadow-md transition-shadow block bg-white"
       style={{ borderColor: '#E8E4DE' }}
     >
@@ -113,6 +114,7 @@ function HostCard({ host }: { host: typeof HOSTS[0] }) {
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export default function HomeClient({ experiences, upcomingEvents }: { experiences: ExperienceCard[]; upcomingEvents: EventRow[] }) {
+  const { t } = useLanguage()
   const [search, setSearch]         = useState('')
   const [date, setDate]             = useState('')
   const [email, setEmail]           = useState('')
@@ -398,10 +400,10 @@ export default function HomeClient({ experiences, upcomingEvents }: { experience
           <div className="flex items-start justify-between mb-8">
             <div>
               <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#111111', fontWeight: 700 }}>
-                Explore by Destination
+                {t('home_destinations')}
               </h2>
               <p className="mt-1" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
-                13 distinct corners of Bali, each with its own character
+                {t('home_destinations_sub')}
               </p>
             </div>
           </div>
@@ -450,10 +452,10 @@ export default function HomeClient({ experiences, upcomingEvents }: { experience
             <div className="flex items-start justify-between mb-8">
               <div>
                 <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#111111', fontWeight: 700 }}>
-                  Upcoming Events
+                  {t('home_events')}
                 </h2>
                 <p className="mt-1" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
-                  One-time experiences hosted by local operators.
+                  {t('home_events_sub')}
                 </p>
               </div>
               <a href="/events" className="flex-shrink-0 hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#C8A97E', textDecoration: 'underline' }}>
@@ -550,10 +552,10 @@ export default function HomeClient({ experiences, upcomingEvents }: { experience
           <div className="flex items-start justify-between mb-8">
             <div>
               <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: '#111111', fontWeight: 700 }}>
-                Stories from Our Hosts
+                {t('home_hosts_stories')}
               </h2>
               <p className="mt-1" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
-                Meet the people behind the experiences.
+                {t('home_hosts_stories_sub')}
               </p>
             </div>
             <a href="/hosts" className="flex-shrink-0 hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#C8A97E', textDecoration: 'underline' }}>
@@ -570,21 +572,21 @@ export default function HomeClient({ experiences, upcomingEvents }: { experience
       <section className="py-12 px-6 lg:px-16 text-center" style={{ backgroundColor: '#111111' }}>
         <div className="max-w-[1440px] mx-auto">
           <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, color: 'white', fontWeight: 700 }}>
-            Be the first to discover new experiences in Bali
+            {t('home_newsletter')}
           </h2>
           <p className="mt-2" style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: 'rgba(255,255,255,0.65)' }}>
-            Join thousands of travelers who get early access to new Bali experiences.
+            {t('home_newsletter_sub')}
           </p>
           <div className="flex items-center justify-center flex-wrap gap-2 mt-8">
             {subscribed ? (
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: '#C8A97E', fontWeight: 500 }}>
-                ✓ You&apos;re on the list! We&apos;ll be in touch soon.
+                ✓ {t('home_subscribed')}
               </p>
             ) : (
               <>
                 <input
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder={t('email_placeholder')}
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleSubscribe()}
@@ -597,7 +599,7 @@ export default function HomeClient({ experiences, upcomingEvents }: { experience
                   className="font-medium hover:opacity-90 transition-opacity px-6"
                   style={{ height: 44, backgroundColor: '#C8A97E', color: '#111111', borderRadius: 6, fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500, border: 'none', cursor: subscribing ? 'wait' : 'pointer', opacity: subscribing ? 0.7 : 1 }}
                 >
-                  {subscribing ? 'Subscribing…' : 'Subscribe'}
+                  {subscribing ? '…' : t('subscribe')}
                 </button>
               </>
             )}

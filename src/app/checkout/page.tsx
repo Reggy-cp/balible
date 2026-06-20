@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { ChevronUp, Shield, Award, Clock, Edit2, Lock, MapPin } from 'lucide-react'
 import MobileNav from '@/components/MobileNav'
-import { createBookingAction, getExperienceForCheckout, getBookingStatusAction, getExperienceScheduleAction, getBookedSlotsAction, type ExpCheckoutMeta } from '@/lib/actions'
+import { createBookingAction, createRentalBookingAction, getExperienceForCheckout, getBookingStatusAction, getExperienceScheduleAction, getBookedSlotsAction, type ExpCheckoutMeta } from '@/lib/actions'
 
 const STEPS = ['Experience & Date', 'Your Details', 'Payment', 'Confirmation']
 type Step = 0 | 1 | 2 | 3
@@ -538,10 +538,428 @@ function StepConfirmation({ booking, guests, bookingRef, payStatus = 'paid' }: {
   )
 }
 
+// ── Rental: Step 1 summary ────────────────────────────────────────────────────
+
+function StepRentalSummary({ title, area, image, startDate, endDate, units, periods, period, price, total, deposit, onNext }: {
+  title: string; area: string; image: string
+  startDate: string; endDate: string; units: number; periods: number; period: string
+  price: number; total: number; deposit: number; onNext: () => void
+}) {
+  const fmtDate = (s: string) => {
+    if (!s) return '—'
+    const [y, m, d] = s.split('-').map(Number)
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+    return `${months[m - 1]} ${d}, ${y}`
+  }
+  const periodLabel = (n: number) => {
+    const unit = period.replace('per ', '')
+    return `${n} ${unit}${n !== 1 ? 's' : ''}`
+  }
+  const subtotal = price * periods * units
+  const fee = total - subtotal
+
+  return (
+    <div className="bg-white rounded-xl p-6" style={{ border: '1px solid #E8E4DE' }}>
+      <div className="flex justify-between items-start mb-5">
+        <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111' }}>1. Rental Summary</h2>
+        <ChevronUp size={18} style={{ color: '#6F675C' }} />
+      </div>
+
+      {/* Item card */}
+      <div className="flex items-center gap-3 p-3 rounded-xl mb-5" style={{ border: '1px solid #E8E4DE', backgroundColor: '#F5F1EB' }}>
+        <img src={image} alt={title} className="rounded-lg object-cover flex-shrink-0" style={{ width: 56, height: 56 }} />
+        <div>
+          <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 14, fontWeight: 600, color: '#111111' }}>{title}</p>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>{area}</p>
+        </div>
+      </div>
+
+      {/* Dates */}
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        {[
+          { label: 'Pick-up', value: fmtDate(startDate) },
+          { label: 'Return',  value: fmtDate(endDate) },
+        ].map(({ label, value }) => (
+          <div key={label} className="p-3 rounded-lg" style={{ border: '1px solid #E8E4DE', backgroundColor: 'white' }}>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 600, color: '#9E9A94', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4 }}>{label}</p>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111' }}>{value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Period + units */}
+      <div className="flex items-center gap-2 mb-5 px-1">
+        <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>{periodLabel(periods)}</span>
+        {units > 1 && <><span style={{ color: '#D1CBC2' }}>·</span><span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>{units} unit{units > 1 ? 's' : ''}</span></>}
+      </div>
+
+      {/* Price breakdown */}
+      <div className="rounded-xl p-4 space-y-2 mb-5" style={{ backgroundColor: '#F5F1EB' }}>
+        <div className="flex justify-between">
+          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>
+            IDR {price.toLocaleString('id-ID')} × {periodLabel(periods)}{units > 1 ? ` × ${units}` : ''}
+          </span>
+          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>IDR {subtotal.toLocaleString('id-ID')}</span>
+        </div>
+        <div className="flex justify-between">
+          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>Service fee (8%)</span>
+          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>IDR {fee.toLocaleString('id-ID')}</span>
+        </div>
+        <div className="flex justify-between pt-2" style={{ borderTop: '1px solid #E8E4DE' }}>
+          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 700, color: '#111111' }}>Total</span>
+          <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111' }}>IDR {total.toLocaleString('id-ID')}</span>
+        </div>
+        {deposit > 0 && (
+          <div className="flex justify-between pt-1">
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#9E9A94' }}>+ Deposit at pickup (refundable)</span>
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#9E9A94' }}>IDR {deposit.toLocaleString('id-ID')}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-start gap-2 p-3 rounded-lg mb-6" style={{ backgroundColor: '#FDF8F4' }}>
+        <Clock size={14} style={{ color: '#C8A97E', flexShrink: 0, marginTop: 1 }} />
+        <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>Free cancellation up to 24 hours before your pick-up date.</p>
+      </div>
+
+      <button
+        onClick={onNext}
+        className="w-full flex items-center justify-center hover:opacity-90 transition-opacity"
+        style={{ height: 48, backgroundColor: '#111111', color: 'white', borderRadius: 10, fontSize: 15, fontWeight: 600, border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}
+      >
+        Continue to Details →
+      </button>
+    </div>
+  )
+}
+
+// ── Rental: Booking summary sidebar ──────────────────────────────────────────
+
+function RentalBookingSummary({ title, area, image, startDate, endDate, units, periods, period, price, total, deposit }: {
+  title: string; area: string; image: string
+  startDate: string; endDate: string; units: number; periods: number; period: string
+  price: number; total: number; deposit: number
+}) {
+  const fmtDate = (s: string) => {
+    if (!s) return '—'
+    const [y, m, d] = s.split('-').map(Number)
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+    return `${months[m - 1]} ${d}, ${y}`
+  }
+  const subtotal = price * periods * units
+  const fee = total - subtotal
+  const periodLabel = (n: number) => { const u = period.replace('per ', ''); return `${n} ${u}${n !== 1 ? 's' : ''}` }
+
+  return (
+    <div className="bg-white rounded-xl p-6" style={{ border: '1px solid #E8E4DE', position: 'sticky', top: 88 }}>
+      <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111', marginBottom: 16 }}>Rental Summary</h3>
+      <div className="flex gap-3 pb-4" style={{ borderBottom: '1px solid #E8E4DE' }}>
+        <img src={image} alt={title} className="flex-shrink-0 rounded-lg object-cover" style={{ width: 72, height: 72 }} />
+        <div>
+          <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 600, color: '#111111', lineHeight: 1.3 }}>{title}</p>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', marginTop: 3 }}>{area}</p>
+        </div>
+      </div>
+      <div className="py-4" style={{ borderBottom: '1px solid #E8E4DE' }}>
+        {[
+          { label: 'Pick-up', value: fmtDate(startDate) },
+          { label: 'Return',  value: fmtDate(endDate) },
+          { label: 'Duration', value: periodLabel(periods) },
+          ...(units > 1 ? [{ label: 'Units', value: String(units) }] : []),
+        ].map(({ label, value }) => (
+          <div key={label} className="flex items-center gap-1.5 mb-1">
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', width: 56 }}>{label}</span>
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111', fontWeight: 500 }}>{value}</span>
+          </div>
+        ))}
+      </div>
+      <div className="pt-4 space-y-2">
+        <div className="flex justify-between">
+          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>
+            IDR {price.toLocaleString('id-ID')} × {periodLabel(periods)}{units > 1 ? ` × ${units}` : ''}
+          </span>
+          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>IDR {subtotal.toLocaleString('id-ID')}</span>
+        </div>
+        <div className="flex justify-between">
+          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>Service fee (8%)</span>
+          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>IDR {fee.toLocaleString('id-ID')}</span>
+        </div>
+        <div className="flex justify-between pt-3" style={{ borderTop: '1px solid #E8E4DE', marginTop: 4 }}>
+          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111' }}>Total</span>
+          <div className="text-right">
+            <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>IDR {total.toLocaleString('id-ID')}</p>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>Taxes included</p>
+          </div>
+        </div>
+        {deposit > 0 && (
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#9E9A94', marginTop: 4 }}>
+            + IDR {deposit.toLocaleString('id-ID')} deposit collected at pickup (refundable)
+          </p>
+        )}
+      </div>
+      <div className="mt-5 pt-4 space-y-2.5" style={{ borderTop: '1px solid #E8E4DE' }}>
+        {[
+          { Icon: Shield, text: 'Secure SSL payment' },
+          { Icon: Clock,  text: 'Free cancellation within 24h' },
+          { Icon: Award,  text: 'Instant booking confirmation' },
+        ].map(({ Icon, text }) => (
+          <div key={text} className="flex items-center gap-2">
+            <Icon size={13} style={{ color: '#4A7C59' }} />
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#4A7C59', fontWeight: 500 }}>{text}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ── Rental: Confirmation ──────────────────────────────────────────────────────
+
+function StepRentalConfirmation({ title, area, image, startDate, endDate, units, total, bookingRef, payStatus = 'paid' }: {
+  title: string; area: string; image: string
+  startDate: string; endDate: string; units: number; total: number
+  bookingRef?: string | null; payStatus?: 'paid' | 'pending'
+}) {
+  const fmtDate = (s: string) => {
+    if (!s) return '—'
+    const [y, m, d] = s.split('-').map(Number)
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+    return `${months[m - 1]} ${d}, ${y}`
+  }
+  const ref = bookingRef ?? `BAL-${startDate.replace(/-/g, '').slice(2)}-R${Math.floor(Math.random() * 9000) + 1000}`
+
+  const [liveStatus, setLiveStatus] = useState<'paid' | 'pending'>(payStatus)
+
+  useEffect(() => {
+    if (liveStatus !== 'pending' || !bookingRef) return
+    let attempts = 0
+    const MAX = 360
+    const id = setInterval(async () => {
+      attempts++
+      const result = await getBookingStatusAction(bookingRef)
+      if (result?.status === 'CONFIRMED') { setLiveStatus('paid'); clearInterval(id) }
+      else if (attempts >= MAX) clearInterval(id)
+    }, 5000)
+    return () => clearInterval(id)
+  }, [bookingRef, liveStatus])
+
+  const pending = liveStatus === 'pending'
+
+  return (
+    <div className="bg-white rounded-xl p-8 text-center" style={{ border: '1px solid #E8E4DE' }}>
+      <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
+        style={{ backgroundColor: pending ? '#FEF9EC' : '#F0F7F2' }}>
+        {pending ? <span style={{ fontSize: 28 }}>⏳</span> : <span style={{ fontSize: 28, color: '#4A7C59' }}>✓</span>}
+      </div>
+      <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: '#111111', marginBottom: 8 }}>
+        {pending ? 'Waiting for payment…' : 'Rental Confirmed!'}
+      </h2>
+      <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: '#6F675C', marginBottom: 6 }}>
+        {pending
+          ? 'Complete your transfer using the instructions from Midtrans. This page will update automatically once your payment is received.'
+          : 'Your rental has been saved to your profile. A confirmation email is on its way.'}
+      </p>
+      <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', marginBottom: pending ? 16 : 32 }}>
+        Ref: <span style={{ fontWeight: 600, color: '#111111', letterSpacing: '0.05em' }}>{ref}</span>
+      </p>
+
+      {pending && (
+        <div className="flex items-center justify-center gap-2 mb-8">
+          <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#C8A97E', display: 'inline-block', animation: 'pulse 1.5s ease-in-out infinite' }} />
+          <span style={{ fontSize: 13, color: '#C8A97E', fontWeight: 500 }}>Checking payment status…</span>
+        </div>
+      )}
+
+      <div className="flex items-center gap-3 p-4 rounded-xl text-left mx-auto max-w-sm mb-8" style={{ border: '1px solid #E8E4DE', backgroundColor: '#F5F1EB' }}>
+        <img src={image} alt="" className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
+        <div>
+          <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 600, color: '#111111' }}>{title}</p>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>{fmtDate(startDate)} → {fmtDate(endDate)}</p>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>{units} unit{units > 1 ? 's' : ''} · IDR {total.toLocaleString('id-ID')}</p>
+        </div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        <a href="/profile" className="flex items-center justify-center hover:opacity-90 transition-opacity" style={{ height: 44, backgroundColor: '#111111', color: 'white', borderRadius: 8, fontSize: 14, fontWeight: 500, textDecoration: 'none', padding: '0 24px', fontFamily: 'var(--font-inter)' }}>
+          View my bookings
+        </a>
+        <a href="/categories/rentals" className="flex items-center justify-center hover:opacity-70 transition-opacity" style={{ height: 44, border: '1px solid #E8E4DE', color: '#111111', borderRadius: 8, fontSize: 14, fontWeight: 500, textDecoration: 'none', padding: '0 24px', fontFamily: 'var(--font-inter)' }}>
+          Browse rentals →
+        </a>
+      </div>
+    </div>
+  )
+}
+
+// ── Rental checkout flow ──────────────────────────────────────────────────────
+
+const RENTAL_STEPS = ['Rental Summary', 'Your Details', 'Payment', 'Confirmation']
+
+function RentalCheckout({ params }: { params: URLSearchParams }) {
+  const slug       = params.get('slug')       || ''
+  const startDate  = params.get('startDate')  || ''
+  const endDate    = params.get('endDate')    || ''
+  const units      = Math.max(1, parseInt(params.get('units')   || '1') || 1)
+  const periods    = Math.max(1, parseInt(params.get('periods') || '1') || 1)
+  const period     = params.get('period')     || 'per day'
+  const price      = parseInt(params.get('price')   || '0') || 0
+  const total      = parseInt(params.get('total')   || '0') || 0
+  const deposit    = parseInt(params.get('deposit') || '0') || 0
+
+  const title      = params.get('title')      || 'Rental'
+  const image      = params.get('image')      || ''
+  const area       = params.get('area')       || ''
+
+  const [step, setStep]         = useState<Step>(0)
+  const [contact, setContact]   = useState<ContactFields>({ fullName: '', email: '', phone: '', requests: '' })
+  const [paying, setPaying]     = useState(false)
+  const [payError, setPayError] = useState<string | null>(null)
+  const [paidRef, setPaidRef]   = useState<string | null>(null)
+  const [payStatus, setPayStatus] = useState<'paid' | 'pending'>('paid')
+
+  useEffect(() => {
+    const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY
+    if (!clientKey || document.getElementById('midtrans-snap')) return
+    const s = document.createElement('script')
+    s.id = 'midtrans-snap'
+    s.src = clientKey.startsWith('SB-')
+      ? 'https://app.sandbox.midtrans.com/snap/snap.js'
+      : 'https://app.midtrans.com/snap/snap.js'
+    s.setAttribute('data-client-key', clientKey)
+    document.body.appendChild(s)
+  }, [])
+
+  const startPayment = async () => {
+    if (paying) return
+    setPaying(true)
+    setPayError(null)
+    try {
+      const res = await createRentalBookingAction({
+        slug,
+        startDate,
+        endDate,
+        units,
+        guestName: contact.fullName || 'Guest',
+        guestEmail: contact.email || '',
+        guestPhone: contact.phone || undefined,
+        notes: contact.requests || undefined,
+      })
+      if (!res.ok || !res.snapToken || !res.bookingRef) {
+        setPayError(res.error ?? 'Could not start payment. Please try again.')
+        setPaying(false)
+        return
+      }
+      const snap = (window as unknown as { snap?: { pay: (token: string, opts: Record<string, () => void>) => void } }).snap
+      if (!snap) {
+        setPayError('The payment window failed to load. Please refresh and try again.')
+        setPaying(false)
+        return
+      }
+      const ref = res.bookingRef
+      snap.pay(res.snapToken, {
+        onSuccess: () => { setPaidRef(ref); setPayStatus('paid'); setStep(3); setPaying(false) },
+        onPending: () => { setPaidRef(ref); setPayStatus('pending'); setStep(3); setPaying(false) },
+        onError:   () => { setPayError('Payment failed — you have not been charged. Please try again.'); setPaying(false) },
+        onClose:   () => { setPaying(false) },
+      })
+    } catch {
+      setPayError('Something went wrong. Please try again.')
+      setPaying(false)
+    }
+  }
+
+  const rentalProps = { title, area, image, startDate, endDate, units, periods, period, price, total, deposit }
+
+  return (
+    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
+      <nav className="bg-white" style={{ height: 56, borderBottom: '1px solid #E8E4DE' }}>
+        <div className="flex items-center justify-between h-full px-6 lg:px-16 max-w-[1440px] mx-auto">
+          <a href="/" className="flex flex-col leading-none" style={{ textDecoration: 'none' }}>
+            <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111' }}>BALIBLE</span>
+          </a>
+          <div className="flex items-center gap-1.5">
+            <Lock size={12} style={{ color: '#4A7C59' }} />
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#4A7C59' }}>Secure booking</span>
+          </div>
+        </div>
+      </nav>
+
+      <div className="max-w-[1100px] mx-auto px-4 py-6 pb-24 md:pb-10">
+        <h1 className="mb-5 hidden sm:block" style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 700, color: '#111111' }}>
+          Checkout
+        </h1>
+
+        {step < 3 && (
+          <div className="flex items-center mb-6">
+            {RENTAL_STEPS.map((label, i) => {
+              const done = i < step, active = i === step
+              return (
+                <div key={label} className="flex items-center flex-1 last:flex-none">
+                  <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: done ? '#4A7C59' : active ? '#111111' : '#E8E4DE', color: done || active ? 'white' : '#6F675C', fontSize: 11, fontFamily: 'var(--font-inter)' }}>
+                      {done ? '✓' : i + 1}
+                    </div>
+                    <span className="hidden sm:inline" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: active ? 600 : 400, color: active ? '#111111' : done ? '#4A7C59' : '#6F675C', whiteSpace: 'nowrap' }}>
+                      {label}
+                    </span>
+                  </div>
+                  {i < RENTAL_STEPS.length - 1 && (
+                    <div className="flex-1 mx-1.5 sm:mx-3" style={{ height: 1, backgroundColor: i < step ? '#4A7C59' : '#E8E4DE', minWidth: 8 }} />
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Mobile compact rental summary — shown above form on steps 1–2 */}
+        {step > 0 && step < 3 && (
+          <div className="lg:hidden mb-4 bg-white rounded-xl overflow-hidden" style={{ border: '1px solid #E8E4DE' }}>
+            <div className="flex items-center gap-3 p-4">
+              {image && <img src={image} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />}
+              <div className="flex-1 min-w-0">
+                <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</p>
+                <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', margin: 0 }}>
+                  {startDate && endDate ? `${startDate} → ${endDate}` : area}
+                  {units > 1 ? ` · ${units} units` : ''}
+                </p>
+              </div>
+              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 700, color: '#111111', flexShrink: 0 }}>
+                IDR {total.toLocaleString('id-ID')}
+              </span>
+            </div>
+          </div>
+        )}
+
+        <div className="flex flex-col lg:flex-row gap-6">
+          <div className="flex-1 min-w-0">
+            {step === 0 && <StepRentalSummary {...rentalProps} onNext={() => setStep(1)} />}
+            {step === 1 && <StepDetails contact={contact} setContact={setContact} onNext={() => setStep(2)} />}
+            {step === 2 && <StepPayment total={total} onPay={startPayment} paying={paying} error={payError} />}
+            {step === 3 && <StepRentalConfirmation title={title} area={area} image={image} startDate={startDate} endDate={endDate} units={units} total={total} bookingRef={paidRef} payStatus={payStatus} />}
+          </div>
+          {step < 3 && (
+            <div className="hidden lg:block" style={{ width: 340, flexShrink: 0 }}>
+              <RentalBookingSummary {...rentalProps} />
+            </div>
+          )}
+        </div>
+      </div>
+      <MobileNav />
+    </div>
+  )
+}
+
 // ── Inner (reads params) ───────────────────────────────────────────────────────
 
 function CheckoutInner() {
   const params = useSearchParams()
+
+  if (params.get('type') === 'rental') {
+    return <RentalCheckout params={params} />
+  }
+
   const slug      = params.get('slug')      || 'pottery-making-class'
   const rawDate   = params.get('date')      || ''
   const rawTime   = params.get('time')      || ''

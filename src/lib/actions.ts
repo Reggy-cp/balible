@@ -6,8 +6,22 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from './auth'
 import { createSnapTransaction } from './midtrans'
 import { SERVICE_FEE_RATE, computeBookingTotal } from './pricing'
+
+export async function getServiceFeeRateAction(): Promise<number> {
+  return getServiceFeeRate()
+}
+
+async function getServiceFeeRate(): Promise<number> {
+  try {
+    const row = await prisma.setting.findUnique({ where: { key: 'service_fee' } })
+    if (row?.value) {
+      const pct = parseFloat(JSON.parse(row.value))
+      if (!isNaN(pct) && pct > 0) return pct / 100
+    }
+  } catch {}
+  return SERVICE_FEE_RATE
+}
 import { createNotification } from './notifications'
-import { STATIC_EXP_MAP } from './static-experiences'
 import crypto from 'crypto'
 import bcrypt from 'bcryptjs'
 
@@ -88,7 +102,8 @@ export async function createBookingAction(
     // Price is computed server-side from the DB; client-supplied totals are never trusted
     const minG = (exp as any).minGuests ?? 1
     const guests = Math.max(minG, Math.min(exp.maxGuests, Math.trunc(input.guests) || minG))
-    const totalPrice = computeBookingTotal(exp.price, guests)
+    const feeRate = await getServiceFeeRate()
+    const totalPrice = computeBookingTotal(exp.price, guests, feeRate)
 
     // Booking starts PENDING; the Midtrans webhook flips it to CONFIRMED on
     // settlement and sends the confirmation email at that point.
@@ -123,6 +138,84 @@ export async function createBookingAction(
       type: 'booking',
       title: 'Booking received',
       body: `Your booking for ${exp.title} is awaiting payment.`,
+      href: '/profile',
+    })
+
+    return { ok: true, bookingRef: booking.bookingRef, snapToken: snap.token }
+  } catch {
+    return { ok: false, error: 'Something went wrong. Please try again.' }
+  }
+}
+
+// ── Rental Booking ────────────────────────────────────────────────────────────
+
+function rentalPeriodMs(period: string): number {
+  if (period === 'per hour') return 1000 * 60 * 60
+  if (period === 'per week') return 1000 * 60 * 60 * 24 * 7
+  return 1000 * 60 * 60 * 24
+}
+
+export async function createRentalBookingAction(input: {
+  slug: string
+  startDate: string
+  endDate: string
+  units: number
+  guestName: string
+  guestEmail: string
+  guestPhone?: string
+  notes?: string
+}): Promise<{ ok: boolean; bookingRef?: string; snapToken?: string; error?: string }> {
+  try {
+    const user = await getSessionUser()
+    if (!user) return { ok: false, error: 'Please sign in to complete your booking.' }
+
+    const rental = await prisma.experience.findUnique({ where: { slug: input.slug } })
+    if (!rental || String(rental.category) !== 'RENTALS') {
+      return { ok: false, error: 'This rental is not available for online booking.' }
+    }
+
+    const diff = new Date(input.endDate).getTime() - new Date(input.startDate).getTime()
+    if (diff <= 0) return { ok: false, error: 'Return date must be after pick-up date.' }
+
+    const period = rental.duration || 'per day'
+    const periods = Math.max(1, Math.ceil(diff / rentalPeriodMs(period)))
+    const units = Math.max(1, Math.trunc(input.units) || 1)
+    const subtotal = periods * rental.price * units
+    const feeRate = await getServiceFeeRate()
+    const fee = Math.round(subtotal * feeRate)
+    const totalPrice = subtotal + fee
+
+    const booking = await prisma.booking.create({
+      data: {
+        userId: user.id,
+        experienceId: rental.id,
+        date: new Date(input.startDate),
+        time: input.endDate,
+        guests: units,
+        totalPrice,
+        guestName: input.guestName,
+        guestEmail: input.guestEmail,
+        guestPhone: input.guestPhone ?? null,
+        notes: `Rental: ${periods} × ${period}${input.notes ? ` | ${input.notes}` : ''}`,
+        status: 'PENDING',
+      },
+    })
+
+    const snap = await createSnapTransaction({
+      orderId: booking.bookingRef,
+      grossAmount: totalPrice,
+      customerName: input.guestName,
+      customerEmail: input.guestEmail,
+      customerPhone: input.guestPhone,
+      itemName: rental.title,
+    })
+    if ('error' in snap) return { ok: false, error: snap.error }
+
+    await createNotification({
+      userId: user.id,
+      type: 'booking',
+      title: 'Rental booking received',
+      body: `Your booking for ${rental.title} is awaiting payment.`,
       href: '/profile',
     })
 
@@ -1113,7 +1206,7 @@ export async function getExperienceForCheckout(slug: string): Promise<ExpCheckou
       area: AREA_DISPLAY[String(exp.area)] ?? String(exp.area),
       price: exp.price,
       image: (exp.images as string[])[0] ?? '',
-      serviceFeeRate: SERVICE_FEE_RATE,
+      serviceFeeRate: await getServiceFeeRate(),
       meetingPoint: exp.meetingPoint ?? '',
       minGuests: (exp as any).minGuests ?? 1,
       maxGuests: exp.maxGuests,
@@ -1148,14 +1241,9 @@ export async function getExperiencesForWishlist(slugs: string[]): Promise<ExpWis
       duration: e.duration,
       image: (e.images as string[])[0] ?? '',
     }))
-    const dbSlugs = new Set(exps.map(e => e.slug))
-    const staticResults = slugs
-      .filter(s => !dbSlugs.has(s))
-      .map(s => STATIC_EXP_MAP.get(s))
-      .filter((e): e is ExpWishlistMeta => e !== undefined)
-    return [...dbResults, ...staticResults]
+    return dbResults
   } catch {
-    return slugs.map(s => STATIC_EXP_MAP.get(s)).filter((e): e is ExpWishlistMeta => e !== undefined)
+    return []
   }
 }
 
