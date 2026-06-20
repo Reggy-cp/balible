@@ -231,9 +231,9 @@ function BookingSummary({ booking, guests, editing, onEdit }: { booking: Booking
 
 // ── Step 1: Experience & Date ──────────────────────────────────────────────────
 
-function StepExperience({ booking, guests, setGuests, onNext, slots, selectedRawTime, setSelectedRawTime }: {
+function StepExperience({ booking, guests, setGuests, onNext, slots, selectedRawTime, setSelectedRawTime, dayDisabled }: {
   booking: BookingData; guests: number; setGuests: (n: number) => void; onNext: () => void
-  slots: string[]; selectedRawTime: string; setSelectedRawTime: (t: string) => void
+  slots: string[]; selectedRawTime: string; setSelectedRawTime: (t: string) => void; dayDisabled?: boolean
 }) {
   return (
     <div className="bg-white rounded-xl p-6" style={{ border: '1px solid #E8E4DE' }}>
@@ -263,7 +263,13 @@ function StepExperience({ booking, guests, setGuests, onNext, slots, selectedRaw
 
       <div className="mb-4">
         <label style={{ fontSize: 13, fontWeight: 500, color: '#111111', display: 'block', marginBottom: 8 }}>Time</label>
-        {slots.length > 0 ? (
+        {dayDisabled ? (
+          <div className="p-3 rounded-lg" style={{ border: '1px solid #E8C4C4', backgroundColor: '#FBEFEF' }}>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#C0504D' }}>
+              This experience is not available on the selected date. Please go back and choose a different date.
+            </p>
+          </div>
+        ) : slots.length > 0 ? (
           <div className="flex flex-wrap gap-2 overflow-y-auto" style={{ maxHeight: 140 }}>
             {slots.map(slot => {
               const isSel = slot === selectedRawTime
@@ -323,18 +329,18 @@ function StepExperience({ booking, guests, setGuests, onNext, slots, selectedRaw
 
       <button
         onClick={onNext}
-        disabled={slots.length > 0 && !selectedRawTime}
+        disabled={dayDisabled || (slots.length > 0 && !selectedRawTime)}
         className="w-full flex items-center justify-center hover:opacity-90 transition-opacity"
         style={{
           height: 48,
-          backgroundColor: slots.length > 0 && !selectedRawTime ? '#E8E4DE' : '#111111',
-          color: slots.length > 0 && !selectedRawTime ? '#9E9A94' : 'white',
+          backgroundColor: (dayDisabled || (slots.length > 0 && !selectedRawTime)) ? '#E8E4DE' : '#111111',
+          color: (dayDisabled || (slots.length > 0 && !selectedRawTime)) ? '#9E9A94' : 'white',
           borderRadius: 10, fontSize: 15, fontWeight: 600, border: 'none',
-          cursor: slots.length > 0 && !selectedRawTime ? 'not-allowed' : 'pointer',
+          cursor: (dayDisabled || (slots.length > 0 && !selectedRawTime)) ? 'not-allowed' : 'pointer',
           fontFamily: 'var(--font-inter)',
         }}
       >
-        {slots.length > 0 && !selectedRawTime ? 'Select a time to continue' : 'Continue to Details →'}
+        {dayDisabled ? 'Date not available' : slots.length > 0 && !selectedRawTime ? 'Select a time to continue' : 'Continue to Details →'}
       </button>
     </div>
   )
@@ -956,7 +962,6 @@ function RentalCheckout({ params }: { params: URLSearchParams }) {
 
 function AuthGate({ children }: { children: React.ReactNode }) {
   const { status } = useSession()
-  const params = useSearchParams()
 
   if (status === 'loading') {
     return (
@@ -1002,6 +1007,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
 function CheckoutInner() {
   const params = useSearchParams()
+  const { data: session } = useSession()
 
   if (params.get('type') === 'rental') {
     return <RentalCheckout params={params} />
@@ -1016,7 +1022,12 @@ function CheckoutInner() {
   const [expMeta, setExpMeta] = useState<ExpCheckoutMeta>(LOADING_META)
   const [step, setStep] = useState<Step>(0)
   const [guests, setGuests] = useState(initGuests)
-  const [contact, setContact] = useState<ContactFields>({ fullName: '', email: '', phone: '', requests: '' })
+  const [contact, setContact] = useState<ContactFields>({
+    fullName: session?.user?.name || '',
+    email: session?.user?.email || '',
+    phone: '',
+    requests: '',
+  })
   const [selectedRawTime, setSelectedRawTime] = useState(rawTime)
   const [schedule, setSchedule] = useState<ScheduleDay[] | null>(null)
   const [bookedGuests, setBookedGuests] = useState<Record<string, number>>({})
@@ -1042,17 +1053,22 @@ function CheckoutInner() {
     getBookedSlotsAction(slug, rawDate).then(setBookedGuests)
   }, [slug, rawDate])
 
-  // Build available time slots for the booked date
+  // Resolve the schedule entry for the booked date.
+  // Use local noon (T12:00:00) rather than midnight so the day-of-week is
+  // correct for users in UTC− timezones (parsing ISO dates as UTC midnight
+  // would shift the DOW by one for them).
+  const scheduledDay = (() => {
+    if (!schedule || !rawDate) return null
+    const dow = new Date(rawDate + 'T12:00:00').getDay()
+    const idx = dow === 0 ? 6 : dow - 1
+    return schedule[idx] ?? null
+  })()
+  const dayDisabled = schedule !== null && !!rawDate && scheduledDay?.enabled === false
+
   const slots = (() => {
-    if (!rawDate) return []
+    if (!rawDate || dayDisabled) return []
     let open = '08:00', close = '20:00'
-    if (schedule) {
-      const dow = new Date(rawDate).getDay()
-      const idx = dow === 0 ? 6 : dow - 1
-      const day = schedule[idx]
-      if (!day?.enabled) return []
-      open = day.open; close = day.close
-    }
+    if (scheduledDay?.enabled) { open = scheduledDay.open; close = scheduledDay.close }
     const now = new Date()
     const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`
     const nowMins = now.getHours() * 60 + now.getMinutes()
@@ -1158,7 +1174,7 @@ function CheckoutInner() {
 
         <div className="flex flex-col lg:flex-row gap-6">
           <div className="flex-1 min-w-0">
-            {step === 0 && <StepExperience booking={booking} guests={guests} setGuests={setGuests} onNext={() => setStep(1)} slots={slots} selectedRawTime={selectedRawTime} setSelectedRawTime={setSelectedRawTime} />}
+            {step === 0 && <StepExperience booking={booking} guests={guests} setGuests={setGuests} onNext={() => setStep(1)} slots={slots} selectedRawTime={selectedRawTime} setSelectedRawTime={setSelectedRawTime} dayDisabled={dayDisabled} />}
             {step === 1 && <StepDetails contact={contact} setContact={setContact} onNext={() => setStep(2)} />}
             {step === 2 && <StepPayment total={total} onPay={startPayment} paying={paying} error={payError} />}
             {step === 3 && <StepConfirmation booking={booking} guests={guests} bookingRef={paidRef} payStatus={payStatus} />}
