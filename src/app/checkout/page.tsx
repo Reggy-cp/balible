@@ -162,7 +162,7 @@ function BookingSummary({ booking, guests, editing, onEdit }: { booking: Booking
           <div>
             {[
               { label: 'Date',   value: booking.date },
-              { label: 'Time',   value: booking.time },
+              ...(booking.time ? [{ label: 'Time', value: booking.time }] : []),
               { label: 'Guests', value: `${guests} guest${guests > 1 ? 's' : ''}` },
             ].map(({ label, value }) => (
               <div key={label} className="flex items-center gap-1.5 mb-1">
@@ -1023,11 +1023,21 @@ function CheckoutInner() {
   const [step, setStep] = useState<Step>(0)
   const [guests, setGuests] = useState(initGuests)
   const [contact, setContact] = useState<ContactFields>({
-    fullName: session?.user?.name || '',
-    email: session?.user?.email || '',
+    fullName: '',
+    email: '',
     phone: '',
     requests: '',
   })
+
+  // Pre-fill from session once it resolves (session is null on first render)
+  useEffect(() => {
+    if (!session?.user) return
+    setContact(c => ({
+      ...c,
+      fullName: c.fullName || session.user?.name || '',
+      email: c.email || session.user?.email || '',
+    }))
+  }, [session])
   const [selectedRawTime, setSelectedRawTime] = useState(rawTime)
   const [schedule, setSchedule] = useState<ScheduleDay[] | null>(null)
   const [bookedGuests, setBookedGuests] = useState<Record<string, number>>({})
