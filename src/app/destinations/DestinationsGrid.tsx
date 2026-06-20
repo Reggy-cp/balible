@@ -69,11 +69,9 @@ export default function DestinationsGrid({ areas }: { areas: Area[] }) {
             </button>
           )}
         </div>
-        {query && (
+        {query && filtered.length > 0 && (
           <p className="text-center mt-3" style={{ fontSize: 13, color: '#9E9A94', fontFamily: 'var(--font-inter)' }}>
-            {filtered.length === 0
-              ? `No destinations match "${query}"`
-              : `${filtered.length} destination${filtered.length !== 1 ? 's' : ''} found`}
+            {filtered.length} destination{filtered.length !== 1 ? 's' : ''} found
           </p>
         )}
       </div>
