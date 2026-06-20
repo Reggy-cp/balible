@@ -127,14 +127,19 @@ const SLUG_TO_ENUM: Record<string, string> = {
   'rentals':          'RENTALS',
 }
 
-async function getCategoryCounts(): Promise<Record<string, number>> {
+type CategoryStats = { count: number; minPrice: number }
+
+async function getCategoryStats(): Promise<Record<string, CategoryStats>> {
   try {
     const rows = await prisma.experience.groupBy({
       by: ['category'],
       where: { status: 'ACTIVE' },
       _count: { _all: true },
+      _min: { price: true },
     })
-    return Object.fromEntries(rows.map(r => [String(r.category), r._count._all]))
+    return Object.fromEntries(
+      rows.map(r => [String(r.category), { count: r._count._all, minPrice: r._min.price ?? 0 }])
+    )
   } catch {
     return {}
   }
@@ -144,12 +149,13 @@ function formatIDR(n: number) {
   return 'IDR ' + Math.round(n).toLocaleString('id-ID')
 }
 
-export const revalidate = 300
+export const revalidate = 3600
 
 export default async function CategoriesPage() {
-  const dbCounts = await getCategoryCounts()
+  const dbStats = await getCategoryStats()
 
-  const countFor = (slug: string) => dbCounts[SLUG_TO_ENUM[slug]] ?? 0
+  const countFor    = (slug: string) => dbStats[SLUG_TO_ENUM[slug]]?.count    ?? 0
+  const minPriceFor = (slug: string) => dbStats[SLUG_TO_ENUM[slug]]?.minPrice ?? 0
 
   const totalExperiences = CATEGORIES.reduce((s, c) => s + countFor(c.slug), 0)
 
@@ -190,7 +196,7 @@ export default async function CategoriesPage() {
         <div className="flex flex-wrap gap-8 mt-10 pt-8" style={{ borderTop: '1px solid #E8E4DE' }}>
           {[
             { value: totalExperiences > 0 ? `${totalExperiences}+` : '—', label: 'curated experiences' },
-            { value: '9',   label: 'categories' },
+            { value: '8',   label: 'categories' },
             { value: '4.8', label: 'average rating' },
             { value: '10+', label: 'areas of Bali' },
           ].map(({ value, label }) => (
@@ -248,10 +254,12 @@ export default async function CategoriesPage() {
                     <p style={{ fontFamily: 'var(--font-inter)', fontSize: 10, color: 'rgba(255,255,255,0.55)', marginTop: 1 }}>experiences</p>
                   </div>
                   <div style={{ width: 1, height: 24, backgroundColor: 'rgba(255,255,255,0.2)' }} />
-                  <div>
-                    <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: 'white' }}>From {formatIDR(350000)}</p>
-                    <p style={{ fontFamily: 'var(--font-inter)', fontSize: 10, color: 'rgba(255,255,255,0.55)', marginTop: 1 }}>per person</p>
-                  </div>
+                  {minPriceFor(CATEGORIES[0].slug) > 0 && (
+                    <div>
+                      <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: 'white' }}>From {formatIDR(minPriceFor(CATEGORIES[0].slug))}</p>
+                      <p style={{ fontFamily: 'var(--font-inter)', fontSize: 10, color: 'rgba(255,255,255,0.55)', marginTop: 1 }}>per person</p>
+                    </div>
+                  )}
                 </div>
                 <div
                   className="w-10 h-10 rounded-full flex items-center justify-center group-hover:bg-white/30 transition-colors"
@@ -336,12 +344,14 @@ export default async function CategoriesPage() {
                     >
                       {countFor(cat.slug)} experiences
                     </span>
-                    <span
-                      className="px-2.5 py-1 rounded-full"
-                      style={{ backgroundColor: 'rgba(255,255,255,0.15)', color: 'white', fontSize: 11, fontFamily: 'var(--font-inter)' }}
-                    >
-                      From {formatIDR(Math.min(...[280000, 320000, 350000]))}
-                    </span>
+                    {minPriceFor(cat.slug) > 0 && (
+                      <span
+                        className="px-2.5 py-1 rounded-full"
+                        style={{ backgroundColor: 'rgba(255,255,255,0.15)', color: 'white', fontSize: 11, fontFamily: 'var(--font-inter)' }}
+                      >
+                        From {formatIDR(minPriceFor(cat.slug))}
+                      </span>
+                    )}
                   </div>
                   <div
                     className="w-8 h-8 rounded-full flex items-center justify-center group-hover:bg-white/30 transition-colors flex-shrink-0"
