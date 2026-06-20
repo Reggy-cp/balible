@@ -112,7 +112,12 @@ export default function SignUpForm({ role, panelBg, headline, subCopy, heading, 
           {/* Google */}
           <button
             type="button"
-            onClick={() => signIn('google', { callbackUrl: redirectTo })}
+            onClick={() => {
+              const callbackUrl = role === 'OPERATOR'
+                ? `/auth/google-host-callback?next=${encodeURIComponent(redirectTo)}`
+                : redirectTo
+              signIn('google', { callbackUrl })
+            }}
             className="flex items-center justify-center gap-3 w-full hover:bg-stone-50 transition-colors"
             style={{ height: 46, borderRadius: 10, border: '1px solid #E8E4DE', backgroundColor: 'white', cursor: 'pointer', fontSize: 14, fontWeight: 500, color: '#111111', fontFamily: 'var(--font-inter)', marginBottom: 20 }}
           >
