@@ -119,8 +119,9 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
     )
   }
 
+  const FALLBACK = 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=800&auto=format&fit=crop&q=80'
   const thumbPhotos = experience.images.slice(0, 5)
-  while (thumbPhotos.length < 5) thumbPhotos.push(thumbPhotos[0])
+  while (thumbPhotos.length < 5) thumbPhotos.push(thumbPhotos[0] ?? FALLBACK)
 
   const currentForRec = {
     slug: experience.slug, title: experience.title,

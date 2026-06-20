@@ -2,6 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { Star, Heart } from 'lucide-react'
+import { useSession } from 'next-auth/react'
+import { toggleWishlistAction } from '@/lib/actions'
+
+const WISHLIST_KEY = 'balible_wishlist'
+function getWishlist(): string[] {
+  try { return JSON.parse(localStorage.getItem(WISHLIST_KEY) ?? '[]') } catch { return [] }
+}
 
 type ExpSummary = {
   slug: string
@@ -16,6 +23,23 @@ type ExpSummary = {
 
 function RecommendationCard({ exp }: { exp: ExpSummary }) {
   const [liked, setLiked] = useState(false)
+  const { status } = useSession()
+
+  useEffect(() => {
+    setLiked(getWishlist().includes(exp.slug))
+  }, [exp.slug])
+
+  const handleHeart = (e: React.MouseEvent) => {
+    e.preventDefault()
+    const next = !liked
+    setLiked(next)
+    const list = getWishlist()
+    const updated = next ? [...list, exp.slug] : list.filter(s => s !== exp.slug)
+    localStorage.setItem(WISHLIST_KEY, JSON.stringify(updated))
+    window.dispatchEvent(new CustomEvent('balible:wishlist', { detail: { slug: exp.slug, saved: next } }))
+    if (status === 'authenticated') toggleWishlistAction(exp.slug).catch(() => {})
+  }
+
   return (
     <a
       href={`/experiences/${exp.slug}`}
@@ -30,7 +54,7 @@ function RecommendationCard({ exp }: { exp: ExpSummary }) {
         />
         <button
           className="absolute top-2 right-2 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow"
-          onClick={e => { e.preventDefault(); setLiked(!liked) }}
+          onClick={handleHeart}
         >
           <Heart size={12} fill={liked ? '#ef4444' : 'none'} color={liked ? '#ef4444' : '#111111'} />
         </button>
