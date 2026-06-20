@@ -767,7 +767,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
 
             {/* Actions */}
             <div className="flex flex-wrap items-center gap-2 mt-3 pt-3" style={{ borderTop: '1px solid #F5F1EB' }}>
-              <a href={`/experiences/${exp.slug}`} target="_blank" rel="noreferrer"
+              <a href={exp.category === 'Rentals' ? `/rentals/${exp.slug}` : `/experiences/${exp.slug}`} target="_blank" rel="noreferrer"
                 className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
                 style={{ height: 30, padding: '0 10px', borderRadius: 8, border: '1px solid #E8E4DE', color: '#6F675C', fontSize: 12, textDecoration: 'none' }}>
                 <Eye size={11} /> View
@@ -944,28 +944,6 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                   <div>
                     <label style={labelStyle}>Pickup location</label>
                     <input type="text" value={formData.meetingPoint} onChange={e => setField('meetingPoint', e.target.value)} placeholder="e.g. Jl. Batu Bolong No. 5, Canggu" style={inputStyle} />
-                  </div>
-                  {/* Condition */}
-                  <div>
-                    <label style={labelStyle}>Condition</label>
-                    <div className="flex gap-2">
-                      {['Excellent', 'Good', 'Fair'].map(c => (
-                        <button
-                          key={c}
-                          type="button"
-                          onClick={() => setField('minGuests', c)}
-                          style={{
-                            flex: 1, height: 38, borderRadius: 8, fontSize: 13, fontWeight: 500,
-                            fontFamily: 'var(--font-inter)', cursor: 'pointer', transition: 'all 0.15s',
-                            border: formData.minGuests === c ? '1.5px solid #111111' : '1.5px solid #E8E4DE',
-                            backgroundColor: formData.minGuests === c ? '#111111' : 'white',
-                            color: formData.minGuests === c ? 'white' : '#6F675C',
-                          }}
-                        >
-                          {c}
-                        </button>
-                      ))}
-                    </div>
                   </div>
                   {/* Included */}
                   <div>
