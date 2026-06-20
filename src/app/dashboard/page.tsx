@@ -557,14 +557,14 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
   const galleryInputRef = useRef<HTMLInputElement>(null)
 
   const SUBCATEGORY_MAP: Record<string, string[]> = {
-    'Art & Craft':        ['Pottery', 'Jewelry', 'Painting', 'Wood Carving', 'Textile', 'Weaving'],
-    'Wellness & Healing': ['Yoga', 'Meditation', 'Sound Healing', 'Spa & Ritual', 'Breathwork'],
-    'Culture & Spiritual': ['Temple & Ceremony', 'Dance & Music', 'History Tour', 'Language', 'Healing Ritual', 'Holy Water', 'Blessing'],
-    'Culinary':           ['Cooking Class', 'Spice & Herb', 'Market Tour', 'Coffee & Tea', 'Fermentation', 'Dessert & Sweets', 'Farm to Table'],
-    'Nature & Outdoors':  ['Trekking', 'Waterfall', 'Sunrise', 'Rice Terrace', 'Wildlife'],
-    'Water Activities':   ['Surfing', 'Snorkelling', 'Freediving', 'Scuba Diving', 'Stand-Up Paddle', 'Diving'],
-    'Local Experts':      ['Photographers', 'Guides', 'Wellness Practitioners', 'Childcare', 'Pet Care', 'Creative Mentors', 'Drivers'],
-    'Rentals':            ['Scooter', 'Motorbike', 'Bicycle', 'E-Bike', 'Villa', 'Workspace', 'Studio', 'Surfboard', 'Camping Gear', 'Diving Equipment'],
+    'Art & Craft':        ['Pottery', 'Jewelry', 'Painting', 'Wood Carving', 'Textile', 'Weaving', 'Batik', 'Leather Craft', 'Sculpture', 'Mosaic', 'Upcycling'],
+    'Wellness & Healing': ['Yoga', 'Meditation', 'Sound Healing', 'Spa & Ritual', 'Breathwork', 'Massage', 'Reiki', 'Balinese Healing', 'Pilates', 'Aerial Yoga', 'Herbal Medicine', 'Nutrition & Detox'],
+    'Culture & Spiritual': ['Temple & Ceremony', 'Dance & Music', 'History Tour', 'Language', 'Healing Ritual', 'Holy Water', 'Blessing', 'Gamelan', 'Offering Making', 'Kecak Dance', 'Photography Tour'],
+    'Culinary':           ['Cooking Class', 'Spice & Herb', 'Market Tour', 'Coffee & Tea', 'Fermentation', 'Dessert & Sweets', 'Farm to Table', 'Cocktail & Mixology', 'Vegan & Plant-Based', 'Seafood', 'Bread & Pastry'],
+    'Nature & Outdoors':  ['Trekking', 'Waterfall', 'Sunrise', 'Rice Terrace', 'Wildlife', 'Cycling', 'Bird Watching', 'Camping', 'Jungle Walk', 'Volcano', 'Beach Walk', 'Cave Exploration'],
+    'Water Activities':   ['Surfing', 'Snorkelling', 'Freediving', 'Scuba Diving', 'Stand-Up Paddle', 'Kayaking', 'River Rafting', 'Jet Ski', 'Parasailing', 'Island Hopping', 'Wakeboarding', 'Kite Surfing'],
+    'Local Experts':      ['Photographers', 'Guides', 'Wellness Practitioners', 'Childcare', 'Pet Care', 'Creative Mentors', 'Drivers', 'Translators', 'Wedding Planners', 'Event Planners', 'Personal Shoppers'],
+    'Rentals':            ['Scooter', 'Motorbike', 'Bicycle', 'E-Bike', 'Car', 'ATV', 'Surfboard', 'Kayak', 'Jet Ski', 'Drone', 'Camera Gear', 'Villa', 'Workspace', 'Studio', 'Camping Gear', 'Diving Equipment', 'Baby Equipment', 'Boat'],
   }
 
   const BLANK_FORM = { title: '', category: 'Art & Craft', subcategory: 'Pottery', area: 'Ubud', price: '', duration: '', maxGuests: '', minGuests: '', meetingPoint: '', description: '', includes: '', excludes: '', rentalPeriod: 'per day', deposit: '' }
