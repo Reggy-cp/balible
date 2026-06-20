@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { ChevronUp, Shield, Award, Clock, Edit2, Lock, MapPin } from 'lucide-react'
 import MobileNav from '@/components/MobileNav'
 import { createBookingAction, createRentalBookingAction, getExperienceForCheckout, getBookingStatusAction, getExperienceScheduleAction, getBookedSlotsAction, type ExpCheckoutMeta } from '@/lib/actions'
@@ -953,6 +954,52 @@ function RentalCheckout({ params }: { params: URLSearchParams }) {
 
 // ── Inner (reads params) ───────────────────────────────────────────────────────
 
+function AuthGate({ children }: { children: React.ReactNode }) {
+  const { status } = useSession()
+  const params = useSearchParams()
+
+  if (status === 'loading') {
+    return (
+      <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: '#6F675C', fontSize: 14 }}>Loading…</p>
+      </div>
+    )
+  }
+
+  if (status === 'unauthenticated') {
+    const callbackUrl = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/checkout'
+    return (
+      <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
+        <div style={{ width: '100%', maxWidth: 440, backgroundColor: 'white', borderRadius: 16, padding: '48px 40px', textAlign: 'center', border: '1px solid #E8E4DE' }}>
+          <div style={{ width: 56, height: 56, borderRadius: '50%', backgroundColor: '#F5F1EB', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: 24 }}>
+            🔒
+          </div>
+          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#111111', margin: '0 0 10px' }}>
+            Sign in to continue
+          </h2>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.7, margin: '0 0 28px' }}>
+            You need an account to complete your booking. It only takes a minute.
+          </p>
+          <a
+            href={`/sign-in?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+            style={{ display: 'block', width: '100%', height: 46, lineHeight: '46px', borderRadius: 10, backgroundColor: '#111111', color: 'white', fontSize: 14, fontWeight: 600, textDecoration: 'none', marginBottom: 12 }}
+          >
+            Sign in
+          </a>
+          <a
+            href={`/sign-up?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+            style={{ display: 'block', width: '100%', height: 46, lineHeight: '46px', borderRadius: 10, border: '1px solid #E8E4DE', backgroundColor: 'white', color: '#111111', fontSize: 14, fontWeight: 600, textDecoration: 'none' }}
+          >
+            Create an account
+          </a>
+        </div>
+      </div>
+    )
+  }
+
+  return <>{children}</>
+}
+
 function CheckoutInner() {
   const params = useSearchParams()
 
@@ -1138,7 +1185,9 @@ export default function CheckoutPage() {
         <p style={{ color: '#6F675C', fontSize: 14 }}>Loading checkout…</p>
       </div>
     }>
-      <CheckoutInner />
+      <AuthGate>
+        <CheckoutInner />
+      </AuthGate>
     </Suspense>
   )
 }

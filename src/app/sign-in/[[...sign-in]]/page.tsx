@@ -18,6 +18,7 @@ function SignInContent() {
   const router = useRouter()
   const params = useSearchParams()
   const urlError = params.get('error')
+  const callbackUrl = params.get('callbackUrl') || '/'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(urlError ? (ERROR_MESSAGES[urlError] ?? ERROR_MESSAGES.Default) : '')
@@ -32,13 +33,13 @@ function SignInContent() {
     if (res?.error) {
       setError('Incorrect email or password.')
     } else {
-      router.push('/dashboard')
+      router.push(callbackUrl)
       router.refresh()
     }
   }
 
   async function handleGoogle() {
-    await signIn('google', { callbackUrl: '/dashboard' })
+    await signIn('google', { callbackUrl })
   }
 
   const inputStyle: React.CSSProperties = {

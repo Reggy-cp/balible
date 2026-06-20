@@ -1,6 +1,12 @@
+'use client'
+
+import { useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
 import SignUpForm from '@/components/SignUpForm'
 
-export default function TravelerSignUpPage() {
+function TravelerSignUpInner() {
+  const params = useSearchParams()
+  const redirectTo = params.get('callbackUrl') || '/'
   return (
     <SignUpForm
       role="TOURIST"
@@ -9,8 +15,16 @@ export default function TravelerSignUpPage() {
       subCopy="Book unique experiences, save your favourites, and connect with the best local hosts in Bali."
       heading="Create your traveler account"
       submitLabel="Create account"
-      redirectTo="/"
+      redirectTo={redirectTo}
       switchLink={null}
     />
+  )
+}
+
+export default function TravelerSignUpPage() {
+  return (
+    <Suspense>
+      <TravelerSignUpInner />
+    </Suspense>
   )
 }
