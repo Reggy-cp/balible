@@ -13,15 +13,19 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Too many attempts. Please try again in a minute.' }, { status: 429 })
   }
 
-  const { name, email, password, role } = await req.json()
+  const body = await req.json()
+  const name     = typeof body.name     === 'string' ? body.name.trim()               : ''
+  const email    = typeof body.email    === 'string' ? body.email.toLowerCase().trim() : ''
+  const password = typeof body.password === 'string' ? body.password                  : ''
+  const role     = body.role
 
   if (!name || !email || !password) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
   }
-  if (typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json({ error: 'Please enter a valid email address.' }, { status: 400 })
   }
-  if (typeof password !== 'string' || password.length < 8) {
+  if (password.length < 8) {
     return NextResponse.json({ error: 'Password must be at least 8 characters.' }, { status: 400 })
   }
 

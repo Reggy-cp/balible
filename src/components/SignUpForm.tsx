@@ -65,7 +65,8 @@ export default function SignUpForm({ role, panelBg, headline, subCopy, heading, 
     const signInRes = await signIn('credentials', { email, password, redirect: false })
     setLoading(false)
     if (signInRes?.error) {
-      router.push('/sign-in')
+      const fallback = redirectTo !== '/' ? `/sign-in?callbackUrl=${encodeURIComponent(redirectTo)}` : '/sign-in'
+      router.push(fallback)
     } else {
       router.push(`/check-email?email=${encodeURIComponent(email)}&next=${encodeURIComponent(redirectTo)}`)
       router.refresh()
@@ -161,7 +162,12 @@ export default function SignUpForm({ role, panelBg, headline, subCopy, heading, 
 
           <p style={{ fontSize: 13, color: '#9E9A94', marginTop: 20, textAlign: 'center' }}>
             Already have an account?{' '}
-            <Link href="/sign-in" style={{ color: '#111111', fontWeight: 600, textDecoration: 'none' }}>Sign in →</Link>
+            <Link
+              href={redirectTo !== '/' ? `/sign-in?callbackUrl=${encodeURIComponent(redirectTo)}` : '/sign-in'}
+              style={{ color: '#111111', fontWeight: 600, textDecoration: 'none' }}
+            >
+              Sign in →
+            </Link>
           </p>
           {switchLink && <p style={{ fontSize: 13, color: '#9E9A94', marginTop: 8, textAlign: 'center' }}>{switchLink}</p>}
         </div>
