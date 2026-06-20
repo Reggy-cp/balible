@@ -1,4 +1,3 @@
-import { notFound } from 'next/navigation'
 import { MapPin, Star, Clock, Users, Globe, Camera } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import BookingWidget from '@/components/BookingWidget'
@@ -13,8 +12,15 @@ import MobileBookingModal from '@/components/MobileBookingModal'
 import ExperienceGallery from '@/components/ExperienceGallery'
 import { prisma } from '@/lib/prisma'
 
+const AREA_DISPLAY: Record<string, string> = {
+  UBUD: 'Ubud', CANGGU: 'Canggu', SEMINYAK: 'Seminyak', KUTA: 'Kuta',
+  ULUWATU: 'Uluwatu', GIANYAR: 'Gianyar', KINTAMANI: 'Kintamani',
+  AMED: 'Amed', SIDEMEN: 'Sidemen', SANUR: 'Sanur',
+  NUSA_DUA: 'Nusa Dua', JIMBARAN: 'Jimbaran', MEDEWI: 'Medewi',
+}
+
 type ExpData = {
-  slug: string; title: string; area: string; price: number; duration: string;
+  slug: string; title: string; area: string; category: string; price: number; duration: string;
   level: string; language: string; maxGuests: number; rating: number; totalReviews: number;
   description: string; highlights: string[]; includes: string[]; excludes: string[];
   itinerary?: { time: string; activity: string }[];
@@ -57,7 +63,8 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
 
     if (dbExp) {
       experience = {
-        slug: dbExp.slug, title: dbExp.title, area: dbExp.area,
+        slug: dbExp.slug, title: dbExp.title, area: AREA_DISPLAY[String(dbExp.area)] ?? String(dbExp.area),
+        category: String(dbExp.category),
         price: dbExp.price, duration: dbExp.duration, level: dbExp.level,
         language: dbExp.language, maxGuests: dbExp.maxGuests,
         rating: dbExp.rating, totalReviews: dbExp.totalReviews,
@@ -83,7 +90,7 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
         where: { status: 'ACTIVE', NOT: { slug: params.slug } },
         select: { slug: true, title: true, category: true, area: true, price: true, rating: true, totalReviews: true, images: true },
       })
-      allOthers = others.map((e: typeof others[number]) => ({ ...e, category: String(e.category), area: String(e.area) }))
+      allOthers = others.map((e: typeof others[number]) => ({ ...e, category: String(e.category), area: AREA_DISPLAY[String(e.area)] ?? String(e.area) }))
     }
   } catch {
     // DB error
@@ -117,7 +124,7 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
 
   const currentForRec = {
     slug: experience.slug, title: experience.title,
-    category: 'WELLNESS_HEALING', area: experience.area,
+    category: experience.category, area: experience.area,
     price: experience.price, rating: experience.rating,
     totalReviews: experience.totalReviews, images: experience.images,
   }
@@ -130,7 +137,7 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
       <div className="max-w-[1440px] mx-auto px-6 lg:px-16 py-8">
 
         {/* Back link */}
-        <a href="/" className="inline-flex items-center gap-1 hover:opacity-70 transition-opacity mb-6 text-coconut" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, textDecoration: 'none' }}>
+        <a href="/search" className="inline-flex items-center gap-1 hover:opacity-70 transition-opacity mb-6 text-coconut" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, textDecoration: 'none' }}>
           ← Back to all experiences
         </a>
 
