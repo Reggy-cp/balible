@@ -2,8 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight, Heart, AlertCircle } from 'lucide-react'
-import { getExperienceScheduleAction, getBookedSlotsAction } from '@/lib/actions'
+import { useSession } from 'next-auth/react'
+import { getExperienceScheduleAction, getBookedSlotsAction, toggleWishlistAction } from '@/lib/actions'
 import { useLanguage } from '@/contexts/LanguageContext'
+
+const WISHLIST_KEY = 'balible_wishlist'
+function getWishlist(): string[] {
+  try { return JSON.parse(localStorage.getItem(WISHLIST_KEY) ?? '[]') } catch { return [] }
+}
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December']
 
@@ -73,13 +79,14 @@ function MiniCalendar({
   ]
   while (cells.length % 7 !== 0) cells.push(null)
 
-  const prev = () => { if (month === 0) { setMonth(11); setYear(y => y - 1) } else setMonth(m => m - 1) }
+  const isCurrentMonth = year === now.getFullYear() && month === now.getMonth()
+  const prev = () => { if (isCurrentMonth) return; if (month === 0) { setMonth(11); setYear(y => y - 1) } else setMonth(m => m - 1) }
   const next = () => { if (month === 11) { setMonth(0); setYear(y => y + 1) } else setMonth(m => m + 1) }
 
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <button onClick={prev} className="w-6 h-6 flex items-center justify-center rounded hover:bg-ivory transition-colors">
+        <button onClick={prev} disabled={isCurrentMonth} className="w-6 h-6 flex items-center justify-center rounded hover:bg-ivory transition-colors" style={{ opacity: isCurrentMonth ? 0.25 : 1, cursor: isCurrentMonth ? 'default' : 'pointer' }}>
           <ChevronLeft size={13} style={{ color: '#111111' }} />
         </button>
         <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111' }}>
@@ -138,6 +145,7 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
   const [guests, setGuests] = useState(1)
   const [wishlisted, setWishlisted] = useState(false)
+  const { status } = useSession()
   const [schedule, setSchedule] = useState<ScheduleDay[] | null>(null)
   const [bookedGuests, setBookedGuests] = useState<Record<string, number>>({})
 
@@ -159,6 +167,12 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
     return () => clearInterval(id)
   }, [])
 
+  // Initialise wishlist state from localStorage
+  useEffect(() => {
+    if (!slug) return
+    setWishlisted(getWishlist().includes(slug))
+  }, [slug])
+
   useEffect(() => {
     if (!slug) return
     getExperienceScheduleAction(slug).then(s => { if (s) setSchedule(s as ScheduleDay[]) })
@@ -173,9 +187,8 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
   // Clear selected date/time if no longer available
   useEffect(() => {
     if (!selectedDate || !schedule) return
-    const d = new Date(selectedDate)
-    const idx = dowToScheduleIdx(d.getDay())
-    if (!schedule[idx].enabled) { setSelectedDate(null); setSelectedTime(null) }
+    const idx = dowToScheduleIdx(new Date(selectedDate + 'T12:00:00').getDay())
+    if (!schedule[idx]?.enabled) { setSelectedDate(null); setSelectedTime(null) }
   }, [schedule, selectedDate])
 
   // Clear selectedTime if it's in the past or fully booked
@@ -208,9 +221,8 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
 
   const daySchedule = (() => {
     if (!selectedDate || !schedule) return null
-    const d = new Date(selectedDate)
-    const row = schedule[dowToScheduleIdx(d.getDay())]
-    return row.enabled ? row : null
+    const row = schedule[dowToScheduleIdx(new Date(selectedDate + 'T12:00:00').getDay())]
+    return row?.enabled ? row : null
   })()
 
   const durMins = effectiveDuration ? parseDurationMins(effectiveDuration) : 120
@@ -389,12 +401,24 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
         ✓ {t('free_cancel_24h')}
       </p>
 
-      <button className="w-full mt-3 flex items-center justify-center gap-1.5 hover:opacity-70 transition-opacity"
-        onClick={() => setWishlisted(!wishlisted)}
-        style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>
-        <Heart size={13} fill={wishlisted ? '#ef4444' : 'none'} color={wishlisted ? '#ef4444' : '#6F675C'} />
-        {wishlisted ? 'Saved to wishlist' : '♡ Add to wishlist'}
-      </button>
+      {slug && (
+        <button
+          className="w-full mt-3 flex items-center justify-center gap-1.5 hover:opacity-70 transition-opacity"
+          onClick={async () => {
+            const next = !wishlisted
+            setWishlisted(next)
+            const list = getWishlist()
+            const updated = next ? [...list, slug] : list.filter(s => s !== slug)
+            localStorage.setItem(WISHLIST_KEY, JSON.stringify(updated))
+            window.dispatchEvent(new CustomEvent('balible:wishlist', { detail: { slug, saved: next } }))
+            if (status === 'authenticated') await toggleWishlistAction(slug)
+          }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}
+        >
+          <Heart size={13} fill={wishlisted ? '#ef4444' : 'none'} color={wishlisted ? '#ef4444' : '#6F675C'} />
+          {wishlisted ? 'Saved to wishlist' : 'Save to wishlist'}
+        </button>
+      )}
     </div>
   )
 }
