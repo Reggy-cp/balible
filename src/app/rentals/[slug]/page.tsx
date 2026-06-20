@@ -9,6 +9,7 @@ import RentalBookingWidget from './RentalBookingWidget'
 import RentalMobileModal from './RentalMobileModal'
 import RentalTabs from './RentalTabs'
 import RentalRecommendations from './RentalRecommendations'
+import ReadMore from '@/components/ReadMore'
 import { MapPin, Star, Camera, Clock, Package } from 'lucide-react'
 
 export const revalidate = 3600
@@ -150,10 +151,10 @@ export default async function RentalPage({ params }: { params: { slug: string } 
               </div>
             </div>
 
-            {/* Description */}
+            {/* Description preview — full text is in the About tab */}
             {rental.description && (
               <div className="mt-4">
-                <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: '#4A4540', lineHeight: 1.8 }}>{rental.description}</p>
+                <ReadMore text={rental.description} />
               </div>
             )}
 
