@@ -1532,37 +1532,32 @@ function ReviewsPanel({ initialReviews }: { initialReviews?: DashReview[] }) {
 // ── Profile Panel ─────────────────────────────────────────────────────────────
 
 const HOST_PROFILE_DEFAULTS = {
-  name: '', businessName: '',
-  email: '', phone: '',
-  bio: '',
-  area: 'Ubud', languages: 'English, Bahasa Indonesia',
+  name: '', businessName: '', email: '', phone: '',
+  bio: '', area: 'Ubud', languages: 'English, Bahasa Indonesia',
+  website: '', address: '', city: '', country: '',
+  nationality: '', dateOfBirth: '',
 }
 
 function ProfilePanel({ profile: liveProfile }: { profile?: HostProfile }) {
   const readOnly = useContext(ReadOnlyContext)
   const { data: session } = useSession()
-  const sessionDefaults = {
-    ...HOST_PROFILE_DEFAULTS,
-    name: session?.user?.name ?? '',
-    email: session?.user?.email ?? '',
-  }
+  const sessionDefaults = { ...HOST_PROFILE_DEFAULTS, name: session?.user?.name ?? '', email: session?.user?.email ?? '' }
   const [profile, setProfile] = useState(() => readOnly ? HOST_PROFILE_DEFAULTS : sessionDefaults)
-  const [saved, setSaved]     = useState(false)
-  const [saving, setSaving]   = useState(false)
+  const [saved, setSaved]   = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState(false)
 
-  // Profile is DB-backed: overlay the host's real persisted fields once they
-  // load (works for both the host's own view and admin read-only view).
   useEffect(() => {
     if (!liveProfile) return
     setProfile(p => ({
       ...p,
-      name: liveProfile.name,
-      email: liveProfile.email,
-      businessName: liveProfile.businessName,
-      bio: liveProfile.bio,
-      phone: liveProfile.phone,
-      area: liveProfile.area || p.area,
-      languages: liveProfile.languages,
+      name: liveProfile.name, email: liveProfile.email,
+      businessName: liveProfile.businessName, bio: liveProfile.bio,
+      phone: liveProfile.phone, area: liveProfile.area || p.area,
+      languages: liveProfile.languages, website: liveProfile.website,
+      address: liveProfile.address, city: liveProfile.city,
+      country: liveProfile.country, nationality: liveProfile.nationality,
+      dateOfBirth: liveProfile.dateOfBirth,
     }))
   }, [liveProfile])
 
@@ -1570,91 +1565,139 @@ function ProfilePanel({ profile: liveProfile }: { profile?: HostProfile }) {
 
   const save = async () => {
     if (readOnly || saving) return
-    setSaving(true)
-    await updateHostProfileAction({
+    setSaving(true); setSaveError(false)
+    const res = await updateHostProfileAction({
       name: profile.name, businessName: profile.businessName, bio: profile.bio,
       phone: profile.phone, area: profile.area, languages: profile.languages,
-    }).catch(() => {})
+      website: profile.website, address: profile.address, city: profile.city,
+      country: profile.country, nationality: profile.nationality, dateOfBirth: profile.dateOfBirth,
+    }).catch(() => ({ ok: false }))
     setSaving(false)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
+    if (res.ok) { setSaved(true); setTimeout(() => setSaved(false), 2500) }
+    else { setSaveError(true); setTimeout(() => setSaveError(false), 3000) }
   }
   const discard = () => liveProfile && setProfile(p => ({ ...p, ...liveProfile }))
 
   const set = (key: keyof typeof HOST_PROFILE_DEFAULTS) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setProfile(p => ({ ...p, [key]: e.target.value }))
 
+  const inputStyle = (disabled?: boolean): React.CSSProperties => ({
+    width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE',
+    padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111',
+    outline: 'none', backgroundColor: disabled ? '#F8F6F2' : 'white', boxSizing: 'border-box',
+  })
+
+  const label = (text: string) => (
+    <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'var(--font-inter)' }}>
+      {text}
+    </label>
+  )
+
   return (
     <div>
       <PageHeader title="Host Profile" subtitle="How guests see you on Balible" />
 
-      <div className="grid lg:grid-cols-3 gap-5">
-        <div className="bg-white rounded-xl p-6 flex flex-col items-center text-center" style={{ border: '1px solid #E8E4DE' }}>
-          <div className="relative mb-4">
-            <div className="w-24 h-24 rounded-full overflow-hidden" style={{ border: '3px solid #C8A97E' }}>
+      <div className="space-y-5">
+
+        {/* ── Avatar card ── */}
+        <div className="bg-white rounded-xl p-6 flex items-center gap-5" style={{ border: '1px solid #E8E4DE' }}>
+          <div className="relative flex-shrink-0">
+            <div className="w-20 h-20 rounded-full overflow-hidden" style={{ border: '3px solid #C8A97E' }}>
               {avatarSrc
                 ? <img src={avatarSrc} alt={profile.name} className="w-full h-full object-cover" />
                 : <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: '#C8A97E' }}>
-                    <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 36, fontWeight: 700, color: 'white' }}>
+                    <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 32, fontWeight: 700, color: 'white' }}>
                       {(profile.name || liveProfile?.name || session?.user?.name || 'H').charAt(0).toUpperCase()}
                     </span>
                   </div>
               }
             </div>
             {!readOnly && (
-            <button className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: '#111111', border: 'none', cursor: 'pointer' }}>
-              <Camera size={12} style={{ color: 'white' }} />
-            </button>
+              <button className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: '#111111', border: 'none', cursor: 'pointer' }}>
+                <Camera size={12} style={{ color: 'white' }} />
+              </button>
             )}
           </div>
-          <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>{profile.name || liveProfile?.name || session?.user?.name}</h3>
-          <p style={{ fontSize: 13, color: '#6F675C', marginTop: 2 }}>Operator · {profile.area}</p>
+          <div>
+            <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>
+              {profile.name || liveProfile?.name || session?.user?.name}
+            </p>
+            <p style={{ fontSize: 13, color: '#6F675C', marginTop: 2 }}>
+              {profile.businessName || 'Operator'}{profile.area ? ` · ${profile.area}` : ''}
+            </p>
+          </div>
         </div>
 
-        <div className="lg:col-span-2 bg-white rounded-xl p-6" style={{ border: '1px solid #E8E4DE' }}>
-          <h2 className="mb-5" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>{readOnly ? 'Profile' : 'Edit Profile'}</h2>
-          <div className="grid sm:grid-cols-2 gap-4">
-            {([
-              { label: 'Full Name',     key: 'name' as const },
-              { label: 'Business Name', key: 'businessName' as const },
-              { label: 'Email',         key: 'email' as const },
-              { label: 'Phone',         key: 'phone' as const },
-            ]).map(f => (
-              <div key={f.key}>
-                <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{f.label}</label>
-                <input value={profile[f.key]} onChange={set(f.key)} disabled={readOnly || f.key === 'email'}
-                  style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none', backgroundColor: (readOnly || f.key === 'email') ? '#F8F6F2' : 'white' }} />
-              </div>
-            ))}
-            <div className="sm:col-span-2">
-              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Bio</label>
-              <textarea rows={4} value={profile.bio} onChange={set('bio')} disabled={readOnly}
-                style={{ width: '100%', borderRadius: 10, border: '1px solid #E8E4DE', padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', resize: 'none', outline: 'none', lineHeight: 1.6, backgroundColor: readOnly ? '#F8F6F2' : 'white' }} />
+        {/* ── Personal information ── */}
+        <div className="bg-white rounded-xl p-6" style={{ border: '1px solid #E8E4DE' }}>
+          <h2 className="mb-5" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Personal Information</h2>
+          <div className="space-y-4">
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>{label('Full name')}<input value={profile.name} onChange={set('name')} disabled={readOnly} style={inputStyle(readOnly)} /></div>
+              <div>{label('Email')}<div style={{ ...inputStyle(true), display: 'flex', alignItems: 'center', color: '#6F675C' }}>{profile.email || '—'}</div></div>
             </div>
-            <div>
-              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Primary Area</label>
-              <select value={profile.area} onChange={set('area')} disabled={readOnly}
-                style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none', backgroundColor: readOnly ? '#F8F6F2' : 'white', cursor: readOnly ? 'default' : 'pointer' }}>
-                {['Ubud','Canggu','Kuta','Seminyak','Uluwatu','Gianyar','Sanur','Nusa Dua','Amed','Jimbaran','Kintamani','Sidemen','Medewi'].map(a => <option key={a}>{a}</option>)}
-              </select>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>{label('Phone number')}<input type="tel" value={profile.phone} onChange={set('phone')} disabled={readOnly} placeholder="+62 812 345 6789" style={inputStyle(readOnly)} /></div>
+              <div>{label('Date of birth')}<input type="date" value={profile.dateOfBirth} onChange={set('dateOfBirth')} disabled={readOnly} style={inputStyle(readOnly)} /></div>
             </div>
-            <div>
-              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Languages</label>
-              <input value={profile.languages} onChange={set('languages')} disabled={readOnly}
-                style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none', backgroundColor: readOnly ? '#F8F6F2' : 'white' }} />
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>{label('Nationality')}<input value={profile.nationality} onChange={set('nationality')} disabled={readOnly} placeholder="e.g. Indonesian" style={inputStyle(readOnly)} /></div>
             </div>
           </div>
-          {!readOnly && (
-          <div className="flex items-center gap-3 mt-6">
-            <button onClick={save} disabled={saving} className="flex items-center gap-2 hover:opacity-90 transition-opacity"
-              style={{ height: 44, paddingInline: 24, borderRadius: 10, border: 'none', backgroundColor: saved ? '#4A7C59' : '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: saving ? 'default' : 'pointer', transition: 'background 0.2s', minWidth: 140, opacity: saving ? 0.7 : 1 }}>
-              {saved ? <><Check size={14} /> Saved!</> : saving ? 'Saving…' : 'Save Changes'}
-            </button>
-            <button onClick={discard} style={{ height: 44, paddingInline: 24, borderRadius: 10, border: '1px solid #E8E4DE', background: 'none', fontSize: 14, color: '#6F675C', cursor: 'pointer' }}>Discard</button>
-          </div>
-          )}
         </div>
+
+        {/* ── Business information ── */}
+        <div className="bg-white rounded-xl p-6" style={{ border: '1px solid #E8E4DE' }}>
+          <h2 className="mb-5" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Business Information</h2>
+          <div className="space-y-4">
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>{label('Business name')}<input value={profile.businessName} onChange={set('businessName')} disabled={readOnly} style={inputStyle(readOnly)} /></div>
+              <div>{label('Website')}<input type="url" value={profile.website} onChange={set('website')} disabled={readOnly} placeholder="https://yoursite.com" style={inputStyle(readOnly)} /></div>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                {label('Primary area')}
+                <select value={profile.area} onChange={set('area')} disabled={readOnly}
+                  style={{ ...inputStyle(readOnly), cursor: readOnly ? 'default' : 'pointer' }}>
+                  {['Ubud','Canggu','Kuta','Seminyak','Uluwatu','Gianyar','Sanur','Nusa Dua','Amed','Jimbaran','Kintamani','Sidemen','Medewi'].map(a => <option key={a}>{a}</option>)}
+                </select>
+              </div>
+              <div>{label('Languages')}<input value={profile.languages} onChange={set('languages')} disabled={readOnly} placeholder="e.g. English, Bahasa Indonesia" style={inputStyle(readOnly)} /></div>
+            </div>
+            <div>
+              {label('About / bio')}
+              <textarea rows={4} value={profile.bio} onChange={set('bio')} disabled={readOnly}
+                style={{ width: '100%', borderRadius: 10, border: '1px solid #E8E4DE', padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', resize: 'none', outline: 'none', lineHeight: 1.6, backgroundColor: readOnly ? '#F8F6F2' : 'white', boxSizing: 'border-box' }} />
+            </div>
+          </div>
+        </div>
+
+        {/* ── Address ── */}
+        <div className="bg-white rounded-xl p-6" style={{ border: '1px solid #E8E4DE' }}>
+          <h2 className="mb-5" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Address</h2>
+          <div className="space-y-4">
+            <div>{label('Street address')}<input value={profile.address} onChange={set('address')} disabled={readOnly} placeholder="Jl. Raya, Gang, No." style={inputStyle(readOnly)} /></div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>{label('City / village')}<input value={profile.city} onChange={set('city')} disabled={readOnly} placeholder="e.g. Ubud" style={inputStyle(readOnly)} /></div>
+              <div>{label('Country')}<input value={profile.country} onChange={set('country')} disabled={readOnly} placeholder="e.g. Indonesia" style={inputStyle(readOnly)} /></div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Save ── */}
+        {!readOnly && (
+          <div className="flex items-center gap-3">
+            <button onClick={save} disabled={saving} className="flex items-center gap-2 hover:opacity-90 transition-opacity"
+              style={{ height: 44, paddingInline: 24, borderRadius: 10, border: 'none', backgroundColor: saved ? '#4A7C59' : saveError ? '#B66A45' : '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: saving ? 'default' : 'pointer', transition: 'background 0.2s', minWidth: 140, opacity: saving ? 0.7 : 1, fontFamily: 'var(--font-inter)' }}>
+              {saved ? <><Check size={14} /> Saved!</> : saving ? 'Saving…' : saveError ? 'Save failed' : 'Save Changes'}
+            </button>
+            <button onClick={discard} style={{ height: 44, paddingInline: 24, borderRadius: 10, border: '1px solid #E8E4DE', background: 'none', fontSize: 14, color: '#6F675C', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}>
+              Discard
+            </button>
+            {saveError && <span style={{ fontSize: 13, color: '#B66A45', fontFamily: 'var(--font-inter)' }}>Could not save. Please try again.</span>}
+          </div>
+        )}
       </div>
     </div>
   )

@@ -79,6 +79,10 @@ model Operator {
   phone        String?
   area         String?
   languages    String?
+  website      String?
+  address      String?
+  city         String?
+  country      String?
   notifSettings       Json?
   blockedDates        String[]  @default([])
   verified            Boolean  @default(false)

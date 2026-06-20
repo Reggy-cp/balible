@@ -1322,6 +1322,12 @@ export type HostProfile = {
   phone: string
   area: string
   languages: string
+  website: string
+  address: string
+  city: string
+  country: string
+  nationality: string
+  dateOfBirth: string
 }
 
 export type HostDashboardData = {
@@ -1346,7 +1352,7 @@ export async function getHostDashboardData(viewOperatorId?: string): Promise<Hos
     const isAdminView = !!viewOperatorId && (user as any).role === 'ADMIN'
     const operator = await prisma.operator.findUnique({
       where: isAdminView ? { id: viewOperatorId } : { userId: user.id },
-      include: { user: { select: { name: true, email: true, image: true } } },
+      include: { user: { select: { name: true, email: true, image: true, nationality: true, dateOfBirth: true } } },
     })
     if (!operator) return null
 
@@ -1485,6 +1491,12 @@ export async function getHostDashboardData(viewOperatorId?: string): Promise<Hos
       phone: operator.phone ?? '',
       area: operator.area ?? '',
       languages: operator.languages ?? '',
+      website: operator.website ?? '',
+      address: operator.address ?? '',
+      city: operator.city ?? '',
+      country: operator.country ?? '',
+      nationality: (operator.user as any).nationality ?? '',
+      dateOfBirth: (operator.user as any).dateOfBirth ? new Date((operator.user as any).dateOfBirth).toISOString().slice(0, 10) : '',
     }
     return { hostName: operator.user.name, commissionRate: Math.round(commRateDecimal * 100), experiences, bookings, reviews, earningsByMonth, totalGross, pendingPayout, profile }
   } catch {
@@ -1497,6 +1509,8 @@ export async function getHostDashboardData(viewOperatorId?: string): Promise<Hos
 export async function updateHostProfileAction(input: {
   name?: string; businessName?: string; bio?: string
   phone?: string; area?: string; languages?: string
+  website?: string; address?: string; city?: string; country?: string
+  nationality?: string; dateOfBirth?: string
 }): Promise<{ ok: boolean; error?: string }> {
   try {
     const user = await getSessionUser()
@@ -1512,10 +1526,18 @@ export async function updateHostProfileAction(input: {
         phone: input.phone?.trim() || null,
         area: input.area?.trim() || null,
         languages: input.languages?.trim() || null,
+        website: input.website?.trim() || null,
+        address: input.address?.trim() || null,
+        city: input.city?.trim() || null,
+        country: input.country?.trim() || null,
       },
     })
-    if (input.name?.trim()) {
-      await prisma.user.update({ where: { id: user.id }, data: { name: input.name.trim() } })
+    const userUpdate: Record<string, unknown> = {}
+    if (input.name?.trim()) userUpdate.name = input.name.trim()
+    if (input.nationality !== undefined) userUpdate.nationality = input.nationality.trim() || null
+    if (input.dateOfBirth !== undefined) userUpdate.dateOfBirth = input.dateOfBirth ? new Date(input.dateOfBirth) : null
+    if (Object.keys(userUpdate).length > 0) {
+      await prisma.user.update({ where: { id: user.id }, data: userUpdate })
     }
     return { ok: true }
   } catch (e: any) {
