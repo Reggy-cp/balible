@@ -47,7 +47,7 @@ function ResetPasswordForm() {
         <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', marginBottom: 24 }}>
           Your password has been changed. You can now sign in with your new password.
         </p>
-        <a href="/auth/signin" style={{
+        <a href="/sign-in" style={{
           display: 'inline-block', padding: '12px 28px', backgroundColor: '#111111', color: 'white',
           borderRadius: 10, fontSize: 14, fontWeight: 600, textDecoration: 'none', fontFamily: 'var(--font-inter)',
         }}>
