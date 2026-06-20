@@ -90,12 +90,19 @@ export const authOptions: NextAuthOptions = {
       }
       return true
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id
         token.role = (user as any).role
-        const dbUser = await prisma.user.findUnique({ where: { id: user.id }, select: { role: true } })
-        if (dbUser) token.role = dbUser.role
+      }
+      // Re-read role from DB on initial sign-in OR when update() is called from
+      // the client (e.g. after the Google host callback upgrades TOURIST→OPERATOR)
+      if (user || trigger === 'update') {
+        const id = (token.id as string | undefined) ?? user?.id
+        if (id) {
+          const dbUser = await prisma.user.findUnique({ where: { id }, select: { role: true } })
+          if (dbUser) token.role = dbUser.role
+        }
       }
       return token
     },

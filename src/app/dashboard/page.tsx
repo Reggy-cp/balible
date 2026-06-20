@@ -2739,6 +2739,15 @@ function MessagesPanel() {
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
+  const { status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      if (typeof window !== 'undefined') {
+        window.location.href = '/sign-in?callbackUrl=/dashboard'
+      }
+    },
+  })
+
   const [activeNav, setActiveNav]   = useState('overview')
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [liveExperiences, setLiveExperiences]     = useState<DashExp[] | undefined>(undefined)
@@ -2758,6 +2767,14 @@ export default function DashboardPage() {
   // Non-admins are ignored server-side, so this is safe to read from the URL.
   const [adminViewId, setAdminViewId] = useState<string | undefined>(undefined)
   const readOnly = !!adminViewId
+
+  if (status === 'loading') {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F5F1EB', fontFamily: 'var(--font-inter)' }}>
+        <p style={{ color: '#6F675C', fontSize: 14 }}>Loading…</p>
+      </div>
+    )
+  }
 
   useEffect(() => {
     const opId = new URLSearchParams(window.location.search).get('operator') ?? undefined

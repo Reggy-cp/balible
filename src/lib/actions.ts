@@ -11,6 +11,15 @@ export async function getServiceFeeRateAction(): Promise<number> {
   return getServiceFeeRate()
 }
 
+export async function upgradeToOperatorAction(): Promise<void> {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) return
+  await prisma.user.updateMany({
+    where: { id: session.user.id, role: 'TOURIST' },
+    data: { role: 'OPERATOR' },
+  })
+}
+
 async function getServiceFeeRate(): Promise<number> {
   try {
     const row = await prisma.setting.findUnique({ where: { key: 'service_fee' } })

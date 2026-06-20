@@ -1,23 +1,37 @@
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
-import { redirect } from 'next/navigation'
+'use client'
 
-export default async function GoogleHostCallback({
-  searchParams,
-}: {
-  searchParams: { next?: string }
-}) {
-  const session = await getServerSession(authOptions)
-  const next = searchParams.next ?? '/dashboard'
+import { useEffect, Suspense } from 'react'
+import { useSession } from 'next-auth/react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { upgradeToOperatorAction } from '@/lib/actions'
 
-  if (session?.user?.id) {
-    // Only upgrade TOURIST → OPERATOR; never demote an existing ADMIN/OPERATOR
-    await prisma.user.updateMany({
-      where: { id: session.user.id, role: 'TOURIST' },
-      data: { role: 'OPERATOR' },
-    })
-  }
+function GoogleHostCallbackInner() {
+  const { update } = useSession()
+  const router = useRouter()
+  const params = useSearchParams()
+  const next = params.get('next') ?? '/dashboard'
 
-  redirect(next)
+  useEffect(() => {
+    async function run() {
+      await upgradeToOperatorAction()
+      await update()  // re-mints JWT with trigger='update' so role becomes OPERATOR
+      router.push(next)
+    }
+    run()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F5F1EB', fontFamily: 'var(--font-inter)' }}>
+      <p style={{ fontSize: 14, color: '#6F675C' }}>Setting up your host account…</p>
+    </div>
+  )
+}
+
+export default function GoogleHostCallback() {
+  return (
+    <Suspense>
+      <GoogleHostCallbackInner />
+    </Suspense>
+  )
 }
