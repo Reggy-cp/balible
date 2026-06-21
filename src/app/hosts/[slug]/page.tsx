@@ -7,7 +7,7 @@ import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
 import WishlistHeart from '@/components/WishlistHeart'
-import { HostChatButton, SaveHostButton, AskKalaButton } from '@/components/HostButtons'
+import { HostChatButton, SaveHostButton, AskKalaButton, AllReviewsModal } from '@/components/HostButtons'
 import { prisma } from '@/lib/prisma'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -28,7 +28,7 @@ type Review = {
 }
 
 type Host = {
-  slug: string; name: string; businessName: string; area: string
+  slug: string; operatorId: string; name: string; businessName: string; area: string
   avatar: string | null; coverImage: string; website: string
   bio: string; rating: number; totalReviews: number
   memberSince: string; languages: string[]
@@ -123,6 +123,7 @@ async function getHostFromDB(slug: string): Promise<Host | null> {
 
     return {
       slug,
+      operatorId: op.id,
       name: op.user.name,
       businessName: op.businessName,
       area: operatorArea || firstExpArea,
@@ -301,7 +302,7 @@ export default async function HostPage({ params }: { params: { slug: string } })
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <HostChatButton firstName={firstName} />
+                <HostChatButton firstName={firstName} operatorId={host.operatorId} />
                 <SaveHostButton slug={host.slug} />
               </div>
             </div>
@@ -373,10 +374,13 @@ export default async function HostPage({ params }: { params: { slug: string } })
                   <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111' }}>
                     What travelers say about {firstName}
                   </h2>
-                  {host.experiences[0] && (
-                    <a href={`/experiences/${host.experiences[0].slug}`} style={{ fontSize: 13, fontWeight: 600, color: '#C8A97E', textDecoration: 'none', flexShrink: 0 }}>
-                      View all reviews →
-                    </a>
+                  {host.reviews.length > 0 && (
+                    <AllReviewsModal
+                      reviews={host.reviews}
+                      hostName={displayName}
+                      rating={host.rating}
+                      totalReviews={totalReviews}
+                    />
                   )}
                 </div>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">

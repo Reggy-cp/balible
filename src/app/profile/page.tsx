@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import {
   User, Heart, CalendarDays, Settings, Star, MapPin, Clock,
   Edit2, Camera, Check, Home, Search, Map, X, MessageCircle, Send,
@@ -707,7 +708,7 @@ function WishlistTab({ dbSlugs }: { dbSlugs?: string[] }) {
 
 // ── Messages tab ───────────────────────────────────────────────────────────────
 
-function MessagesTab() {
+function MessagesTab({ initialOperatorId }: { initialOperatorId?: string }) {
   const [convs, setConvs]           = useState<ConversationSummary[]>([])
   const [loading, setLoading]       = useState(true)
   const [activeConv, setActiveConv] = useState<ConversationSummary | null>(null)
@@ -720,6 +721,21 @@ function MessagesTab() {
     listUserConversationsAction().then(r => { if (r) setConvs(r); setLoading(false) }).catch(() => setLoading(false))
 
   useEffect(() => { loadConvs() }, [])
+
+  // Auto-open conversation with operator when arriving from host page
+  useEffect(() => {
+    if (!initialOperatorId) return
+    getOrCreateConversationAction(initialOperatorId).then(async r => {
+      if (!r.ok || !r.conversationId) return
+      const convList = await listUserConversationsAction()
+      if (convList) {
+        setConvs(convList)
+        const found = convList.find(c => c.id === r.conversationId)
+        if (found) { setActiveConv(found); setMessages([]) }
+      }
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialOperatorId])
 
   // Poll conversation list every 30s
   useEffect(() => {
@@ -1158,7 +1174,7 @@ function SettingsTab({ sessionEmail }: { sessionEmail: string }) {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-export default function ProfilePage() {
+function ProfilePageInner() {
   const { data: session, status } = useSession({
     required: true,
     onUnauthenticated() {
@@ -1169,7 +1185,9 @@ export default function ProfilePage() {
   })
   const isLoaded = status !== 'loading'
   const isSignedIn = status === 'authenticated'
-  const [activeTab, setActiveTab] = useState('bookings')
+  const searchParams = useSearchParams()
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') ?? 'bookings')
+  const initialOperatorId = searchParams.get('operator') ?? undefined
   const [dbData, setDbData] = useState<UserData | null>(null)
   const [localWishlistCount, setLocalWishlistCount] = useState(0)
 
@@ -1200,7 +1218,7 @@ export default function ProfilePage() {
   const renderTab = () => {
     switch (activeTab) {
       case 'bookings':  return <BookingsTab dbBookings={dbData?.bookings} dbEventBookings={dbData?.eventBookings} onRefresh={loadDb} />
-      case 'messages':  return <MessagesTab />
+      case 'messages':  return <MessagesTab initialOperatorId={initialOperatorId} />
       case 'wishlist':  return <WishlistTab dbSlugs={dbData?.wishlistSlugs} />
       case 'reviews':   return <ReviewsTab dbReviews={dbData?.reviews} />
       case 'settings':  return <SettingsTab sessionEmail={displayEmail} />
@@ -1328,5 +1346,13 @@ export default function ProfilePage() {
         })}
       </nav>
     </div>
+  )
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={null}>
+      <ProfilePageInner />
+    </Suspense>
   )
 }
