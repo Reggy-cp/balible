@@ -65,9 +65,15 @@ function RecommendationCard({ exp }: { exp: ExpSummary }) {
           {exp.title}
         </h4>
         <div className="flex items-center gap-1 mt-1.5">
-          <Star size={11} fill="#C8A97E" color="#C8A97E" />
-          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 700, color: '#111111' }}>{exp.rating.toFixed(1)}</span>
-          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>({exp.totalReviews})</span>
+          {exp.totalReviews > 0 ? (
+            <>
+              <Star size={11} fill="#C8A97E" color="#C8A97E" />
+              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 700, color: '#111111' }}>{exp.rating.toFixed(1)}</span>
+              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>({exp.totalReviews})</span>
+            </>
+          ) : (
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#9E9A94' }}>New</span>
+          )}
         </div>
         <p className="mt-1" style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#111111' }}>
           From <span style={{ color: '#C8A97E' }}>IDR</span> {exp.price.toLocaleString('id-ID')}

@@ -319,9 +319,15 @@ export default function BaliMapView() {
                     </div>
                     <div className="flex items-center justify-between mt-1.5">
                       <div className="flex items-center gap-1">
-                        <Star size={11} fill="#C8A97E" color="#C8A97E" />
-                        <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>{exp.rating}</span>
-                        <span style={{ fontSize: 12, color: '#6F675C' }}>({exp.reviews})</span>
+                        {exp.reviews > 0 ? (
+                          <>
+                            <Star size={11} fill="#C8A97E" color="#C8A97E" />
+                            <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>{Number(exp.rating).toFixed(1)}</span>
+                            <span style={{ fontSize: 12, color: '#6F675C' }}>({exp.reviews})</span>
+                          </>
+                        ) : (
+                          <span style={{ fontSize: 12, color: '#9E9A94' }}>New</span>
+                        )}
                       </div>
                       <a
                         href={`/experiences/${exp.slug}`}
@@ -435,9 +441,15 @@ export default function BaliMapView() {
                         </div>
                         <div className="flex items-center justify-between mt-0.5">
                           <div className="flex items-center gap-1">
-                            <Star size={10} fill="#C8A97E" color="#C8A97E" />
-                            <span style={{ fontSize: 11, fontWeight: 600, color: '#111111' }}>{exp.rating}</span>
-                            <span style={{ fontSize: 11, color: '#6F675C' }}>({exp.reviews})</span>
+                            {exp.reviews > 0 ? (
+                              <>
+                                <Star size={10} fill="#C8A97E" color="#C8A97E" />
+                                <span style={{ fontSize: 11, fontWeight: 600, color: '#111111' }}>{Number(exp.rating).toFixed(1)}</span>
+                                <span style={{ fontSize: 11, color: '#6F675C' }}>({exp.reviews})</span>
+                              </>
+                            ) : (
+                              <span style={{ fontSize: 11, color: '#9E9A94' }}>New</span>
+                            )}
                           </div>
                           <a
                             href={`/experiences/${exp.slug}`}
@@ -477,7 +489,11 @@ export default function BaliMapView() {
                 </div>
                 <div className="flex items-center gap-3 mt-1">
                   <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#6F675C' }}><MapPin size={11} />{selectedExp.area}</span>
-                  <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#6F675C' }}><Star size={11} fill="#C8A97E" color="#C8A97E" />{selectedExp.rating} ({selectedExp.reviews})</span>
+                  {selectedExp.reviews > 0 ? (
+                    <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#6F675C' }}><Star size={11} fill="#C8A97E" color="#C8A97E" />{Number(selectedExp.rating).toFixed(1)} ({selectedExp.reviews})</span>
+                  ) : (
+                    <span style={{ fontSize: 12, color: '#9E9A94' }}>New</span>
+                  )}
                 </div>
                 <a href={`/experiences/${selectedExp.slug}`}
                   style={{ display: 'block', marginTop: 10, textAlign: 'center', backgroundColor: '#111111', color: 'white', borderRadius: 10, padding: '10px', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>

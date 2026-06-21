@@ -81,9 +81,15 @@ function ExperienceCard({ exp }: { exp: ExperienceCard }) {
           {exp.title}
         </h3>
         <div className="flex items-center gap-1 mt-2">
-          <Star size={11} fill="#C8A97E" color="#C8A97E" />
-          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 700, color: '#111111' }}>{exp.rating}</span>
-          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>({exp.reviews})</span>
+          {exp.reviews > 0 ? (
+            <>
+              <Star size={11} fill="#C8A97E" color="#C8A97E" />
+              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 700, color: '#111111' }}>{Number(exp.rating).toFixed(1)}</span>
+              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>({exp.reviews})</span>
+            </>
+          ) : (
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#9E9A94' }}>New</span>
+          )}
         </div>
         <p className="mt-2" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 700, color: '#111111' }}>
           From <span style={{ color: '#C8A97E' }}>IDR</span> {exp.price.toLocaleString('id-ID')}

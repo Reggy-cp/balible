@@ -256,7 +256,7 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
       <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: '#111111', marginTop: 2 }}>
         <span style={{ color: '#C8A97E' }}>IDR</span> {formatted}
       </p>
-      {rating !== undefined && totalReviews !== undefined && (
+      {rating !== undefined && totalReviews !== undefined && totalReviews > 0 && (
         <div className="flex items-center gap-1 mt-1">
           <span style={{ color: '#C8A97E', fontSize: 13, lineHeight: 1 }}>★</span>
           <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 700, color: '#111111' }}>{rating.toFixed(1)}</span>

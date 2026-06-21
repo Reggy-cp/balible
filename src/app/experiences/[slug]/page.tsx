@@ -163,9 +163,15 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
 
             <div className="flex items-center gap-3 mt-2 flex-wrap">
               <div className="flex items-center gap-1">
-                <Star size={14} fill="#C8A97E" color="#C8A97E" />
-                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 700, color: '#C8A97E' }}>{experience.rating.toFixed(1)}</span>
-                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>({experience.totalReviews} reviews)</span>
+                {experience.totalReviews > 0 ? (
+                  <>
+                    <Star size={14} fill="#C8A97E" color="#C8A97E" />
+                    <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 700, color: '#C8A97E' }}>{experience.rating.toFixed(1)}</span>
+                    <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>({experience.totalReviews} reviews)</span>
+                  </>
+                ) : (
+                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#9E9A94' }}>No reviews yet</span>
+                )}
               </div>
               <div className="flex items-center gap-1">
                 <MapPin size={12} style={{ color: '#6F675C' }} />
