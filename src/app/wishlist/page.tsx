@@ -125,15 +125,13 @@ export default function WishlistPage() {
     setMounted(true)
   }, [])
 
-  // Sync DB wishlist when signed in
+  // Sync DB wishlist when signed in — DB is authoritative after login
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return
     getUserWishlist().then(dbSlugs => {
-      if (dbSlugs.length > 0) {
-        const merged = Array.from(new Set([...dbSlugs]))
-        setSlugs(merged)
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(merged))
-      }
+      setSlugs(dbSlugs)
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(dbSlugs))
+      window.dispatchEvent(new CustomEvent('balible:wishlist-sync'))
     }).catch(() => {})
   }, [isLoaded, isSignedIn])
 

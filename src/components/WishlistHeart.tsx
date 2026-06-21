@@ -26,6 +26,12 @@ export default function WishlistHeart({
 
   useEffect(() => {
     setSaved(getList().includes(slug))
+  }, [slug, status])
+
+  useEffect(() => {
+    const resync = () => setSaved(getList().includes(slug))
+    window.addEventListener('balible:wishlist-sync', resync)
+    return () => window.removeEventListener('balible:wishlist-sync', resync)
   }, [slug])
 
   const toggle = async (e: React.MouseEvent) => {
