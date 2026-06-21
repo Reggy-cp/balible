@@ -1544,7 +1544,7 @@ export type DashExp = {
 export type DashBooking = {
   id: string; ref: string; guest: string; email: string
   experience: string; expImage: string
-  date: string; time: string; guests: number; total: number
+  date: string; dateISO: string; time: string; guests: number; total: number
   status: string; bookedOn: string
 }
 
@@ -1705,6 +1705,7 @@ export async function getHostDashboardData(viewOperatorId?: string): Promise<Hos
       experience: b.experience.title,
       expImage: (b.experience.images as string[])[0] ?? '',
       date: b.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      dateISO: b.date.toISOString().split('T')[0],
       time: '',
       guests: b.guests,
       total: b.totalPrice,

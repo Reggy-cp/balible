@@ -2475,9 +2475,7 @@ function AvailabilityPanel({ bookings }: { bookings?: DashBooking[] }) {
     if (!bookings) return new Set()
     const s = new Set<string>()
     bookings.forEach(b => {
-      if (b.status === 'Confirmed' || b.status === 'Pending') {
-        try { s.add(new Date(b.date).toISOString().split('T')[0]) } catch { /* skip */ }
-      }
+      if (b.status === 'Confirmed' || b.status === 'Pending') s.add(b.dateISO)
     })
     return s
   }, [bookings])
@@ -2486,6 +2484,7 @@ function AvailabilityPanel({ bookings }: { bookings?: DashBooking[] }) {
   const [year,  setYear]  = useState(today.getFullYear())
   const [month, setMonth] = useState(today.getMonth())
   const [blocked, setBlocked] = useState<Set<string>>(new Set())
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     getOperatorSettingsAction().then(s => {
@@ -2500,19 +2499,25 @@ function AvailabilityPanel({ bookings }: { bookings?: DashBooking[] }) {
 
   const dayKey = (d: number) => `${year}-${monthStr}-${String(d).padStart(2, '0')}`
 
+  const persist = (next: Set<string>) => {
+    setSaving(true)
+    updateOperatorSettingsAction({ blockedDates: Array.from(next) })
+      .finally(() => setSaving(false))
+  }
+
   const toggle = (d: number) => {
     const k = dayKey(d)
     if (bookedDates.has(k)) return
     setBlocked(prev => {
       const next = new Set(prev)
       next.has(k) ? next.delete(k) : next.add(k)
-      updateOperatorSettingsAction({ blockedDates: Array.from(next) })
+      persist(next)
       return next
     })
   }
   const unblock = (k: string) => setBlocked(prev => {
     const n = new Set(prev); n.delete(k)
-    updateOperatorSettingsAction({ blockedDates: Array.from(n) })
+    persist(n)
     return n
   })
 
@@ -2546,7 +2551,10 @@ function AvailabilityPanel({ bookings }: { bookings?: DashBooking[] }) {
 
       <div className="bg-white rounded-xl p-5 mb-5" style={{ border: '1px solid #E8E4DE' }}>
         <div className="flex items-center justify-between mb-4">
-          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>{monthName}</h2>
+          <div className="flex items-center gap-3">
+            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>{monthName}</h2>
+            {saving && <span style={{ fontSize: 11, color: '#9E9A94' }}>Saving…</span>}
+          </div>
           <div className="flex items-center gap-2">
             <button onClick={prevMonth} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid #E8E4DE', background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <ChevronLeft size={14} style={{ color: '#6F675C' }} />
@@ -2560,6 +2568,7 @@ function AvailabilityPanel({ bookings }: { bookings?: DashBooking[] }) {
             </button>
           </div>
         </div>
+
 
         <div className="grid grid-cols-7 mb-2">
           {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
