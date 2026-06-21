@@ -516,6 +516,8 @@ function ExperiencesPanel({ commissionRate, initialExperiences, triggerNewExp }:
   const [imageDragging, setImageDragging] = useState(false)
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([])
   const [galleryDragging, setGalleryDragging] = useState(false)
+  const [uploadingCover, setUploadingCover] = useState(false)
+  const [uploadingGalleryCount, setUploadingGalleryCount] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [saveError, setSaveError]   = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -549,7 +551,9 @@ function ExperiencesPanel({ commissionRate, initialExperiences, triggerNewExp }:
 
   const handleImageFile = async (file: File) => {
     if (!file.type.startsWith('image/')) return
+    setUploadingCover(true)
     const result = await uploadImage(file, `${formData.title || 'Bali experience'} cover photo`)
+    setUploadingCover(false)
     if (result) setImagePreview(result.url)
   }
 
@@ -557,7 +561,10 @@ function ExperiencesPanel({ commissionRate, initialExperiences, triggerNewExp }:
     if (!files) return
     const slots = 8 - galleryPreviews.length
     const toUpload = Array.from(files).filter(f => f.type.startsWith('image/')).slice(0, slots)
+    if (toUpload.length === 0) return
+    setUploadingGalleryCount(toUpload.length)
     const results = await Promise.all(toUpload.map((f, i) => uploadImage(f, `${formData.title || 'Bali experience'} gallery photo ${galleryPreviews.length + i + 1}`)))
+    setUploadingGalleryCount(0)
     setGalleryPreviews(prev => [...prev, ...(results.filter(Boolean).map(r => r!.url))])
   }
 
@@ -798,6 +805,22 @@ function ExperiencesPanel({ commissionRate, initialExperiences, triggerNewExp }:
                 <div style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: '#D1CDC7' }} />
               </div>
 
+              {/* Upload progress banner */}
+              {(uploadingCover || uploadingGalleryCount > 0) && (
+                <div className="flex items-center gap-3 mx-5 sm:mx-6 mt-3 px-4 py-3 rounded-xl" style={{ backgroundColor: '#F5F1EB', border: '1px solid #E0D9CE' }}>
+                  {/* Spinner */}
+                  <svg width="16" height="16" viewBox="0 0 16 16" style={{ flexShrink: 0, animation: 'spin 0.9s linear infinite' }}>
+                    <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+                    <circle cx="8" cy="8" r="6" fill="none" stroke="#C8A97E" strokeWidth="2" strokeDasharray="28" strokeDashoffset="10" />
+                  </svg>
+                  <p style={{ fontSize: 13, color: '#6F675C', margin: 0 }}>
+                    {uploadingCover
+                      ? t('db_uploading_cover')
+                      : `${t('db_uploading_gallery')} ${uploadingGalleryCount} ${uploadingGalleryCount === 1 ? t('db_photo_singular') : t('db_photos_plural')}…`}
+                  </p>
+                </div>
+              )}
+
               {/* Header */}
               <div className="flex items-start justify-between px-5 sm:px-6 pt-3 sm:pt-6 mb-5">
                 <div>
@@ -935,7 +958,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences, triggerNewExp }:
                   {/* Cover photo */}
                   <div>
                     <label style={labelStyle}>{t('db_cover_photo')}</label>
-                    <input ref={fileInputRef} type="file" accept="image/*" className="hidden"
+                    <input ref={fileInputRef} type="file" accept="image/*" className="hidden" disabled={uploadingCover}
                       onChange={e => { const f = e.target.files?.[0]; if (f) handleImageFile(f) }} />
                     {imagePreview ? (
                       <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', height: 180 }}>
@@ -972,7 +995,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences, triggerNewExp }:
                       <label style={{ fontSize: 13, fontWeight: 600, color: '#111111' }}>{t('db_gallery_photos')}</label>
                       <span style={{ fontSize: 12, color: '#9E9A94' }}>{galleryPreviews.length}/8</span>
                     </div>
-                    <input ref={galleryInputRef} type="file" accept="image/*" multiple className="hidden"
+                    <input ref={galleryInputRef} type="file" accept="image/*" multiple className="hidden" disabled={uploadingGalleryCount > 0}
                       onChange={e => { handleGalleryFiles(e.target.files); if (galleryInputRef.current) galleryInputRef.current.value = '' }} />
                     {galleryPreviews.length > 0 && (
                       <div className="grid grid-cols-3 gap-2 mb-2">

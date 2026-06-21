@@ -392,6 +392,10 @@ const translations = {
     db_photos_sub:          'Manage gallery photos for each of your experiences',
     db_first_is_cover:      'photos · first is cover',
     db_uploading:           'Uploading…',
+    db_uploading_cover:     'Uploading your cover photo — please wait…',
+    db_uploading_gallery:   'Uploading',
+    db_photo_singular:      'photo',
+    db_photos_plural:       'photos',
     db_add_photo:           'Add Photo',
     // Dashboard — messages
     db_messages_title:      'Messages',
@@ -806,6 +810,10 @@ const translations = {
     db_photos_sub:          'Kelola foto galeri untuk setiap pengalaman Anda',
     db_first_is_cover:      'foto · pertama adalah sampul',
     db_uploading:           'Mengunggah…',
+    db_uploading_cover:     'Foto sampul sedang diunggah — mohon tunggu…',
+    db_uploading_gallery:   'Mengunggah',
+    db_photo_singular:      'foto',
+    db_photos_plural:       'foto',
     db_add_photo:           'Tambah Foto',
     // Dashboard — messages
     db_messages_title:      'Pesan',
