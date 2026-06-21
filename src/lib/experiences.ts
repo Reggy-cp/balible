@@ -85,7 +85,7 @@ export async function getExperienceCards(): Promise<ExperienceCard[]> {
       select: {
         slug: true, title: true, area: true, rating: true, totalReviews: true,
         price: true, duration: true, maxGuests: true, category: true, images: true,
-        featured: true, level: true,
+        featured: true, level: true, subcategory: true,
       },
       orderBy: [{ featured: 'desc' }, { rating: 'desc' }],
     })
@@ -104,7 +104,7 @@ export async function getExperienceCards(): Promise<ExperienceCard[]> {
       photo: e.images[0] ?? '',
       featured: e.featured,
       badge: e.featured ? 'Bestseller' : null,
-      subcategory: null,
+      subcategory: e.subcategory || null,
       level: e.level,
     }))
   } catch {

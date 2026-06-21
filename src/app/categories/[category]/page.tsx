@@ -30,7 +30,7 @@ export default async function CategoryPage({ params }: { params: { category: str
       image: c.photo,
       badge: c.badge,
       category: isWater ? 'water-activities' : c.categorySlug,
-      subcategory: null,
+      subcategory: c.subcategory,
     }))
 
   return <CategoryClient categorySlug={category} initialExperiences={experiences} />
