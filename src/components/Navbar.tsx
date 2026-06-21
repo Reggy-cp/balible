@@ -56,6 +56,17 @@ export default function Navbar() {
   const langRef = useRef<HTMLDivElement>(null)
   const { t, locale, setLocale } = useLanguage()
   const activeLang = LOCALES.find(l => l.code === locale) ?? LOCALES[0]
+  const [signingOut, setSigningOut] = useState(false)
+
+  async function handleSignOut() {
+    if (signingOut) return
+    setSigningOut(true)
+    try {
+      await signOut({ redirect: false })
+    } finally {
+      window.location.href = '/'
+    }
+  }
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -242,11 +253,13 @@ export default function Navbar() {
                       </a>
                       <div style={{ borderTop: '1px solid #F5F1EB', margin: '4px 0' }} />
                       <button
-                        onClick={() => signOut({ callbackUrl: '/' })}
+                        type="button"
+                        onClick={handleSignOut}
+                        disabled={signingOut}
                         className="flex w-full items-center gap-2.5 px-4 py-2.5 hover:bg-stone-50 transition-colors"
-                        style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#B66A45', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+                        style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#B66A45', background: 'none', border: 'none', cursor: signingOut ? 'default' : 'pointer', textAlign: 'left', opacity: signingOut ? 0.6 : 1 }}
                       >
-                        {t('nav_sign_out')}
+                        {signingOut ? 'Signing out…' : t('nav_sign_out')}
                       </button>
                     </div>
                   )}
@@ -324,8 +337,8 @@ export default function Navbar() {
                   <a href="/wishlist" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', textDecoration: 'none' }}>
                     <span style={{ fontSize: 16 }}>🤍</span> {t('nav_wishlist')}
                   </a>
-                  <button onClick={() => signOut({ callbackUrl: '/' })} className="flex w-full items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#B66A45', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
-                    {t('nav_sign_out')}
+                  <button type="button" onClick={handleSignOut} disabled={signingOut} className="flex w-full items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#B66A45', background: 'none', border: 'none', cursor: signingOut ? 'default' : 'pointer', textAlign: 'left', opacity: signingOut ? 0.6 : 1 }}>
+                    {signingOut ? 'Signing out…' : t('nav_sign_out')}
                   </button>
                 </div>
               ) : (

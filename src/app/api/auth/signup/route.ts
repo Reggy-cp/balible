@@ -31,6 +31,13 @@ export async function POST(req: Request) {
 
   const existing = await prisma.user.findUnique({ where: { email } })
   if (existing) {
+    // If signing up as host and the account exists as TOURIST, upgrade the role
+    if (role === 'OPERATOR' && existing.role === 'TOURIST' && existing.password) {
+      const valid = await bcrypt.compare(password, existing.password)
+      if (!valid) return NextResponse.json({ error: 'Email already in use' }, { status: 409 })
+      await prisma.user.update({ where: { email }, data: { role: 'OPERATOR' } })
+      return NextResponse.json({ id: existing.id, email: existing.email }, { status: 200 })
+    }
     return NextResponse.json({ error: 'Email already in use' }, { status: 409 })
   }
 

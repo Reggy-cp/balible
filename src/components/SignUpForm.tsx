@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { signIn } from 'next-auth/react'
+import { signIn, useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -35,6 +35,7 @@ interface Props {
 
 export default function SignUpForm({ role, panelBg, headline, subCopy, heading, submitLabel, redirectTo, switchLink }: Props) {
   const router = useRouter()
+  const { update } = useSession()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -63,6 +64,7 @@ export default function SignUpForm({ role, panelBg, headline, subCopy, heading, 
     }
 
     const signInRes = await signIn('credentials', { email, password, redirect: false })
+    if (signInRes?.ok) await update()
     setLoading(false)
     if (signInRes?.error) {
       const fallback = redirectTo !== '/' ? `/sign-in?callbackUrl=${encodeURIComponent(redirectTo)}` : '/sign-in'

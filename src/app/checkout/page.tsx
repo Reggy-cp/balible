@@ -564,6 +564,7 @@ function StepRentalSummary({ title, area, image, startDate, endDate, units, peri
   }
   const subtotal = price * periods * units
   const fee = total - subtotal
+  const feePct = subtotal > 0 ? Math.round((fee / subtotal) * 100) : 0
 
   return (
     <div className="bg-white rounded-xl p-6" style={{ border: '1px solid #E8E4DE' }}>
@@ -609,7 +610,7 @@ function StepRentalSummary({ title, area, image, startDate, endDate, units, peri
           <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>IDR {subtotal.toLocaleString('id-ID')}</span>
         </div>
         <div className="flex justify-between">
-          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>Service fee (8%)</span>
+          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>Service fee ({feePct}%)</span>
           <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>IDR {fee.toLocaleString('id-ID')}</span>
         </div>
         <div className="flex justify-between pt-2" style={{ borderTop: '1px solid #E8E4DE' }}>
@@ -655,6 +656,7 @@ function RentalBookingSummary({ title, area, image, startDate, endDate, units, p
   }
   const subtotal = price * periods * units
   const fee = total - subtotal
+  const feePct = subtotal > 0 ? Math.round((fee / subtotal) * 100) : 0
   const periodLabel = (n: number) => { const u = period.replace('per ', ''); return `${n} ${u}${n !== 1 ? 's' : ''}` }
 
   return (
@@ -688,7 +690,7 @@ function RentalBookingSummary({ title, area, image, startDate, endDate, units, p
           <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>IDR {subtotal.toLocaleString('id-ID')}</span>
         </div>
         <div className="flex justify-between">
-          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>Service fee (8%)</span>
+          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>Service fee ({feePct}%)</span>
           <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>IDR {fee.toLocaleString('id-ID')}</span>
         </div>
         <div className="flex justify-between pt-3" style={{ borderTop: '1px solid #E8E4DE', marginTop: 4 }}>
