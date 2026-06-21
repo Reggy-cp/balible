@@ -104,9 +104,17 @@ const CATEGORY_META: Record<string, {
     color: '#D97706',
     subcategories: ['All', 'Scooter', 'Motorbike', 'Bicycle', 'E-Bike', 'Car', 'ATV', 'Golf Cart', 'Surfboard', 'Kayak', 'Jet Ski', 'Drone', 'Camera Gear', 'Villa', 'Workspace', 'Studio', 'Camping Gear', 'Diving Equipment', 'Baby Equipment', 'Boat', 'Sound System', 'Projector', 'BBQ Equipment', 'Beach Equipment', 'Pool Float', 'Cooler Box'],
   },
+  services: {
+    label: 'Services',
+    tagline: 'Professional services, delivered to you',
+    description: "Find trusted local professionals for everyday needs — massage, hair & beauty, cleaning, private chef, catering, laundry, repairs, and more. Book a service and have it come to you.",
+    image: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200&auto=format&fit=crop&q=80',
+    color: '#7C3AED',
+    subcategories: ['All', 'Massage & Spa', 'Hair & Beauty', 'Nail & Lashes', 'Cleaning', 'Laundry', 'Tailoring & Alterations', 'Repair & Maintenance', 'Private Chef', 'Catering', 'Decoration & Styling', 'Home Delivery', 'Security', 'IT Support', 'Printing & Design', 'Medical & Health', 'Dental', 'Veterinary', 'Moving & Logistics', 'Personal Shopping'],
+  },
 }
 
-const ALL_CATEGORY_SLUGS = ['art-craft', 'wellness-healing', 'culture-spiritual', 'nature-outdoors', 'water-activities', 'culinary', 'local-experts', 'rentals'] as const
+const ALL_CATEGORY_SLUGS = ['art-craft', 'wellness-healing', 'culture-spiritual', 'nature-outdoors', 'water-activities', 'culinary', 'local-experts', 'rentals', 'services'] as const
 const SUB_CATEGORY_SLUGS = new Set<string>([])
 const SORT_OPTIONS = ['Most popular', 'Highest rated', 'Price: Low to High', 'Price: High to Low']
 

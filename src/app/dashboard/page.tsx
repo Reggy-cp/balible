@@ -527,6 +527,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
     'Water Activities':   ['Surfing', 'Snorkelling', 'Freediving', 'Scuba Diving', 'Stand-Up Paddle', 'Kayaking', 'River Rafting', 'Jet Ski', 'Parasailing', 'Island Hopping', 'Wakeboarding', 'Kite Surfing', 'Dolphin Watching', 'Cliff Jumping', 'Windsurfing', 'Boat Charter', 'Whale Watching', 'Open Water Swimming', 'Night Snorkelling'],
     'Local Experts':      ['Photographers', 'Guides', 'Wellness Practitioners', 'Childcare', 'Pet Care', 'Creative Mentors', 'Drivers', 'Translators', 'Wedding Planners', 'Event Planners', 'Personal Shoppers', 'Fitness Trainers', 'Yoga Teachers', 'Surf Coaches', 'Music Teachers', 'Dive Instructors', 'Life Coaches', 'Makeup Artists', 'Hair Stylists', 'Butler Service', 'Nutritionists'],
     'Rentals':            ['Scooter', 'Motorbike', 'Bicycle', 'E-Bike', 'Car', 'ATV', 'Golf Cart', 'Surfboard', 'Kayak', 'Jet Ski', 'Drone', 'Camera Gear', 'Villa', 'Workspace', 'Studio', 'Camping Gear', 'Diving Equipment', 'Baby Equipment', 'Boat', 'Sound System', 'Projector', 'BBQ Equipment', 'Beach Equipment', 'Pool Float', 'Cooler Box'],
+    'Services':           ['Massage & Spa', 'Hair & Beauty', 'Nail & Lashes', 'Cleaning', 'Laundry', 'Tailoring & Alterations', 'Repair & Maintenance', 'Private Chef', 'Catering', 'Decoration & Styling', 'Home Delivery', 'Security', 'IT Support', 'Printing & Design', 'Medical & Health', 'Dental', 'Veterinary', 'Moving & Logistics', 'Personal Shopping'],
   }
 
   const BLANK_FORM = { title: '', category: 'Art & Craft', subcategory: 'Pottery', area: 'Ubud', price: '', duration: '', maxGuests: '', minGuests: '', meetingPoint: '', description: '', includes: '', excludes: '', rentalPeriod: 'per day', deposit: '' }
@@ -814,7 +815,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                     <div>
                       <label style={labelStyle}>Category</label>
                       <select value={formData.category} onChange={e => setCategory(e.target.value)} style={{ ...inputStyle, backgroundColor: 'white', cursor: 'pointer' }}>
-                        {['Art & Craft','Wellness & Healing','Culture & Spiritual','Culinary','Nature & Outdoors','Water Activities','Local Experts','Rentals'].map(c => <option key={c} value={c}>{c}</option>)}
+                        {['Art & Craft','Wellness & Healing','Culture & Spiritual','Culinary','Nature & Outdoors','Water Activities','Local Experts','Rentals','Services'].map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
                     </div>
                     <div>

@@ -20,7 +20,7 @@ type HostCard = {
 const CATEGORY_DISPLAY: Record<string, string> = {
   WELLNESS_HEALING: 'Wellness & Healing', ART_CRAFT: 'Art & Craft', CULTURE_SPIRITUAL: 'Culture & Spiritual',
   CULINARY: 'Culinary', NATURE_OUTDOORS: 'Nature & Outdoors',
-  WATER_ACTIVITIES: 'Water Activities', LOCAL_EXPERTS: 'Local Experts', RENTALS: 'Rentals',
+  WATER_ACTIVITIES: 'Water Activities', LOCAL_EXPERTS: 'Local Experts', RENTALS: 'Rentals', SERVICE: 'Services',
 }
 const AREA_DISPLAY: Record<string, string> = {
   UBUD: 'Ubud', CANGGU: 'Canggu', SEMINYAK: 'Seminyak', KUTA: 'Kuta',
@@ -75,6 +75,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   'Water Activities':   '#7E9EB5',
   'Local Experts':      '#4A7C59',
   'Rentals':            '#B66A45',
+  'Services':           '#7C3AED',
 }
 
 export default async function HostsPage() {

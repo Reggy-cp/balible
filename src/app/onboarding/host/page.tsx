@@ -14,6 +14,7 @@ const CATEGORIES = [
   { value: 'WATER_ACTIVITIES', label: 'Water Activities' },
   { value: 'LOCAL_EXPERTS',    label: 'Local Experts' },
   { value: 'RENTALS',          label: 'Rentals' },
+  { value: 'SERVICE',          label: 'Services' },
 ]
 
 const AREAS = [

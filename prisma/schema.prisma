@@ -249,6 +249,7 @@ enum Category {
   WATER_ACTIVITIES
   LOCAL_EXPERTS
   RENTALS
+  SERVICE
 }
 
 enum Area {

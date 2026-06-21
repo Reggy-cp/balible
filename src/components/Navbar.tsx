@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { useSession } from 'next-auth/react'
 import {
   Menu, X, ChevronDown, LayoutDashboard, User,
-  Leaf, Scissors, Landmark, Mountain, Waves, ChefHat, Sun, Users, Bike,
+  Leaf, Scissors, Landmark, Mountain, Waves, ChefHat, Sun, Users, Bike, Briefcase,
 } from 'lucide-react'
 import NotificationBell from '@/components/NotificationBell'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -21,7 +21,8 @@ const CATEGORIES: CategoryDef[] = [
   { labelKey: 'cat_nature',    Icon: Mountain,  slug: 'nature-outdoors' },
   { labelKey: 'cat_water',     Icon: Waves,     slug: 'water-activities' },
   { labelKey: 'cat_experts',   Icon: Users,     slug: 'local-experts' },
-  { labelKey: 'cat_rentals',   Icon: Bike,      slug: 'rentals' },
+  { labelKey: 'cat_rentals',   Icon: Bike,       slug: 'rentals' },
+  { labelKey: 'cat_service',   Icon: Briefcase,  slug: 'services' },
 ]
 
 type NavLink = { labelKey: TranslationKey; href: string; hasDropdown: boolean }
@@ -37,6 +38,7 @@ const MOBILE_LINKS: MobileLink[] = [
   { labelKey: 'nav_destinations', href: '/destinations' },
   { labelKey: 'nav_events',       href: '/events' },
   { labelKey: 'cat_rentals',      href: '/categories/rentals' },
+  { labelKey: 'cat_service',      href: '/categories/services' },
 ]
 
 export default function Navbar() {

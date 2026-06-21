@@ -6,7 +6,7 @@ export const revalidate = 300
 export function generateStaticParams() {
   return [
     'art-craft', 'wellness-healing', 'culture-spiritual', 'culinary',
-    'nature-outdoors', 'water-activities', 'local-experts', 'rentals',
+    'nature-outdoors', 'water-activities', 'local-experts', 'rentals', 'services',
   ].map(category => ({ category }))
 }
 

@@ -39,6 +39,7 @@ const translations = {
     cat_water:            'Water Activities',
     cat_experts:          'Local Experts',
     cat_rentals:          'Rentals',
+    cat_service:          'Services',
     // Common
     book_now:             'Book now',
     from:                 'From',
@@ -160,6 +161,7 @@ const translations = {
     cat_water:            'Aktivitas Air',
     cat_experts:          'Ahli Lokal',
     cat_rentals:          'Penyewaan',
+    cat_service:          'Layanan',
     // Common
     book_now:             'Pesan Sekarang',
     from:                 'Mulai dari',

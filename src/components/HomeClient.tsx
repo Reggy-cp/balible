@@ -6,7 +6,7 @@ import Image from 'next/image'
 import {
   Heart, Search, CalendarDays, MapPin, X,
   Leaf, Scissors, Landmark, ChefHat, Sun,
-  Mountain, Waves, Grid3x3, Star, ShieldCheck, Users, Sparkles, Bike,
+  Mountain, Waves, Grid3x3, Star, ShieldCheck, Users, Sparkles, Bike, Briefcase,
   Instagram, Facebook, Twitter,
 } from 'lucide-react'
 import Navbar from '@/components/Navbar'
@@ -27,7 +27,8 @@ const CAT_GRID = [
   { label: 'Nature & Outdoors',   Icon: Mountain, href: '/categories/nature-outdoors',    photo: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=400&auto=format&fit=crop&q=80' },
   { label: 'Water Activities',    Icon: Waves,    href: '/categories/water-activities',   photo: 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=400&auto=format&fit=crop&q=80' },
   { label: 'Local Experts',       Icon: Users,    href: '/categories/local-experts',      photo: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&auto=format&fit=crop&q=80' },
-  { label: 'Rentals',             Icon: Bike,     href: '/categories/rentals',            photo: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&auto=format&fit=crop&q=80' },
+  { label: 'Rentals',             Icon: Bike,       href: '/categories/rentals',   photo: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&auto=format&fit=crop&q=80' },
+  { label: 'Services',            Icon: Briefcase,  href: '/categories/services',  photo: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&auto=format&fit=crop&q=80' },
 ]
 
 const WHY_ITEMS = [

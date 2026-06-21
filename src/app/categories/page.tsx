@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
 
 export const metadata = {
   title: 'Browse by Category — Balible',
-  description: 'Explore Bali through 8 categories — art & craft, wellness, culture & spiritual, culinary, nature, water activities, local experts, and rentals.',
+  description: 'Explore Bali through 9 categories — art & craft, wellness, culture & spiritual, culinary, nature, water activities, local experts, rentals, and services.',
 }
 
 const CATEGORIES = [
@@ -114,6 +114,19 @@ const CATEGORIES = [
     span: 'lg:col-span-2',
     imageHeight: 'h-48',
   },
+  {
+    slug: 'services',
+    label: 'Services',
+    tagline: 'Professional services, delivered to you',
+    description: 'Massage, hair & beauty, cleaning, private chef, catering, laundry, repairs, and more — trusted local professionals who come to you.',
+    image: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&auto=format&fit=crop&q=80',
+    count: 0,
+    avgPrice: 0,
+    featured: ['Massage at Home', 'Private Chef', 'Home Cleaning'],
+    accent: '#7C3AED',
+    span: 'lg:col-span-2',
+    imageHeight: 'h-48',
+  },
 ]
 
 const SLUG_TO_ENUM: Record<string, string> = {
@@ -125,6 +138,7 @@ const SLUG_TO_ENUM: Record<string, string> = {
   'water-activities': 'WATER_ACTIVITIES',
   'local-experts':    'LOCAL_EXPERTS',
   'rentals':          'RENTALS',
+  'services':         'SERVICE',
 }
 
 type CategoryStats = { count: number; minPrice: number }
@@ -175,7 +189,7 @@ export default async function CategoriesPage() {
               Every way to experience Bali
             </h1>
             <p style={{ fontFamily: 'var(--font-inter)', fontSize: 16, color: '#6F675C', marginTop: 16, lineHeight: 1.75, maxWidth: 520 }}>
-              {totalExperiences > 0 ? `${totalExperiences} handpicked` : 'Handpicked'} listings across 8 categories — art, wellness, culture & spiritual, culinary, nature, water activities, local experts, and rentals. Each one led by a local who knows their craft.
+              {totalExperiences > 0 ? `${totalExperiences} handpicked` : 'Handpicked'} listings across 9 categories — art, wellness, culture & spiritual, culinary, nature, water activities, local experts, rentals, and services. Each one led by a local who knows their craft.
             </p>
           </div>
 
