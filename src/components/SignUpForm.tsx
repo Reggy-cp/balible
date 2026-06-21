@@ -117,7 +117,7 @@ export default function SignUpForm({ role, panelBg, headline, subCopy, heading, 
             type="button"
             onClick={() => {
               const callbackUrl = role === 'OPERATOR'
-                ? `/auth/google-host-callback?next=${encodeURIComponent(redirectTo)}`
+                ? `/api/auth/become-host?next=${encodeURIComponent(redirectTo)}`
                 : redirectTo
               signIn('google', { callbackUrl })
             }}
