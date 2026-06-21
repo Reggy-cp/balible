@@ -2528,13 +2528,12 @@ function AvailabilityPanel({ bookings }: { bookings?: DashBooking[] }) {
 
   const dayKey = (d: number) => `${year}-${monthStr}-${String(d).padStart(2, '0')}`
 
-  const [saveErrMsg, setSaveErrMsg] = useState('')
   const saveBlocked = async (next: Set<string>) => {
-    setSaving(true); setSaved(false); setSaveErr(false); setSaveErrMsg('')
+    setSaving(true); setSaved(false); setSaveErr(false)
     const res = await updateOperatorSettingsAction({ blockedDates: Array.from(next) })
     setSaving(false)
     if (res.ok) { setSaved(true); setDirty(false); setTimeout(() => setSaved(false), 2500) }
-    else { setSaveErr(true); setSaveErrMsg(res.err ?? ''); setTimeout(() => { setSaveErr(false); setSaveErrMsg('') }, 10000) }
+    else { setSaveErr(true); setTimeout(() => setSaveErr(false), 4000) }
   }
 
   const toggle = (d: number) => {
@@ -2676,8 +2675,8 @@ function AvailabilityPanel({ bookings }: { bookings?: DashBooking[] }) {
           </span>
         )}
         {saveErr && (
-          <span style={{ fontSize: 11, color: '#B66A45', fontFamily: 'var(--font-inter)', maxWidth: 400, wordBreak: 'break-all' }}>
-            {saveErrMsg || 'Could not save — check your connection'}
+          <span style={{ fontSize: 13, color: '#B66A45', fontFamily: 'var(--font-inter)' }}>
+            Could not save — try again
           </span>
         )}
       </div>

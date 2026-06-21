@@ -2561,12 +2561,14 @@ export async function updateOperatorSettingsAction(data: {
   blockedDates?: string[]
   coverPhoto?: string | null
   galleryImages?: string[]
-}): Promise<{ ok: boolean; err?: string }> {
+}): Promise<{ ok: boolean }> {
   try {
     const user = await getSessionUser()
-    if (!user) return { ok: false, err: 'no_session' }
+    if (!user) return { ok: false }
+    const operatorId = user.operator?.id
+    if (!operatorId) return { ok: false }
     await prisma.operator.update({
-      where: { userId: user.id },
+      where: { id: operatorId },
       data: {
         ...(data.notifSettings !== undefined && { notifSettings: data.notifSettings }),
         ...(data.payoutBank !== undefined && { payoutBank: data.payoutBank || null }),
@@ -2578,11 +2580,7 @@ export async function updateOperatorSettingsAction(data: {
       },
     })
     return { ok: true }
-  } catch (e: any) {
-    const msg = String(e?.code ?? '') + ' ' + String(e?.message ?? '').slice(0, 200)
-    console.error('BALIBLE_ERR', msg)
-    return { ok: false, err: msg }
-  }
+  } catch (e) { console.error('[updateOperatorSettingsAction]', e); return { ok: false } }
 }
 
 // ── Experience gallery images ─────────────────────────────────────────────────
