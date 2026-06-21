@@ -159,61 +159,87 @@ function BookingSummary({ booking, guests, editing, onEdit, numSlots = 1, numDat
         </div>
       </div>
 
-      <div className="py-4" style={{ borderBottom: '1px solid #E8E4DE' }}>
-        <div className="flex justify-between items-start">
-          <div>
-            {[
-              { label: 'Date',   value: extraDates.length > 0 ? [rawDate ?? '', ...extraDates].sort().map(d => { const parts = d.split('-'); return `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+(parts[1]??'1')-1]} ${+(parts[2]??'1')}` }).join(', ') : booking.date },
-              ...(booking.time ? [{ label: 'Time', value: booking.time }] : []),
-              { label: 'Guests', value: `${guests} guest${guests > 1 ? 's' : ''}` },
-            ].map(({ label, value }) => (
-              <div key={label} className="flex items-center gap-1.5 mb-1">
-                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', width: 40 }}>{label}</span>
-                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111', fontWeight: 500 }}>{value}</span>
+      {(() => {
+        const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+        const fmtRaw = (d: string) => { const p = d.split('-'); return `${MONTHS[+(p[1]??'1')-1]} ${+(p[2]??'1')}` }
+        const allRawDates = extraDates.length > 0 ? [rawDate ?? '', ...extraDates].sort() : []
+        const timeLabel = booking.time || ''
+        return (
+          <>
+            <div className="py-4" style={{ borderBottom: '1px solid #E8E4DE' }}>
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  {allRawDates.length > 0 ? (
+                    <>
+                      <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', marginBottom: 6 }}>Sessions</p>
+                      {allRawDates.map(d => (
+                        <div key={d} className="flex items-center gap-2 mb-1.5">
+                          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111', minWidth: 52 }}>{fmtRaw(d)}</span>
+                          {timeLabel && <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>{timeLabel}</span>}
+                        </div>
+                      ))}
+                      <div className="flex items-center gap-1.5 mt-2">
+                        <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', width: 52 }}>Guests</span>
+                        <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111', fontWeight: 500 }}>{guests} guest{guests > 1 ? 's' : ''}</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {[
+                        { label: 'Date',   value: booking.date },
+                        ...(timeLabel ? [{ label: 'Time', value: timeLabel }] : []),
+                        { label: 'Guests', value: `${guests} guest${guests > 1 ? 's' : ''}` },
+                      ].map(({ label, value }) => (
+                        <div key={label} className="flex items-center gap-1.5 mb-1">
+                          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', width: 40 }}>{label}</span>
+                          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111', fontWeight: 500 }}>{value}</span>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                </div>
+                {!editing && (
+                  <button onClick={onEdit} className="flex items-center gap-1 hover:opacity-70 transition-opacity flex-shrink-0 ml-2"
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#C8A97E', fontSize: 13, fontFamily: 'var(--font-inter)' }}>
+                    <Edit2 size={12} /> Edit
+                  </button>
+                )}
               </div>
-            ))}
-          </div>
-          {!editing && (
-            <button
-              onClick={onEdit}
-              className="flex items-center gap-1 hover:opacity-70 transition-opacity"
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#C8A97E', fontSize: 13, fontFamily: 'var(--font-inter)' }}
-            >
-              <Edit2 size={12} /> Edit
-            </button>
-          )}
-        </div>
-      </div>
+            </div>
 
-      {booking.meetingPoint && (
-        <div className="py-4" style={{ borderBottom: '1px solid #E8E4DE' }}>
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 600, color: '#6F675C', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Meeting point</p>
-          <div className="flex items-start gap-2">
-            <MapPin size={13} style={{ color: '#C8A97E', flexShrink: 0, marginTop: 2 }} />
-            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111', lineHeight: 1.5 }}>{booking.meetingPoint}</p>
-          </div>
-        </div>
-      )}
+            {booking.meetingPoint && (
+              <div className="py-4" style={{ borderBottom: '1px solid #E8E4DE' }}>
+                <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 600, color: '#6F675C', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Meeting point</p>
+                <div className="flex items-start gap-2">
+                  <MapPin size={13} style={{ color: '#C8A97E', flexShrink: 0, marginTop: 2 }} />
+                  <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111', lineHeight: 1.5 }}>{booking.meetingPoint}</p>
+                </div>
+              </div>
+            )}
 
-      <div className="pt-4 space-y-2">
-        <div className="flex justify-between">
-          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>
-            IDR {booking.pricePerPerson.toLocaleString('id-ID')} × {guests} guest{guests > 1 ? 's' : ''}{numSlots * numDates > 1 ? ` × ${numSlots * numDates} sessions` : ''}
-          </span>
-          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>IDR {sub.toLocaleString('id-ID')}</span>
-        </div>
-        <div className="flex justify-between">
-          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>Service fee ({Math.round(booking.serviceFeeRate * 100)}%)</span>
-          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>IDR {fee.toLocaleString('id-ID')}</span>
-        </div>
-        <div className="flex justify-between pt-3" style={{ borderTop: '1px solid #E8E4DE', marginTop: 4 }}>
-          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111' }}>Total</span>
-          <div className="text-right">
-            <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>IDR {total.toLocaleString('id-ID')}</p>
-            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>Taxes included</p>
-          </div>
-        </div>
-      </div>
+            <div className="pt-4 space-y-2">
+              <div className="flex justify-between">
+                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>
+                  IDR {booking.pricePerPerson.toLocaleString('id-ID')} × {guests} guest{guests > 1 ? 's' : ''}
+                  {numSlots * numDates > 1 ? ` × ${numSlots * numDates} sessions` : ''}
+                </span>
+                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>IDR {sub.toLocaleString('id-ID')}</span>
+              </div>
+              <div className="flex justify-between">
+                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>Service fee ({Math.round(booking.serviceFeeRate * 100)}%)</span>
+                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>IDR {fee.toLocaleString('id-ID')}</span>
+              </div>
+              <div className="flex justify-between pt-3" style={{ borderTop: '1px solid #E8E4DE', marginTop: 4 }}>
+                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111' }}>Total</span>
+                <div className="text-right">
+                  <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>IDR {total.toLocaleString('id-ID')}</p>
+                  <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>Taxes included</p>
+                </div>
+              </div>
+            </div>
+          </>
+        )
+      })()}
 
       <div className="mt-5 pt-4 space-y-2.5" style={{ borderTop: '1px solid #E8E4DE' }}>
         {[
