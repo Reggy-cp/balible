@@ -2042,12 +2042,35 @@ export async function cancelBookingAction(bookingRef: string): Promise<{ ok: boo
     const user = await getSessionUser()
     if (!user) return { ok: false, error: 'Not signed in' }
 
-    const booking = await prisma.booking.findUnique({ where: { bookingRef } })
+    const booking = await prisma.booking.findUnique({
+      where: { bookingRef },
+      include: { experience: { select: { title: true } } },
+    })
     if (!booking) return { ok: false, error: 'Booking not found' }
     if (booking.userId !== user.id) return { ok: false, error: 'Unauthorised' }
     if (booking.status !== 'CONFIRMED') return { ok: false, error: 'Only confirmed bookings can be cancelled.' }
 
     await prisma.booking.update({ where: { bookingRef }, data: { status: 'CANCELLED' } })
+
+    const dateStr = booking.date.toLocaleDateString('en-US', {
+      weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'Asia/Makassar',
+    })
+    const emailInput = {
+      bookingRef,
+      guestName:        booking.guestName,
+      guestEmail:       booking.guestEmail,
+      experienceTitle:  booking.experience.title,
+      date:             dateStr,
+      guests:           booking.guests,
+      totalPaid:        booking.totalPrice,
+    }
+
+    const { sendCustomerCancellationEmail, sendAdminRefundAlert } = await import('./email')
+    await Promise.allSettled([
+      sendCustomerCancellationEmail({ to: booking.guestEmail, ...emailInput }),
+      sendAdminRefundAlert({ to: 'hello@balible.com', ...emailInput }),
+    ])
+
     return { ok: true }
   } catch (err) {
     console.error('[cancelBooking]', err)

@@ -511,6 +511,108 @@ export async function sendNewMessageEmail({
   }
 }
 
+// ── Booking cancellation & refund ─────────────────────────────────────────────
+
+export type CancellationEmailInput = {
+  to: string
+  guestName: string
+  bookingRef: string
+  experienceTitle: string
+  date: string
+  guests: number
+  totalPaid: number
+}
+
+export async function sendCustomerCancellationEmail(input: CancellationEmailInput): Promise<{ sent: boolean }> {
+  const client = getClient()
+  if (!client) {
+    console.warn('[email] RESEND_API_KEY not set — skipping cancellation email to', input.to)
+    return { sent: false }
+  }
+  const row = (label: string, value: string) => `
+    <tr>
+      <td style="padding:8px 0;font-size:13px;color:${BRAND.muted};width:140px;vertical-align:top;">${label}</td>
+      <td style="padding:8px 0;font-size:14px;color:${BRAND.ink};font-weight:600;">${value}</td>
+    </tr>`
+  try {
+    await client.emails.send({
+      from: FROM,
+      to: input.to,
+      subject: `Booking cancelled — ${input.experienceTitle}`,
+      html: layout(`
+        <p style="margin:0 0 4px;font-size:13px;color:#B66A45;font-weight:600;">BOOKING CANCELLED</p>
+        <h1 style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:24px;color:${BRAND.ink};">Your booking has been cancelled</h1>
+        <p style="margin:0 0 20px;font-size:15px;color:${BRAND.muted};line-height:1.7;">
+          Hi ${input.guestName}, we've received your cancellation request. Your refund will be reviewed and processed within <strong style="color:${BRAND.ink};">3–5 business days</strong>.
+        </p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid ${BRAND.border};border-bottom:1px solid ${BRAND.border};margin-bottom:24px;">
+          ${row('Booking ref', input.bookingRef)}
+          ${row('Experience', input.experienceTitle)}
+          ${row('Date', input.date)}
+          ${row('Guests', String(input.guests))}
+          ${row('Refund amount', `IDR ${input.totalPaid.toLocaleString('id-ID')}`)}
+        </table>
+        <div style="padding:16px 20px;background-color:#FEF9EC;border-radius:10px;border:1px solid #E8D4B8;margin-bottom:20px;">
+          <p style="margin:0 0 6px;font-size:13px;color:${BRAND.ink};font-weight:600;">What happens next?</p>
+          <p style="margin:0;font-size:13px;color:${BRAND.muted};line-height:1.75;">
+            Our team will process your refund within 3–5 business days. Once processed, it may take a further 3–7 business days to appear on your original payment method depending on your bank.
+          </p>
+        </div>
+        <p style="margin:0;font-size:13px;color:${BRAND.muted};line-height:1.7;">
+          Questions? Reply to this email or contact us at hello@balible.com and quote your booking reference.
+        </p>
+      `),
+    })
+    return { sent: true }
+  } catch (err) {
+    console.error('[email] customer cancellation email failed:', err)
+    return { sent: false }
+  }
+}
+
+export async function sendAdminRefundAlert(input: CancellationEmailInput & { guestEmail: string }): Promise<{ sent: boolean }> {
+  const client = getClient()
+  if (!client) {
+    console.warn('[email] RESEND_API_KEY not set — skipping admin refund alert')
+    return { sent: false }
+  }
+  const row = (label: string, value: string) => `
+    <tr>
+      <td style="padding:8px 0;font-size:13px;color:${BRAND.muted};width:140px;vertical-align:top;">${label}</td>
+      <td style="padding:8px 0;font-size:14px;color:${BRAND.ink};font-weight:600;">${value}</td>
+    </tr>`
+  try {
+    await client.emails.send({
+      from: FROM,
+      to: 'hello@balible.com',
+      subject: `[Refund Required] ${input.bookingRef} — ${input.experienceTitle}`,
+      html: layout(`
+        <p style="margin:0 0 4px;font-size:13px;color:#B66A45;font-weight:600;">⚠️ MANUAL REFUND REQUIRED</p>
+        <h1 style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:24px;color:${BRAND.ink};">Booking Cancelled — Refund Needed</h1>
+        <p style="margin:0 0 20px;font-size:15px;color:${BRAND.muted};line-height:1.7;">
+          A guest has cancelled their booking. Please process the refund via the Midtrans dashboard or bank transfer within 3 business days.
+        </p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid ${BRAND.border};border-bottom:1px solid ${BRAND.border};margin-bottom:24px;">
+          ${row('Booking ref', input.bookingRef)}
+          ${row('Experience', input.experienceTitle)}
+          ${row('Date', input.date)}
+          ${row('Guests', String(input.guests))}
+          ${row('Guest name', input.guestName)}
+          ${row('Guest email', input.guestEmail)}
+          ${row('Refund amount', `IDR ${input.totalPaid.toLocaleString('id-ID')}`)}
+        </table>
+        <a href="https://dashboard.midtrans.com" style="display:inline-block;padding:12px 24px;background-color:${BRAND.ink};color:white;font-size:14px;font-weight:600;text-decoration:none;border-radius:8px;">
+          Open Midtrans Dashboard →
+        </a>
+      `),
+    })
+    return { sent: true }
+  } catch (err) {
+    console.error('[email] admin refund alert failed:', err)
+    return { sent: false }
+  }
+}
+
 // ── Host contact support ───────────────────────────────────────────────────────
 
 export async function sendContactSupportEmail({

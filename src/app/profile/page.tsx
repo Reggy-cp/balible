@@ -404,12 +404,55 @@ function ChatModal({ operatorId, hostName, onClose }: { operatorId: string; host
 
 // ── Bookings tab ───────────────────────────────────────────────────────────────
 
+function CancelConfirmModal({ booking, onConfirm, onClose, cancelling }: {
+  booking: Booking
+  onConfirm: () => void
+  onClose: () => void
+  cancelling: boolean
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
+      <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl overflow-hidden" style={{ border: '1px solid #E8E4DE' }}>
+        <div className="px-6 pt-6 pb-2">
+          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111', marginBottom: 8 }}>Cancel booking?</h2>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.6, marginBottom: 12 }}>
+            You're about to cancel <strong style={{ color: '#111111' }}>{booking.title}</strong> on <strong style={{ color: '#111111' }}>{booking.date}</strong>.
+          </p>
+          <div style={{ backgroundColor: '#FEF9EC', border: '1px solid #E8D4B8', borderRadius: 10, padding: '12px 14px', marginBottom: 20 }}>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111', fontWeight: 600, marginBottom: 4 }}>Refund of IDR {booking.total.toLocaleString('id-ID')}</p>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', lineHeight: 1.6 }}>
+              Your refund will be processed within 3–5 business days and may take a further 3–7 days to appear on your payment method.
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-3 px-6 pb-6">
+          <button
+            onClick={onConfirm}
+            disabled={cancelling}
+            style={{ flex: 1, height: 42, borderRadius: 10, border: 'none', backgroundColor: '#B66A45', color: 'white', fontSize: 14, fontWeight: 600, cursor: cancelling ? 'default' : 'pointer', opacity: cancelling ? 0.7 : 1, fontFamily: 'var(--font-inter)' }}
+          >
+            {cancelling ? 'Cancelling…' : 'Yes, cancel booking'}
+          </button>
+          <button
+            onClick={onClose}
+            disabled={cancelling}
+            style={{ flex: 1, height: 42, borderRadius: 10, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 14, color: '#6F675C', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}
+          >
+            Keep booking
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function BookingsTab({ dbBookings, onRefresh }: { dbBookings?: Booking[]; onRefresh: () => void }) {
   const [cancelled, setCancelled] = useState<Set<string>>(new Set())
   const [cancelling, setCancelling] = useState<string | null>(null)
   const [reviewing, setReviewing] = useState<Booking | null>(null)
   const [detailBooking, setDetailBooking] = useState<Booking | null>(null)
   const [chatBooking, setChatBooking] = useState<Booking | null>(null)
+  const [confirmCancel, setConfirmCancel] = useState<Booking | null>(null)
 
   const cancel = async (b: Booking) => {
     setCancelling(b.id)
@@ -417,6 +460,7 @@ function BookingsTab({ dbBookings, onRefresh }: { dbBookings?: Booking[]; onRefr
     setCancelling(null)
     if (res.ok) {
       setCancelled(s => new Set(s).add(b.id))
+      setConfirmCancel(null)
     } else {
       alert(res.error ?? 'Failed to cancel booking.')
     }
@@ -480,10 +524,9 @@ function BookingsTab({ dbBookings, onRefresh }: { dbBookings?: Booking[]; onRefr
                 )}
                 {effectiveStatus === 'Upcoming' && (
                   <button
-                    onClick={() => cancel(b)}
-                    disabled={cancelling === b.id}
-                    style={{ height: 29, padding: '0 12px', border: '1px solid #FECACA', borderRadius: 6, fontSize: 12, color: '#B66A45', backgroundColor: 'white', cursor: cancelling === b.id ? 'default' : 'pointer', opacity: cancelling === b.id ? 0.6 : 1 }}>
-                    {cancelling === b.id ? 'Cancelling…' : 'Cancel'}
+                    onClick={() => setConfirmCancel(b)}
+                    style={{ height: 29, padding: '0 12px', border: '1px solid #FECACA', borderRadius: 6, fontSize: 12, color: '#B66A45', backgroundColor: 'white', cursor: 'pointer' }}>
+                    Cancel &amp; Refund
                   </button>
                 )}
               </div>
@@ -517,6 +560,14 @@ function BookingsTab({ dbBookings, onRefresh }: { dbBookings?: Booking[]; onRefr
           operatorId={chatBooking.operatorId}
           hostName={chatBooking.host ?? 'Host'}
           onClose={() => setChatBooking(null)}
+        />
+      )}
+      {confirmCancel && (
+        <CancelConfirmModal
+          booking={confirmCancel}
+          cancelling={cancelling === confirmCancel.id}
+          onConfirm={() => cancel(confirmCancel)}
+          onClose={() => setConfirmCancel(null)}
         />
       )}
     </div>
