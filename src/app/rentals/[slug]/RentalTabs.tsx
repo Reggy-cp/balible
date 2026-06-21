@@ -1,8 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Star, CheckCircle2, XCircle, X, MapPin, ExternalLink, Package, Shield } from 'lucide-react'
-import { createReviewAction, checkCanReviewAction } from '@/lib/actions'
+import { useState } from 'react'
+import { Star, CheckCircle2, XCircle, MapPin, ExternalLink, Package, Shield } from 'lucide-react'
 
 function hostSlug(name: string) {
   return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
@@ -39,94 +38,13 @@ type RentalData = {
 }
 
 const TABS = ['About', "What's included", 'Reviews', 'Host']
-const RATING_LABELS = ['', 'Disappointing', 'Below average', 'Good', 'Very good', 'Exceptional']
-
-function ReviewForm({ onSubmit, onCancel }: {
-  onSubmit: (rating: number, comment: string) => void
-  onCancel: () => void
-}) {
-  const [rating, setRating] = useState(0)
-  const [hover, setHover] = useState(0)
-  const [comment, setComment] = useState('')
-  const active = hover || rating
-  const canSubmit = rating > 0 && comment.trim().length > 0
-
-  return (
-    <div className="p-5 rounded-xl mb-6" style={{ border: '1px solid #C8A97E', backgroundColor: '#FFFDF9' }}>
-      <div className="flex items-center justify-between mb-4">
-        <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111' }}>Write a review</p>
-        <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}>
-          <X size={16} style={{ color: '#6F675C' }} />
-        </button>
-      </div>
-
-      <div className="mb-4">
-        <div className="flex gap-1.5 mb-1">
-          {[1, 2, 3, 4, 5].map(i => (
-            <button key={i}
-              onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(0)}
-              onClick={() => setRating(i)}
-              className="hover:scale-110 transition-transform"
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}>
-              <Star size={26} fill={active >= i ? '#C8A97E' : 'none'} color={active >= i ? '#C8A97E' : '#E8E4DE'} />
-            </button>
-          ))}
-        </div>
-        {active > 0 && (
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#C8A97E', fontWeight: 500 }}>
-            {RATING_LABELS[active]}
-          </p>
-        )}
-      </div>
-
-      <textarea
-        value={comment}
-        onChange={e => { if (e.target.value.length <= 500) setComment(e.target.value) }}
-        placeholder="Share what you loved about this rental..."
-        rows={3}
-        style={{ width: '100%', borderRadius: 10, border: '1px solid #E8E4DE', padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', resize: 'none', outline: 'none', lineHeight: 1.6, boxSizing: 'border-box' }}
-        onFocus={e => (e.target.style.borderColor = '#C8A97E')}
-        onBlur={e => (e.target.style.borderColor = '#E8E4DE')}
-      />
-      <div className="flex items-center justify-between mt-2">
-        <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#C8C4BE' }}>{comment.length}/500</p>
-        <div className="flex gap-2">
-          <button onClick={onCancel}
-            style={{ height: 36, padding: '0 16px', border: '1px solid #E8E4DE', borderRadius: 8, fontSize: 13, color: '#6F675C', background: 'white', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}>
-            Cancel
-          </button>
-          <button onClick={() => canSubmit && onSubmit(rating, comment)} disabled={!canSubmit}
-            style={{ height: 36, padding: '0 16px', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-inter)', backgroundColor: canSubmit ? '#111111' : '#E8E4DE', color: canSubmit ? 'white' : '#9E9A94', cursor: canSubmit ? 'pointer' : 'not-allowed' }}>
-            Submit
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 export default function RentalTabs({ rental }: { rental: RentalData }) {
   const [active, setActive] = useState('About')
-  const [showForm, setShowForm] = useState(false)
-  const [submitError, setSubmitError] = useState('')
-  const [userReviewDone, setUserReviewDone] = useState(false)
-  const [canReview, setCanReview] = useState(false)
-
-  useEffect(() => {
-    checkCanReviewAction(rental.slug).then(r => setCanReview(r.canReview))
-  }, [rental.slug])
 
   const ownerName = rental.operator.user.name
   const ownerAvatar = rental.operator.avatar ?? rental.operator.user.image
   const slug = hostSlug(ownerName)
-
-  const submitReview = async (rating: number, comment: string) => {
-    setSubmitError('')
-    const res = await createReviewAction({ slug: rental.slug, rating, comment })
-    if (!res.ok) { setSubmitError('Could not submit review. Please try again.'); return }
-    setUserReviewDone(true)
-    setShowForm(false)
-  }
 
   return (
     <>
@@ -281,39 +199,7 @@ export default function RentalTabs({ rental }: { rental: RentalData }) {
                   </p>
                 </div>
               </div>
-              {canReview && !userReviewDone && !showForm && (
-                <button
-                  onClick={() => setShowForm(true)}
-                  style={{ height: 38, padding: '0 18px', borderRadius: 8, border: '1px solid #111111', background: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111', flexShrink: 0 }}
-                  className="hover:bg-stone-50 transition-colors"
-                >
-                  ★ Write a review
-                </button>
-              )}
             </div>
-
-            {showForm && (
-              <>
-                <ReviewForm onSubmit={submitReview} onCancel={() => { setShowForm(false); setSubmitError('') }} />
-                {submitError && <p style={{ fontSize: 13, color: '#B66A45', marginTop: -8, marginBottom: 8 }}>{submitError}</p>}
-              </>
-            )}
-
-            {userReviewDone && (
-              <div className="pb-6 mb-6" style={{ borderBottom: '1px solid #E8E4DE' }}>
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-semibold" style={{ backgroundColor: '#C8A97E', color: 'white' }}>Y</div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111' }}>You</p>
-                      <span style={{ fontSize: 11, color: '#4A7C59', backgroundColor: '#F0F7F2', padding: '1px 8px', borderRadius: 20, fontWeight: 500 }}>Your review</span>
-                    </div>
-                    <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>Just now</p>
-                  </div>
-                </div>
-                <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.6 }}>Review submitted — thank you!</p>
-              </div>
-            )}
 
             <div className="space-y-6">
               {rental.reviews.map(rev => (
@@ -340,7 +226,7 @@ export default function RentalTabs({ rental }: { rental: RentalData }) {
                 </div>
               ))}
 
-              {rental.reviews.length === 0 && !userReviewDone && (
+              {rental.reviews.length === 0 && (
                 <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#9E9A94', textAlign: 'center', padding: '32px 0' }}>
                   No reviews yet — be the first to share your experience.
                 </p>
