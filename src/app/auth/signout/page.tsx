@@ -1,23 +1,17 @@
-'use client'
+import { cookies } from 'next/headers'
 
-import { useEffect, useRef } from 'react'
+// Server component — reads real CSRF token from request, no client-side JS fetch
+export default async function SignOutPage() {
+  const cookieStore = cookies()
 
-export default function SignOutPage() {
-  const formRef = useRef<HTMLFormElement>(null)
+  // NextAuth uses __Host-next-auth.csrf-token in production (Secure + no Domain)
+  const csrfCookieName = process.env.NODE_ENV === 'production'
+    ? '__Host-next-auth.csrf-token'
+    : 'next-auth.csrf-token'
 
-  useEffect(() => {
-    fetch('/api/auth/csrf')
-      .then(r => r.json())
-      .then(({ csrfToken }: { csrfToken: string }) => {
-        const input = document.createElement('input')
-        input.type = 'hidden'
-        input.name = 'csrfToken'
-        input.value = csrfToken
-        formRef.current?.appendChild(input)
-        formRef.current?.submit()
-      })
-      .catch(() => { window.location.replace('/') })
-  }, [])
+  // Cookie value is "token|hmac" — split to get just the token for the form field
+  const rawCsrf = cookieStore.get(csrfCookieName)?.value ?? ''
+  const csrfToken = rawCsrf.split('|')[0]
 
   return (
     <>
@@ -28,9 +22,12 @@ export default function SignOutPage() {
       }}>
         Signing out…
       </div>
-      <form ref={formRef} method="POST" action="/api/auth/signout" style={{ display: 'none' }}>
+      <form id="sf" method="POST" action="/api/auth/signout" style={{ display: 'none' }}>
+        <input type="hidden" name="csrfToken" value={csrfToken} />
         <input type="hidden" name="callbackUrl" value="/" />
       </form>
+      {/* Inline script fires before React hydration — no async fetch, no race condition */}
+      <script dangerouslySetInnerHTML={{ __html: 'document.getElementById("sf").submit()' }} />
     </>
   )
 }
