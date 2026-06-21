@@ -803,3 +803,59 @@ export async function sendEventBookingConfirmation(input: EventBookingConfirmati
     return { sent: false }
   }
 }
+
+// ── Event booking cancellation (admin-initiated) ───────────────────────────────
+
+export async function sendEventBookingCancellationEmail(input: {
+  to: string
+  guestName: string
+  bookingRef: string
+  eventTitle: string
+  eventDate: Date
+  tickets: number
+  totalPaid: number
+}): Promise<{ sent: boolean }> {
+  const client = getClient()
+  if (!client) return { sent: false }
+  const { to, guestName, bookingRef, eventTitle, eventDate, tickets, totalPaid } = input
+  const TZ = 'Asia/Makassar'
+  const dateStr = eventDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: TZ })
+  try {
+    await client.emails.send({
+      from: FROM,
+      to,
+      subject: `Your tickets for ${eventTitle} have been cancelled`,
+      html: layout(`
+        <p style="margin:0 0 4px;font-size:13px;color:#B66A45;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">BOOKING CANCELLED</p>
+        <h1 style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:24px;color:${BRAND.ink};">Your event tickets have been cancelled</h1>
+        <p style="margin:0 0 20px;font-size:15px;color:${BRAND.muted};line-height:1.7;">
+          Hi ${guestName}, your tickets for <strong style="color:${BRAND.ink};">${eventTitle}</strong> have been cancelled by our team.
+          If you paid for these tickets, your refund will be processed within <strong style="color:${BRAND.ink};">3–5 business days</strong>.
+        </p>
+        <div style="background:${BRAND.bg};border:1px solid ${BRAND.border};border-radius:12px;padding:20px 24px;margin-bottom:24px;">
+          <table style="width:100%;border-collapse:collapse;">
+            <tr><td style="padding:6px 0;font-size:13px;color:${BRAND.muted};width:120px;">Booking ref</td><td style="padding:6px 0;font-size:13px;color:${BRAND.ink};font-weight:600;">${bookingRef.slice(0,8).toUpperCase()}</td></tr>
+            <tr><td style="padding:6px 0;font-size:13px;color:${BRAND.muted};">Event</td><td style="padding:6px 0;font-size:13px;color:${BRAND.ink};font-weight:600;">${eventTitle}</td></tr>
+            <tr><td style="padding:6px 0;font-size:13px;color:${BRAND.muted};">Date</td><td style="padding:6px 0;font-size:13px;color:${BRAND.ink};font-weight:600;">${dateStr}</td></tr>
+            <tr><td style="padding:6px 0;font-size:13px;color:${BRAND.muted};">Tickets</td><td style="padding:6px 0;font-size:13px;color:${BRAND.ink};font-weight:600;">${tickets} ticket${tickets > 1 ? 's' : ''}</td></tr>
+            ${totalPaid > 0 ? `<tr style="border-top:1px solid ${BRAND.border};"><td style="padding:10px 0 0;font-size:14px;color:${BRAND.ink};font-weight:700;">Refund amount</td><td style="padding:10px 0 0;font-size:14px;color:${BRAND.ink};font-weight:700;">IDR ${totalPaid.toLocaleString('id-ID')}</td></tr>` : ''}
+          </table>
+        </div>
+        ${totalPaid > 0 ? `
+        <div style="padding:16px 20px;background-color:#FEF9EC;border-radius:10px;border:1px solid #E8D4B8;margin-bottom:20px;">
+          <p style="margin:0 0 6px;font-size:13px;color:${BRAND.ink};font-weight:600;">What happens next?</p>
+          <p style="margin:0;font-size:13px;color:${BRAND.muted};line-height:1.75;">
+            Your refund will be processed within 3–5 business days. It may take a further 3–7 business days to appear on your original payment method depending on your bank.
+          </p>
+        </div>` : ''}
+        <p style="margin:0;font-size:13px;color:${BRAND.muted};line-height:1.7;">
+          Questions? Reply to this email or contact us at hello@balible.com and quote your booking reference.
+        </p>
+      `),
+    })
+    return { sent: true }
+  } catch (err) {
+    console.error('[email] event booking cancellation email failed:', err)
+    return { sent: false }
+  }
+}

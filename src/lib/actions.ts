@@ -1158,9 +1158,24 @@ export async function getAdminEventBookingsAction(): Promise<AdminEventBooking[]
 export async function adminCancelEventBookingAction(ref: string): Promise<{ ok: boolean }> {
   await requireAdmin()
   try {
-    await prisma.eventBooking.update({ where: { bookingRef: ref }, data: { status: 'CANCELLED' } })
+    const booking = await prisma.eventBooking.update({
+      where: { bookingRef: ref },
+      data: { status: 'CANCELLED' },
+      include: { event: { select: { title: true, date: true } } },
+    })
     const session = await getServerSession(authOptions)
-    await logActivity({ actor: session?.user?.name ?? 'Admin', actorId: session?.user?.id, action: `Cancelled event booking ${ref}`, type: 'booking', entityId: ref })
+    await Promise.allSettled([
+      logActivity({ actor: session?.user?.name ?? 'Admin', actorId: session?.user?.id, action: `Cancelled event booking ${ref}`, type: 'booking', entityId: ref }),
+      import('./email').then(m => m.sendEventBookingCancellationEmail({
+        to: booking.guestEmail,
+        guestName: booking.guestName,
+        bookingRef: booking.bookingRef,
+        eventTitle: booking.event.title,
+        eventDate: booking.event.date,
+        tickets: booking.tickets,
+        totalPaid: booking.totalPrice,
+      })),
+    ])
     return { ok: true }
   } catch { return { ok: false } }
 }
