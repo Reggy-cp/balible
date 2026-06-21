@@ -1,4 +1,4 @@
-import { MapPin, Star, Clock, Users, Globe, Camera } from 'lucide-react'
+import { MapPin, Star, Clock, Users, Globe } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import BookingWidget from '@/components/BookingWidget'
 import ExperienceTabs from '@/components/ExperienceTabs'
@@ -9,7 +9,7 @@ import ShareButton from '@/components/ShareButton'
 import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
 import MobileBookingModal from '@/components/MobileBookingModal'
-import ExperienceGallery from '@/components/ExperienceGallery'
+import ExperienceGalleryFull from '@/components/ExperienceGalleryFull'
 import { prisma } from '@/lib/prisma'
 
 const AREA_DISPLAY: Record<string, string> = {
@@ -119,10 +119,6 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
     )
   }
 
-  const FALLBACK = 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=800&auto=format&fit=crop&q=80'
-  const thumbPhotos = experience.images.slice(0, 5)
-  while (thumbPhotos.length < 5) thumbPhotos.push(thumbPhotos[0] ?? FALLBACK)
-
   const currentForRec = {
     slug: experience.slug, title: experience.title,
     category: experience.category, area: experience.area,
@@ -143,29 +139,7 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
         </a>
 
         {/* ── PHOTO GALLERY ── */}
-        <div className="hidden lg:flex gap-2 mb-8" style={{ height: 380 }}>
-          {/* Main */}
-          <div className="relative overflow-hidden flex-1" style={{ borderRadius: 12 }}>
-            <img src={thumbPhotos[0]} alt={experience.title} className="w-full h-full object-cover" />
-          </div>
-          {/* 2×2 grid */}
-          <div className="grid grid-cols-2 gap-2" style={{ width: '38%' }}>
-            {thumbPhotos.slice(1, 5).map((src, i) => (
-              <div key={i} className="relative overflow-hidden" style={{ borderRadius: 8 }}>
-                <img src={src} alt={`View ${i+2}`} className="w-full h-full object-cover" />
-                {i === 3 && (
-                  <button className="absolute inset-0 flex items-center justify-center gap-1.5" style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}>
-                    <Camera size={14} color="white" />
-                    <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: 'white', fontWeight: 500 }}>View all photos</span>
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Mobile: gallery with thumbnail strip */}
-        <ExperienceGallery images={experience.images} title={experience.title} />
+        <ExperienceGalleryFull images={experience.images} title={experience.title} />
 
         {/* ── TWO-COLUMN LAYOUT ── */}
         <div className="flex flex-col lg:flex-row gap-10">
