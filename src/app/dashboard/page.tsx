@@ -2764,14 +2764,7 @@ export default function DashboardPage() {
   const [adminViewId, setAdminViewId] = useState<string | undefined>(undefined)
   const readOnly = !!adminViewId
 
-  if (status === 'loading') {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F5F1EB', fontFamily: 'var(--font-inter)' }}>
-        <p style={{ color: '#6F675C', fontSize: 14 }}>Loading…</p>
-      </div>
-    )
-  }
-
+  // Must be before the loading guard — hooks cannot be called conditionally
   useEffect(() => {
     const opId = new URLSearchParams(window.location.search).get('operator') ?? undefined
     setAdminViewId(opId)
@@ -2794,6 +2787,14 @@ export default function DashboardPage() {
     const unreadTimer = setInterval(pollUnread, 30_000)
     return () => clearInterval(unreadTimer)
   }, [])
+
+  if (status === 'loading') {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F5F1EB', fontFamily: 'var(--font-inter)' }}>
+        <p style={{ color: '#6F675C', fontSize: 14 }}>Loading…</p>
+      </div>
+    )
+  }
 
   const renderPanel = () => {
     switch (activeNav) {
