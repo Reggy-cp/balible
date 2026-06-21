@@ -2579,7 +2579,8 @@ export async function updateOperatorSettingsAction(data: {
     })
     return { ok: true }
   } catch (e: any) {
-    console.error('[updateOperatorSettingsAction] code:', e?.code, 'meta:', JSON.stringify(e?.meta), 'msg:', e?.message?.slice(0, 300))
+    console.error('BALIBLE_ERR_CODE ' + (e?.code ?? 'NO_CODE'))
+    console.error('BALIBLE_ERR_MSG ' + String(e?.message ?? '').slice(0, 400))
     return { ok: false }
   }
 }
