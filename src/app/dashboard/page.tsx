@@ -40,42 +40,6 @@ const ReadOnlyContext = createContext(false)
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
-const EXPERIENCES: DashExp[] = [
-  {
-    id: 1, slug: 'pottery-making-class',
-    title: 'Pottery Making Class', category: 'Art & Craft', area: 'Ubud',
-    price: 450000, duration: '2.5 hours', maxGuests: 8,
-    rating: 4.9, totalReviews: 128, bookings: 87, status: 'Active',
-    image: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=200&auto=format&fit=crop&q=80',
-    earnings: 39150000, description: '', meetingPoint: '', includes: [], excludes: [], itinerary: [], images: [], schedule: null, minGuests: 1, subcategory: '',
-  },
-  {
-    id: 2, slug: 'batik-painting-workshop',
-    title: 'Batik Painting Workshop', category: 'Art & Craft', area: 'Ubud',
-    price: 380000, duration: '3 hours', maxGuests: 6,
-    rating: 4.7, totalReviews: 64, bookings: 41, status: 'Active',
-    image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=200&auto=format&fit=crop&q=80',
-    earnings: 15580000, description: '', meetingPoint: '', includes: [], excludes: [], itinerary: [], images: [], schedule: null, minGuests: 1, subcategory: '',
-  },
-  {
-    id: 3, slug: 'clay-sculpture-session',
-    title: 'Clay Sculpture Session', category: 'Art & Craft', area: 'Ubud',
-    price: 520000, duration: '4 hours', maxGuests: 4,
-    rating: 4.8, totalReviews: 19, bookings: 12, status: 'Draft',
-    image: 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=200&auto=format&fit=crop&q=80',
-    earnings: 6240000, description: '', meetingPoint: '', includes: [], excludes: [], itinerary: [], images: [], schedule: null, minGuests: 1, subcategory: '',
-  },
-  {
-    id: 4, slug: 'wooden-mask-carving',
-    title: 'Wooden Mask Carving Class', category: 'Art & Craft', area: 'Gianyar',
-    price: 600000, duration: '5 hours', maxGuests: 4,
-    rating: 4.6, totalReviews: 9, bookings: 5, status: 'Paused',
-    image: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=200&auto=format&fit=crop&q=80',
-    earnings: 3000000, description: '', meetingPoint: '', includes: [], excludes: [], itinerary: [], images: [], schedule: null, minGuests: 1, subcategory: '',
-  },
-]
-
-
 // Area → approximate map coordinates (used when syncing new experiences to the map)
 const AREA_COORDS: Record<string, [number, number]> = {
   'Ubud':      [-8.5069, 115.2625],
@@ -92,16 +56,6 @@ const AREA_COORDS: Record<string, [number, number]> = {
   'Sidemen':   [-8.4791, 115.4549],
   'Medewi':    [-8.4724, 114.8493],
 }
-
-const MONTHLY_EARNINGS = [3200000, 2800000, 4100000, 3600000, 4800000, 5200000, 4400000, 5800000, 5100000, 6200000, 5700000, 7400000]
-const MONTHS_SHORT     = ['Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun']
-
-const PAYOUTS = [
-  { id: 'P1', period: 'May 1–31, 2024', gross: 7400000, status: 'Paid',    date: 'Jun 5, 2024'  },
-  { id: 'P2', period: 'Apr 1–30, 2024', gross: 5700000, status: 'Paid',    date: 'May 5, 2024'  },
-  { id: 'P3', period: 'Mar 1–31, 2024', gross: 6200000, status: 'Paid',    date: 'Apr 5, 2024'  },
-  { id: 'P4', period: 'Feb 1–29, 2024', gross: 5100000, status: 'Pending', date: 'Mar 5, 2024'  },
-]
 
 const NAV_ITEMS = [
   { id: 'overview',      label: 'Overview',      Icon: LayoutDashboard },
@@ -145,6 +99,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function MiniChart({ data, color }: { data: number[]; color: string }) {
+  if (data.length === 0) return null
   const max = Math.max(...data), min = Math.min(...data), range = max - min || 1
   const W = 320, H = 96
   const pts = data.map((v, i) => {
@@ -392,9 +347,8 @@ function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences, bo
     return s
   })
 
-  const hasLiveChart = liveEarningsByMonth !== undefined && liveEarningsByMonth.length > 0
-  const allChartData   = hasLiveChart ? liveEarningsByMonth.map(m => m.gross) : MONTHLY_EARNINGS
-  const allChartLabels = hasLiveChart ? liveEarningsByMonth.map(m => m.month) : MONTHS_SHORT
+  const allChartData   = liveEarningsByMonth?.map(m => m.gross) ?? []
+  const allChartLabels = liveEarningsByMonth?.map(m => m.month) ?? []
   const half = Math.floor(allChartData.length / 2)
   const slice  = period === 'This Month' ? allChartData.slice(half)   : allChartData.slice(0, half)
   const labels = period === 'This Month' ? allChartLabels.slice(half) : allChartLabels.slice(0, half)
@@ -502,10 +456,18 @@ function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences, bo
                 </span>
               )}
             </div>
-            <MiniChart data={slice} color="#C8A97E" />
-            <div className="flex justify-between mt-1 mb-3">
-              {labels.map(m => <span key={m} style={{ fontSize: 9, color: '#6F675C' }}>{m}</span>)}
-            </div>
+            {slice.length > 0 ? (
+              <>
+                <MiniChart data={slice} color="#C8A97E" />
+                <div className="flex justify-between mt-1 mb-3">
+                  {labels.map(m => <span key={m} style={{ fontSize: 9, color: '#6F675C' }}>{m}</span>)}
+                </div>
+              </>
+            ) : (
+              <div style={{ height: 96, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+                <p style={{ fontSize: 12, color: '#9E9A94' }}>{liveEarningsByMonth === undefined ? 'Loading…' : 'No earnings yet'}</p>
+              </div>
+            )}
 
             {/* Withdraw button — hidden in admin read-only view */}
             {!readOnly && (
@@ -1246,30 +1208,27 @@ function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBo
   const [withdrawOpen, setWithdrawOpen] = useState(false)
 
   const netMult = (100 - commissionRate) / 100
-  const hasLive = liveEarningsByMonth !== undefined
+  const isLoading = liveEarningsByMonth === undefined
 
-  // Chart data: live 12-month breakdown or static fallback
-  const chartData   = hasLive ? liveEarningsByMonth.map(m => m.gross) : MONTHLY_EARNINGS
-  const chartLabels = hasLive ? liveEarningsByMonth.map(m => m.month)  : MONTHS_SHORT
+  // Chart data: live 12-month breakdown or empty while loading
+  const chartData   = liveEarningsByMonth?.map(m => m.gross) ?? []
+  const chartLabels = liveEarningsByMonth?.map(m => m.month) ?? []
 
   // Stats
-  const totalGross  = hasLive ? (liveTotalGross ?? 0) : MONTHLY_EARNINGS.reduce((a, b) => a + b, 0)
-  const thisMonthGross = hasLive
-    ? (liveEarningsByMonth[liveEarningsByMonth.length - 1]?.gross ?? 0)
-    : MONTHLY_EARNINGS[MONTHLY_EARNINGS.length - 1]
-  const prevMonthGross = hasLive
-    ? (liveEarningsByMonth[liveEarningsByMonth.length - 2]?.gross ?? 0)
-    : MONTHLY_EARNINGS[MONTHLY_EARNINGS.length - 2]
-  const growth = prevMonthGross > 0
+  const totalGross     = liveTotalGross ?? 0
+  const thisMonthGross = liveEarningsByMonth?.[liveEarningsByMonth.length - 1]?.gross ?? 0
+  const prevMonthGross = liveEarningsByMonth?.[liveEarningsByMonth.length - 2]?.gross ?? 0
+  const growth = isLoading ? 'Loading…'
+    : prevMonthGross > 0
     ? `${thisMonthGross > prevMonthGross ? '↑' : '↓'} ${Math.abs(((thisMonthGross - prevMonthGross) / prevMonthGross) * 100).toFixed(0)}% vs last month`
     : thisMonthGross > 0 ? 'First bookings this month' : 'No bookings this month'
-  const pendingPayout = hasLive ? (livePendingPayout ?? 0) : MONTHLY_EARNINGS[MONTHLY_EARNINGS.length - 1]
+  const pendingPayout = livePendingPayout ?? 0
 
   // Avg per booking from live confirmed bookings
   const confirmedBookings = liveBookings?.filter(b => b.status === 'Confirmed' || b.status === 'Completed') ?? []
-  const avgPerBooking = hasLive && confirmedBookings.length > 0
+  const avgPerBooking = confirmedBookings.length > 0
     ? Math.round(totalGross / confirmedBookings.length)
-    : 690000
+    : 0
 
   // By experience
   const expSource = liveExps ?? []
@@ -1287,7 +1246,7 @@ function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBo
     <>
     {withdrawOpen && (
       <WithdrawModal
-        pendingNet={hasLive ? pendingNet : null}
+        pendingNet={isLoading ? null : pendingNet}
         commissionRate={commissionRate}
         isRequested={isRequested}
         isPaid={isPaid}
@@ -1318,7 +1277,7 @@ function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBo
         {[
           { label: 'Total Earned',    value: fmt(Math.round(totalGross * netMult)),      sub: `After ${commissionRate}% commission`, subColor: '#6F675C' },
           { label: 'This Month',      value: fmt(Math.round(thisMonthGross * netMult)),  sub: growth,                               subColor: thisMonthGross >= prevMonthGross ? '#4A7C59' : '#B66A45' },
-          { label: 'Avg per Booking', value: fmt(Math.round(avgPerBooking * netMult)),   sub: `${confirmedBookings.length > 0 ? confirmedBookings.length + ' confirmed' : 'All time'}`, subColor: '#6F675C' },
+          { label: 'Avg per Booking', value: avgPerBooking > 0 ? fmt(Math.round(avgPerBooking * netMult)) : '—',   sub: confirmedBookings.length > 0 ? `${confirmedBookings.length} confirmed` : 'No confirmed bookings yet', subColor: '#6F675C' },
         ].map(s => (
           <div key={s.label} className="bg-white rounded-xl p-4 lg:p-5" style={{ border: '1px solid #E8E4DE' }}>
             <p style={{ fontSize: 12, color: '#6F675C' }}>{s.label}</p>
@@ -1341,22 +1300,30 @@ function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBo
       <div className="bg-white rounded-xl p-5 mb-5" style={{ border: '1px solid #E8E4DE' }}>
         <div className="flex items-center justify-between mb-4">
           <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Monthly Revenue</h2>
-          {hasLive && <span style={{ fontSize: 11, color: '#4A7C59', fontWeight: 600 }}>● Live data</span>}
+          {!isLoading && chartData.length > 0 && <span style={{ fontSize: 11, color: '#4A7C59', fontWeight: 600 }}>● Live data</span>}
         </div>
-        <MiniChart data={chartData} color="#C8A97E" />
-        <div className="flex justify-between mt-1 mb-5">
-          {chartLabels.map((m, i) => <span key={i} style={{ fontSize: 9, color: '#6F675C' }}>{m}</span>)}
-        </div>
-        <div className="flex items-end gap-1" style={{ height: 56 }}>
-          {chartData.map((v, i) => {
-            const max = Math.max(...chartData, 1)
-            const isLast = i === chartData.length - 1
-            return (
-              <div key={i} title={`${chartLabels[i]}: ${fmt(v)}`}
-                style={{ flex: 1, height: `${(v / max) * 100}%`, borderRadius: '3px 3px 0 0', backgroundColor: isLast ? '#C8A97E' : '#E8E4DE', minHeight: 4, cursor: 'default', transition: 'background 0.2s' }} />
-            )
-          })}
-        </div>
+        {chartData.length > 0 ? (
+          <>
+            <MiniChart data={chartData} color="#C8A97E" />
+            <div className="flex justify-between mt-1 mb-5">
+              {chartLabels.map((m, i) => <span key={i} style={{ fontSize: 9, color: '#6F675C' }}>{m}</span>)}
+            </div>
+            <div className="flex items-end gap-1" style={{ height: 56 }}>
+              {chartData.map((v, i) => {
+                const max = Math.max(...chartData, 1)
+                const isLast = i === chartData.length - 1
+                return (
+                  <div key={i} title={`${chartLabels[i]}: ${fmt(v)}`}
+                    style={{ flex: 1, height: `${(v / max) * 100}%`, borderRadius: '3px 3px 0 0', backgroundColor: isLast ? '#C8A97E' : '#E8E4DE', minHeight: 4, cursor: 'default', transition: 'background 0.2s' }} />
+                )
+              })}
+            </div>
+          </>
+        ) : (
+          <div style={{ height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <p style={{ fontSize: 13, color: '#9E9A94' }}>{isLoading ? 'Loading…' : 'No earnings data yet'}</p>
+          </div>
+        )}
       </div>
 
       <div className="grid lg:grid-cols-2 gap-5">
