@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 
 export const revalidate = 3600
-import { MapPin, Star, Clock, Users, Award, ChevronRight, CalendarDays, Ticket, ExternalLink, MessageCircle, Heart } from 'lucide-react'
+import { MapPin, Star, Clock, Users, Award, ChevronRight, CalendarDays, Ticket, ExternalLink } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
@@ -299,21 +299,6 @@ export default async function HostPage({ params }: { params: { slug: string } })
                   <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)' }}>Member since {host.memberSince}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <a
-                  href={host.experiences[0] ? `/experiences/${host.experiences[0].slug}` : '/experiences'}
-                  className="flex items-center gap-2 hover:opacity-90 transition-opacity"
-                  style={{ height: 44, paddingInline: 22, borderRadius: 22, backgroundColor: 'white', color: '#111111', fontSize: 14, fontWeight: 600, textDecoration: 'none', flexShrink: 0 }}
-                >
-                  <MessageCircle size={15} /> Chat with {firstName}
-                </a>
-                <button
-                  className="flex items-center gap-2 hover:opacity-90 transition-opacity"
-                  style={{ height: 44, paddingInline: 20, borderRadius: 22, border: '1.5px solid rgba(255,255,255,0.4)', backgroundColor: 'transparent', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}
-                >
-                  <Heart size={15} /> Save host
-                </button>
-              </div>
             </div>
 
           </div>
@@ -383,11 +368,6 @@ export default async function HostPage({ params }: { params: { slug: string } })
                   <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111' }}>
                     What travelers say about {firstName}
                   </h2>
-                  {totalReviews > host.reviews.length && (
-                    <a href={host.experiences[0] ? `/experiences/${host.experiences[0].slug}` : '#'} style={{ fontSize: 13, fontWeight: 600, color: '#C8A97E', textDecoration: 'none' }}>
-                      View all reviews →
-                    </a>
-                  )}
                 </div>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {host.reviews.slice(0, 3).map(r => (
@@ -512,31 +492,6 @@ export default async function HostPage({ params }: { params: { slug: string } })
               </div>
             </div>
 
-            {/* Ask Kala card */}
-            <div className="bg-white rounded-2xl p-5 mb-4" style={{ border: '1px solid #E8E4DE' }}>
-              <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: '#111111', marginBottom: 6 }}>
-                Have a question?
-              </p>
-              <p style={{ fontSize: 13, color: '#6F675C', lineHeight: 1.6, marginBottom: 14 }}>
-                Ask Kala, your AI travel guide, about {firstName} or this experience.
-              </p>
-              <a
-                href="/help"
-                className="flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
-                style={{ height: 40, borderRadius: 10, border: '1.5px solid #E8E4DE', fontSize: 13, fontWeight: 600, color: '#111111', textDecoration: 'none' }}
-              >
-                ✦ Ask Kala
-              </a>
-            </div>
-
-            {/* Response time */}
-            <div className="flex items-center gap-3 px-1">
-              <Award size={16} style={{ color: '#C8A97E', flexShrink: 0 }} />
-              <div>
-                <p style={{ fontSize: 12, color: '#6F675C' }}>Usually responds within</p>
-                <p style={{ fontSize: 13, fontWeight: 600, color: '#111111' }}>A few hours</p>
-              </div>
-            </div>
 
           </div>
         </div>
