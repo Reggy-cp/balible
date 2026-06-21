@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Star, CheckCircle2, XCircle, MapPin, ExternalLink, Building2 } from 'lucide-react'
+import { Star, CheckCircle2, XCircle, MapPin, ExternalLink } from 'lucide-react'
 import Image from 'next/image'
 
 function hostSlug(name: string) {
@@ -147,13 +147,9 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
                     className="w-12 h-12 rounded-full object-cover flex-shrink-0"
                   />
                   <div>
-                    <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111' }}>{exp.operator.user.name}</p>
-                    {exp.operator.businessName && (
-                      <div className="flex items-center gap-1 mt-0.5">
-                        <Building2 size={11} style={{ color: '#C8A97E', flexShrink: 0 }} />
-                        <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#C8A97E', fontWeight: 600 }}>{exp.operator.businessName}</p>
-                      </div>
-                    )}
+                    <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111' }}>
+                      {exp.operator.businessName || exp.operator.user.name}
+                    </p>
                   </div>
                 </div>
                 {exp.operator.totalReviews > 0 && (
@@ -285,17 +281,9 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
             <div>
               <a href={`/hosts/${hostSlug(exp.operator.user.name)}`} style={{ textDecoration: 'none' }}>
                 <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#111111' }} className="hover:opacity-70 transition-opacity">
-                  {exp.operator.user.name}
+                  {exp.operator.businessName || exp.operator.user.name}
                 </h3>
               </a>
-              {exp.operator.businessName && (
-                <div className="flex items-center gap-1.5 mt-1">
-                  <Building2 size={13} style={{ color: '#C8A97E', flexShrink: 0 }} />
-                  <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#C8A97E', fontWeight: 600 }}>
-                    {exp.operator.businessName}
-                  </p>
-                </div>
-              )}
               {exp.operator.totalReviews > 0 && (
                 <div className="flex items-center gap-2 mt-2">
                   <Star size={13} fill="#C8A97E" color="#C8A97E" />
@@ -307,7 +295,7 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
                 {exp.operator.description}
               </p>
               <a href={`/hosts/${hostSlug(exp.operator.user.name)}`} className="mt-4 inline-flex items-center gap-1 hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111', textDecoration: 'none', borderBottom: '1px solid #111111', paddingBottom: 1 }}>
-                See all experiences by {exp.operator.user.name.split(' ')[0]} →
+                See all experiences by {(exp.operator.businessName || exp.operator.user.name).split(' ')[0]} →
               </a>
             </div>
           </div>
