@@ -2511,6 +2511,8 @@ function AvailabilityPanel({ bookings }: { bookings?: DashBooking[] }) {
   const [month, setMonth] = useState(today.getMonth())
   const [blocked, setBlocked] = useState<Set<string>>(new Set())
   const [saving, setSaving] = useState(false)
+  const [saved, setSaved]   = useState(false)
+  const [dirty, setDirty]   = useState(false)
 
   useEffect(() => {
     getOperatorSettingsAction().then(s => {
@@ -2525,10 +2527,11 @@ function AvailabilityPanel({ bookings }: { bookings?: DashBooking[] }) {
 
   const dayKey = (d: number) => `${year}-${monthStr}-${String(d).padStart(2, '0')}`
 
-  const persist = (next: Set<string>) => {
-    setSaving(true)
-    updateOperatorSettingsAction({ blockedDates: Array.from(next) })
-      .finally(() => setSaving(false))
+  const saveBlocked = async (next: Set<string>) => {
+    setSaving(true); setSaved(false)
+    await updateOperatorSettingsAction({ blockedDates: Array.from(next) })
+    setSaving(false); setSaved(true); setDirty(false)
+    setTimeout(() => setSaved(false), 2500)
   }
 
   const toggle = (d: number) => {
@@ -2537,15 +2540,14 @@ function AvailabilityPanel({ bookings }: { bookings?: DashBooking[] }) {
     setBlocked(prev => {
       const next = new Set(prev)
       next.has(k) ? next.delete(k) : next.add(k)
-      persist(next)
       return next
     })
+    setDirty(true)
   }
-  const unblock = (k: string) => setBlocked(prev => {
-    const n = new Set(prev); n.delete(k)
-    persist(n)
-    return n
-  })
+  const unblock = (k: string) => {
+    setBlocked(prev => { const n = new Set(prev); n.delete(k); return n })
+    setDirty(true)
+  }
 
   const prevMonth = () => { if (month === 0) { setMonth(11); setYear(y => y - 1) } else setMonth(m => m - 1) }
   const nextMonth = () => { if (month === 11) { setMonth(0); setYear(y => y + 1) } else setMonth(m => m + 1) }
@@ -2577,10 +2579,7 @@ function AvailabilityPanel({ bookings }: { bookings?: DashBooking[] }) {
 
       <div className="bg-white rounded-xl p-5 mb-5" style={{ border: '1px solid #E8E4DE' }}>
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>{monthName}</h2>
-            {saving && <span style={{ fontSize: 11, color: '#9E9A94' }}>Saving…</span>}
-          </div>
+          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>{monthName}</h2>
           <div className="flex items-center gap-2">
             <button onClick={prevMonth} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid #E8E4DE', background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <ChevronLeft size={14} style={{ color: '#6F675C' }} />
@@ -2649,6 +2648,29 @@ function AvailabilityPanel({ bookings }: { bookings?: DashBooking[] }) {
               </div>
             ))}
           </div>
+        )}
+      </div>
+
+      {/* Save button */}
+      <div className="flex items-center gap-3 mt-5">
+        <button
+          onClick={() => saveBlocked(blocked)}
+          disabled={saving || !dirty}
+          style={{
+            height: 44, paddingInline: 28, borderRadius: 10, border: 'none',
+            backgroundColor: saved ? '#4A7C59' : dirty ? '#111111' : '#D1CDC7',
+            color: 'white', fontSize: 14, fontWeight: 600,
+            cursor: saving || !dirty ? 'default' : 'pointer',
+            fontFamily: 'var(--font-inter)', transition: 'background 0.2s',
+            display: 'flex', alignItems: 'center', gap: 8,
+          }}
+        >
+          {saving ? t('db_saving') : saved ? <><Check size={14} /> {t('db_saved')}</> : t('db_save_changes')}
+        </button>
+        {dirty && !saving && (
+          <span style={{ fontSize: 13, color: '#9E9A94', fontFamily: 'var(--font-inter)' }}>
+            {t('db_unsaved_changes')}
+          </span>
         )}
       </div>
     </div>
