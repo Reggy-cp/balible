@@ -25,6 +25,7 @@ type ExpData = {
   description: string; highlights: string[]; includes: string[]; excludes: string[];
   itinerary?: { time: string; activity: string }[];
   meetingPoint: string; images: string[];
+  blockedDates: string[];
   operator: { businessName: string; description: string; avatar?: string | null; rating: number; totalReviews: number; user: { name: string; image?: string | null } };
   reviews: { id: string; rating: number; comment: string; createdAt: Date; user: { name: string; image?: string | null } }[];
 }
@@ -72,6 +73,7 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
         includes: dbExp.includes, excludes: dbExp.excludes,
         itinerary: Array.isArray(dbExp.itinerary) ? (dbExp.itinerary as { time: string; activity: string }[]) : [],
         meetingPoint: dbExp.meetingPoint, images: dbExp.images,
+        blockedDates: (dbExp.operator.blockedDates as string[]) ?? [],
         operator: {
           businessName: dbExp.operator.businessName,
           description: dbExp.operator.description,

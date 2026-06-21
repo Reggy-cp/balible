@@ -1930,7 +1930,8 @@ function ProfilePanel({ profile: liveProfile }: { profile?: HostProfile }) {
               </div>
               <button
                 onClick={() => setContactOpen(true)}
-                style={{ flexShrink: 0, height: 40, paddingInline: 20, borderRadius: 10, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 13, fontWeight: 600, color: '#111111', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}
+                className="w-full sm:w-auto"
+                style={{ flexShrink: 0, height: 40, paddingInline: 20, borderRadius: 10, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-inter)' }}
               >
                 {t('db_contact_us_btn')}
               </button>

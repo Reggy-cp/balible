@@ -105,8 +105,13 @@ export async function createBookingAction(
     const user = await getSessionUser()
     if (!user) return { ok: false, error: 'Please sign in to complete your booking.' }
 
-    const exp = await prisma.experience.findUnique({ where: { slug: input.slug } })
+    const exp = await prisma.experience.findUnique({ where: { slug: input.slug }, include: { operator: { select: { blockedDates: true } } } })
     if (!exp) return { ok: false, error: 'This experience is not available for online payment yet.' }
+
+    // Block bookings on host-blocked dates
+    const dateKey = new Date(input.rawDate).toISOString().split('T')[0]
+    const blocked = (exp.operator.blockedDates as string[]) ?? []
+    if (blocked.includes(dateKey)) return { ok: false, error: 'This date is not available. Please choose another date.' }
 
     // Block duplicate bookings on the same date
     const bookingDate = new Date(input.rawDate)
@@ -1406,13 +1411,13 @@ export async function adminDeleteEventAction(id: string): Promise<{ ok: boolean 
 
 // ── Checkout experience lookup ────────────────────────────────────────────────
 
-export type ExpCheckoutMeta = { title: string; area: string; price: number; image: string; serviceFeeRate: number; meetingPoint: string; minGuests: number; maxGuests: number }
+export type ExpCheckoutMeta = { title: string; area: string; price: number; image: string; serviceFeeRate: number; meetingPoint: string; minGuests: number; maxGuests: number; blockedDates: string[] }
 
 export async function getExperienceForCheckout(slug: string): Promise<ExpCheckoutMeta | null> {
   try {
     const exp = await prisma.experience.findUnique({
       where: { slug },
-      select: { title: true, area: true, price: true, images: true, meetingPoint: true, maxGuests: true, minGuests: true },
+      select: { title: true, area: true, price: true, images: true, meetingPoint: true, maxGuests: true, minGuests: true, operator: { select: { blockedDates: true } } },
     })
     if (!exp) return null
     return {
@@ -1424,6 +1429,7 @@ export async function getExperienceForCheckout(slug: string): Promise<ExpCheckou
       meetingPoint: exp.meetingPoint ?? '',
       minGuests: (exp as any).minGuests ?? 1,
       maxGuests: exp.maxGuests,
+      blockedDates: (exp.operator.blockedDates as string[]) ?? [],
     }
   } catch {
     return null

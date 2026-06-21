@@ -14,7 +14,7 @@ type Step = 0 | 1 | 2 | 3
 
 // ── Experience lookup (loaded from DB) ────────────────────────────────────────
 
-const LOADING_META: ExpCheckoutMeta = { title: 'Loading…', area: '', price: 0, image: '', serviceFeeRate: 0.1, meetingPoint: '', minGuests: 1, maxGuests: 8 }
+const LOADING_META: ExpCheckoutMeta = { title: 'Loading…', area: '', price: 0, image: '', serviceFeeRate: 0.1, meetingPoint: '', minGuests: 1, maxGuests: 8, blockedDates: [] }
 
 function formatDate(s: string): string {
   if (!s) return 'Date not selected'
@@ -1313,7 +1313,8 @@ function CheckoutInner() {
     const idx = dow === 0 ? 6 : dow - 1
     return schedule[idx] ?? null
   })()
-  const dayDisabled = schedule !== null && !!rawDate && scheduledDay?.enabled === false
+  const dayDisabled = (schedule !== null && !!rawDate && scheduledDay?.enabled === false)
+    || (!!rawDate && (expMeta.blockedDates ?? []).includes(rawDate))
 
   const slots = (() => {
     if (!rawDate || dayDisabled) return []
