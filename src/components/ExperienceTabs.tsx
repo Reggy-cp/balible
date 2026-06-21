@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Star, CheckCircle2, XCircle, MapPin, ExternalLink } from 'lucide-react'
+import { Star, CheckCircle2, XCircle, MapPin, ExternalLink, Building2 } from 'lucide-react'
 import Image from 'next/image'
 
 function hostSlug(name: string) {
@@ -148,7 +148,12 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
                   />
                   <div>
                     <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111' }}>{exp.operator.user.name}</p>
-                    <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>{exp.operator.businessName}</p>
+                    {exp.operator.businessName && (
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <Building2 size={11} style={{ color: '#C8A97E', flexShrink: 0 }} />
+                        <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#C8A97E', fontWeight: 600 }}>{exp.operator.businessName}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
                 {exp.operator.totalReviews > 0 && (
@@ -283,9 +288,14 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
                   {exp.operator.user.name}
                 </h3>
               </a>
-              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', marginTop: 4 }}>
-                {exp.operator.businessName}
-              </p>
+              {exp.operator.businessName && (
+                <div className="flex items-center gap-1.5 mt-1">
+                  <Building2 size={13} style={{ color: '#C8A97E', flexShrink: 0 }} />
+                  <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#C8A97E', fontWeight: 600 }}>
+                    {exp.operator.businessName}
+                  </p>
+                </div>
+              )}
               {exp.operator.totalReviews > 0 && (
                 <div className="flex items-center gap-2 mt-2">
                   <Star size={13} fill="#C8A97E" color="#C8A97E" />

@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 
 export const revalidate = 3600
-import { MapPin, Star, Clock, Users, Award, ChevronRight, CalendarDays, Ticket } from 'lucide-react'
+import { MapPin, Star, Clock, Users, Award, ChevronRight, CalendarDays, Ticket, Building2 } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
@@ -304,9 +304,20 @@ export default async function HostPage({ params }: { params: { slug: string } })
               <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(24px,3vw,32px)', fontWeight: 700, color: 'white', lineHeight: 1.2, marginBottom: 4 }}>
                 {host.name}
               </h1>
-              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#9E9A94', marginBottom: 12 }}>
-                {host.businessName}{host.area ? ` · ${host.area}, Bali` : ', Bali'}
-              </p>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-3">
+                {host.businessName && (
+                  <div className="flex items-center gap-1">
+                    <Building2 size={13} style={{ color: '#C8A97E' }} />
+                    <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#C8A97E', fontWeight: 600 }}>{host.businessName}</span>
+                  </div>
+                )}
+                {host.area && (
+                  <div className="flex items-center gap-1">
+                    <MapPin size={13} style={{ color: '#9E9A94' }} />
+                    <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#9E9A94' }}>{host.area}, Bali</span>
+                  </div>
+                )}
+              </div>
               <div className="flex flex-wrap gap-4">
                 <div className="flex items-center gap-1.5">
                   <Star size={14} fill="#C8A97E" color="#C8A97E" />
