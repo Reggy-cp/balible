@@ -33,6 +33,8 @@ import {
   listHostConversationsAction, getMessagesAction, sendMessageAction,
   getHostUnreadCountAction, type ConversationSummary, type ChatMessage,
 } from '@/lib/chat-actions'
+import { useLanguage } from '@/contexts/LanguageContext'
+import type { TranslationKey } from '@/lib/i18n'
 
 // True when an admin is viewing another host's dashboard read-only — gates all
 // mutation controls. Defaults false (a host viewing their own dashboard).
@@ -58,17 +60,17 @@ const AREA_COORDS: Record<string, [number, number]> = {
 }
 
 const NAV_ITEMS = [
-  { id: 'overview',      label: 'Overview',      Icon: LayoutDashboard },
-  { id: 'experiences',   label: 'Experiences',   Icon: Compass },
-  { id: 'events',        label: 'Events',        Icon: Ticket },
-  { id: 'bookings',      label: 'Bookings',      Icon: CalendarDays },
-  { id: 'availability',  label: 'Availability',  Icon: CalendarRange },
-  { id: 'earnings',      label: 'Earnings',      Icon: TrendingUp },
-  { id: 'photos',        label: 'Photos',        Icon: Images },
-  { id: 'reviews',       label: 'Reviews',       Icon: Star },
-  { id: 'messages',      label: 'Messages',      Icon: MessageCircle },
-  { id: 'profile',       label: 'Profile',       Icon: UserCircle },
-  { id: 'settings',      label: 'Settings',      Icon: Settings },
+  { id: 'overview',      labelKey: 'db_nav_overview'     as TranslationKey, Icon: LayoutDashboard },
+  { id: 'experiences',   labelKey: 'nav_experiences'     as TranslationKey, Icon: Compass },
+  { id: 'events',        labelKey: 'nav_events'          as TranslationKey, Icon: Ticket },
+  { id: 'bookings',      labelKey: 'db_nav_bookings'     as TranslationKey, Icon: CalendarDays },
+  { id: 'availability',  labelKey: 'db_nav_availability' as TranslationKey, Icon: CalendarRange },
+  { id: 'earnings',      labelKey: 'db_nav_earnings'     as TranslationKey, Icon: TrendingUp },
+  { id: 'photos',        labelKey: 'db_nav_photos'       as TranslationKey, Icon: Images },
+  { id: 'reviews',       labelKey: 'db_nav_reviews'      as TranslationKey, Icon: Star },
+  { id: 'messages',      labelKey: 'db_nav_messages'     as TranslationKey, Icon: MessageCircle },
+  { id: 'profile',       labelKey: 'nav_profile'         as TranslationKey, Icon: UserCircle },
+  { id: 'settings',      labelKey: 'db_nav_settings'     as TranslationKey, Icon: Settings },
 ]
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -155,6 +157,7 @@ function WithdrawModal({ onClose, pendingNet, commissionRate, isRequested, isPai
   isPaid?: boolean
 }) {
   const readOnly = useContext(ReadOnlyContext)
+  const { t } = useLanguage()
   const available = pendingNet ?? 0
   const [amount, setAmount]         = useState(available > 0 ? String(available) : '')
   const [requesting, setRequesting] = useState(false)
@@ -164,8 +167,8 @@ function WithdrawModal({ onClose, pendingNet, commissionRate, isRequested, isPai
   const canForm   = !isRequested && !isPaid && pendingNet !== null && available >= PAYOUT_MIN_NET
   const isValid   = canForm && parsedAmt >= PAYOUT_MIN_NET && parsedAmt <= available
   const validationMsg = canForm && parsedAmt > 0
-    ? parsedAmt < PAYOUT_MIN_NET ? `Minimum withdrawal is ${fmt(PAYOUT_MIN_NET)}`
-    : parsedAmt > available     ? `You can withdraw up to ${fmt(available)}`
+    ? parsedAmt < PAYOUT_MIN_NET ? `${t('db_minimum_is')} ${fmt(PAYOUT_MIN_NET)}`
+    : parsedAmt > available     ? `${t('db_max_is')} ${fmt(available)}`
     : null : null
 
   const handleConfirm = async () => {
@@ -174,9 +177,9 @@ function WithdrawModal({ onClose, pendingNet, commissionRate, isRequested, isPai
     const res = await requestPayoutAction(parsedAmt)
     setRequesting(false)
     if (res.ok) {
-      setResult({ ok: true, text: `Withdrawal of ${fmt(parsedAmt)} requested! Balible processes within 3 business days.` })
+      setResult({ ok: true, text: `${t('db_withdrawal_of')} ${fmt(parsedAmt)} ${t('db_withdrawal_of_end')}` })
     } else {
-      setResult({ ok: false, text: res.error ?? 'Something went wrong.' })
+      setResult({ ok: false, text: res.error ?? t('db_error_generic') })
     }
   }
 
@@ -193,63 +196,62 @@ function WithdrawModal({ onClose, pendingNet, commissionRate, isRequested, isPai
       <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3" style={{ backgroundColor: '#F0F7F2' }}>
         <CheckCircle size={28} style={{ color: '#4A7C59' }} />
       </div>
-      <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111', marginBottom: 8 }}>Request Sent!</p>
+      <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111', marginBottom: 8 }}>{t('db_request_sent')}</p>
       <p style={{ fontSize: 13, color: '#6F675C', lineHeight: 1.55 }}>{result.text}</p>
-      {closeBtn('Done')}
+      {closeBtn(t('db_done'))}
     </div>
   ) : isPaid ? (
     <div className="p-6 text-center">
       <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3" style={{ backgroundColor: '#F0F7F2' }}>
         <CheckCircle size={26} style={{ color: '#4A7C59' }} />
       </div>
-      <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 8 }}>Payout Sent This Month</p>
-      <p style={{ fontSize: 13, color: '#6F675C', lineHeight: 1.55 }}>Your earnings for this period have already been paid out. Come back next month to request your next withdrawal.</p>
-      {closeBtn()}
+      <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 8 }}>{t('db_payout_sent_month')}</p>
+      <p style={{ fontSize: 13, color: '#6F675C', lineHeight: 1.55 }}>{t('db_payout_received_desc')}</p>
+      {closeBtn(t('db_close'))}
     </div>
   ) : isRequested ? (
     <div className="p-6 text-center">
       <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3" style={{ backgroundColor: '#FDF8F4' }}>
         <span style={{ fontSize: 28 }}>⏳</span>
       </div>
-      <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 8 }}>Withdrawal In Progress</p>
-      <p style={{ fontSize: 13, color: '#6F675C', lineHeight: 1.55 }}>Your payout request is being processed. Balible will transfer your earnings within 3 business days.</p>
-      {closeBtn()}
+      <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 8 }}>{t('db_withdrawal_progress')}</p>
+      <p style={{ fontSize: 13, color: '#6F675C', lineHeight: 1.55 }}>{t('db_withdrawal_processing')}</p>
+      {closeBtn(t('db_close'))}
     </div>
   ) : pendingNet === null ? (
     <div className="p-10 text-center">
-      <p style={{ fontSize: 13, color: '#9E9A94' }}>Loading your balance…</p>
+      <p style={{ fontSize: 13, color: '#9E9A94' }}>{t('db_loading_balance')}</p>
     </div>
   ) : available === 0 ? (
     <div className="p-6 text-center">
-      <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 8 }}>No Earnings to Withdraw</p>
-      <p style={{ fontSize: 13, color: '#6F675C', lineHeight: 1.55 }}>You don't have any confirmed earnings yet. Earnings appear here once guests confirm their bookings.</p>
-      {closeBtn()}
+      <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 8 }}>{t('db_no_earnings_title')}</p>
+      <p style={{ fontSize: 13, color: '#6F675C', lineHeight: 1.55 }}>{t('db_no_earnings_desc')}</p>
+      {closeBtn(t('db_close'))}
     </div>
   ) : available < PAYOUT_MIN_NET ? (
     <div className="p-5">
       <div className="rounded-xl p-4 mb-4" style={{ backgroundColor: '#F5F1EB' }}>
-        <p style={{ fontSize: 12, color: '#6F675C' }}>Available balance</p>
+        <p style={{ fontSize: 12, color: '#6F675C' }}>{t('db_available_balance')}</p>
         <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: '#111111', marginTop: 2, lineHeight: 1.1 }}>{fmt(available)}</p>
-        <p style={{ fontSize: 11, color: '#9E9A94', marginTop: 3 }}>After {commissionRate}% platform commission</p>
+        <p style={{ fontSize: 11, color: '#9E9A94', marginTop: 3 }}>{t('db_after_commission_note').replace('{rate}', String(commissionRate))}</p>
       </div>
       <div className="rounded-xl p-4 mb-5" style={{ backgroundColor: '#FEF2F2', border: '1px solid #F5D5C5' }}>
         <p style={{ fontSize: 13, color: '#B66A45', lineHeight: 1.55 }}>
-          Your balance is below the minimum withdrawal of <strong>{fmt(PAYOUT_MIN_NET)}</strong>.
-          Keep earning and come back once you've reached the minimum.
+          {t('db_below_minimum')} <strong>{fmt(PAYOUT_MIN_NET)}</strong>. {t('db_keep_earning')}
         </p>
       </div>
-      {closeBtn()}
+      {closeBtn(t('db_close'))}
     </div>
   ) : (
     /* ── Form (can withdraw) ── */
     <div className="p-5">
       <div className="rounded-xl p-4 mb-5" style={{ backgroundColor: '#F5F1EB' }}>
-        <p style={{ fontSize: 12, color: '#6F675C' }}>Available to withdraw</p>
+        <p style={{ fontSize: 12, color: '#6F675C' }}>{t('db_available_withdraw')}</p>
         <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: '#111111', marginTop: 2, lineHeight: 1.1 }}>{fmt(available)}</p>
-        <p style={{ fontSize: 11, color: '#9E9A94', marginTop: 3 }}>After {commissionRate}% platform commission</p>
+        <p style={{ fontSize: 11, color: '#9E9A94', marginTop: 3 }}>{t('db_after_commission_note').replace('{rate}', String(commissionRate))}</p>
       </div>
 
-      <p style={{ fontSize: 12, fontWeight: 600, color: '#6F675C', marginBottom: 6 }}>Amount to withdraw (IDR)</p>
+      <p style={{ fontSize: 12, fontWeight: 600, color: '#6F675C', marginBottom: 6 }}>{t('db_amount_withdraw')}</p>
       <div className="relative">
         <span className="absolute left-3 top-1/2 -translate-y-1/2" style={{ fontSize: 12, color: '#9E9A94', pointerEvents: 'none' }}>IDR</span>
         <input
@@ -264,16 +266,16 @@ function WithdrawModal({ onClose, pendingNet, commissionRate, isRequested, isPai
       <div className="flex gap-2 mt-3 mb-4">
         <button onClick={() => setAmount(String(available))}
           style={{ flex: 1, height: 32, borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 12, color: '#6F675C', cursor: 'pointer', fontWeight: 500 }}>
-          Withdraw all
+          {t('db_withdraw_all')}
         </button>
         <button onClick={() => setAmount(String(Math.round(available / 2)))}
           style={{ flex: 1, height: 32, borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 12, color: '#6F675C', cursor: 'pointer', fontWeight: 500 }}>
-          Half
+          {t('db_half')}
         </button>
       </div>
 
       <p style={{ fontSize: 11, color: '#9E9A94', marginBottom: 14, lineHeight: 1.5 }}>
-        Min {fmt(PAYOUT_MIN_NET)} · Processed within 3 business days to your registered bank account.
+        {t('db_min_label')} {fmt(PAYOUT_MIN_NET)} {t('db_processed_days')}
       </p>
 
       {result && !result.ok && <p style={{ fontSize: 12, color: '#B66A45', marginBottom: 12, lineHeight: 1.4 }}>{result.text}</p>}
@@ -281,11 +283,11 @@ function WithdrawModal({ onClose, pendingNet, commissionRate, isRequested, isPai
       <div className="flex gap-3">
         <button onClick={onClose} disabled={requesting}
           style={{ flex: 1, height: 44, borderRadius: 10, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 14, color: '#6F675C', cursor: 'pointer', fontWeight: 500 }}>
-          Cancel
+          {t('db_cancel')}
         </button>
         <button onClick={handleConfirm} disabled={requesting || !isValid} className="hover:opacity-90 transition-opacity"
           style={{ flex: 2, height: 44, borderRadius: 10, border: 'none', backgroundColor: isValid ? '#111111' : '#E8E4DE', color: isValid ? 'white' : '#9E9A94', fontSize: 14, fontWeight: 600, cursor: isValid && !requesting ? 'pointer' : 'default', transition: 'background 0.2s' }}>
-          {requesting ? 'Requesting…' : parsedAmt > 0 && isValid ? `Withdraw ${fmt(parsedAmt)}` : 'Withdraw'}
+          {requesting ? t('db_requesting') : parsedAmt > 0 && isValid ? `${t('db_withdraw')} ${fmt(parsedAmt)}` : t('db_withdraw')}
         </button>
       </div>
     </div>
@@ -298,7 +300,7 @@ function WithdrawModal({ onClose, pendingNet, commissionRate, isRequested, isPai
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm pointer-events-auto" style={{ border: '1px solid #E8E4DE' }}>
           <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid #E8E4DE' }}>
             <div className="flex items-center gap-2">
-              <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>Withdraw Earnings</span>
+              <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>{t('db_withdraw_earnings')}</span>
             </div>
             <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
               <X size={18} style={{ color: '#6F675C' }} />
@@ -313,21 +315,14 @@ function WithdrawModal({ onClose, pendingNet, commissionRate, isRequested, isPai
 
 // ── Overview Panel ────────────────────────────────────────────────────────────
 
-const OVERVIEW_STATS = [
-  { label: 'Total Bookings',    value: '—', change: 'Loading…', up: null },
-  { label: 'Total Earnings',    value: '—', change: 'Loading…', up: null },
-  { label: 'Upcoming Bookings', value: '—', change: 'Next 7 days', up: null },
-  { label: 'Average Rating',    value: '—', change: 'Loading…', up: null },
-]
-
-
 function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences, bookings: liveBookings, reviews: liveReviews, hostName, earningsByMonth: liveEarningsByMonth, pendingPayout: livePendingPayout, payouts: livePayouts }: {
   onNav: (id: string) => void; commissionRate: number
   experiences?: DashExp[]; bookings?: DashBooking[]; reviews?: DashReview[]; hostName?: string
   earningsByMonth?: EarningsByMonth[]; pendingPayout?: number; payouts?: OperatorPayout[]
 }) {
   const readOnly = useContext(ReadOnlyContext)
-  const [period, setPeriod]       = useState('This Month')
+  const { t } = useLanguage()
+  const [period, setPeriod]       = useState('this_month')
   const [withdrawOpen, setWithdrawOpen] = useState(false)
   const netMult = (100 - commissionRate) / 100
   const expSource = liveExperiences ?? []
@@ -339,19 +334,26 @@ function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences, bo
     ? (liveReviews.reduce((a, r) => a + r.rating, 0) / liveReviews.length).toFixed(1) : null
   const reviewCount    = liveReviews !== undefined ? liveReviews.length : null
 
+  const OVERVIEW_STATS = [
+    { id: 'total_bookings',    label: t('db_stat_total_bookings'),    value: '—', change: t('db_loading'), up: null },
+    { id: 'total_earnings',    label: t('db_stat_total_earnings'),    value: '—', change: t('db_loading'), up: null },
+    { id: 'upcoming_bookings', label: t('db_stat_upcoming'), value: '—', change: t('db_next_7_days'), up: null },
+    { id: 'avg_rating',        label: t('db_stat_rating'),        value: '—', change: t('db_loading'), up: null },
+  ]
+
   const stats = OVERVIEW_STATS.map(s => {
-    if (s.label === 'Total Earnings')    return { ...s, value: fmt(totalNetEarnings), change: `After ${commissionRate}% commission` }
-    if (s.label === 'Total Bookings'    && totalBookings  !== null) return { ...s, value: String(totalBookings),  change: totalBookings  === 0 ? 'No bookings yet'  : s.change }
-    if (s.label === 'Upcoming Bookings' && activeBookings !== null) return { ...s, value: String(activeBookings), change: 'Confirmed & pending' }
-    if (s.label === 'Average Rating'    && avgRating      !== null) return { ...s, value: avgRating, change: reviewCount === 0 ? 'No reviews yet' : `From ${reviewCount} review${reviewCount !== 1 ? 's' : ''}` }
+    if (s.id === 'total_earnings')    return { ...s, value: fmt(totalNetEarnings), change: t('db_after_commission_note').replace('{rate}', String(commissionRate)) }
+    if (s.id === 'total_bookings'    && totalBookings  !== null) return { ...s, value: String(totalBookings),  change: totalBookings  === 0 ? t('db_no_bookings_yet') : s.change }
+    if (s.id === 'upcoming_bookings' && activeBookings !== null) return { ...s, value: String(activeBookings), change: t('db_confirmed_pending') }
+    if (s.id === 'avg_rating'        && avgRating      !== null) return { ...s, value: avgRating, change: reviewCount === 0 ? t('db_no_reviews_yet') : `${reviewCount} ${t('db_from_reviews')}` }
     return s
   })
 
   const allChartData   = liveEarningsByMonth?.map(m => m.gross) ?? []
   const allChartLabels = liveEarningsByMonth?.map(m => m.month) ?? []
   const half = Math.floor(allChartData.length / 2)
-  const slice  = period === 'This Month' ? allChartData.slice(half)   : allChartData.slice(0, half)
-  const labels = period === 'This Month' ? allChartLabels.slice(half) : allChartLabels.slice(0, half)
+  const slice  = period === 'this_month' ? allChartData.slice(half)   : allChartData.slice(0, half)
+  const labels = period === 'this_month' ? allChartLabels.slice(half) : allChartLabels.slice(0, half)
   const lastMonthGross = allChartData[allChartData.length - 1] ?? 0
   const prevMonthGross = allChartData[allChartData.length - 2] ?? 0
   const momPct = prevMonthGross > 0 ? Math.round(((lastMonthGross - prevMonthGross) / prevMonthGross) * 100) : null
@@ -380,14 +382,14 @@ function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences, bo
       <div className="flex items-start justify-between mb-6">
         <div>
           <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(20px,2.5vw,26px)', fontWeight: 700, color: '#111111' }}>
-            Welcome back, {hostName ?? 'Host'}
+            {t('db_welcome_back')}, {hostName ?? 'Host'}
           </h1>
-          <p style={{ fontSize: 14, color: '#6F675C', marginTop: 3 }}>Here's what's happening with your experiences.</p>
+          <p style={{ fontSize: 14, color: '#6F675C', marginTop: 3 }}>{t('db_overview_sub')}</p>
         </div>
         <button onClick={() => onNav('experiences')}
           className="hidden sm:flex items-center gap-2 hover:opacity-90 transition-opacity flex-shrink-0 ml-4"
           style={{ height: 42, backgroundColor: '#111111', color: 'white', border: 'none', borderRadius: 8, padding: '0 18px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
-          <Plus size={15} /> New Experience
+          <Plus size={15} /> {t('db_new_experience')}
         </button>
       </div>
 
@@ -409,19 +411,19 @@ function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences, bo
         {/* Upcoming bookings */}
         <div className="lg:col-span-3 bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
           <div className="flex items-center justify-between mb-4">
-            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Upcoming Bookings</h2>
+            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>{t('db_upcoming_bookings')}</h2>
             <button onClick={() => onNav('bookings')}
               style={{ fontSize: 13, color: '#C8A97E', background: 'none', border: 'none', cursor: 'pointer' }}>
-              View all →
+              {t('db_view_all_arrow')}
             </button>
           </div>
           <div className="space-y-3">
             {liveBookings === undefined ? (
-              <p style={{ fontSize: 13, color: '#9E9A94', textAlign: 'center', padding: '20px 0' }}>Loading…</p>
+              <p style={{ fontSize: 13, color: '#9E9A94', textAlign: 'center', padding: '20px 0' }}>{t('db_loading')}</p>
             ) : (() => {
               const upcoming = liveBookings.filter(b => b.status === 'Confirmed' || b.status === 'Pending').slice(0, 4)
               return upcoming.length === 0 ? (
-                <p style={{ fontSize: 13, color: '#9E9A94', textAlign: 'center', padding: '20px 0' }}>No upcoming bookings</p>
+                <p style={{ fontSize: 13, color: '#9E9A94', textAlign: 'center', padding: '20px 0' }}>{t('db_no_upcoming')}</p>
               ) : upcoming.map((b, i) => (
                 <div key={b.id ?? i} className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: '#F5F1EB' }}>
                   <img src={b.expImage} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
@@ -441,11 +443,11 @@ function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences, bo
         <div className="lg:col-span-2 space-y-5">
           <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
             <div className="flex items-center justify-between mb-1">
-              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Earnings</h2>
-              <button onClick={() => setPeriod(p => p === 'This Month' ? 'Last 6 Months' : 'This Month')}
+              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>{t('db_earnings_title')}</h2>
+              <button onClick={() => setPeriod(p => p === 'this_month' ? 'last_6' : 'this_month')}
                 className="flex items-center gap-1"
                 style={{ background: 'none', border: '1px solid #E8E4DE', borderRadius: 6, padding: '3px 9px', fontSize: 11, color: '#6F675C', cursor: 'pointer' }}>
-                {period} <ChevronDown size={10} />
+                {period === 'this_month' ? t('db_this_month') : t('db_last_6_months')} <ChevronDown size={10} />
               </button>
             </div>
             <div className="flex items-baseline gap-2 my-2">
@@ -465,7 +467,7 @@ function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences, bo
               </>
             ) : (
               <div style={{ height: 96, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
-                <p style={{ fontSize: 12, color: '#9E9A94' }}>{liveEarningsByMonth === undefined ? 'Loading…' : 'No earnings yet'}</p>
+                <p style={{ fontSize: 12, color: '#9E9A94' }}>{liveEarningsByMonth === undefined ? t('db_loading') : t('db_no_earnings_yet')}</p>
               </div>
             )}
 
@@ -474,13 +476,13 @@ function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences, bo
             <button onClick={() => setWithdrawOpen(true)}
               className="w-full flex items-center justify-center hover:opacity-90 transition-opacity"
               style={{ height: 36, borderRadius: 9, border: isPayoutRequested || isPayoutPaid ? '1px solid #E8E4DE' : 'none', backgroundColor: isPayoutRequested || isPayoutPaid ? 'white' : '#111111', color: isPayoutRequested || isPayoutPaid ? '#6F675C' : 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-              {isPayoutPaid ? 'Payout Sent ✓' : isPayoutRequested ? 'Withdrawal Pending ⏳' : pendingNet !== null && pendingNet > 0 ? `Withdraw ${fmt(pendingNet)}` : 'Withdraw Earnings'}
+              {isPayoutPaid ? `${t('db_payout_sent')} ✓` : isPayoutRequested ? `${t('db_withdrawal_pending')} ⏳` : pendingNet !== null && pendingNet > 0 ? `${t('db_withdraw')} ${fmt(pendingNet)}` : t('db_withdraw_earnings')}
             </button>
             )}
           </div>
 
           <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
-            <h2 className="mb-3" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Top Experiences</h2>
+            <h2 className="mb-3" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>{t('db_top_experiences')}</h2>
             <div className="space-y-3">
               {expSource.filter(e => e.status === 'Active').map((e, i) => (
                 <div key={e.id} className="flex items-center justify-between">
@@ -504,6 +506,7 @@ function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences, bo
 
 function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRate: number; initialExperiences?: DashExp[] }) {
   const readOnly = useContext(ReadOnlyContext)
+  const { t } = useLanguage()
   const [filter, setFilter]   = useState('All')
   const [exps, setExps]       = useState<DashExp[]>(initialExperiences ?? [])
   const [showForm, setShowForm] = useState(false)
@@ -671,13 +674,13 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
   return (
     <div>
       <PageHeader
-        title="My Experiences"
-        subtitle={`${exps.length} total listings`}
+        title={t('db_my_experiences')}
+        subtitle={`${exps.length} ${t('db_total_listings')}`}
         action={readOnly ? undefined : (
           <button onClick={() => setShowForm(true)}
             className="hidden sm:flex items-center gap-2 hover:opacity-90 transition-opacity"
             style={{ height: 42, backgroundColor: '#111111', color: 'white', border: 'none', borderRadius: 8, padding: '0 18px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
-            <Plus size={15} /> New Experience
+            <Plus size={15} /> {t('db_new_experience')}
           </button>
         )}
       />
@@ -712,7 +715,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                 <div className="flex flex-wrap gap-x-3 gap-y-0.5">
                   <span className="flex items-center gap-1" style={{ fontSize: 11, color: '#6F675C' }}><MapPin size={10} />{exp.area}</span>
                   <span className="flex items-center gap-1" style={{ fontSize: 11, color: '#6F675C' }}><Clock size={10} />{exp.duration}</span>
-                  <span className="flex items-center gap-1" style={{ fontSize: 11, color: '#6F675C' }}><Users size={10} />Up to {exp.maxGuests}</span>
+                  <span className="flex items-center gap-1" style={{ fontSize: 11, color: '#6F675C' }}><Users size={10} />{t('db_up_to')} {exp.maxGuests}</span>
                   {exp.subcategory && (
                     <span style={{ fontSize: 11, fontWeight: 500, color: '#C8A97E', backgroundColor: '#FEF9EC', border: '1px solid #F0DFC0', borderRadius: 5, padding: '1px 7px' }}>
                       {exp.subcategory}
@@ -722,8 +725,8 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                 <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1.5">
                   <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>IDR {exp.price.toLocaleString('id-ID')}<span style={{ fontWeight: 400, color: '#6F675C' }}>/person</span></span>
                   <span style={{ fontSize: 12, color: '#6F675C' }}>⭐ {exp.rating} ({exp.totalReviews})</span>
-                  <span style={{ fontSize: 12, color: '#6F675C' }}>{exp.bookings} bookings</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: '#4A7C59' }}>{fmt(Math.round(exp.earnings * (100 - commissionRate) / 100))} <span style={{ fontSize: 10, fontWeight: 400, color: '#9E9A94' }}>net</span></span>
+                  <span style={{ fontSize: 12, color: '#6F675C' }}>{exp.bookings} {t('db_bookings_count')}</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: '#4A7C59' }}>{fmt(Math.round(exp.earnings * (100 - commissionRate) / 100))} <span style={{ fontSize: 10, fontWeight: 400, color: '#9E9A94' }}>{t('db_net')}</span></span>
                 </div>
               </div>
             </div>
@@ -733,25 +736,25 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
               <a href={exp.category === 'Rentals' ? `/rentals/${exp.slug}` : `/experiences/${exp.slug}`} target="_blank" rel="noreferrer"
                 className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
                 style={{ height: 30, padding: '0 10px', borderRadius: 8, border: '1px solid #E8E4DE', color: '#6F675C', fontSize: 12, textDecoration: 'none' }}>
-                <Eye size={11} /> View
+                <Eye size={11} /> {t('db_view')}
               </a>
               <button onClick={() => openEdit(exp)}
                 className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
                 style={{ height: 30, padding: '0 10px', borderRadius: 8, border: '1px solid #E8E4DE', background: 'none', cursor: 'pointer', color: '#6F675C', fontSize: 12 }}>
-                <Edit2 size={11} /> Edit
+                <Edit2 size={11} /> {t('db_edit')}
               </button>
               {exp.status !== 'Active' && (
                 <button onClick={() => setStatus(exp, 'Active')}
                   className="flex items-center gap-1.5 hover:opacity-90 transition-opacity"
                   style={{ height: 30, padding: '0 10px', borderRadius: 8, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
-                  <Play size={11} /> {exp.status === 'Draft' ? 'Publish' : 'Activate'}
+                  <Play size={11} /> {exp.status === 'Draft' ? t('db_publish') : t('db_activate')}
                 </button>
               )}
               {exp.status === 'Active' && (
                 <button onClick={() => setStatus(exp, 'Paused')}
                   className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
                   style={{ height: 30, padding: '0 10px', borderRadius: 8, border: '1px solid #E8E4DE', background: 'white', color: '#C8A97E', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
-                  <Pause size={11} /> Pause
+                  <Pause size={11} /> {t('db_pause')}
                 </button>
               )}
               <button onClick={() => {
@@ -761,7 +764,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                 }}
                 className="flex items-center gap-1.5 hover:bg-red-50 transition-colors"
                 style={{ height: 30, padding: '0 10px', borderRadius: 8, border: '1px solid #E8E4DE', background: 'white', color: '#B66A45', fontSize: 12, cursor: 'pointer' }}>
-                <Trash2 size={11} /> Delete
+                <Trash2 size={11} /> {t('db_delete')}
               </button>
             </div>
           </div>
@@ -777,7 +780,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
 
       {/* Create modal — step-by-step wizard */}
       {showForm && (() => {
-        const STEPS = ['Basics', 'Details', 'Photos', 'Schedule']
+        const STEPS = [t('db_basics'), t('db_details'), t('db_gallery_photos'), t('db_schedule_tab')]
         const inputStyle: React.CSSProperties = { width: '100%', borderRadius: 10, border: '1px solid #E8E4DE', padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }
         const labelStyle: React.CSSProperties = { display: 'block', fontSize: 13, fontWeight: 600, color: '#111111', marginBottom: 6 }
 
@@ -793,8 +796,8 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
               {/* Header */}
               <div className="flex items-start justify-between px-5 sm:px-6 pt-3 sm:pt-6 mb-5">
                 <div>
-                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', margin: 0 }}>{editingExp ? 'Edit Experience' : 'New Experience'}</h2>
-                  <p style={{ fontSize: 12, color: '#9E9A94', margin: '3px 0 0' }}>Step {formStep} of {STEPS.length} · {STEPS[formStep - 1]}</p>
+                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', margin: 0 }}>{editingExp ? t('db_edit_exp') : t('db_new_experience')}</h2>
+                  <p style={{ fontSize: 12, color: '#9E9A94', margin: '3px 0 0' }}>{t('db_step_label')} {formStep} {t('db_of_label')} {STEPS.length} · {STEPS[formStep - 1]}</p>
                 </div>
                 <button onClick={closeForm} style={{ background: 'none', border: 'none', cursor: 'pointer', marginTop: 2 }}><X size={20} style={{ color: '#6F675C' }} /></button>
               </div>
@@ -808,18 +811,18 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
               {formStep === 1 && (
                 <div key={`basics-${editingExp?.id ?? 'new'}`} className="space-y-4 px-5 sm:px-6">
                   <div>
-                    <label style={labelStyle}>Experience title</label>
+                    <label style={labelStyle}>{t('db_exp_title')}</label>
                     <input type="text" value={formData.title} onChange={e => setField('title', e.target.value)} placeholder="e.g. Traditional Batik Dyeing Class" style={inputStyle} />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label style={labelStyle}>Category</label>
+                      <label style={labelStyle}>{t('db_category_label')}</label>
                       <select value={formData.category} onChange={e => setCategory(e.target.value)} style={{ ...inputStyle, backgroundColor: 'white', cursor: 'pointer' }}>
                         {['Art & Craft','Wellness & Healing','Culture & Spiritual','Culinary','Nature & Outdoors','Water Activities','Local Experts','Rentals','Services'].map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label style={labelStyle}>Subcategory</label>
+                      <label style={labelStyle}>{t('db_subcategory')}</label>
                       <select value={formData.subcategory} onChange={e => setField('subcategory', e.target.value)} style={{ ...inputStyle, backgroundColor: 'white', cursor: 'pointer' }}>
                         {(SUBCATEGORY_MAP[formData.category] ?? []).map(s => <option key={s}>{s}</option>)}
                       </select>
@@ -827,14 +830,14 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label style={labelStyle}>Area</label>
+                      <label style={labelStyle}>{t('db_area_label')}</label>
                       <select value={formData.area} onChange={e => setField('area', e.target.value)} style={{ ...inputStyle, backgroundColor: 'white', cursor: 'pointer' }}>
                         {['Ubud','Canggu','Kuta','Seminyak','Uluwatu','Gianyar','Sanur','Nusa Dua','Amed','Jimbaran','Kintamani','Sidemen','Medewi'].map(a => <option key={a}>{a}</option>)}
                       </select>
                     </div>
                   </div>
                   <div>
-                    <label style={labelStyle}>Description</label>
+                    <label style={labelStyle}>{t('db_event_desc_label')}</label>
                     <textarea value={formData.description} onChange={e => setField('description', e.target.value)} placeholder="Describe what guests will experience..." rows={4}
                       style={{ ...inputStyle, resize: 'none' }} />
                   </div>
@@ -846,11 +849,11 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                 <div key={`details-${editingExp?.id ?? 'new'}`} className="space-y-4 px-5 sm:px-6">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label style={labelStyle}>Price per person (IDR)</label>
+                      <label style={labelStyle}>{t('db_price_per_person_idr')}</label>
                       <input type="number" value={formData.price} onChange={e => setField('price', e.target.value)} placeholder="450000" style={inputStyle} />
                     </div>
                     <div>
-                      <label style={labelStyle}>Duration (hours)</label>
+                      <label style={labelStyle}>{t('db_duration_hours')}</label>
                       <div style={{ position: 'relative' }}>
                         <input type="number" value={formData.duration} onChange={e => setField('duration', e.target.value)} placeholder="2" min="0.5" step="0.5" style={{ ...inputStyle, paddingRight: 48 }} />
                         <span style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 12, color: '#9E9A94', pointerEvents: 'none', fontFamily: 'var(--font-inter)' }}>hrs</span>
@@ -859,24 +862,24 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label style={labelStyle}>Max guests</label>
+                      <label style={labelStyle}>{t('db_max_guests')}</label>
                       <input type="number" value={formData.maxGuests} onChange={e => setField('maxGuests', e.target.value)} placeholder="8" style={inputStyle} />
                     </div>
                     <div>
-                      <label style={labelStyle}>Min guests</label>
+                      <label style={labelStyle}>{t('db_min_guests')}</label>
                       <input type="number" value={formData.minGuests} onChange={e => setField('minGuests', e.target.value)} placeholder="1" style={inputStyle} />
                     </div>
                   </div>
                   <div>
-                    <label style={labelStyle}>Meeting point</label>
+                    <label style={labelStyle}>{t('db_meeting_point')}</label>
                     <input type="text" value={formData.meetingPoint} onChange={e => setField('meetingPoint', e.target.value)} placeholder="e.g. Jl. Raya Ubud No. 12, Ubud, Bali" style={inputStyle} />
                   </div>
                   <div>
-                    <label style={labelStyle}>What&apos;s included</label>
+                    <label style={labelStyle}>{t('db_whats_included')}</label>
                     <textarea value={formData.includes} onChange={e => setField('includes', e.target.value)} placeholder={"One item per line\ne.g. All materials\nWelcome drink\nTake-home piece"} rows={4} style={{ ...inputStyle, resize: 'none' }} />
                   </div>
                   <div>
-                    <label style={labelStyle}>What&apos;s not included</label>
+                    <label style={labelStyle}>{t('db_whats_not_included')}</label>
                     <textarea value={formData.excludes} onChange={e => setField('excludes', e.target.value)} placeholder={"One item per line\ne.g. Transport to venue\nGratuities"} rows={4} style={{ ...inputStyle, resize: 'none' }} />
                   </div>
                 </div>
@@ -888,11 +891,11 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                   {/* Price + Period */}
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label style={labelStyle}>Price (IDR)</label>
+                      <label style={labelStyle}>{t('db_price_idr')}</label>
                       <input type="number" value={formData.price} onChange={e => setField('price', e.target.value)} placeholder="80000" style={inputStyle} />
                     </div>
                     <div>
-                      <label style={labelStyle}>Rental period</label>
+                      <label style={labelStyle}>{t('db_rental_period')}</label>
                       <select value={formData.rentalPeriod} onChange={e => setField('rentalPeriod', e.target.value)} style={{ ...inputStyle, backgroundColor: 'white', cursor: 'pointer' }}>
                         {['per hour', 'per day', 'per night', 'per week'].map(p => <option key={p}>{p}</option>)}
                       </select>
@@ -900,22 +903,22 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                   </div>
                   {/* Deposit */}
                   <div>
-                    <label style={labelStyle}>Deposit (IDR) <span style={{ fontWeight: 400, color: '#9E9A94' }}>— optional, refundable</span></label>
+                    <label style={labelStyle}>{t('db_deposit_optional')}</label>
                     <input type="number" value={formData.deposit} onChange={e => setField('deposit', e.target.value)} placeholder="500000" style={inputStyle} />
                   </div>
                   {/* Pickup location */}
                   <div>
-                    <label style={labelStyle}>Pickup location</label>
+                    <label style={labelStyle}>{t('db_pickup_location')}</label>
                     <input type="text" value={formData.meetingPoint} onChange={e => setField('meetingPoint', e.target.value)} placeholder="e.g. Jl. Batu Bolong No. 5, Canggu" style={inputStyle} />
                   </div>
                   {/* Included */}
                   <div>
-                    <label style={labelStyle}>What&apos;s included</label>
+                    <label style={labelStyle}>{t('db_whats_included')}</label>
                     <textarea value={formData.includes} onChange={e => setField('includes', e.target.value)} placeholder={"One item per line\ne.g. Helmet\nLock & key\nPhone holder\nRain poncho"} rows={4} style={{ ...inputStyle, resize: 'none' }} />
                   </div>
                   {/* Not included */}
                   <div>
-                    <label style={labelStyle}>What&apos;s not included</label>
+                    <label style={labelStyle}>{t('db_whats_not_included')}</label>
                     <textarea value={formData.excludes} onChange={e => setField('excludes', e.target.value)} placeholder={"One item per line\ne.g. Fuel\nInsurance\nDelivery"} rows={3} style={{ ...inputStyle, resize: 'none' }} />
                   </div>
                 </div>
@@ -926,7 +929,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                 <div className="space-y-4 px-5 sm:px-6">
                   {/* Cover photo */}
                   <div>
-                    <label style={labelStyle}>Cover Photo</label>
+                    <label style={labelStyle}>{t('db_cover_photo')}</label>
                     <input ref={fileInputRef} type="file" accept="image/*" className="hidden"
                       onChange={e => { const f = e.target.files?.[0]; if (f) handleImageFile(f) }} />
                     {imagePreview ? (
@@ -951,8 +954,8 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                           <Camera size={18} style={{ color: '#6F675C' }} />
                         </div>
                         <div style={{ textAlign: 'center' }}>
-                          <p style={{ fontSize: 13, fontWeight: 600, color: '#111111', margin: 0 }}>Upload cover photo</p>
-                          <p style={{ fontSize: 12, color: '#6F675C', margin: '2px 0 0' }}>Click or drag & drop · JPG, PNG, WEBP</p>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: '#111111', margin: 0 }}>{t('db_upload_cover')}</p>
+                          <p style={{ fontSize: 12, color: '#6F675C', margin: '2px 0 0' }}>{t('db_click_drag')}</p>
                         </div>
                       </div>
                     )}
@@ -961,7 +964,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                   {/* Gallery */}
                   <div>
                     <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
-                      <label style={{ fontSize: 13, fontWeight: 600, color: '#111111' }}>Gallery Photos</label>
+                      <label style={{ fontSize: 13, fontWeight: 600, color: '#111111' }}>{t('db_gallery_photos')}</label>
                       <span style={{ fontSize: 12, color: '#9E9A94' }}>{galleryPreviews.length}/8</span>
                     </div>
                     <input ref={galleryInputRef} type="file" accept="image/*" multiple className="hidden"
@@ -986,10 +989,10 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                         onDrop={e => { e.preventDefault(); setGalleryDragging(false); handleGalleryFiles(e.dataTransfer.files) }}
                         style={{ height: 68, borderRadius: 10, border: `2px dashed ${galleryDragging ? '#C8A97E' : '#E8E4DE'}`, backgroundColor: galleryDragging ? '#FFFDF9' : '#F9F9F7', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer', transition: 'all 0.2s' }}>
                         <Camera size={15} style={{ color: '#6F675C' }} />
-                        <span style={{ fontSize: 13, color: '#6F675C' }}>{galleryPreviews.length === 0 ? 'Add gallery photos' : 'Add more photos'}</span>
+                        <span style={{ fontSize: 13, color: '#6F675C' }}>{galleryPreviews.length === 0 ? t('db_add_gallery') : t('db_add_more')}</span>
                       </div>
                     )}
-                    <p style={{ fontSize: 11, color: '#9E9A94', marginTop: 4 }}>Up to 8 photos · shown in your experience listing</p>
+                    <p style={{ fontSize: 11, color: '#9E9A94', marginTop: 4 }}>{t('db_up_to_8_photos')}</p>
                   </div>
                 </div>
               )}
@@ -998,7 +1001,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
               {formStep === 4 && (
                 <div className="px-5 sm:px-6">
                   <p style={{ fontSize: 13, color: '#6F675C', marginBottom: 14, marginTop: 0 }}>
-                    Set which days your experience is available and the operating hours.
+                    {t('db_avail_hours_desc')}
                   </p>
                   <div className="space-y-2">
                     {schedule.map((row, i) => (
@@ -1032,7 +1035,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
                               style={{ flex: 1, borderRadius: 8, border: '1px solid #E8E4DE', padding: '6px 8px', fontSize: 13, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }} />
                           </div>
                         ) : (
-                          <span style={{ fontSize: 13, color: '#C8C4BE', flex: 1 }}>Closed</span>
+                          <span style={{ fontSize: 13, color: '#C8C4BE', flex: 1 }}>{t('db_closed')}</span>
                         )}
                       </div>
                     ))}
@@ -1047,29 +1050,29 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
               <div className="flex gap-2 mt-0 px-5 sm:px-6 pb-8 sm:pb-6">
                 {formStep > 1 ? (
                   <button onClick={() => { setSaveError(''); setFormStep(s => s - 1) }}
-                    style={{ flex: 1, height: 44, borderRadius: 10, border: '1px solid #E8E4DE', background: 'none', fontSize: 13, fontWeight: 600, color: '#6F675C', cursor: 'pointer' }}>Back</button>
+                    style={{ flex: 1, height: 44, borderRadius: 10, border: '1px solid #E8E4DE', background: 'none', fontSize: 13, fontWeight: 600, color: '#6F675C', cursor: 'pointer' }}>{t('db_back')}</button>
                 ) : (
                   <button onClick={closeForm}
-                    style={{ flex: 1, height: 44, borderRadius: 10, border: '1px solid #E8E4DE', background: 'none', fontSize: 13, fontWeight: 600, color: '#6F675C', cursor: 'pointer' }}>Cancel</button>
+                    style={{ flex: 1, height: 44, borderRadius: 10, border: '1px solid #E8E4DE', background: 'none', fontSize: 13, fontWeight: 600, color: '#6F675C', cursor: 'pointer' }}>{t('db_cancel')}</button>
                 )}
                 {formStep < STEPS.length ? (
                   <button onClick={() => {
-                    if (formStep === 1 && !formData.title.trim()) { setSaveError('Please enter a title for your experience.'); return }
-                    if (formStep === 2 && !formData.price) { setSaveError('Please enter a price.'); return }
-                    if (formStep === 2 && formData.category !== 'Rentals' && !formData.duration) { setSaveError('Please enter a duration.'); return }
+                    if (formStep === 1 && !formData.title.trim()) { setSaveError(t('db_enter_title')); return }
+                    if (formStep === 2 && !formData.price) { setSaveError(t('db_enter_price')); return }
+                    if (formStep === 2 && formData.category !== 'Rentals' && !formData.duration) { setSaveError(t('db_enter_duration')); return }
                     setSaveError('')
                     setFormStep(s => s + 1)
                   }}
-                    style={{ flex: 2, height: 44, borderRadius: 10, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Next →</button>
+                    style={{ flex: 2, height: 44, borderRadius: 10, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>{t('db_next_btn')}</button>
                 ) : (
                   <>
                     <button onClick={() => saveAndClose('draft')} disabled={submitting}
                       style={{ flex: 1.4, height: 44, borderRadius: 10, border: '1px solid #E8E4DE', background: 'white', fontSize: 13, fontWeight: 600, color: '#6F675C', cursor: 'pointer', opacity: submitting ? 0.6 : 1 }}>
-                      {submitting ? 'Saving…' : 'Save Draft'}
+                      {submitting ? t('db_saving') : t('db_save_draft')}
                     </button>
                     <button onClick={() => saveAndClose('submit')} disabled={submitting}
                       style={{ flex: 2, height: 44, borderRadius: 10, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: submitting ? 0.6 : 1 }}>
-                      {submitting ? 'Submitting…' : 'Submit for Review'}
+                      {submitting ? t('db_submitting') : t('db_submit_review')}
                     </button>
                   </>
                 )}
@@ -1087,6 +1090,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
 
 function BookingsPanel({ initialBookings }: { initialBookings?: DashBooking[] }) {
   const readOnly = useContext(ReadOnlyContext)
+  const { t } = useLanguage()
   const [statusFilter, setStatusFilter] = useState('All')
   const [search, setSearch]             = useState('')
   const [bookings, setBookings]         = useState<DashBooking[]>(initialBookings ?? [])
@@ -1114,12 +1118,12 @@ function BookingsPanel({ initialBookings }: { initialBookings?: DashBooking[] })
 
   return (
     <div>
-      <PageHeader title="Bookings" subtitle={`${bookings.length} total bookings`} />
+      <PageHeader title={t('db_bookings_title')} subtitle={`${bookings.length} ${t('db_total_bookings')}`} />
 
       <div className="flex gap-3 mb-5">
         <div className="relative flex-1">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#6F675C' }} />
-          <input placeholder="Search guest, experience, or ref..." value={search} onChange={e => setSearch(e.target.value)}
+          <input placeholder={t('db_search_bookings')} value={search} onChange={e => setSearch(e.target.value)}
             style={{ width: '100%', height: 40, borderRadius: 10, border: '1px solid #E8E4DE', paddingLeft: 34, paddingRight: 14, fontSize: 13, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none', backgroundColor: 'white' }} />
         </div>
         <button
@@ -1130,7 +1134,7 @@ function BookingsPanel({ initialBookings }: { initialBookings?: DashBooking[] })
           }}
           className="flex items-center gap-2 px-4 rounded-xl flex-shrink-0 hover:opacity-80"
           style={{ height: 40, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 13, color: '#6F675C', cursor: 'pointer' }}>
-          <Download size={14} /> Export
+          <Download size={14} /> {t('db_export')}
         </button>
       </div>
 
@@ -1149,7 +1153,7 @@ function BookingsPanel({ initialBookings }: { initialBookings?: DashBooking[] })
       <div className="space-y-3">
         {filtered.length === 0 && (
           <div className="bg-white rounded-xl p-10 text-center" style={{ border: '1px solid #E8E4DE' }}>
-            <p style={{ fontSize: 14, color: '#6F675C' }}>No bookings match your filter.</p>
+            <p style={{ fontSize: 14, color: '#6F675C' }}>{t('db_no_match')}</p>
           </div>
         )}
         {filtered.map(b => (
@@ -1170,7 +1174,7 @@ function BookingsPanel({ initialBookings }: { initialBookings?: DashBooking[] })
                   <span style={{ fontSize: 12, color: '#6F675C' }}>👤 {b.guests} guest{b.guests > 1 ? 's' : ''}</span>
                   <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>IDR {b.total.toLocaleString('id-ID')}</span>
                 </div>
-                <p style={{ fontSize: 11, color: '#C8C4BE', marginTop: 3 }}>{b.ref} · Booked {b.bookedOn}</p>
+                <p style={{ fontSize: 11, color: '#C8C4BE', marginTop: 3 }}>{b.ref} · {t('db_booked_label')} {b.bookedOn}</p>
               </div>
             </div>
             {b.status === 'Pending' && !readOnly && (
@@ -1178,12 +1182,12 @@ function BookingsPanel({ initialBookings }: { initialBookings?: DashBooking[] })
                 <button onClick={() => updateStatus(b, 'CONFIRMED')} disabled={updating === b.id}
                   className="flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity"
                   style={{ height: 36, flex: 1, borderRadius: 8, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 13, fontWeight: 600, cursor: updating === b.id ? 'default' : 'pointer', opacity: updating === b.id ? 0.6 : 1 }}>
-                  <CheckCircle size={13} /> {updating === b.id ? 'Saving…' : 'Confirm'}
+                  <CheckCircle size={13} /> {updating === b.id ? t('db_loading') : t('db_confirm_btn')}
                 </button>
                 <button onClick={() => updateStatus(b, 'CANCELLED')} disabled={updating === b.id}
                   className="flex items-center justify-center gap-1.5 hover:bg-red-50 transition-colors"
                   style={{ height: 36, flex: 1, borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', color: '#B66A45', fontSize: 13, fontWeight: 600, cursor: updating === b.id ? 'default' : 'pointer', opacity: updating === b.id ? 0.6 : 1 }}>
-                  <XCircle size={13} /> Decline
+                  <XCircle size={13} /> {t('db_decline_btn')}
                 </button>
               </div>
             )}
@@ -1206,6 +1210,7 @@ function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBo
   payouts?: OperatorPayout[]
 }) {
   const readOnly = useContext(ReadOnlyContext)
+  const { t } = useLanguage()
   const [withdrawOpen, setWithdrawOpen] = useState(false)
 
   const netMult = (100 - commissionRate) / 100
@@ -1255,12 +1260,12 @@ function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBo
       />
     )}
     <div>
-      <PageHeader title="Earnings" subtitle="Track your revenue and payout history"
+      <PageHeader title={t('db_earnings_title')} subtitle={t('db_earnings_sub')}
         action={readOnly ? undefined : (
           <button onClick={() => setWithdrawOpen(true)}
             className="flex items-center gap-2 hover:opacity-90 transition-opacity flex-shrink-0"
             style={{ height: 38, backgroundColor: isRequested || isPaid ? 'white' : '#111111', color: isRequested || isPaid ? '#6F675C' : 'white', border: isRequested || isPaid ? '1px solid #E8E4DE' : 'none', borderRadius: 9, padding: '0 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-            {isPaid ? 'Paid ✓' : isRequested ? 'Pending ⏳' : 'Withdraw'}
+            {isPaid ? t('db_payout_sent') : isRequested ? t('db_withdrawal_pending') : t('db_withdraw')}
           </button>
         )}
       />
@@ -1269,16 +1274,15 @@ function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBo
       <div className="mb-5 px-4 py-3 rounded-xl flex items-center gap-3" style={{ backgroundColor: '#FDF8F4', border: '1px solid #E8D4B8' }}>
         <TrendingUp size={15} style={{ color: '#C8A97E', flexShrink: 0 }} />
         <p style={{ fontSize: 13, color: '#6F675C', margin: 0 }}>
-          Balible charges a <strong style={{ color: '#111111' }}>{commissionRate}%</strong> platform commission per booking.
-          You receive <strong style={{ color: '#4A7C59' }}>{100 - commissionRate}%</strong> of each booking total as your net payout.
+          {t('db_commission_intro')} <strong style={{ color: '#111111' }}>{commissionRate}%</strong> {t('db_commission_mid')} <strong style={{ color: '#4A7C59' }}>{100 - commissionRate}%</strong> {t('db_commission_end')}
         </p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
-          { label: 'Total Earned',    value: fmt(Math.round(totalGross * netMult)),      sub: `After ${commissionRate}% commission`, subColor: '#6F675C' },
-          { label: 'This Month',      value: fmt(Math.round(thisMonthGross * netMult)),  sub: growth,                               subColor: thisMonthGross >= prevMonthGross ? '#4A7C59' : '#B66A45' },
-          { label: 'Avg per Booking', value: avgPerBooking > 0 ? fmt(Math.round(avgPerBooking * netMult)) : '—',   sub: confirmedBookings.length > 0 ? `${confirmedBookings.length} confirmed` : 'No confirmed bookings yet', subColor: '#6F675C' },
+          { label: t('db_total_earned'),    value: fmt(Math.round(totalGross * netMult)),      sub: `After ${commissionRate}% commission`, subColor: '#6F675C' },
+          { label: t('db_this_month'),      value: fmt(Math.round(thisMonthGross * netMult)),  sub: growth,                               subColor: thisMonthGross >= prevMonthGross ? '#4A7C59' : '#B66A45' },
+          { label: t('db_avg_per_booking'), value: avgPerBooking > 0 ? fmt(Math.round(avgPerBooking * netMult)) : '—', sub: confirmedBookings.length > 0 ? `${confirmedBookings.length} ${t('db_confirmed_label')}` : t('db_no_confirmed_yet'), subColor: '#6F675C' },
         ].map(s => (
           <div key={s.label} className="bg-white rounded-xl p-4 lg:p-5" style={{ border: '1px solid #E8E4DE' }}>
             <p style={{ fontSize: 12, color: '#6F675C' }}>{s.label}</p>
@@ -1289,10 +1293,10 @@ function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBo
 
         {/* Pending Payout card */}
         <div className="bg-white rounded-xl p-4 lg:p-5" style={{ border: `1px solid ${isPaid ? '#C8E6D6' : isRequested ? '#E8D4B8' : '#E8E4DE'}`, backgroundColor: isPaid ? '#F8FDF9' : isRequested ? '#FDFAF5' : 'white' }}>
-          <p style={{ fontSize: 12, color: '#6F675C' }}>Pending Payout</p>
+          <p style={{ fontSize: 12, color: '#6F675C' }}>{t('db_pending_payout')}</p>
           <p className="mt-1" style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(14px,1.6vw,20px)', fontWeight: 700, color: '#111111', lineHeight: 1.2 }}>{fmt(pendingNet)}</p>
           <p className="mt-1.5" style={{ fontSize: 11, color: isPaid ? '#4A7C59' : isRequested ? '#C8A97E' : '#6F675C', fontWeight: isPaid || isRequested ? 600 : 400 }}>
-            {isPaid ? '✓ Paid this month' : isRequested ? '⏳ Pending review' : 'Confirmed earnings, not yet paid out'}
+            {isPaid ? t('db_paid_this_month') : isRequested ? t('db_pending_review_lbl') : t('db_not_paid_yet')}
           </p>
         </div>
       </div>
@@ -1300,8 +1304,8 @@ function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBo
       {/* Chart */}
       <div className="bg-white rounded-xl p-5 mb-5" style={{ border: '1px solid #E8E4DE' }}>
         <div className="flex items-center justify-between mb-4">
-          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Monthly Revenue</h2>
-          {!isLoading && chartData.length > 0 && <span style={{ fontSize: 11, color: '#4A7C59', fontWeight: 600 }}>● Live data</span>}
+          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>{t('db_monthly_revenue')}</h2>
+          {!isLoading && chartData.length > 0 && <span style={{ fontSize: 11, color: '#4A7C59', fontWeight: 600 }}>{t('db_live_data')}</span>}
         </div>
         {chartData.length > 0 ? (
           <>
@@ -1322,7 +1326,7 @@ function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBo
           </>
         ) : (
           <div style={{ height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <p style={{ fontSize: 13, color: '#9E9A94' }}>{isLoading ? 'Loading…' : 'No earnings data yet'}</p>
+            <p style={{ fontSize: 13, color: '#9E9A94' }}>{isLoading ? t('db_loading') : t('db_no_earnings_data')}</p>
           </div>
         )}
       </div>
@@ -1330,9 +1334,9 @@ function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBo
       <div className="grid lg:grid-cols-2 gap-5">
         {/* By experience */}
         <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
-          <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>By Experience</h2>
+          <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>{t('db_by_experience')}</h2>
           {expSource.length === 0 ? (
-            <p style={{ fontSize: 14, color: '#9E9A94' }}>No active experiences yet.</p>
+            <p style={{ fontSize: 14, color: '#9E9A94' }}>{t('db_no_active_exp')}</p>
           ) : (
           <div className="space-y-4">
             {expSource.map((e, idx) => {
@@ -1344,13 +1348,13 @@ function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBo
                     <span style={{ fontSize: 13, color: '#111111', fontWeight: 500 }}>{e.title}</span>
                     <div className="text-right">
                       <span style={{ fontSize: 13, fontWeight: 600, color: '#4A7C59' }}>{fmt(netEarnings)}</span>
-                      <span style={{ fontSize: 10, color: '#9E9A94', marginLeft: 3 }}>net</span>
+                      <span style={{ fontSize: 10, color: '#9E9A94', marginLeft: 3 }}>{t('db_net')}</span>
                     </div>
                   </div>
                   <div style={{ height: 6, borderRadius: 3, backgroundColor: '#F5F1EB', overflow: 'hidden' }}>
                     <div style={{ height: '100%', width: `${pct}%`, backgroundColor: '#C8A97E', borderRadius: 3 }} />
                   </div>
-                  <p style={{ fontSize: 11, color: '#6F675C', marginTop: 2 }}>{e.bookings} bookings · {pct.toFixed(0)}% of total</p>
+                  <p style={{ fontSize: 11, color: '#6F675C', marginTop: 2 }}>{e.bookings} {t('db_bookings_count')} · {pct.toFixed(0)}{t('db_of_total')}</p>
                 </div>
               )
             })}
@@ -1360,13 +1364,13 @@ function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBo
 
         {/* Payout history */}
         <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
-          <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Payout History</h2>
+          <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>{t('db_payout_history')}</h2>
           {livePayouts === undefined ? (
-            <p style={{ fontSize: 13, color: '#6F675C' }}>Loading…</p>
+            <p style={{ fontSize: 13, color: '#6F675C' }}>{t('db_loading')}</p>
           ) : livePayouts.length === 0 ? (
             <div className="p-6 text-center rounded-xl" style={{ backgroundColor: '#F5F1EB' }}>
-              <p style={{ fontSize: 13, color: '#6F675C' }}>No payouts recorded yet.</p>
-              <p style={{ fontSize: 12, color: '#9E9A94', marginTop: 4 }}>Balible processes payouts monthly. Your first payout will appear here once processed.</p>
+              <p style={{ fontSize: 13, color: '#6F675C' }}>{t('db_no_payouts')}</p>
+              <p style={{ fontSize: 12, color: '#9E9A94', marginTop: 4 }}>{t('db_payouts_note')}</p>
             </div>
           ) : (
             <>
@@ -1377,7 +1381,7 @@ function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBo
                       <div>
                         <p style={{ fontSize: 13, fontWeight: 600, color: '#111111' }}>{p.periodLabel}</p>
                         <p style={{ fontSize: 11, color: '#6F675C', marginTop: 1 }}>
-                          {p.status === 'Paid' ? `Paid ${p.paidAt}` : 'Pending payment'}
+                          {p.status === 'Paid' ? `${t('db_paid_on')} ${p.paidAt}` : t('db_pending_payment')}
                         </p>
                       </div>
                       <div className="text-right">
@@ -1387,7 +1391,7 @@ function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBo
                     </div>
                     <div className="flex gap-4 pt-2" style={{ borderTop: '1px solid #E0DDD8' }}>
                       <span style={{ fontSize: 11, color: '#6F675C' }}>{p.bookings} bookings · Gross: {fmt(p.gross)}</span>
-                      <span style={{ fontSize: 11, color: '#B66A45' }}>Commission: {fmt(p.commission)}</span>
+                      <span style={{ fontSize: 11, color: '#B66A45' }}>{t('db_commission_label')} {fmt(p.commission)}</span>
                     </div>
                   </div>
                 ))}
@@ -1400,7 +1404,7 @@ function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBo
                 }}
                 className="w-full mt-4 py-2.5 rounded-xl hover:opacity-80 transition-opacity flex items-center justify-center gap-2"
                 style={{ border: '1px solid #E8E4DE', background: 'none', color: '#6F675C', cursor: 'pointer', fontSize: 13 }}>
-                <Download size={13} /> Download statements
+                <Download size={13} /> {t('db_download_statements')}
               </button>
             </>
           )}
@@ -1414,6 +1418,7 @@ function EarningsPanel({ commissionRate, experiences: liveExps, bookings: liveBo
 // ── Reviews Panel ─────────────────────────────────────────────────────────────
 
 function ReviewsPanel({ initialReviews }: { initialReviews?: DashReview[] }) {
+  const { t } = useLanguage()
   const [starFilter, setStarFilter] = useState(0)
   const reviews = initialReviews ?? []
 
@@ -1427,7 +1432,7 @@ function ReviewsPanel({ initialReviews }: { initialReviews?: DashReview[] }) {
 
   return (
     <div>
-      <PageHeader title="Reviews" subtitle={`${reviews.length} reviews across all experiences`} />
+      <PageHeader title={t('db_reviews_title')} subtitle={`${reviews.length} ${t('db_reviews_across')}`} />
 
       {/* Summary */}
       <div className="bg-white rounded-xl p-5 mb-5 flex flex-col sm:flex-row gap-6 items-start" style={{ border: '1px solid #E8E4DE' }}>
@@ -1457,9 +1462,9 @@ function ReviewsPanel({ initialReviews }: { initialReviews?: DashReview[] }) {
 
       {starFilter > 0 && (
         <div className="flex items-center gap-2 mb-4">
-          <span style={{ fontSize: 13, color: '#6F675C' }}>Showing {starFilter}-star reviews</span>
+          <span style={{ fontSize: 13, color: '#6F675C' }}>{t('db_showing_star')} {starFilter}{t('db_star_reviews')}</span>
           <button onClick={() => setStarFilter(0)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#C8A97E', fontSize: 13, textDecoration: 'underline' }}>Clear</button>
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#C8A97E', fontSize: 13, textDecoration: 'underline' }}>{t('db_clear')}</button>
         </div>
       )}
 
@@ -1600,6 +1605,7 @@ const CONTACT_SUBJECTS = [
 ]
 
 function ContactModal({ onClose }: { onClose: () => void }) {
+  const { t } = useLanguage()
   const [subject, setSubject] = useState(CONTACT_SUBJECTS[0])
   const [message, setMessage] = useState('')
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
@@ -1619,8 +1625,8 @@ function ContactModal({ onClose }: { onClose: () => void }) {
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: '1px solid #E8E4DE' }}>
           <div>
-            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111', margin: 0 }}>Contact Support</h2>
-            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', margin: '2px 0 0' }}>We'll reply to your account email</p>
+            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111', margin: 0 }}>{t('db_contact_support')}</h2>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', margin: '2px 0 0' }}>{t('db_reply_account_email')}</p>
           </div>
           <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-100 transition-colors" style={{ border: 'none', backgroundColor: 'transparent', cursor: 'pointer' }}>
             <X size={16} style={{ color: '#6F675C' }} />
@@ -1632,17 +1638,17 @@ function ContactModal({ onClose }: { onClose: () => void }) {
             <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#EDFAF3' }}>
               <Check size={22} style={{ color: '#4A7C59' }} />
             </div>
-            <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111', marginBottom: 8 }}>Message sent!</p>
-            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.6 }}>Our team will get back to you within 1–2 business days.</p>
+            <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111', marginBottom: 8 }}>{t('db_message_sent')}</p>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.6 }}>{t('db_reply_days')}</p>
             <button onClick={onClose} className="mt-6 hover:opacity-90 transition-opacity" style={{ height: 42, paddingInline: 28, borderRadius: 10, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-inter)' }}>
-              Close
+              {t('db_close')}
             </button>
           </div>
         ) : (
           <form onSubmit={submit} className="px-6 py-5 space-y-4">
             {/* Subject */}
             <div>
-              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'var(--font-inter)' }}>Subject</label>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'var(--font-inter)' }}>{t('db_subject')}</label>
               <select value={subject} onChange={e => setSubject(e.target.value)} style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none', backgroundColor: 'white', cursor: 'pointer', boxSizing: 'border-box' as const }}>
                 {CONTACT_SUBJECTS.map(s => <option key={s}>{s}</option>)}
               </select>
@@ -1650,27 +1656,27 @@ function ContactModal({ onClose }: { onClose: () => void }) {
 
             {/* Message */}
             <div>
-              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'var(--font-inter)' }}>Message</label>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'var(--font-inter)' }}>{t('db_message_label')}</label>
               <textarea
                 value={message}
                 onChange={e => setMessage(e.target.value)}
                 rows={5}
                 required
-                placeholder="Describe your issue or question…"
+                placeholder={t('db_describe_issue')}
                 style={{ width: '100%', borderRadius: 10, border: '1px solid #E8E4DE', padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', resize: 'none', outline: 'none', lineHeight: 1.6, boxSizing: 'border-box' as const }}
               />
             </div>
 
             {status === 'error' && (
-              <p style={{ fontSize: 13, color: '#B66A45', fontFamily: 'var(--font-inter)' }}>Something went wrong. Please try again.</p>
+              <p style={{ fontSize: 13, color: '#B66A45', fontFamily: 'var(--font-inter)' }}>{t('db_send_error')}</p>
             )}
 
             <div className="flex items-center gap-3 pt-1">
               <button type="submit" disabled={status === 'sending' || !message.trim()} style={{ height: 42, paddingInline: 24, borderRadius: 10, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: status === 'sending' ? 'default' : 'pointer', opacity: status === 'sending' || !message.trim() ? 0.6 : 1, fontFamily: 'var(--font-inter)' }}>
-                {status === 'sending' ? 'Sending…' : 'Send message'}
+                {status === 'sending' ? t('db_sending') : t('db_send_message')}
               </button>
               <button type="button" onClick={onClose} style={{ height: 42, paddingInline: 24, borderRadius: 10, border: '1px solid #E8E4DE', backgroundColor: 'transparent', fontSize: 14, color: '#6F675C', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}>
-                Cancel
+                {t('db_cancel')}
               </button>
             </div>
           </form>
@@ -1691,6 +1697,7 @@ const HOST_PROFILE_DEFAULTS = {
 
 function ProfilePanel({ profile: liveProfile }: { profile?: HostProfile }) {
   const readOnly = useContext(ReadOnlyContext)
+  const { t } = useLanguage()
   const { data: session } = useSession()
   const sessionDefaults = { ...HOST_PROFILE_DEFAULTS, name: session?.user?.name ?? '', email: session?.user?.email ?? '' }
   const [profile, setProfile] = useState(() => readOnly ? HOST_PROFILE_DEFAULTS : sessionDefaults)
@@ -1765,7 +1772,7 @@ function ProfilePanel({ profile: liveProfile }: { profile?: HostProfile }) {
 
   return (
     <div>
-      <PageHeader title="Host Profile" subtitle="How guests see you on Balible" />
+      <PageHeader title={t('db_profile_title')} subtitle={t('db_profile_sub')} />
 
       <div className="space-y-5">
 
@@ -1810,49 +1817,49 @@ function ProfilePanel({ profile: liveProfile }: { profile?: HostProfile }) {
               {profile.name || liveProfile?.name || session?.user?.name}
             </p>
             <p style={{ fontSize: 13, color: '#6F675C', marginTop: 2 }}>
-              {profile.businessName || 'Operator'}{profile.area ? ` · ${profile.area}` : ''}
+              {profile.businessName || t('db_operator_label')}{profile.area ? ` · ${profile.area}` : ''}
             </p>
           </div>
         </div>
 
         {/* ── Personal information ── */}
         <div className="bg-white rounded-xl p-6" style={{ border: '1px solid #E8E4DE' }}>
-          <h2 className="mb-5" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Personal Information</h2>
+          <h2 className="mb-5" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>{t('db_personal_info')}</h2>
           <div className="space-y-4">
             <div className="grid sm:grid-cols-2 gap-4">
-              <div>{label('Full name')}<input value={profile.name} onChange={set('name')} disabled={readOnly} style={inputStyle(readOnly)} /></div>
-              <div>{label('Email')}<div style={{ ...inputStyle(true), display: 'flex', alignItems: 'center', color: '#6F675C' }}>{profile.email || '—'}</div></div>
+              <div>{label(t('db_full_name'))}<input value={profile.name} onChange={set('name')} disabled={readOnly} style={inputStyle(readOnly)} /></div>
+              <div>{label(t('db_email_label'))}<div style={{ ...inputStyle(true), display: 'flex', alignItems: 'center', color: '#6F675C' }}>{profile.email || '—'}</div></div>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
-              <div>{label('Phone number')}<input type="tel" value={profile.phone} onChange={set('phone')} disabled={readOnly} placeholder="+62 812 345 6789" style={inputStyle(readOnly)} /></div>
-              <div>{label('Date of birth')}<input type="date" value={profile.dateOfBirth} onChange={set('dateOfBirth')} disabled={readOnly} style={inputStyle(readOnly)} /></div>
+              <div>{label(t('db_phone_number'))}<input type="tel" value={profile.phone} onChange={set('phone')} disabled={readOnly} placeholder="+62 812 345 6789" style={inputStyle(readOnly)} /></div>
+              <div>{label(t('db_date_of_birth'))}<input type="date" value={profile.dateOfBirth} onChange={set('dateOfBirth')} disabled={readOnly} style={inputStyle(readOnly)} /></div>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
-              <div>{label('Nationality')}<input value={profile.nationality} onChange={set('nationality')} disabled={readOnly} placeholder="e.g. Indonesian" style={inputStyle(readOnly)} /></div>
+              <div>{label(t('db_nationality'))}<input value={profile.nationality} onChange={set('nationality')} disabled={readOnly} placeholder="e.g. Indonesian" style={inputStyle(readOnly)} /></div>
             </div>
           </div>
         </div>
 
         {/* ── Business information ── */}
         <div className="bg-white rounded-xl p-6" style={{ border: '1px solid #E8E4DE' }}>
-          <h2 className="mb-5" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Business Information</h2>
+          <h2 className="mb-5" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>{t('db_business_info')}</h2>
           <div className="space-y-4">
             <div className="grid sm:grid-cols-2 gap-4">
-              <div>{label('Business name')}<input value={profile.businessName} onChange={set('businessName')} disabled={readOnly} style={inputStyle(readOnly)} /></div>
-              <div>{label('Website')}<input type="url" value={profile.website} onChange={set('website')} disabled={readOnly} placeholder="https://yoursite.com" style={inputStyle(readOnly)} /></div>
+              <div>{label(t('db_business_name'))}<input value={profile.businessName} onChange={set('businessName')} disabled={readOnly} style={inputStyle(readOnly)} /></div>
+              <div>{label(t('db_website'))}<input type="url" value={profile.website} onChange={set('website')} disabled={readOnly} placeholder="https://yoursite.com" style={inputStyle(readOnly)} /></div>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
-                {label('Primary area')}
+                {label(t('db_primary_area'))}
                 <select value={profile.area} onChange={set('area')} disabled={readOnly}
                   style={{ ...inputStyle(readOnly), cursor: readOnly ? 'default' : 'pointer' }}>
                   {['Ubud','Canggu','Kuta','Seminyak','Uluwatu','Gianyar','Sanur','Nusa Dua','Amed','Jimbaran','Kintamani','Sidemen','Medewi'].map(a => <option key={a}>{a}</option>)}
                 </select>
               </div>
-              <div>{label('Languages')}<LanguageMultiSelect value={profile.languages} onChange={v => setProfile(p => ({ ...p, languages: v }))} disabled={readOnly} /></div>
+              <div>{label(t('db_languages_label'))}<LanguageMultiSelect value={profile.languages} onChange={v => setProfile(p => ({ ...p, languages: v }))} disabled={readOnly} /></div>
             </div>
             <div>
-              {label('About / bio')}
+              {label(t('db_about_bio'))}
               <textarea rows={4} value={profile.bio} onChange={set('bio')} disabled={readOnly}
                 style={{ width: '100%', borderRadius: 10, border: '1px solid #E8E4DE', padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', resize: 'none', outline: 'none', lineHeight: 1.6, backgroundColor: readOnly ? '#F8F6F2' : 'white', boxSizing: 'border-box' }} />
             </div>
@@ -1861,12 +1868,12 @@ function ProfilePanel({ profile: liveProfile }: { profile?: HostProfile }) {
 
         {/* ── Address ── */}
         <div className="bg-white rounded-xl p-6" style={{ border: '1px solid #E8E4DE' }}>
-          <h2 className="mb-5" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Address</h2>
+          <h2 className="mb-5" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>{t('db_address_title')}</h2>
           <div className="space-y-4">
-            <div>{label('Street address')}<input value={profile.address} onChange={set('address')} disabled={readOnly} placeholder="Jl. Raya, Gang, No." style={inputStyle(readOnly)} /></div>
+            <div>{label(t('db_street_address'))}<input value={profile.address} onChange={set('address')} disabled={readOnly} placeholder="Jl. Raya, Gang, No." style={inputStyle(readOnly)} /></div>
             <div className="grid sm:grid-cols-2 gap-4">
-              <div>{label('City / village')}<input value={profile.city} onChange={set('city')} disabled={readOnly} placeholder="e.g. Ubud" style={inputStyle(readOnly)} /></div>
-              <div>{label('Country')}<input value={profile.country} onChange={set('country')} disabled={readOnly} placeholder="e.g. Indonesia" style={inputStyle(readOnly)} /></div>
+              <div>{label(t('db_city_village'))}<input value={profile.city} onChange={set('city')} disabled={readOnly} placeholder="e.g. Ubud" style={inputStyle(readOnly)} /></div>
+              <div>{label(t('db_country_label'))}<input value={profile.country} onChange={set('country')} disabled={readOnly} placeholder="e.g. Indonesia" style={inputStyle(readOnly)} /></div>
             </div>
           </div>
         </div>
@@ -1876,12 +1883,12 @@ function ProfilePanel({ profile: liveProfile }: { profile?: HostProfile }) {
           <div className="flex items-center gap-3">
             <button onClick={save} disabled={saving} className="flex items-center gap-2 hover:opacity-90 transition-opacity"
               style={{ height: 44, paddingInline: 24, borderRadius: 10, border: 'none', backgroundColor: saved ? '#4A7C59' : saveError ? '#B66A45' : '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: saving ? 'default' : 'pointer', transition: 'background 0.2s', minWidth: 140, opacity: saving ? 0.7 : 1, fontFamily: 'var(--font-inter)' }}>
-              {saved ? <><Check size={14} /> Saved!</> : saving ? 'Saving…' : saveError ? 'Save failed' : 'Save Changes'}
+              {saved ? <><Check size={14} /> {t('db_saved')}</> : saving ? t('db_saving') : saveError ? t('db_save_failed') : t('db_save_changes')}
             </button>
             <button onClick={discard} style={{ height: 44, paddingInline: 24, borderRadius: 10, border: '1px solid #E8E4DE', background: 'none', fontSize: 14, color: '#6F675C', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}>
-              Discard
+              {t('db_discard')}
             </button>
-            {saveError && <span style={{ fontSize: 13, color: '#B66A45', fontFamily: 'var(--font-inter)' }}>Could not save. Please try again.</span>}
+            {saveError && <span style={{ fontSize: 13, color: '#B66A45', fontFamily: 'var(--font-inter)' }}>{t('db_could_not_save_p')}</span>}
           </div>
         )}
 
@@ -1889,14 +1896,14 @@ function ProfilePanel({ profile: liveProfile }: { profile?: HostProfile }) {
         {!readOnly && (
           <div className="bg-white rounded-xl p-5 flex items-center justify-between" style={{ border: '1px solid #E8E4DE' }}>
             <div>
-              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111', marginBottom: 2 }}>Need help?</p>
-              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>Send us a message and we'll get back to you within 1–2 business days.</p>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111', marginBottom: 2 }}>{t('db_need_help')}</p>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>{t('db_contact_desc')}</p>
             </div>
             <button
               onClick={() => setContactOpen(true)}
               style={{ flexShrink: 0, height: 40, paddingInline: 20, borderRadius: 10, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 13, fontWeight: 600, color: '#111111', cursor: 'pointer', fontFamily: 'var(--font-inter)', marginLeft: 16 }}
             >
-              Contact us
+              {t('db_contact_us_btn')}
             </button>
           </div>
         )}
@@ -1913,6 +1920,7 @@ const HOST_NOTIF_DEFAULTS  = { newBooking: true, cancellation: true, review: fal
 
 function SettingsPanel() {
   const readOnly = useContext(ReadOnlyContext)
+  const { t } = useLanguage()
   const [notifs, setNotifs]   = useState(HOST_NOTIF_DEFAULTS)
   const [payout, setPayout]   = useState({ bankName: '', accountNumber: '', accountHolder: '' })
   const [saved, setSaved]     = useState(false)
@@ -1947,12 +1955,12 @@ function SettingsPanel() {
 
   return (
     <div>
-      <PageHeader title="Settings" subtitle="Manage your account and preferences" />
+      <PageHeader title={t('db_settings_title')} subtitle={t('db_settings_sub')} />
 
       <div className="space-y-5">
         <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
           <div className="flex items-center justify-between mb-4">
-            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Notifications</h2>
+            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>{t('db_notifications')}</h2>
             {notifSaved && (
               <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#4A7C59', fontWeight: 600, transition: 'opacity 0.3s' }}>
                 <Check size={12} /> Saved
@@ -1961,10 +1969,10 @@ function SettingsPanel() {
           </div>
           <div className="space-y-5">
             {[
-              { key: 'newBooking',    label: 'New booking received',  desc: 'Get notified when a guest books your experience' },
-              { key: 'cancellation', label: 'Booking cancellations',  desc: 'Alerts when a guest cancels a confirmed booking' },
-              { key: 'review',       label: 'New reviews',            desc: 'Notify when guests leave a review' },
-              { key: 'reminders',    label: 'Booking reminders',      desc: '24-hour reminder before each experience' },
+              { key: 'newBooking',    label: t('db_notif_new_booking'),  desc: t('db_notif_new_book_desc') },
+              { key: 'cancellation', label: t('db_notif_cancel'),        desc: t('db_notif_cancel_desc') },
+              { key: 'review',       label: t('db_notif_reviews'),       desc: t('db_notif_reviews_desc') },
+              { key: 'reminders',    label: t('db_notif_reminders'),     desc: t('db_notif_remind_desc') },
             ].map(({ key, label, desc }) => {
               const on = notifs[key as keyof typeof notifs]
               return (
@@ -1984,20 +1992,20 @@ function SettingsPanel() {
         </div>
 
         <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
-          <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Payout Settings</h2>
+          <h2 className="mb-4" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>{t('db_payout_settings')}</h2>
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2">
-              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Bank Name</label>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('db_bank_name')}</label>
               <input value={payout.bankName} onChange={e => setPayout(p => ({ ...p, bankName: e.target.value }))}
                 style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }} />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Account Number</label>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('db_account_number')}</label>
               <input value={payout.accountNumber} onChange={e => setPayout(p => ({ ...p, accountNumber: e.target.value }))}
                 style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }} />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Account Holder</label>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('db_account_holder')}</label>
               <input value={payout.accountHolder} onChange={e => setPayout(p => ({ ...p, accountHolder: e.target.value }))}
                 style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }} />
             </div>
@@ -2005,21 +2013,21 @@ function SettingsPanel() {
         </div>
 
         <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #FECACA' }}>
-          <h2 className="mb-1" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#B66A45' }}>Danger Zone</h2>
-          <p className="mb-4" style={{ fontSize: 13, color: '#6F675C' }}>Irreversible actions for your account.</p>
+          <h2 className="mb-1" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#B66A45' }}>{t('db_danger_zone')}</h2>
+          <p className="mb-4" style={{ fontSize: 13, color: '#6F675C' }}>{t('db_irreversible')}</p>
           <div className="flex flex-wrap gap-3">
             <button style={{ height: 40, paddingInline: 18, borderRadius: 10, border: '1px solid #FECACA', backgroundColor: 'white', color: '#B66A45', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-              Pause all experiences
+              {t('db_pause_all')}
             </button>
             <button style={{ height: 40, paddingInline: 18, borderRadius: 10, border: 'none', backgroundColor: '#FEF2F2', color: '#B66A45', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-              Deactivate account
+              {t('db_deactivate')}
             </button>
           </div>
         </div>
 
         <button onClick={save} disabled={saving || readOnly} className="flex items-center gap-2 hover:opacity-90 transition-opacity"
           style={{ height: 44, paddingInline: 24, borderRadius: 10, border: 'none', backgroundColor: saved ? '#4A7C59' : '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: (saving || readOnly) ? 'default' : 'pointer', opacity: (saving || readOnly) ? 0.6 : 1, transition: 'background 0.2s', minWidth: 140 }}>
-          {saved ? <><Check size={14} /> Saved!</> : saving ? 'Saving…' : 'Save Settings'}
+          {saved ? <><Check size={14} /> {t('db_saved')}</> : saving ? t('db_saving') : t('db_save_settings')}
         </button>
       </div>
     </div>
@@ -2035,6 +2043,7 @@ const EMPTY_EVENT: EventInput = {
 
 function EventsPanel() {
   const readOnly = useContext(ReadOnlyContext)
+  const { t } = useLanguage()
   const [events, setEvents] = useState<EventRow[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -2125,7 +2134,7 @@ function EventsPanel() {
 
   function handleDelete(id: string) {
     if (readOnly) return
-    if (!confirm('Delete this event?')) return
+    if (!confirm(t('db_delete_event_confirm'))) return
     deleteEvent(id).catch(() => {})
     setAndSave(events.filter(e => e.id !== id))
   }
@@ -2146,13 +2155,13 @@ function EventsPanel() {
   return (
     <div>
       <PageHeader
-        title="Events"
-        subtitle="One-time events hosted by you"
+        title={t('db_events_title')}
+        subtitle={t('db_events_sub')}
         action={
           <button onClick={openCreate}
             className="flex items-center gap-2 hover:opacity-90 transition-opacity"
             style={{ height: 38, padding: '0 16px', borderRadius: 10, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-            <Plus size={14} /> New Event
+            <Plus size={14} /> {t('db_new_event')}
           </button>
         }
       />
@@ -2167,11 +2176,11 @@ function EventsPanel() {
           <div style={{ width: 56, height: 56, borderRadius: '50%', backgroundColor: '#F5F1EB', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
             <Ticket size={24} style={{ color: '#C8A97E' }} />
           </div>
-          <p style={{ fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 6 }}>No events yet</p>
-          <p style={{ fontSize: 14, color: '#6F675C', marginBottom: 20 }}>Create your first one-time event for guests to discover</p>
+          <p style={{ fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 6 }}>{t('db_no_events')}</p>
+          <p style={{ fontSize: 14, color: '#6F675C', marginBottom: 20 }}>{t('db_no_events_desc')}</p>
           <button onClick={openCreate}
             style={{ height: 38, padding: '0 20px', borderRadius: 10, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-            Create event
+            {t('db_create_event')}
           </button>
         </div>
       ) : (
@@ -2196,7 +2205,7 @@ function EventsPanel() {
                           <span style={{ fontSize: 11, color: '#6F675C' }}>📍 {ev.location}</span>
                           <span style={{ fontSize: 11, color: '#6F675C' }}>👥 Max {ev.capacity}</span>
                           <span style={{ fontSize: 11, fontWeight: 600, color: '#111111' }}>
-                            {ev.price === 0 ? 'Free' : `IDR ${ev.price.toLocaleString('id-ID')}`}
+                            {ev.price === 0 ? t('db_free') : `IDR ${ev.price.toLocaleString('id-ID')}`}
                           </span>
                         </div>
                       </div>
@@ -2207,23 +2216,23 @@ function EventsPanel() {
                         <button onClick={() => toggleStatus(ev)}
                           className="flex items-center gap-1 hover:opacity-80 transition-opacity"
                           style={{ height: 28, padding: '0 10px', borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 11, fontWeight: 600, color: '#111111', cursor: 'pointer' }}>
-                          {ev.status === 'PUBLISHED' ? <><Lock size={10} /> Unpublish</> : <><Globe size={10} /> Publish</>}
+                          {ev.status === 'PUBLISHED' ? <><Lock size={10} /> {t('db_unpublish')}</> : <><Globe size={10} /> {t('db_publish')}</>}
                         </button>
                       )}
                       <button onClick={() => openEdit(ev)}
                         className="flex items-center gap-1 hover:opacity-80 transition-opacity"
                         style={{ height: 28, padding: '0 10px', borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 11, fontWeight: 600, color: '#111111', cursor: 'pointer' }}>
-                        <Edit2 size={10} /> Edit
+                        <Edit2 size={10} /> {t('db_edit')}
                       </button>
                       <button onClick={() => handleDelete(ev.id)}
                         className="flex items-center gap-1 hover:bg-red-50 transition-colors"
                         style={{ height: 28, padding: '0 10px', borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 11, fontWeight: 600, color: '#B66A45', cursor: 'pointer' }}>
-                        <Trash2 size={10} /> Delete
+                        <Trash2 size={10} /> {t('db_delete')}
                       </button>
                       <a href={`/events/${ev.slug}`} target="_blank" rel="noopener noreferrer"
                         className="flex items-center gap-1 hover:opacity-80 transition-opacity"
                         style={{ height: 28, padding: '0 10px', borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 11, fontWeight: 600, color: '#6F675C', cursor: 'pointer', textDecoration: 'none' }}>
-                        <Eye size={10} /> View
+                        <Eye size={10} /> {t('db_view')}
                       </a>
                     </div>
                   </div>
@@ -2244,7 +2253,7 @@ function EventsPanel() {
             </div>
             <div className="px-5 pt-4 sm:pt-5 pb-3 flex items-center justify-between" style={{ borderBottom: '1px solid #F5F1EB' }}>
               <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', margin: 0 }}>
-                {editing ? 'Edit Event' : 'New Event'}
+                {editing ? t('db_edit_event') : t('db_new_event')}
               </h2>
               <button onClick={() => setShowForm(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
                 <X size={20} style={{ color: '#6F675C' }} />
@@ -2255,14 +2264,14 @@ function EventsPanel() {
 
               {/* Title */}
               <div>
-                <label style={labelStyle}>Event title <span style={{ color: '#B66A45' }}>*</span></label>
+                <label style={labelStyle}>{t('db_event_title_label')} <span style={{ color: '#B66A45' }}>*</span></label>
                 <input type="text" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                   placeholder="e.g. Full Moon Yoga & Sound Bath" style={inputStyle} />
               </div>
 
               {/* Description */}
               <div>
-                <label style={labelStyle}>Description</label>
+                <label style={labelStyle}>{t('db_event_desc_label')}</label>
                 <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                   placeholder="What will guests experience at this event?" rows={4}
                   style={{ ...inputStyle, resize: 'none', lineHeight: 1.6 }} />
@@ -2277,7 +2286,7 @@ function EventsPanel() {
 
               {/* Location */}
               <div>
-                <label style={labelStyle}>Location / venue <span style={{ color: '#B66A45' }}>*</span></label>
+                <label style={labelStyle}>{t('db_location_venue')} <span style={{ color: '#B66A45' }}>*</span></label>
                 <input type="text" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
                   placeholder="e.g. Rice Terrace Stage, Jl. Raya Ubud" style={inputStyle} />
               </div>
@@ -2285,12 +2294,12 @@ function EventsPanel() {
               {/* Capacity + Price */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label style={labelStyle}>Capacity</label>
+                  <label style={labelStyle}>{t('db_capacity')}</label>
                   <input type="number" value={form.capacity} onChange={e => setForm(f => ({ ...f, capacity: Number(e.target.value) }))}
                     min={1} placeholder="10" style={inputStyle} />
                 </div>
                 <div>
-                  <label style={labelStyle}>Ticket price (IDR)</label>
+                  <label style={labelStyle}>{t('db_ticket_price')}</label>
                   <input type="number" value={form.price === 0 ? '' : form.price} onChange={e => setForm(f => ({ ...f, price: Number(e.target.value) || 0 }))}
                     min={0} placeholder="0 = Free" style={inputStyle} />
                 </div>
@@ -2299,7 +2308,7 @@ function EventsPanel() {
               {/* Cover image */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label style={{ ...labelStyle, marginBottom: 0 }}>Cover image</label>
+                  <label style={{ ...labelStyle, marginBottom: 0 }}>{t('db_cover_image')}</label>
                   <div className="flex gap-1 p-0.5 rounded-lg" style={{ backgroundColor: '#F5F1EB' }}>
                     {(['url', 'upload'] as const).map(m => (
                       <button key={m} onClick={() => setImageMode(m)}
@@ -2340,7 +2349,7 @@ function EventsPanel() {
                       <div onClick={() => fileRef.current?.click()}
                         style={{ height: 110, borderRadius: 12, border: '2px dashed #E8E4DE', backgroundColor: '#F9F9F7', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 7, cursor: 'pointer' }}>
                         <Camera size={18} style={{ color: '#6F675C' }} />
-                        <p style={{ fontSize: 13, color: '#6F675C', margin: 0 }}>Click to upload</p>
+                        <p style={{ fontSize: 13, color: '#6F675C', margin: 0 }}>{t('db_click_to_upload')}</p>
                       </div>
                     )}
                   </>
@@ -2349,7 +2358,7 @@ function EventsPanel() {
 
               {/* Gallery images */}
               <div>
-                <label style={labelStyle}>Gallery photos <span style={{ fontSize: 11, fontWeight: 400, color: '#9E9A94' }}>(up to 5 image URLs)</span></label>
+                <label style={labelStyle}>{t('db_gallery_5')}</label>
                 <div className="space-y-2">
                   {galleryUrls.map((url, i) => (
                     <input key={i} type="url" value={url}
@@ -2358,17 +2367,17 @@ function EventsPanel() {
                       style={{ ...inputStyle, fontSize: 12 }} />
                   ))}
                 </div>
-                <p style={{ fontSize: 11, color: '#9E9A94', marginTop: 5 }}>These appear in the gallery on your event page.</p>
+                <p style={{ fontSize: 11, color: '#9E9A94', marginTop: 5 }}>{t('db_gallery_note')}</p>
               </div>
 
               {/* Status */}
               <div>
-                <label style={labelStyle}>Status</label>
+                <label style={labelStyle}>{t('db_status_label')}</label>
                 <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value as EventInput['status'] }))}
                   style={{ ...inputStyle, backgroundColor: 'white', cursor: 'pointer' }}>
-                  <option value="DRAFT">Draft – not visible to guests</option>
-                  <option value="PUBLISHED">Published – visible on /events</option>
-                  <option value="CANCELLED">Cancelled</option>
+                  <option value="DRAFT">{t('db_status_draft')}</option>
+                  <option value="PUBLISHED">{t('db_status_published')}</option>
+                  <option value="CANCELLED">{t('db_status_cancelled')}</option>
                 </select>
               </div>
 
@@ -2383,11 +2392,11 @@ function EventsPanel() {
             <div className="flex gap-3 px-5 pt-3 pb-8 sm:pb-6">
               <button onClick={() => setShowForm(false)}
                 style={{ flex: 1, height: 44, borderRadius: 10, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 14, fontWeight: 600, color: '#6F675C', cursor: 'pointer' }}>
-                Cancel
+                {t('db_cancel')}
               </button>
               <button onClick={handleSave} disabled={saving}
                 style={{ flex: 2, height: 44, borderRadius: 10, border: 'none', backgroundColor: saving ? '#9E9A94' : '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: saving ? 'wait' : 'pointer', transition: 'background 0.15s' }}>
-                {saving ? 'Saving…' : editing ? 'Save changes' : 'Create event'}
+                {saving ? t('db_saving') : editing ? t('db_save_changes_ev') : t('db_create_event')}
               </button>
             </div>
           </div>
@@ -2400,6 +2409,7 @@ function EventsPanel() {
 // ── Availability Panel ────────────────────────────────────────────────────────
 
 function AvailabilityPanel({ bookings }: { bookings?: DashBooking[] }) {
+  const { t } = useLanguage()
   const bookedDates = useMemo<Set<string>>(() => {
     if (!bookings) return new Set()
     const s = new Set<string>()
@@ -2456,21 +2466,21 @@ function AvailabilityPanel({ bookings }: { bookings?: DashBooking[] }) {
 
   return (
     <div>
-      <PageHeader title="Availability Calendar" subtitle="Block dates when you're unavailable — booked dates auto-populate" />
+      <PageHeader title={t('db_avail_title')} subtitle={t('db_avail_sub')} />
 
       {/* Legend */}
       <div className="flex flex-wrap items-center gap-5 mb-5">
         {[
-          { bg: 'white',    border: '#E8E4DE', label: 'Available'                           },
-          { bg: '#FDF8F4',  border: '#C8A97E', label: `Booked (${bookedThisMonth.length})`  },
-          { bg: '#FEF2F2',  border: '#B66A45', label: `Blocked (${blockedThisMonth.length})` },
+          { bg: 'white',    border: '#E8E4DE', label: t('db_available_label')                                         },
+          { bg: '#FDF8F4',  border: '#C8A97E', label: `${t('db_booked_label')} (${bookedThisMonth.length})`           },
+          { bg: '#FEF2F2',  border: '#B66A45', label: `${t('db_blocked_label')} (${blockedThisMonth.length})`         },
         ].map(({ bg, border, label }) => (
           <div key={label} className="flex items-center gap-2">
             <div style={{ width: 14, height: 14, borderRadius: 4, backgroundColor: bg, border: `2px solid ${border}` }} />
             <span style={{ fontSize: 12, color: '#6F675C' }}>{label}</span>
           </div>
         ))}
-        <p style={{ fontSize: 12, color: '#9E9A94', marginLeft: 'auto' }}>Click any date to block / unblock</p>
+        <p style={{ fontSize: 12, color: '#9E9A94', marginLeft: 'auto' }}>{t('db_click_block')}</p>
       </div>
 
       <div className="bg-white rounded-xl p-5 mb-5" style={{ border: '1px solid #E8E4DE' }}>
@@ -2482,7 +2492,7 @@ function AvailabilityPanel({ bookings }: { bookings?: DashBooking[] }) {
             </button>
             <button onClick={() => { setMonth(today.getMonth()); setYear(today.getFullYear()) }}
               style={{ height: 32, padding: '0 12px', borderRadius: 8, border: '1px solid #E8E4DE', background: 'white', fontSize: 12, color: '#6F675C', cursor: 'pointer' }}>
-              Today
+              {t('db_today_btn')}
             </button>
             <button onClick={nextMonth} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid #E8E4DE', background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <ChevronRight size={14} style={{ color: '#6F675C' }} />
@@ -2526,9 +2536,9 @@ function AvailabilityPanel({ bookings }: { bookings?: DashBooking[] }) {
 
       {/* Blocked list */}
       <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
-        <h2 className="mb-3" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Blocked Dates — {monthName}</h2>
+        <h2 className="mb-3" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>{t('db_blocked_dates')} — {monthName}</h2>
         {blockedThisMonth.length === 0 ? (
-          <p style={{ fontSize: 13, color: '#6F675C' }}>No blocked dates for {monthName}. Click calendar dates to mark your unavailable days.</p>
+          <p style={{ fontSize: 13, color: '#6F675C' }}>{t('db_no_blocked')} {monthName}. {t('db_click_mark')}</p>
         ) : (
           <div className="flex flex-wrap gap-2">
             {[...blockedThisMonth].sort().map(k => (
@@ -2553,6 +2563,7 @@ function AvailabilityPanel({ bookings }: { bookings?: DashBooking[] }) {
 
 function PhotosPanel({ experiences }: { experiences?: DashExp[] }) {
   const readOnly = useContext(ReadOnlyContext)
+  const { t } = useLanguage()
   const exps = experiences ?? []
   const [galleries, setGalleries] = useState<Record<number, string[]>>(
     Object.fromEntries(exps.map(e => [e.id, e.images.length > 0 ? e.images : [e.image].filter(Boolean)]))
@@ -2589,7 +2600,7 @@ function PhotosPanel({ experiences }: { experiences?: DashExp[] }) {
 
   return (
     <div>
-      <PageHeader title="Photo Management" subtitle="Manage gallery photos for each of your experiences" />
+      <PageHeader title={t('db_photos_title')} subtitle={t('db_photos_sub')} />
       <div className="space-y-5">
         {exps.map(exp => {
           const photos = galleries[exp.id] ?? [exp.image]
@@ -2599,7 +2610,7 @@ function PhotosPanel({ experiences }: { experiences?: DashExp[] }) {
                 <img src={exp.image} alt="" className="w-10 h-10 rounded-xl object-cover flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: '#111111' }}>{exp.title}</h3>
-                  <p style={{ fontSize: 12, color: '#6F675C' }}>{photos.length} photo{photos.length !== 1 ? 's' : ''} · first is cover</p>
+                  <p style={{ fontSize: 12, color: '#6F675C' }}>{photos.length} {t('db_first_is_cover')}</p>
                 </div>
                 <input
                   ref={el => { fileRefs.current[exp.id] = el }}
@@ -2609,7 +2620,7 @@ function PhotosPanel({ experiences }: { experiences?: DashExp[] }) {
                 <button onClick={() => fileRefs.current[exp.id]?.click()} disabled={uploading[exp.id]}
                   className="flex items-center gap-2 hover:opacity-80"
                   style={{ height: 34, padding: '0 14px', borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 12, fontWeight: 600, color: '#6F675C', cursor: 'pointer' }}>
-                  <Camera size={13} /> {uploading[exp.id] ? 'Uploading…' : 'Add Photo'}
+                  <Camera size={13} /> {uploading[exp.id] ? t('db_uploading') : t('db_add_photo')}
                 </button>
               </div>
 
@@ -2659,6 +2670,7 @@ const HOST_NOTIFICATIONS: { id: number; title: string; body: string; time: strin
 function HostNotifBell({ onSettings, align = 'left', dark = false }: { onSettings: () => void; align?: 'left' | 'right'; dark?: boolean }) {
   const [notifOpen, setNotifOpen] = useState(false)
   const [notifs, setNotifs] = useState(HOST_NOTIFICATIONS)
+  const { t } = useLanguage()
   const unreadCount = notifs.filter(n => n.unread).length
   const bellColor = dark ? (unreadCount > 0 ? '#111111' : '#6F675C') : (unreadCount > 0 ? 'white' : 'rgba(255,255,255,0.55)')
 
@@ -2678,11 +2690,11 @@ function HostNotifBell({ onSettings, align = 'left', dark = false }: { onSetting
           <div className="absolute top-9 z-50 bg-white rounded-xl shadow-2xl overflow-hidden"
             style={{ [align === 'right' ? 'right' : 'left']: 0, width: 'min(300px, calc(100vw - 32px))', border: '1px solid #E8E4DE' }}>
             <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid #E8E4DE' }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: '#111111' }}>Notifications</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: '#111111' }}>{t('db_notif_bell')}</span>
               {unreadCount > 0 && (
                 <button onClick={() => setNotifs(n => n.map(x => ({ ...x, unread: false })))}
                   style={{ fontSize: 11, color: '#C8A97E', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
-                  Mark all read
+                  {t('db_mark_all_read')}
                 </button>
               )}
             </div>
@@ -2705,7 +2717,7 @@ function HostNotifBell({ onSettings, align = 'left', dark = false }: { onSetting
             <button onClick={() => { onSettings(); setNotifOpen(false) }}
               className="w-full py-3 text-center hover:bg-gray-50 transition-colors"
               style={{ fontSize: 12, color: '#C8A97E', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', borderTop: '1px solid #E8E4DE' }}>
-              Notification settings →
+              {t('db_notif_settings')}
             </button>
           </div>
         </>
@@ -2716,6 +2728,7 @@ function HostNotifBell({ onSettings, align = 'left', dark = false }: { onSetting
 
 function SidebarInner({ activeNav, setActiveNav, hostName, unreadMessages }: { activeNav: string; setActiveNav: (id: string) => void; hostName?: string; unreadMessages?: number }) {
   const { data: session } = useSession()
+  const { t } = useLanguage()
   const displayName = hostName ?? session?.user?.name ?? 'Host'
   const initial = displayName.charAt(0).toUpperCase()
   return (
@@ -2723,7 +2736,7 @@ function SidebarInner({ activeNav, setActiveNav, hostName, unreadMessages }: { a
       <div className="flex items-center justify-between px-5 pt-6 pb-4">
         <a href="/" className="flex flex-col gap-1 leading-none" style={{ textDecoration: 'none' }}>
           <img src="/logo-light.png" alt="Balible" style={{ height: 28, width: 'auto', objectFit: 'contain', display: 'block' }} />
-          <span style={{ fontSize: 7, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>HOST DASHBOARD</span>
+          <span style={{ fontSize: 7, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>{t('db_host_dashboard')}</span>
         </a>
       </div>
 
@@ -2738,12 +2751,12 @@ function SidebarInner({ activeNav, setActiveNav, hostName, unreadMessages }: { a
         </div>
         <div className="min-w-0">
           <p style={{ fontSize: 13, fontWeight: 600, color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName}</p>
-          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>Operator · Verified</p>
+          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>{t('db_operator_verified')}</p>
         </div>
       </div>
 
       <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
-        {NAV_ITEMS.map(({ id, label, Icon }) => {
+        {NAV_ITEMS.map(({ id, labelKey, Icon }) => {
           const active = activeNav === id
           const badge = id === 'messages' && (unreadMessages ?? 0) > 0
           return (
@@ -2751,7 +2764,7 @@ function SidebarInner({ activeNav, setActiveNav, hostName, unreadMessages }: { a
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all hover:bg-white/5"
               style={{ color: active ? '#C8A97E' : 'rgba(255,255,255,0.6)', fontSize: 13, fontFamily: 'var(--font-inter)', fontWeight: active ? 600 : 400, cursor: 'pointer', background: active ? 'rgba(200,169,126,0.1)' : 'none', border: 'none', textAlign: 'left' }}>
               <Icon size={15} style={{ flexShrink: 0 }} />
-              {label}
+              {t(labelKey)}
               <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4 }}>
                 {badge && <span style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: '#C8A97E', color: 'white', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{unreadMessages}</span>}
                 {active && !badge && <span style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#C8A97E', display: 'block' }} />}
@@ -2764,14 +2777,14 @@ function SidebarInner({ activeNav, setActiveNav, hostName, unreadMessages }: { a
       <div className="mx-3 mb-6 space-y-1">
         <a href="/" className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors"
           style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, fontFamily: 'var(--font-inter)', textDecoration: 'none' }}>
-          ← Back to site
+          {t('db_back_to_site')}
         </a>
         <a
           href="/auth/signout"
           className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors"
           style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, fontFamily: 'var(--font-inter)', textDecoration: 'none' }}
         >
-          <LogOut size={14} /> Sign out
+          <LogOut size={14} /> {t('nav_sign_out')}
         </a>
       </div>
     </>
@@ -2781,6 +2794,7 @@ function SidebarInner({ activeNav, setActiveNav, hostName, unreadMessages }: { a
 // ── Messages Panel ────────────────────────────────────────────────────────────
 
 function MessagesPanel() {
+  const { t } = useLanguage()
   const [convs, setConvs]           = useState<ConversationSummary[]>([])
   const [selected, setSelected]     = useState<string | null>(null)
   const [messages, setMessages]     = useState<ChatMessage[]>([])
@@ -2838,20 +2852,20 @@ function MessagesPanel() {
 
   return (
     <div>
-      <PageHeader title="Messages" subtitle="Direct messages with your guests" />
+      <PageHeader title={t('db_messages_title')} subtitle={t('db_messages_sub')} />
       <div className="flex gap-4" style={{ height: 'calc(100vh - 200px)', minHeight: 400 }}>
 
         {/* Conversation list — hidden on mobile when thread is open */}
         <div className={`${selected ? 'hidden lg:flex' : 'flex'} bg-white rounded-xl overflow-hidden flex-shrink-0`} style={{ width: '100%', maxWidth: 280, border: '1px solid #E8E4DE', flexDirection: 'column' }}>
           <div style={{ padding: '14px 16px', borderBottom: '1px solid #F0EDE8' }}>
-            <p style={{ fontSize: 13, fontWeight: 600, color: '#111111' }}>Conversations</p>
+            <p style={{ fontSize: 13, fontWeight: 600, color: '#111111' }}>{t('db_conversations')}</p>
           </div>
           <div style={{ flex: 1, overflowY: 'auto' }}>
             {convs.length === 0 ? (
               <div style={{ padding: 24, textAlign: 'center' }}>
                 <MessageCircle size={28} style={{ color: '#D1CDC7', margin: '0 auto 8px' }} />
-                <p style={{ fontSize: 13, color: '#9E9A94' }}>No messages yet</p>
-                <p style={{ fontSize: 12, color: '#C8C4BE', marginTop: 4 }}>Guests can message you from their booking page</p>
+                <p style={{ fontSize: 13, color: '#9E9A94' }}>{t('db_no_messages')}</p>
+                <p style={{ fontSize: 12, color: '#C8C4BE', marginTop: 4 }}>{t('db_no_messages_desc')}</p>
               </div>
             ) : convs.map(c => (
               <button key={c.id} onClick={() => openConv(c.id)}
@@ -2887,7 +2901,7 @@ function MessagesPanel() {
           {!selected ? (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#9E9A94' }}>
               <MessageCircle size={36} style={{ marginBottom: 10, color: '#D1CDC7' }} />
-              <p style={{ fontSize: 14 }}>Select a conversation</p>
+              <p style={{ fontSize: 14 }}>{t('db_select_conv')}</p>
             </div>
           ) : (
             <>
@@ -2928,7 +2942,7 @@ function MessagesPanel() {
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
-                  placeholder="Type a message…"
+                  placeholder={t('db_type_message')}
                   style={{ flex: 1, height: 40, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 16, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }}
                 />
                 <button onClick={send} disabled={!input.trim() || sending}
@@ -2955,6 +2969,7 @@ export default function DashboardPage() {
       }
     },
   })
+  const { t } = useLanguage()
 
   const [activeNav, setActiveNav]   = useState('overview')
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -3059,10 +3074,10 @@ export default function DashboardPage() {
             <div className="flex items-center gap-2" style={{ minWidth: 0 }}>
               <Eye size={16} style={{ color: '#B98948', flexShrink: 0 }} />
               <span style={{ fontSize: 13, color: '#6F675C' }}>
-                Viewing <strong style={{ color: '#111111' }}>{liveHostName ?? 'this host'}</strong>&apos;s dashboard as admin — <strong style={{ color: '#B98948' }}>read-only</strong>
+                Viewing <strong style={{ color: '#111111' }}>{liveHostName ?? 'this host'}</strong>&apos;s dashboard as admin — <strong style={{ color: '#B98948' }}>{t('db_read_only')}</strong>
               </span>
             </div>
-            <a href="/admin" style={{ fontSize: 12, fontWeight: 600, color: '#B98948', textDecoration: 'none', flexShrink: 0 }}>← Back to admin</a>
+            <a href="/admin" style={{ fontSize: 12, fontWeight: 600, color: '#B98948', textDecoration: 'none', flexShrink: 0 }}>{t('db_back_to_admin')}</a>
           </div>
         )}
 
@@ -3072,7 +3087,7 @@ export default function DashboardPage() {
             <Menu size={22} style={{ color: '#111111' }} />
           </button>
           <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>
-            {NAV_ITEMS.find(n => n.id === activeNav)?.label ?? 'Dashboard'}
+            {(() => { const item = NAV_ITEMS.find(n => n.id === activeNav); return item ? t(item.labelKey) : 'Dashboard' })()}
           </span>
           <HostNotifBell onSettings={() => setActiveNav('settings')} align="right" dark />
         </div>
@@ -3083,14 +3098,14 @@ export default function DashboardPage() {
       {/* Mobile bottom nav */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white z-40 flex items-center"
         style={{ height: 60, borderTop: '1px solid #E8E4DE' }}>
-        {NAV_ITEMS.slice(0, 5).map(({ id, Icon, label }) => {
+        {NAV_ITEMS.slice(0, 5).map(({ id, Icon, labelKey }) => {
           const active = activeNav === id
           return (
             <button key={id} onClick={() => setActiveNav(id)}
               className="flex flex-col items-center justify-center gap-0.5"
               style={{ background: 'none', border: 'none', cursor: 'pointer', flex: 1, height: '100%' }}>
               <Icon size={18} style={{ color: active ? '#C8A97E' : '#6F675C' }} />
-              <span style={{ fontSize: 9, color: active ? '#C8A97E' : '#6F675C', fontWeight: active ? 600 : 400 }}>{label}</span>
+              <span style={{ fontSize: 9, color: active ? '#C8A97E' : '#6F675C', fontWeight: active ? 600 : 400 }}>{t(labelKey)}</span>
             </button>
           )
         })}
