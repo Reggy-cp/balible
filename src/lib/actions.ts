@@ -2044,7 +2044,7 @@ export async function cancelBookingAction(bookingRef: string): Promise<{ ok: boo
 
     const booking = await prisma.booking.findUnique({
       where: { bookingRef },
-      include: { experience: { select: { title: true } } },
+      include: { experience: { select: { title: true, category: true } } },
     })
     if (!booking) return { ok: false, error: 'Booking not found' }
     if (booking.userId !== user.id) return { ok: false, error: 'Unauthorised' }
@@ -2055,12 +2055,15 @@ export async function cancelBookingAction(bookingRef: string): Promise<{ ok: boo
     const dateStr = booking.date.toLocaleDateString('en-US', {
       weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'Asia/Makassar',
     })
+    const isRental = String(booking.experience.category) === 'RENTALS'
     const emailInput = {
       bookingRef,
       guestName:        booking.guestName,
       guestEmail:       booking.guestEmail,
       experienceTitle:  booking.experience.title,
       date:             dateStr,
+      dateLabel:        isRental ? 'Pickup date' : 'Date',
+      guestsLabel:      isRental ? 'Units' : 'Guests',
       guests:           booking.guests,
       totalPaid:        booking.totalPrice,
     }

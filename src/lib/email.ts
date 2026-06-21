@@ -519,6 +519,8 @@ export type CancellationEmailInput = {
   bookingRef: string
   experienceTitle: string
   date: string
+  dateLabel?: string
+  guestsLabel?: string
   guests: number
   totalPaid: number
 }
@@ -547,9 +549,9 @@ export async function sendCustomerCancellationEmail(input: CancellationEmailInpu
         </p>
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid ${BRAND.border};border-bottom:1px solid ${BRAND.border};margin-bottom:24px;">
           ${row('Booking ref', input.bookingRef)}
-          ${row('Experience', input.experienceTitle)}
-          ${row('Date', input.date)}
-          ${row('Guests', String(input.guests))}
+          ${row('Listing', input.experienceTitle)}
+          ${row(input.dateLabel ?? 'Date', input.date)}
+          ${row(input.guestsLabel ?? 'Guests', String(input.guests))}
           ${row('Refund amount', `IDR ${input.totalPaid.toLocaleString('id-ID')}`)}
         </table>
         <div style="padding:16px 20px;background-color:#FEF9EC;border-radius:10px;border:1px solid #E8D4B8;margin-bottom:20px;">
@@ -594,9 +596,9 @@ export async function sendAdminRefundAlert(input: CancellationEmailInput & { gue
         </p>
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid ${BRAND.border};border-bottom:1px solid ${BRAND.border};margin-bottom:24px;">
           ${row('Booking ref', input.bookingRef)}
-          ${row('Experience', input.experienceTitle)}
-          ${row('Date', input.date)}
-          ${row('Guests', String(input.guests))}
+          ${row('Listing', input.experienceTitle)}
+          ${row(input.dateLabel ?? 'Date', input.date)}
+          ${row(input.guestsLabel ?? 'Guests', String(input.guests))}
           ${row('Guest name', input.guestName)}
           ${row('Guest email', input.guestEmail)}
           ${row('Refund amount', `IDR ${input.totalPaid.toLocaleString('id-ID')}`)}
