@@ -31,6 +31,8 @@ import {
   getGADataAction, type GAData,
   getCommissionRateAction, updateCommissionRateAction,
   getAdminSettingsAction, saveAdminSettingsAction,
+  adminSaveFeaturedAction,
+  getActivityLogsAction, type AuditLogEntry,
 } from '@/lib/actions'
 import { COMMISSION_RATE, PAYOUT_MIN_NET } from '@/lib/constants'
 
@@ -819,7 +821,6 @@ function ExperiencesPanel() {
         </div>
       )}
 
-      {/* Other tabs — mock data */}
       {filter !== 'Pending Review' && (
         <div className="space-y-3">
           {visible.map(exp => (
@@ -2741,12 +2742,10 @@ function FeaturedPanel() {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    Promise.all([
-      getAdminExperiencesAction(),
-      getAdminSettingsAction(['featured_experience_ids']),
-    ]).then(([e, s]) => {
+    getAdminExperiencesAction().then(e => {
       setExps(e)
-      try { setFeatured(s.featured_experience_ids ? JSON.parse(s.featured_experience_ids) : []) } catch { setFeatured([]) }
+      // Seed order from which experiences already have featured=true
+      setFeatured(e.filter(x => x.featured).map(x => x.id))
     })
   }, [])
 
@@ -2760,7 +2759,7 @@ function FeaturedPanel() {
 
   const save = async () => {
     setSaving(true)
-    await saveAdminSettingsAction({ featured_experience_ids: JSON.stringify(featured) })
+    await adminSaveFeaturedAction(orderedFeatured)
     setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2000)
   }
 
@@ -2880,24 +2879,43 @@ function FeaturedPanel() {
 
 // ── Activity Log Panel ────────────────────────────────────────────────────────
 
-const ACTIVITY_ITEMS: { id: number; type: string; icon: string; actor: string; action: string; time: string }[] = []
-
 const ACT_FILTERS = [
-  { id: 'all',     label: 'All'      },
-  { id: 'booking', label: 'Bookings' },
-  { id: 'host',    label: 'Hosts'    },
-  { id: 'review',  label: 'Reviews'  },
-  { id: 'exp',     label: 'Listings' },
-  { id: 'user',    label: 'Users'    },
-  { id: 'payout',  label: 'Payouts'  },
-  { id: 'cancel',  label: 'Cancels'  },
+  { id: 'all',        label: 'All'      },
+  { id: 'booking',    label: 'Bookings' },
+  { id: 'host',       label: 'Hosts'    },
+  { id: 'review',     label: 'Reviews'  },
+  { id: 'experience', label: 'Listings' },
+  { id: 'payout',     label: 'Payouts'  },
 ]
+
+const TYPE_ICON: Record<string, string> = {
+  booking: '📅', host: '🧑‍🤝‍🧑', review: '⭐',
+  experience: '🧭', payout: '💰', user: '👤',
+}
+
+function fmtRelative(iso: string) {
+  const diff = Date.now() - new Date(iso).getTime()
+  const m = Math.floor(diff / 60000)
+  if (m < 1) return 'just now'
+  if (m < 60) return `${m}m ago`
+  const h = Math.floor(m / 60)
+  if (h < 24) return `${h}h ago`
+  const d = Math.floor(h / 24)
+  if (d < 7) return `${d}d ago`
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
 
 function ActivityLogPanel() {
   const [filter, setFilter] = useState('all')
   const [search, setSearch] = useState('')
+  const [logs, setLogs] = useState<AuditLogEntry[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const visible = ACTIVITY_ITEMS.filter(a => {
+  useEffect(() => {
+    getActivityLogsAction().then(d => { setLogs(d); setLoading(false) })
+  }, [])
+
+  const visible = logs.filter(a => {
     if (filter !== 'all' && a.type !== filter) return false
     if (search) {
       const q = search.toLowerCase()
@@ -2907,14 +2925,14 @@ function ActivityLogPanel() {
   })
 
   const exportCSV = () => {
-    const rows = [['Time', 'Actor', 'Action', 'Type'], ...ACTIVITY_ITEMS.map(a => [a.time, a.actor, a.action, a.type])]
+    const rows = [['Time', 'Actor', 'Action', 'Type'], ...logs.map(a => [a.createdAt, a.actor, a.action, a.type])]
     const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n')
-    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'activity-log.csv'; a.click()
+    const el = document.createElement('a'); el.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); el.download = 'activity-log.csv'; el.click()
   }
 
   return (
     <div>
-      <PageHeader title="Activity Log" sub="Recent platform events — bookings, hosts, reviews, users"
+      <PageHeader title="Activity Log" sub="Recent admin actions — experiences, hosts, reviews, bookings"
         action={
           <button onClick={exportCSV} className="flex items-center gap-2 hover:opacity-80"
             style={{ height: 38, padding: '0 16px', borderRadius: 10, border: `1px solid ${SAND}`, backgroundColor: 'white', fontSize: 13, color: COCONUT, cursor: 'pointer' }}>
@@ -2933,25 +2951,31 @@ function ActivityLogPanel() {
             <button key={f.id} onClick={() => setFilter(f.id)}
               style={{ padding: '6px 14px', borderRadius: 10, fontSize: 13, fontWeight: filter === f.id ? 600 : 400, backgroundColor: filter === f.id ? CHARCOAL : 'transparent', color: filter === f.id ? 'white' : COCONUT, border: 'none', cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap' }}>
               {f.label}
-              {f.id !== 'all' && <span style={{ marginLeft: 4, opacity: 0.5, fontSize: 11 }}>{ACTIVITY_ITEMS.filter(a => a.type === f.id).length}</span>}
-              {f.id === 'all' && <span style={{ marginLeft: 4, opacity: 0.5, fontSize: 11 }}>{ACTIVITY_ITEMS.length}</span>}
+              {f.id !== 'all' && <span style={{ marginLeft: 4, opacity: 0.5, fontSize: 11 }}>{logs.filter(a => a.type === f.id).length}</span>}
+              {f.id === 'all' && <span style={{ marginLeft: 4, opacity: 0.5, fontSize: 11 }}>{logs.length}</span>}
             </button>
           ))}
         </div>
       </div>
 
       <div className="bg-white rounded-xl overflow-hidden" style={{ border: `1px solid ${SAND}` }}>
-        {visible.length === 0 && (
+        {loading && (
           <div className="py-12 text-center">
-            <p style={{ fontSize: 13, color: COCONUT }}>No activity recorded yet.</p>
-            <p style={{ fontSize: 12, color: COCONUT, opacity: 0.6, marginTop: 4 }}>Activity log requires an audit table — bookings, reviews and host actions will appear here.</p>
+            <p style={{ fontSize: 13, color: COCONUT }}>Loading…</p>
+          </div>
+        )}
+        {!loading && visible.length === 0 && (
+          <div className="py-12 text-center">
+            <Activity size={24} style={{ color: SAND, margin: '0 auto 8px' }} />
+            <p style={{ fontSize: 13, color: COCONUT }}>No activity yet.</p>
+            <p style={{ fontSize: 12, color: COCONUT, opacity: 0.6, marginTop: 4 }}>Admin actions (approve/reject/suspend/delete) will appear here.</p>
           </div>
         )}
         {visible.map((item, i) => (
           <div key={item.id} className="flex items-start gap-4 px-5 py-4 hover:bg-stone-50 transition-colors"
             style={{ borderBottom: i < visible.length - 1 ? `1px solid ${IVORY}` : 'none' }}>
             <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: IVORY }}>
-              <span style={{ fontSize: 14 }}>{item.icon}</span>
+              <span style={{ fontSize: 14 }}>{TYPE_ICON[item.type] ?? '📋'}</span>
             </div>
             <div className="flex-1 min-w-0">
               <p style={{ fontSize: 14, color: CHARCOAL, lineHeight: 1.4 }}>
@@ -2959,7 +2983,7 @@ function ActivityLogPanel() {
                 <span style={{ color: COCONUT }}>{item.action}</span>
               </p>
             </div>
-            <span style={{ fontSize: 12, color: COCONUT, flexShrink: 0, whiteSpace: 'nowrap', marginTop: 2 }}>{item.time}</span>
+            <span style={{ fontSize: 12, color: COCONUT, flexShrink: 0, whiteSpace: 'nowrap', marginTop: 2 }}>{fmtRelative(item.createdAt)}</span>
           </div>
         ))}
       </div>

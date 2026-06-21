@@ -520,7 +520,9 @@ export async function getPendingListingsAction(): Promise<PendingListing[]> {
 export async function approveListingAction(id: string): Promise<{ ok: boolean }> {
   await requireAdmin()
   try {
-    await prisma.experience.update({ where: { id }, data: { status: 'ACTIVE' as any } })
+    const exp = await prisma.experience.update({ where: { id }, data: { status: 'ACTIVE' as any } })
+    const session = await getServerSession(authOptions)
+    await logActivity({ actor: session?.user?.name ?? 'Admin', actorId: session?.user?.id, action: `Approved experience "${exp.title}"`, type: 'experience', entityId: id })
     return { ok: true }
   } catch {
     return { ok: false }
@@ -530,7 +532,9 @@ export async function approveListingAction(id: string): Promise<{ ok: boolean }>
 export async function rejectListingAction(id: string): Promise<{ ok: boolean }> {
   await requireAdmin()
   try {
-    await prisma.experience.update({ where: { id }, data: { status: 'DRAFT' as any } })
+    const exp = await prisma.experience.update({ where: { id }, data: { status: 'DRAFT' as any } })
+    const session = await getServerSession(authOptions)
+    await logActivity({ actor: session?.user?.name ?? 'Admin', actorId: session?.user?.id, action: `Rejected experience "${exp.title}"`, type: 'experience', entityId: id })
     return { ok: true }
   } catch {
     return { ok: false }
@@ -870,6 +874,7 @@ export type AdminExp = {
   id: string; slug: string; title: string; host: string
   area: string; category: string; price: number
   rating: number; reviews: number; bookings: number; status: string; image: string
+  featured: boolean
 }
 
 export async function getAdminExperiencesAction(): Promise<AdminExp[]> {
@@ -891,8 +896,24 @@ export async function getAdminExperiencesAction(): Promise<AdminExp[]> {
       price: r.price, rating: r.rating, reviews: r.totalReviews, bookings: r._count.bookings,
       status: statusDisplay[String(r.status)] ?? 'Draft',
       image: (r.images as string[])[0] ?? '',
+      featured: r.featured,
     }))
   } catch { return [] }
+}
+
+export async function adminSaveFeaturedAction(ids: string[]): Promise<{ ok: boolean }> {
+  await requireAdmin()
+  try {
+    await prisma.$transaction([
+      prisma.experience.updateMany({ where: {}, data: { featured: false } }),
+      ...(ids.length > 0
+        ? [prisma.experience.updateMany({ where: { id: { in: ids } }, data: { featured: true } })]
+        : []),
+    ])
+    const session = await getServerSession(authOptions)
+    await logActivity({ actor: session?.user?.name ?? 'Admin', actorId: session?.user?.id, action: `Updated featured experiences (${ids.length} selected)`, type: 'experience' })
+    return { ok: true }
+  } catch { return { ok: false } }
 }
 
 export async function adminUpdateExperienceStatusAction(id: string, status: string): Promise<{ ok: boolean }> {
@@ -941,14 +962,22 @@ export async function getAdminHostsAction(): Promise<AdminHost[]> {
 
 export async function approveHostAction(id: string): Promise<{ ok: boolean }> {
   await requireAdmin()
-  try { await prisma.operator.update({ where: { id }, data: { verified: true } }); return { ok: true } }
-  catch { return { ok: false } }
+  try {
+    const op = await prisma.operator.update({ where: { id }, data: { verified: true }, include: { user: { select: { name: true } } } })
+    const session = await getServerSession(authOptions)
+    await logActivity({ actor: session?.user?.name ?? 'Admin', actorId: session?.user?.id, action: `Approved host "${op.user.name}"`, type: 'host', entityId: id })
+    return { ok: true }
+  } catch { return { ok: false } }
 }
 
 export async function suspendHostAction(id: string): Promise<{ ok: boolean }> {
   await requireAdmin()
-  try { await prisma.operator.update({ where: { id }, data: { verified: false } }); return { ok: true } }
-  catch { return { ok: false } }
+  try {
+    const op = await prisma.operator.update({ where: { id }, data: { verified: false }, include: { user: { select: { name: true } } } })
+    const session = await getServerSession(authOptions)
+    await logActivity({ actor: session?.user?.name ?? 'Admin', actorId: session?.user?.id, action: `Suspended host "${op.user.name}"`, type: 'host', entityId: id })
+    return { ok: true }
+  } catch { return { ok: false } }
 }
 
 export type AdminBooking = {
@@ -991,14 +1020,22 @@ export async function getAdminBookingsAction(): Promise<AdminBooking[]> {
 
 export async function adminUpdateBookingStatusAction(ref: string, status: string): Promise<{ ok: boolean }> {
   await requireAdmin()
-  try { await prisma.booking.update({ where: { bookingRef: ref }, data: { status: status as any } }); return { ok: true } }
-  catch { return { ok: false } }
+  try {
+    await prisma.booking.update({ where: { bookingRef: ref }, data: { status: status as any } })
+    const session = await getServerSession(authOptions)
+    await logActivity({ actor: session?.user?.name ?? 'Admin', actorId: session?.user?.id, action: `Set booking ${ref} to ${status}`, type: 'booking', entityId: ref })
+    return { ok: true }
+  } catch { return { ok: false } }
 }
 
 export async function adminCompleteBookingAction(ref: string): Promise<{ ok: boolean }> {
   await requireAdmin()
-  try { await prisma.booking.update({ where: { bookingRef: ref }, data: { status: 'COMPLETED' } }); return { ok: true } }
-  catch { return { ok: false } }
+  try {
+    await prisma.booking.update({ where: { bookingRef: ref }, data: { status: 'COMPLETED' } })
+    const session = await getServerSession(authOptions)
+    await logActivity({ actor: session?.user?.name ?? 'Admin', actorId: session?.user?.id, action: `Completed booking ${ref}`, type: 'booking', entityId: ref })
+    return { ok: true }
+  } catch { return { ok: false } }
 }
 
 export type AdminUser = {
@@ -1052,8 +1089,12 @@ export async function getAdminReviewsAction(): Promise<AdminReview[]> {
 
 export async function adminDeleteReviewAction(id: string): Promise<{ ok: boolean }> {
   await requireAdmin()
-  try { await prisma.review.delete({ where: { id } }); return { ok: true } }
-  catch { return { ok: false } }
+  try {
+    await prisma.review.delete({ where: { id } })
+    const session = await getServerSession(authOptions)
+    await logActivity({ actor: session?.user?.name ?? 'Admin', actorId: session?.user?.id, action: `Deleted review`, type: 'review', entityId: id })
+    return { ok: true }
+  } catch { return { ok: false } }
 }
 
 export async function adminApproveReviewAction(id: string): Promise<{ ok: boolean }> {
@@ -1076,8 +1117,13 @@ export async function adminHideReviewAction(id: string): Promise<{ ok: boolean }
 
 export async function adminDeleteExperienceAction(id: string): Promise<{ ok: boolean }> {
   await requireAdmin()
-  try { await prisma.experience.delete({ where: { id } }); return { ok: true } }
-  catch { return { ok: false } }
+  try {
+    const exp = await prisma.experience.findUnique({ where: { id }, select: { title: true } })
+    await prisma.experience.delete({ where: { id } })
+    const session = await getServerSession(authOptions)
+    await logActivity({ actor: session?.user?.name ?? 'Admin', actorId: session?.user?.id, action: `Deleted experience "${exp?.title ?? id}"`, type: 'experience', entityId: id })
+    return { ok: true }
+  } catch { return { ok: false } }
 }
 
 export async function adminUpdateUserAction(id: string, data: { name: string; email: string; role: string }): Promise<{ ok: boolean; error?: string }> {
@@ -2203,6 +2249,36 @@ export async function getGADataAction(
     console.error('GA Data API error:', e)
     return null
   }
+}
+
+// ── Activity log ─────────────────────────────────────────────────────────────
+
+async function logActivity(opts: {
+  actor: string; actorId?: string; action: string; type: string; entityId?: string
+}) {
+  try {
+    await prisma.auditLog.create({ data: opts })
+  } catch {}
+}
+
+export type AuditLogEntry = {
+  id: string; actor: string; actorId: string | null
+  action: string; type: string; entityId: string | null; createdAt: string
+}
+
+export async function getActivityLogsAction(limit = 200): Promise<AuditLogEntry[]> {
+  await requireAdmin()
+  try {
+    const rows = await prisma.auditLog.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    })
+    return rows.map(r => ({
+      id: r.id, actor: r.actor, actorId: r.actorId,
+      action: r.action, type: r.type, entityId: r.entityId,
+      createdAt: r.createdAt.toISOString(),
+    }))
+  } catch { return [] }
 }
 
 // ── Admin settings (Setting model) ───────────────────────────────────────────
