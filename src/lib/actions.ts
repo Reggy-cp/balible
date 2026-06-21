@@ -2579,3 +2579,23 @@ export async function resetPasswordAction(token: string, newPassword: string): P
     return { ok: true }
   } catch { return { ok: false, error: 'Something went wrong. Please try again.' } }
 }
+
+// ── Host contact support ───────────────────────────────────────────────────────
+
+export async function sendContactSupportAction(input: {
+  subject: string
+  message: string
+}): Promise<{ ok: boolean }> {
+  try {
+    const user = await getSessionUser()
+    if (!user) return { ok: false }
+    const { sendContactSupportEmail } = await import('./email')
+    const sent = await sendContactSupportEmail({
+      fromName:  user.name  ?? 'Unknown',
+      fromEmail: user.email ?? 'unknown@balible.com',
+      subject:   input.subject.trim(),
+      message:   input.message.trim(),
+    })
+    return { ok: sent.sent }
+  } catch { return { ok: false } }
+}

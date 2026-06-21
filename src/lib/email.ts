@@ -511,6 +511,54 @@ export async function sendNewMessageEmail({
   }
 }
 
+// ── Host contact support ───────────────────────────────────────────────────────
+
+export async function sendContactSupportEmail({
+  fromName, fromEmail, subject, message,
+}: {
+  fromName: string
+  fromEmail: string
+  subject: string
+  message: string
+}): Promise<{ sent: boolean }> {
+  const client = getClient()
+  if (!client) {
+    console.warn('[email] RESEND_API_KEY not set — skipping contact support email')
+    return { sent: false }
+  }
+  try {
+    await client.emails.send({
+      from: FROM,
+      to: 'hello@balible.com',
+      replyTo: fromEmail,
+      subject: `[Host Support] ${subject} — ${fromName}`,
+      html: layout(`
+        <p style="margin:0 0 4px;font-size:13px;color:${BRAND.gold};font-weight:600;">HOST SUPPORT REQUEST</p>
+        <h1 style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:24px;color:${BRAND.ink};">${subject}</h1>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid ${BRAND.border};border-bottom:1px solid ${BRAND.border};margin-bottom:20px;">
+          <tr>
+            <td style="padding:8px 0;font-size:13px;color:${BRAND.muted};width:100px;">From</td>
+            <td style="padding:8px 0;font-size:14px;color:${BRAND.ink};font-weight:600;">${fromName}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 0;font-size:13px;color:${BRAND.muted};">Email</td>
+            <td style="padding:8px 0;font-size:14px;color:${BRAND.ink};font-weight:600;">${fromEmail}</td>
+          </tr>
+        </table>
+        <p style="margin:0 0 8px;font-size:13px;color:${BRAND.muted};font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Message</p>
+        <div style="padding:16px 20px;background-color:#F5F1EB;border-radius:10px;border:1px solid ${BRAND.border};">
+          <p style="margin:0;font-size:14px;color:${BRAND.ink};line-height:1.75;white-space:pre-wrap;">${message}</p>
+        </div>
+        <p style="margin:20px 0 0;font-size:12px;color:#9E9A94;">Reply directly to this email to respond to ${fromName}.</p>
+      `),
+    })
+    return { sent: true }
+  } catch (err) {
+    console.error('[email] contact support email failed:', err)
+    return { sent: false }
+  }
+}
+
 // ── Password reset ─────────────────────────────────────────────────────────────
 
 export async function sendPasswordResetEmail({ to, name, token }: { to: string; name: string; token: string }): Promise<{ sent: boolean }> {

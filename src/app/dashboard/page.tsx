@@ -1587,6 +1587,98 @@ function LanguageMultiSelect({
   )
 }
 
+// ── Contact Support Modal ──────────────────────────────────────────────────────
+
+const CONTACT_SUBJECTS = [
+  'Billing & payouts',
+  'Technical problem',
+  'Account issue',
+  'Listing question',
+  'Partnership inquiry',
+  'Other',
+]
+
+function ContactModal({ onClose }: { onClose: () => void }) {
+  const [subject, setSubject] = useState(CONTACT_SUBJECTS[0])
+  const [message, setMessage] = useState('')
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!message.trim() || status === 'sending') return
+    setStatus('sending')
+    const { sendContactSupportAction } = await import('@/lib/actions')
+    const res = await sendContactSupportAction({ subject, message }).catch(() => ({ ok: false }))
+    setStatus(res.ok ? 'sent' : 'error')
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden" style={{ border: '1px solid #E8E4DE' }}>
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: '1px solid #E8E4DE' }}>
+          <div>
+            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111', margin: 0 }}>Contact Support</h2>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', margin: '2px 0 0' }}>We'll reply to your account email</p>
+          </div>
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-100 transition-colors" style={{ border: 'none', backgroundColor: 'transparent', cursor: 'pointer' }}>
+            <X size={16} style={{ color: '#6F675C' }} />
+          </button>
+        </div>
+
+        {status === 'sent' ? (
+          <div className="px-6 py-10 text-center">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#EDFAF3' }}>
+              <Check size={22} style={{ color: '#4A7C59' }} />
+            </div>
+            <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111', marginBottom: 8 }}>Message sent!</p>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.6 }}>Our team will get back to you within 1–2 business days.</p>
+            <button onClick={onClose} className="mt-6 hover:opacity-90 transition-opacity" style={{ height: 42, paddingInline: 28, borderRadius: 10, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-inter)' }}>
+              Close
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={submit} className="px-6 py-5 space-y-4">
+            {/* Subject */}
+            <div>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'var(--font-inter)' }}>Subject</label>
+              <select value={subject} onChange={e => setSubject(e.target.value)} style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none', backgroundColor: 'white', cursor: 'pointer', boxSizing: 'border-box' as const }}>
+                {CONTACT_SUBJECTS.map(s => <option key={s}>{s}</option>)}
+              </select>
+            </div>
+
+            {/* Message */}
+            <div>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6F675C', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'var(--font-inter)' }}>Message</label>
+              <textarea
+                value={message}
+                onChange={e => setMessage(e.target.value)}
+                rows={5}
+                required
+                placeholder="Describe your issue or question…"
+                style={{ width: '100%', borderRadius: 10, border: '1px solid #E8E4DE', padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', resize: 'none', outline: 'none', lineHeight: 1.6, boxSizing: 'border-box' as const }}
+              />
+            </div>
+
+            {status === 'error' && (
+              <p style={{ fontSize: 13, color: '#B66A45', fontFamily: 'var(--font-inter)' }}>Something went wrong. Please try again.</p>
+            )}
+
+            <div className="flex items-center gap-3 pt-1">
+              <button type="submit" disabled={status === 'sending' || !message.trim()} style={{ height: 42, paddingInline: 24, borderRadius: 10, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: status === 'sending' ? 'default' : 'pointer', opacity: status === 'sending' || !message.trim() ? 0.6 : 1, fontFamily: 'var(--font-inter)' }}>
+                {status === 'sending' ? 'Sending…' : 'Send message'}
+              </button>
+              <button type="button" onClick={onClose} style={{ height: 42, paddingInline: 24, borderRadius: 10, border: '1px solid #E8E4DE', backgroundColor: 'transparent', fontSize: 14, color: '#6F675C', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}>
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ── Profile Panel ─────────────────────────────────────────────────────────────
 
 const HOST_PROFILE_DEFAULTS = {
@@ -1607,6 +1699,7 @@ function ProfilePanel({ profile: liveProfile }: { profile?: HostProfile }) {
   const [avatarUploading, setAvatarUploading] = useState(false)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const avatarInputRef = useRef<HTMLInputElement>(null)
+  const [contactOpen, setContactOpen] = useState(false)
 
   useEffect(() => {
     if (!liveProfile) return
@@ -1790,6 +1883,24 @@ function ProfilePanel({ profile: liveProfile }: { profile?: HostProfile }) {
             {saveError && <span style={{ fontSize: 13, color: '#B66A45', fontFamily: 'var(--font-inter)' }}>Could not save. Please try again.</span>}
           </div>
         )}
+
+        {/* ── Contact support ── */}
+        {!readOnly && (
+          <div className="bg-white rounded-xl p-5 flex items-center justify-between" style={{ border: '1px solid #E8E4DE' }}>
+            <div>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111', marginBottom: 2 }}>Need help?</p>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>Send us a message and we'll get back to you within 1–2 business days.</p>
+            </div>
+            <button
+              onClick={() => setContactOpen(true)}
+              style={{ flexShrink: 0, height: 40, paddingInline: 20, borderRadius: 10, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 13, fontWeight: 600, color: '#111111', cursor: 'pointer', fontFamily: 'var(--font-inter)', marginLeft: 16 }}
+            >
+              Contact us
+            </button>
+          </div>
+        )}
+
+        {contactOpen && <ContactModal onClose={() => setContactOpen(false)} />}
       </div>
     </div>
   )
