@@ -780,6 +780,7 @@ export async function getUserData(): Promise<UserData | null> {
         guests: b.guests,
         total: b.totalPrice,
         status: statusMap[String(b.status)] ?? 'Upcoming',
+        cancellable: b.status === 'CONFIRMED' && b.date.getTime() - Date.now() > 24 * 60 * 60 * 1000,
         rating: reviews.find(r => r.experienceId === b.experienceId)?.rating ?? null,
         image: (b.experience.images as string[])[0] ?? '',
         slug: b.experience.slug,
@@ -2049,6 +2050,9 @@ export async function cancelBookingAction(bookingRef: string): Promise<{ ok: boo
     if (!booking) return { ok: false, error: 'Booking not found' }
     if (booking.userId !== user.id) return { ok: false, error: 'Unauthorised' }
     if (booking.status !== 'CONFIRMED') return { ok: false, error: 'Only confirmed bookings can be cancelled.' }
+    if (booking.date.getTime() - Date.now() <= 24 * 60 * 60 * 1000) {
+      return { ok: false, error: 'Cancellations must be made at least 24 hours before the booking date.' }
+    }
 
     await prisma.booking.update({ where: { bookingRef }, data: { status: 'CANCELLED' } })
 

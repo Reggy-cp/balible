@@ -15,7 +15,7 @@ import { getOrCreateConversationAction, getMessagesAction, sendMessageAction, li
 
 type Booking = {
   id: string; title: string; area: string; date: string; time?: string
-  guests: number; total: number; status: string
+  guests: number; total: number; status: string; cancellable?: boolean
   rating: number | null; image: string; slug: string; category?: string
   duration?: string; meetingPoint?: string; includes?: string[]
   latitude?: number; longitude?: number; operatorId?: string; host?: string
@@ -522,7 +522,7 @@ function BookingsTab({ dbBookings, onRefresh }: { dbBookings?: Booking[]; onRefr
                     Leave a review
                   </button>
                 )}
-                {effectiveStatus === 'Upcoming' && (
+                {b.cancellable && !isCancelled && (
                   <button
                     onClick={() => setConfirmCancel(b)}
                     style={{ height: 29, padding: '0 12px', border: '1px solid #FECACA', borderRadius: 6, fontSize: 12, color: '#B66A45', backgroundColor: 'white', cursor: 'pointer' }}>
