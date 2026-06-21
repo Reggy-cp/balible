@@ -1,11 +1,13 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { MapPin, Clock, Users, CalendarDays, Ticket } from 'lucide-react'
+import { MapPin, Clock, Users, CalendarDays } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
 import EventGallery from '@/components/EventGallery'
 import { getEventBySlug, getPublishedEvents } from '@/lib/event-actions'
+import EventBookingCard from './EventBookingCard'
+import { prisma } from '@/lib/prisma'
 
 export const revalidate = 3600
 
@@ -57,11 +59,22 @@ const GALLERY: Record<string, string[]> = {
 }
 
 export default async function EventDetailPage({ params }: { params: { slug: string } }) {
-  const [event, allEvents] = await Promise.all([
+  const [event, allEvents, feeSetting] = await Promise.all([
     getEventBySlug(params.slug),
     getPublishedEvents(),
+    prisma.setting.findUnique({ where: { key: 'service_fee' } }).catch(() => null),
   ])
   if (!event || event.status !== 'PUBLISHED') notFound()
+
+  const feeRate = (() => {
+    try {
+      if (feeSetting?.value) {
+        const pct = parseFloat(JSON.parse(feeSetting.value))
+        if (!isNaN(pct) && pct > 0) return pct / 100
+      }
+    } catch {}
+    return 0.1
+  })()
 
   const otherEvents = allEvents
     .filter(e => e.slug !== params.slug && new Date(e.date) >= new Date())
@@ -72,10 +85,6 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
   const dateStr = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: TZ })
   const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: TZ })
   const isPast = d < new Date()
-
-  const waPhone = event.operatorPhone ? event.operatorPhone.replace(/\D/g, '').replace(/^0/, '62') : null
-  const waMessage = encodeURIComponent(`Hi! I'd like to get tickets for "${event.title}" on ${dateStr} at ${timeStr}. Is there still availability?`)
-  const waUrl = waPhone ? `https://wa.me/${waPhone}?text=${waMessage}` : null
 
   return (
     <div style={{ fontFamily: 'var(--font-inter)' }}>
@@ -214,32 +223,17 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                 <div className="text-center py-3">
                   <p style={{ fontSize: 14, color: '#9E9A94', fontWeight: 500 }}>This event has already taken place</p>
                 </div>
-              ) : waUrl ? (
-                <>
-                  <a
-                    href={waUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ width: '100%', height: 50, borderRadius: 12, backgroundColor: '#25D366', color: 'white', fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, textDecoration: 'none' }}>
-                    <Ticket size={16} />
-                    Get tickets via WhatsApp
-                  </a>
-                  <p className="text-center mt-3" style={{ fontSize: 11, color: '#C8C4BE' }}>
-                    Free cancellation up to 24h before the event
-                  </p>
-                </>
               ) : (
-                <>
-                  <button
-                    disabled
-                    style={{ width: '100%', height: 50, borderRadius: 12, border: 'none', backgroundColor: '#E8E4DE', color: '#9E9A94', fontSize: 15, fontWeight: 700, cursor: 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                    <Ticket size={16} />
-                    Contact host to book
-                  </button>
-                  <p className="text-center mt-3" style={{ fontSize: 11, color: '#C8C4BE' }}>
-                    Reach out to the host directly for tickets
-                  </p>
-                </>
+                <EventBookingCard
+                  slug={event.slug}
+                  title={event.title}
+                  image={event.coverImage ?? ''}
+                  location={event.location}
+                  dateStr={dateStr}
+                  timeStr={timeStr}
+                  price={event.price}
+                  feeRate={feeRate}
+                />
               )}
             </div>
           </div>

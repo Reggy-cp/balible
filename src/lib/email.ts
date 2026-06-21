@@ -747,3 +747,59 @@ export async function sendReviewRequestEmail({
     return { sent: false }
   }
 }
+
+// ── Event booking confirmation ─────────────────────────────────────────────────
+
+export type EventBookingConfirmationInput = {
+  to: string
+  guestName: string
+  bookingRef: string
+  eventTitle: string
+  eventDate: Date
+  eventLocation: string
+  tickets: number
+  totalPrice: number
+}
+
+export async function sendEventBookingConfirmation(input: EventBookingConfirmationInput): Promise<{ sent: boolean }> {
+  const client = getClient()
+  if (!client) return { sent: false }
+  const { to, guestName, bookingRef, eventTitle, eventDate, eventLocation, tickets, totalPrice } = input
+  const TZ = 'Asia/Makassar'
+  const dateStr = eventDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: TZ })
+  const timeStr = eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: TZ })
+  try {
+    await client.emails.send({
+      from: FROM,
+      to,
+      subject: `You're in! Tickets confirmed for ${eventTitle}`,
+      html: layout(`
+        <p style="margin:0 0 4px;font-size:13px;color:${BRAND.gold};font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">BOOKING CONFIRMED</p>
+        <h1 style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:26px;color:${BRAND.ink};">You're going to ${eventTitle}!</h1>
+        <p style="margin:0 0 20px;font-size:15px;color:${BRAND.muted};line-height:1.7;">
+          Hi ${guestName}, your tickets are confirmed. We can't wait to see you there!
+        </p>
+        <div style="background:${BRAND.bg};border:1px solid ${BRAND.border};border-radius:12px;padding:20px 24px;margin-bottom:24px;">
+          <table style="width:100%;border-collapse:collapse;">
+            <tr><td style="padding:6px 0;font-size:13px;color:${BRAND.muted};width:120px;">Booking ref</td><td style="padding:6px 0;font-size:13px;color:${BRAND.ink};font-weight:600;">${bookingRef.slice(0,8).toUpperCase()}</td></tr>
+            <tr><td style="padding:6px 0;font-size:13px;color:${BRAND.muted};">Date</td><td style="padding:6px 0;font-size:13px;color:${BRAND.ink};font-weight:600;">${dateStr}</td></tr>
+            <tr><td style="padding:6px 0;font-size:13px;color:${BRAND.muted};">Time</td><td style="padding:6px 0;font-size:13px;color:${BRAND.ink};font-weight:600;">${timeStr}</td></tr>
+            <tr><td style="padding:6px 0;font-size:13px;color:${BRAND.muted};">Location</td><td style="padding:6px 0;font-size:13px;color:${BRAND.ink};font-weight:600;">${eventLocation}</td></tr>
+            <tr><td style="padding:6px 0;font-size:13px;color:${BRAND.muted};">Tickets</td><td style="padding:6px 0;font-size:13px;color:${BRAND.ink};font-weight:600;">${tickets} ticket${tickets > 1 ? 's' : ''}</td></tr>
+            <tr style="border-top:1px solid ${BRAND.border};"><td style="padding:10px 0 0;font-size:14px;color:${BRAND.ink};font-weight:700;">Total paid</td><td style="padding:10px 0 0;font-size:14px;color:${BRAND.ink};font-weight:700;">IDR ${totalPrice.toLocaleString('id-ID')}</td></tr>
+          </table>
+        </div>
+        <a href="${SITE_URL}/profile?tab=bookings" style="display:inline-block;padding:14px 28px;background-color:${BRAND.ink};color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;border-radius:10px;">
+          View booking →
+        </a>
+        <p style="margin:24px 0 0;font-size:13px;color:${BRAND.muted};line-height:1.7;">
+          Questions? Reply to this email or contact us at hello@balible.com
+        </p>
+      `),
+    })
+    return { sent: true }
+  } catch (err) {
+    console.error('[email] event booking confirmation failed:', err)
+    return { sent: false }
+  }
+}

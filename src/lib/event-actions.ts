@@ -2,6 +2,19 @@
 
 import { prisma } from './prisma'
 import { getSessionUser } from './user'
+import { createSnapTransaction } from './midtrans'
+import { createNotification } from './notifications'
+
+async function getFeeRate(): Promise<number> {
+  try {
+    const row = await prisma.setting.findUnique({ where: { key: 'service_fee' } })
+    if (row?.value) {
+      const pct = parseFloat(JSON.parse(row.value))
+      if (!isNaN(pct) && pct > 0) return pct / 100
+    }
+  } catch {}
+  return 0.1
+}
 
 export type EventInput = {
   title: string
@@ -173,5 +186,107 @@ export async function getEventBySlug(slug: string): Promise<(EventRow & { operat
     }
   } catch {
     return null
+  }
+}
+
+// ── Event booking ─────────────────────────────────────────────────────────────
+
+export async function createEventBookingAction(input: {
+  slug: string
+  tickets: number
+  guestName: string
+  guestEmail: string
+  guestPhone?: string
+  notes?: string
+}): Promise<{ ok: boolean; bookingRef?: string; snapToken?: string; error?: string }> {
+  try {
+    const user = await getSessionUser()
+    if (!user) return { ok: false, error: 'Please sign in to complete your booking.' }
+
+    const event = await prisma.event.findUnique({ where: { slug: input.slug } })
+    if (!event || event.status !== 'PUBLISHED') return { ok: false, error: 'This event is not available for booking.' }
+
+    if (new Date(event.date) < new Date()) return { ok: false, error: 'This event has already taken place.' }
+
+    // Block duplicate bookings for the same event
+    const duplicate = await prisma.eventBooking.findFirst({
+      where: { userId: user.id, eventId: event.id, status: { in: ['PENDING', 'CONFIRMED'] } },
+    })
+    if (duplicate) return { ok: false, error: 'You already have a booking for this event.' }
+
+    const tickets = Math.max(1, Math.trunc(input.tickets) || 1)
+    const feeRate = await getFeeRate()
+    const subtotal = event.price * tickets
+    const fee = event.price === 0 ? 0 : Math.round(subtotal * feeRate)
+    const totalPrice = subtotal + fee
+
+    const booking = await prisma.eventBooking.create({
+      data: {
+        userId: user.id,
+        eventId: event.id,
+        tickets,
+        totalPrice,
+        guestName: input.guestName,
+        guestEmail: input.guestEmail,
+        guestPhone: input.guestPhone ?? null,
+        notes: input.notes ?? null,
+        status: event.price === 0 ? 'CONFIRMED' : 'PENDING',
+      },
+    })
+
+    if (event.price === 0) {
+      await createNotification({
+        userId: user.id,
+        type: 'booking',
+        title: 'Event booking confirmed 🎉',
+        body: `You're registered for ${event.title}. See you there!`,
+        href: '/profile?tab=bookings',
+      })
+      return { ok: true, bookingRef: booking.bookingRef }
+    }
+
+    const snap = await createSnapTransaction({
+      orderId: booking.bookingRef,
+      grossAmount: totalPrice,
+      customerName: input.guestName,
+      customerEmail: input.guestEmail,
+      customerPhone: input.guestPhone,
+      itemName: `${tickets}x ticket — ${event.title}`,
+    })
+    if ('error' in snap) return { ok: false, error: snap.error }
+
+    await createNotification({
+      userId: user.id,
+      type: 'booking',
+      title: 'Event booking received',
+      body: `Your tickets for ${event.title} are awaiting payment.`,
+      href: '/profile?tab=bookings',
+    })
+
+    return { ok: true, bookingRef: booking.bookingRef, snapToken: snap.token }
+  } catch {
+    return { ok: false, error: 'Something went wrong. Please try again.' }
+  }
+}
+
+export async function cancelEventBookingAction(bookingRef: string): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const user = await getSessionUser()
+    if (!user) return { ok: false, error: 'Not authenticated.' }
+
+    const booking = await prisma.eventBooking.findUnique({
+      where: { bookingRef },
+      include: { event: { select: { date: true, title: true } } },
+    })
+    if (!booking || booking.userId !== user.id) return { ok: false, error: 'Booking not found.' }
+    if (booking.status === 'CANCELLED') return { ok: false, error: 'Already cancelled.' }
+
+    const hoursUntil = (booking.event.date.getTime() - Date.now()) / (60 * 60 * 1000)
+    if (hoursUntil < 24) return { ok: false, error: 'Cancellations must be made at least 24 hours before the event.' }
+
+    await prisma.eventBooking.update({ where: { id: booking.id }, data: { status: 'CANCELLED' } })
+    return { ok: true }
+  } catch {
+    return { ok: false, error: 'Something went wrong.' }
   }
 }

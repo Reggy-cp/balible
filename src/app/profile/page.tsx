@@ -9,6 +9,7 @@ import { useSession } from 'next-auth/react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { getUserData, getExperiencesForWishlist, cancelBookingAction, getExperienceMetaForModal, submitReviewAction, getUserProfileSettingsAction, updateUserProfileSettingsAction, requestPasswordResetAction, type UserData, type ExpWishlistMeta } from '@/lib/actions'
+import { cancelEventBookingAction } from '@/lib/event-actions'
 import { getOrCreateConversationAction, getMessagesAction, sendMessageAction, listUserConversationsAction, type ChatMessage, type ConversationSummary } from '@/lib/chat-actions'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -446,7 +447,9 @@ function CancelConfirmModal({ booking, onConfirm, onClose, cancelling }: {
   )
 }
 
-function BookingsTab({ dbBookings, onRefresh }: { dbBookings?: Booking[]; onRefresh: () => void }) {
+type EventBookingItem = NonNullable<UserData['eventBookings']>[number]
+
+function BookingsTab({ dbBookings, dbEventBookings, onRefresh }: { dbBookings?: Booking[]; dbEventBookings?: EventBookingItem[]; onRefresh: () => void }) {
   const [cancelled, setCancelled] = useState<Set<string>>(new Set())
   const [cancelling, setCancelling] = useState<string | null>(null)
   const [reviewing, setReviewing] = useState<Booking | null>(null)
@@ -466,12 +469,23 @@ function BookingsTab({ dbBookings, onRefresh }: { dbBookings?: Booking[]; onRefr
     }
   }
 
+  const cancelEvent = async (b: EventBookingItem) => {
+    const res = await cancelEventBookingAction(b.id)
+    if (res.ok) {
+      setCancelled(s => new Set(s).add(b.id))
+    } else {
+      alert(res.error ?? 'Failed to cancel booking.')
+    }
+  }
+
   const allBookings = dbBookings ?? []
+  const allEventBookings = dbEventBookings ?? []
+  const hasAny = allBookings.length > 0 || allEventBookings.length > 0
 
   return (
     <div className="space-y-4">
       <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', marginBottom: 16 }}>My Bookings</h2>
-      {allBookings.length === 0 ? (
+      {!hasAny ? (
         <div className="bg-white rounded-xl p-10 text-center" style={{ border: '1px solid #E8E4DE' }}>
           <CalendarDays size={28} style={{ color: '#C8A97E', margin: '0 auto 12px' }} strokeWidth={1.5} />
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>No bookings yet.</p>
@@ -542,6 +556,51 @@ function BookingsTab({ dbBookings, onRefresh }: { dbBookings?: Booking[]; onRefr
             </div>
           </div>
         </div>
+        )
+      })}
+
+      {allEventBookings.map(b => {
+        const isCancelled = cancelled.has(b.id)
+        const effectiveStatus = isCancelled ? 'Cancelled' : b.status
+        return (
+          <div key={b.id} className="bg-white rounded-xl p-4" style={{ border: '1px solid #E8E4DE', opacity: isCancelled ? 0.6 : 1, transition: 'opacity 0.2s' }}>
+            <div className="flex gap-4">
+              {b.image ? (
+                <img src={b.image} alt={b.title} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
+              ) : (
+                <div className="w-16 h-16 rounded-xl flex-shrink-0 flex items-center justify-center" style={{ background: '#F5F1EB', fontSize: 28 }}>🎟</div>
+              )}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-2">
+                  <a href={`/events/${b.slug}`} style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 600, color: '#111111', textDecoration: 'none', lineHeight: 1.3 }} className="hover:opacity-70 transition-opacity">
+                    {b.title}
+                  </a>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span style={{ fontSize: 10, fontWeight: 700, color: '#C8A97E', background: '#FEF9EC', border: '1px solid #E8D9C4', borderRadius: 4, padding: '2px 6px', letterSpacing: '0.05em' }}>EVENT</span>
+                    <StatusBadge status={effectiveStatus} />
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1.5">
+                  <span style={{ fontSize: 12, color: '#6F675C' }}>📅 {b.date}</span>
+                  <span style={{ fontSize: 12, color: '#6F675C' }}>📍 {b.location}</span>
+                  <span style={{ fontSize: 12, color: '#6F675C' }}>🎟 {b.tickets} ticket{b.tickets > 1 ? 's' : ''}</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>IDR {b.total.toLocaleString('id-ID')}</span>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {b.cancellable && !isCancelled && (
+                    <button
+                      onClick={() => { if (confirm(`Cancel your tickets for ${b.title}?`)) cancelEvent(b) }}
+                      style={{ height: 29, padding: '0 12px', border: '1px solid #FECACA', borderRadius: 6, fontSize: 12, color: '#B66A45', backgroundColor: 'white', cursor: 'pointer' }}>
+                      Cancel & Refund
+                    </button>
+                  )}
+                </div>
+                {effectiveStatus === 'Pending' && (
+                  <p className="mt-2" style={{ fontSize: 12, color: '#C8A97E' }}>Awaiting payment confirmation</p>
+                )}
+              </div>
+            </div>
+          </div>
         )
       })}
 
@@ -1140,12 +1199,12 @@ export default function ProfilePage() {
 
   const renderTab = () => {
     switch (activeTab) {
-      case 'bookings':  return <BookingsTab dbBookings={dbData?.bookings} onRefresh={loadDb} />
+      case 'bookings':  return <BookingsTab dbBookings={dbData?.bookings} dbEventBookings={dbData?.eventBookings} onRefresh={loadDb} />
       case 'messages':  return <MessagesTab />
       case 'wishlist':  return <WishlistTab dbSlugs={dbData?.wishlistSlugs} />
       case 'reviews':   return <ReviewsTab dbReviews={dbData?.reviews} />
       case 'settings':  return <SettingsTab sessionEmail={displayEmail} />
-      default:          return <BookingsTab dbBookings={dbData?.bookings} onRefresh={loadDb} />
+      default:          return <BookingsTab dbBookings={dbData?.bookings} dbEventBookings={dbData?.eventBookings} onRefresh={loadDb} />
     }
   }
 

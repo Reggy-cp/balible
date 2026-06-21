@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verifyNotificationSignature } from '@/lib/midtrans'
-import { sendBookingConfirmation, sendHostBookingAlert, sendBookingCancellation, sendPaymentPendingEmail } from '@/lib/email'
+import { sendBookingConfirmation, sendHostBookingAlert, sendBookingCancellation, sendPaymentPendingEmail, sendEventBookingConfirmation } from '@/lib/email'
 import { createNotification } from '@/lib/notifications'
 
 const AREA_DISPLAY: Record<string, string> = {
@@ -40,9 +40,60 @@ export async function POST(req: NextRequest) {
       },
     },
   })
+
+  // ── EventBooking path ──────────────────────────────────────────────────────
   if (!booking) {
-    // Unknown order (e.g. dashboard test notification) — acknowledge so Midtrans stops retrying
-    return NextResponse.json({ ok: true, note: 'unknown order' })
+    const evtBooking = await prisma.eventBooking.findUnique({
+      where: { bookingRef: order_id },
+      include: { event: true },
+    })
+    if (!evtBooking) {
+      return NextResponse.json({ ok: true, note: 'unknown order' })
+    }
+
+    const paid    = transaction_status === 'settlement' ||
+      (transaction_status === 'capture' && fraud_status !== 'challenge')
+    const failed  = ['deny', 'cancel', 'expire'].includes(transaction_status)
+
+    if (paid && evtBooking.status !== 'CONFIRMED') {
+      await prisma.eventBooking.update({
+        where: { id: evtBooking.id },
+        data: { status: 'CONFIRMED', paymentId: transaction_id ?? null },
+      })
+      await Promise.allSettled([
+        createNotification({
+          userId: evtBooking.userId,
+          type: 'payment',
+          title: "You're in! Event tickets confirmed 🎉",
+          body: `Payment received — see you at ${evtBooking.event.title}!`,
+          href: '/profile?tab=bookings',
+        }),
+        sendEventBookingConfirmation({
+          to: evtBooking.guestEmail,
+          guestName: evtBooking.guestName,
+          bookingRef: evtBooking.bookingRef,
+          eventTitle: evtBooking.event.title,
+          eventDate: evtBooking.event.date,
+          eventLocation: evtBooking.event.location,
+          tickets: evtBooking.tickets,
+          totalPrice: evtBooking.totalPrice,
+        }),
+      ])
+    } else if (failed && evtBooking.status === 'PENDING') {
+      await prisma.eventBooking.update({
+        where: { id: evtBooking.id },
+        data: { status: 'CANCELLED', paymentId: transaction_id ?? null },
+      })
+      await createNotification({
+        userId: evtBooking.userId,
+        type: 'payment',
+        title: 'Payment unsuccessful',
+        body: `Your payment for ${evtBooking.event.title} ${transaction_status === 'expire' ? 'expired' : 'was not completed'}. You can try again anytime.`,
+        href: `/events/${evtBooking.event.slug}`,
+      })
+    }
+
+    return NextResponse.json({ ok: true })
   }
 
   // https://docs.midtrans.com/docs/https-notification-webhooks

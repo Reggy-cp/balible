@@ -38,6 +38,7 @@ model User {
   provider         Provider?
   serviceBookings  ServiceBooking[]
   notifications    Notification[]
+  eventBookings    EventBooking[]
   conversations    Conversation[]
   sentMessages     Message[]
 }
@@ -287,6 +288,25 @@ model Event {
   images      String[]    @default([])
   status      EventStatus @default(DRAFT)
   createdAt   DateTime    @default(now())
+  bookings    EventBooking[]
+}
+
+model EventBooking {
+  id         String        @id @default(cuid())
+  bookingRef String        @unique @default(cuid())
+  userId     String
+  user       User          @relation(fields: [userId], references: [id])
+  eventId    String
+  event      Event         @relation(fields: [eventId], references: [id])
+  tickets    Int
+  totalPrice Int
+  status     BookingStatus @default(PENDING)
+  paymentId  String?
+  guestName  String
+  guestEmail String
+  guestPhone String?
+  notes      String?
+  createdAt  DateTime      @default(now())
 }
 
 enum Role {

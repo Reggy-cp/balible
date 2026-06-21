@@ -781,6 +781,18 @@ export type UserData = {
     comment: string
     image: string
   }[]
+  eventBookings: {
+    id: string
+    title: string
+    date: string
+    location: string
+    tickets: number
+    total: number
+    status: string
+    image: string
+    slug: string
+    cancellable: boolean
+  }[]
 }
 
 export async function getUserData(): Promise<UserData | null> {
@@ -788,7 +800,7 @@ export async function getUserData(): Promise<UserData | null> {
     const user = await getSessionUser()
     if (!user) return null
 
-    const [fullUser, bookings, reviews] = await Promise.all([
+    const [fullUser, bookings, reviews, eventBookings] = await Promise.all([
       prisma.user.findUnique({
         where: { id: user.id },
         select: { wishlistSlugs: true },
@@ -805,6 +817,11 @@ export async function getUserData(): Promise<UserData | null> {
         include: {
           experience: { select: { title: true, slug: true, images: true } },
         },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.eventBooking.findMany({
+        where: { userId: user.id },
+        include: { event: { select: { title: true, location: true, date: true, slug: true, coverImage: true } } },
         orderBy: { createdAt: 'desc' },
       }),
     ])
@@ -853,6 +870,18 @@ export async function getUserData(): Promise<UserData | null> {
         rating: r.rating,
         comment: r.comment,
         image: (r.experience.images as string[])[0] ?? '',
+      })),
+      eventBookings: eventBookings.map(b => ({
+        id: b.bookingRef,
+        title: b.event.title,
+        date: b.event.date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+        location: b.event.location,
+        tickets: b.tickets,
+        total: b.totalPrice,
+        status: statusMap[String(b.status)] ?? 'Upcoming',
+        image: b.event.coverImage ?? '',
+        slug: b.event.slug,
+        cancellable: b.status === 'CONFIRMED' && (b.event.date.getTime() - Date.now()) > 24 * 60 * 60 * 1000,
       })),
     }
   } catch {

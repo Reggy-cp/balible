@@ -7,6 +7,7 @@ import { ChevronUp, Shield, Award, Clock, Edit2, Lock, MapPin } from 'lucide-rea
 import Image from 'next/image'
 import MobileNav from '@/components/MobileNav'
 import { createBookingAction, createRentalBookingAction, getExperienceForCheckout, getBookingStatusAction, getExperienceScheduleAction, getBookedSlotsAction, type ExpCheckoutMeta } from '@/lib/actions'
+import { createEventBookingAction } from '@/lib/event-actions'
 
 const STEPS = ['Experience & Date', 'Your Details', 'Payment', 'Confirmation']
 type Step = 0 | 1 | 2 | 3
@@ -961,6 +962,238 @@ function RentalCheckout({ params }: { params: URLSearchParams }) {
   )
 }
 
+// ── Event checkout flow ───────────────────────────────────────────────────────
+
+const EVENT_STEPS = ['Event Summary', 'Your Details', 'Payment', 'Confirmation']
+
+function EventCheckout({ params }: { params: URLSearchParams }) {
+  const { data: session } = useSession()
+  const slug      = params.get('slug')    || ''
+  const title     = params.get('title')   || 'Event'
+  const image     = params.get('image')   || ''
+  const location  = params.get('location') || ''
+  const dateStr   = params.get('date')    || ''
+  const timeStr   = params.get('time')    || ''
+  const price     = parseInt(params.get('price') || '0') || 0
+  const feeRate   = parseFloat(params.get('feeRate') || '0.1') || 0.1
+  const initTickets = Math.max(1, parseInt(params.get('tickets') || '1') || 1)
+
+  const [step, setStep]         = useState<Step>(0)
+  const [tickets, setTickets]   = useState(initTickets)
+  const [contact, setContact]   = useState<ContactFields>({ fullName: '', email: '', phone: '', requests: '' })
+  const [paying, setPaying]     = useState(false)
+  const [payError, setPayError] = useState<string | null>(null)
+  const [paidRef, setPaidRef]   = useState<string | null>(null)
+  const [isFree, setIsFree]     = useState(false)
+
+  useEffect(() => {
+    if (!session?.user) return
+    setContact(c => ({ ...c, fullName: c.fullName || session.user?.name || '', email: c.email || session.user?.email || '' }))
+  }, [session])
+
+  useEffect(() => {
+    const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY
+    if (!clientKey || document.getElementById('midtrans-snap')) return
+    const s = document.createElement('script')
+    s.id = 'midtrans-snap'
+    s.src = clientKey.startsWith('SB-') ? 'https://app.sandbox.midtrans.com/snap/snap.js' : 'https://app.midtrans.com/snap/snap.js'
+    s.setAttribute('data-client-key', clientKey)
+    document.body.appendChild(s)
+  }, [])
+
+  const sub   = price * tickets
+  const fee   = price === 0 ? 0 : Math.round(sub * feeRate)
+  const total = sub + fee
+
+  const startPayment = async () => {
+    if (paying) return
+    setPaying(true)
+    setPayError(null)
+    try {
+      const res = await createEventBookingAction({
+        slug,
+        tickets,
+        guestName: contact.fullName || 'Guest',
+        guestEmail: contact.email || '',
+        guestPhone: contact.phone || undefined,
+        notes: contact.requests || undefined,
+      })
+      if (!res.ok) {
+        setPayError(res.error ?? 'Could not complete booking. Please try again.')
+        setPaying(false)
+        return
+      }
+      if (price === 0) {
+        setIsFree(true)
+        setPaidRef(res.bookingRef ?? null)
+        setStep(3)
+        setPaying(false)
+        return
+      }
+      if (!res.snapToken || !res.bookingRef) {
+        setPayError('Could not start payment. Please try again.')
+        setPaying(false)
+        return
+      }
+      const snap = (window as unknown as { snap?: { pay: (token: string, opts: Record<string, () => void>) => void } }).snap
+      if (!snap) {
+        setPayError('The payment window failed to load. Please refresh and try again.')
+        setPaying(false)
+        return
+      }
+      const ref = res.bookingRef
+      snap.pay(res.snapToken, {
+        onSuccess: () => { setPaidRef(ref); setStep(3); setPaying(false) },
+        onPending: () => { setPaidRef(ref); setStep(3); setPaying(false) },
+        onError:   () => { setPayError('Payment failed — you have not been charged. Please try again.'); setPaying(false) },
+        onClose:   () => { setPaying(false) },
+      })
+    } catch {
+      setPayError('Something went wrong. Please try again.')
+      setPaying(false)
+    }
+  }
+
+  return (
+    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
+      <nav className="bg-white" style={{ height: 56, borderBottom: '1px solid #E8E4DE' }}>
+        <div className="flex items-center justify-between h-full px-6 lg:px-16 max-w-[1440px] mx-auto">
+          <a href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+            <Image src="/logo-dark.png" alt="Balible" width={120} height={36} style={{ objectFit: 'contain', height: 32, width: 'auto', display: 'block' }} priority />
+          </a>
+          <div className="flex items-center gap-1.5">
+            <Lock size={12} style={{ color: '#4A7C59' }} />
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#4A7C59' }}>Secure booking</span>
+          </div>
+        </div>
+      </nav>
+
+      <div className="max-w-[1100px] mx-auto px-4 py-6 pb-24 md:pb-10">
+        <h1 className="mb-5 hidden sm:block" style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 700, color: '#111111' }}>Checkout</h1>
+
+        {step < 3 && (
+          <div className="flex items-center mb-6">
+            {EVENT_STEPS.map((label, i) => {
+              const done = i < step, active = i === step
+              return (
+                <div key={label} className="flex items-center flex-1 last:flex-none">
+                  <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: done ? '#4A7C59' : active ? '#111111' : '#E8E4DE', color: done || active ? 'white' : '#6F675C', fontSize: 11 }}>
+                      {done ? '✓' : i + 1}
+                    </div>
+                    <span className="hidden sm:inline" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: active ? 600 : 400, color: active ? '#111111' : done ? '#4A7C59' : '#6F675C', whiteSpace: 'nowrap' }}>
+                      {label}
+                    </span>
+                  </div>
+                  {i < EVENT_STEPS.length - 1 && (
+                    <div className="flex-1 mx-1.5 sm:mx-3" style={{ height: 1, backgroundColor: i < step ? '#4A7C59' : '#E8E4DE', minWidth: 8 }} />
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        <div className="flex flex-col lg:flex-row gap-6">
+          <div className="flex-1 min-w-0">
+            {step === 0 && (
+              <div className="bg-white rounded-2xl p-6" style={{ border: '1px solid #E8E4DE' }}>
+                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', marginBottom: 16 }}>Event Summary</h2>
+                <div className="flex gap-4 mb-6 pb-6" style={{ borderBottom: '1px solid #E8E4DE' }}>
+                  {image && <img src={image} alt={title} className="w-20 h-20 rounded-xl object-cover flex-shrink-0" />}
+                  <div>
+                    <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 4 }}>{title}</p>
+                    <p style={{ fontSize: 13, color: '#6F675C', marginBottom: 2 }}>📅 {dateStr}{timeStr ? ` · ${timeStr}` : ''}</p>
+                    <p style={{ fontSize: 13, color: '#6F675C' }}>📍 {location}</p>
+                  </div>
+                </div>
+                <div className="mb-6">
+                  <label style={{ fontSize: 12, fontWeight: 700, color: '#6F675C', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 10 }}>Number of tickets</label>
+                  <div className="flex items-center gap-3" style={{ background: '#F9F7F5', borderRadius: 10, padding: '10px 14px', border: '1.5px solid #E2DDD6', width: 'fit-content' }}>
+                    <button onClick={() => setTickets(t => Math.max(1, t - 1))}
+                      style={{ width: 32, height: 32, borderRadius: 8, border: '1.5px solid #E2DDD6', background: 'white', cursor: 'pointer', fontSize: 18, color: '#6F675C', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</button>
+                    <span style={{ minWidth: 60, textAlign: 'center', fontSize: 15, fontWeight: 600, color: '#111111' }}>{tickets} ticket{tickets > 1 ? 's' : ''}</span>
+                    <button onClick={() => setTickets(t => t + 1)}
+                      style={{ width: 32, height: 32, borderRadius: 8, border: '1.5px solid #E2DDD6', background: 'white', cursor: 'pointer', fontSize: 18, color: '#6F675C', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
+                  </div>
+                </div>
+                {price > 0 && (
+                  <div className="mb-6" style={{ background: '#F9F7F5', borderRadius: 10, padding: '14px 16px', border: '1px solid #EAE6E0' }}>
+                    <div className="flex justify-between mb-2" style={{ fontSize: 13, color: '#6F675C' }}>
+                      <span>IDR {price.toLocaleString('id-ID')} × {tickets} ticket{tickets > 1 ? 's' : ''}</span>
+                      <span style={{ color: '#111111' }}>IDR {sub.toLocaleString('id-ID')}</span>
+                    </div>
+                    <div className="flex justify-between mb-3" style={{ fontSize: 13, color: '#6F675C' }}>
+                      <span>Service fee ({Math.round(feeRate * 100)}%)</span>
+                      <span style={{ color: '#111111' }}>IDR {fee.toLocaleString('id-ID')}</span>
+                    </div>
+                    <div className="flex justify-between" style={{ fontSize: 14, fontWeight: 700, color: '#111111', borderTop: '1px solid #E2DDD6', paddingTop: 10 }}>
+                      <span>Total</span>
+                      <span>IDR {total.toLocaleString('id-ID')}</span>
+                    </div>
+                  </div>
+                )}
+                {price === 0 && (
+                  <div className="mb-6 flex items-center gap-2" style={{ background: '#F0FAF4', border: '1px solid #B8E0C8', borderRadius: 10, padding: '12px 16px' }}>
+                    <span style={{ fontSize: 14, color: '#2D6A4F', fontWeight: 600 }}>🎟 Free event — no payment required</span>
+                  </div>
+                )}
+                <button onClick={() => setStep(1)}
+                  style={{ width: '100%', height: 50, borderRadius: 12, border: 'none', background: '#111111', color: 'white', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>
+                  Continue →
+                </button>
+              </div>
+            )}
+            {step === 1 && <StepDetails contact={contact} setContact={setContact} onNext={() => setStep(2)} />}
+            {step === 2 && <StepPayment total={price === 0 ? 0 : total} onPay={startPayment} paying={paying} error={payError} />}
+            {step === 3 && (
+              <div className="bg-white rounded-2xl p-8 text-center" style={{ border: '1px solid #E8E4DE' }}>
+                <div style={{ width: 60, height: 60, borderRadius: '50%', backgroundColor: '#F0FAF4', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 28 }}>🎟</div>
+                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: '#111111', marginBottom: 8 }}>
+                  {isFree ? "You're registered!" : "Tickets confirmed!"}
+                </h2>
+                <p style={{ fontSize: 14, color: '#6F675C', marginBottom: 20, lineHeight: 1.7 }}>
+                  {isFree ? `You're all set for ${title}. We'll see you there!` : `Your tickets for ${title} are confirmed. Check your email for details.`}
+                </p>
+                {paidRef && <p style={{ fontSize: 12, color: '#9E9A94', marginBottom: 24 }}>Booking ref: {paidRef.slice(0, 8).toUpperCase()}</p>}
+                <a href="/profile?tab=bookings" style={{ display: 'inline-block', padding: '14px 32px', background: '#111111', color: 'white', borderRadius: 12, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>
+                  View my bookings →
+                </a>
+              </div>
+            )}
+          </div>
+
+          {step < 3 && (
+            <div className="hidden lg:block" style={{ width: 320, flexShrink: 0 }}>
+              <div className="bg-white rounded-xl p-5 sticky" style={{ top: 88, border: '1px solid #E8E4DE' }}>
+                <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111', marginBottom: 14 }}>Event Summary</h3>
+                {image && <img src={image} alt={title} className="w-full rounded-xl object-cover mb-4" style={{ height: 140 }} />}
+                <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: '#111111', marginBottom: 8 }}>{title}</p>
+                <p style={{ fontSize: 13, color: '#6F675C', marginBottom: 4 }}>📅 {dateStr}{timeStr ? ` · ${timeStr}` : ''}</p>
+                <p style={{ fontSize: 13, color: '#6F675C', marginBottom: 14 }}>📍 {location}</p>
+                {price > 0 && (
+                  <div style={{ borderTop: '1px solid #E8E4DE', paddingTop: 12 }}>
+                    <div className="flex justify-between mb-1" style={{ fontSize: 13, color: '#6F675C' }}>
+                      <span>{tickets} ticket{tickets > 1 ? 's' : ''} × IDR {price.toLocaleString('id-ID')}</span>
+                    </div>
+                    <div className="flex justify-between" style={{ fontSize: 14, fontWeight: 700, color: '#111111', marginTop: 8 }}>
+                      <span>Total</span>
+                      <span>IDR {total.toLocaleString('id-ID')}</span>
+                    </div>
+                  </div>
+                )}
+                {price === 0 && <p style={{ fontSize: 14, fontWeight: 700, color: '#2D6A4F' }}>Free event</p>}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+      <MobileNav />
+    </div>
+  )
+}
+
 // ── Inner (reads params) ───────────────────────────────────────────────────────
 
 function AuthGate({ children }: { children: React.ReactNode }) {
@@ -1014,6 +1247,10 @@ function CheckoutInner() {
 
   if (params.get('type') === 'rental') {
     return <RentalCheckout params={params} />
+  }
+
+  if (params.get('type') === 'event') {
+    return <EventCheckout params={params} />
   }
 
   const slug      = params.get('slug')      || 'pottery-making-class'
