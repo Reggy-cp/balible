@@ -21,6 +21,7 @@ import {
   getAdminUsersAction, type AdminUser,
   getAdminReviewsAction, type AdminReview, adminDeleteReviewAction,
   getAdminEventsAction, type AdminEvent, adminUpdateEventStatusAction, adminDeleteEventAction,
+  getAdminEventBookingsAction, type AdminEventBooking, adminCancelEventBookingAction,
   adminDeleteExperienceAction, adminApproveReviewAction, adminFlagReviewAction, adminHideReviewAction,
   getAnalyticsDataAction, type AnalyticsData,
   adminUpdateUserAction, adminUpdateHostAction,
@@ -2366,11 +2367,16 @@ function AnalyticsPanel() {
 // ── Events Panel ─────────────────────────────────────────────────────────────
 
 function EventsPanel() {
+  const [tab, setTab]         = useState<'listings' | 'bookings'>('listings')
   const [filter, setFilter]   = useState('All')
   const [search, setSearch]   = useState('')
   const [events, setEvents]   = useState<AdminEvent[]>([])
+  const [evtBookings, setEvtBookings] = useState<AdminEventBooking[]>([])
+  const [bSearch, setBSearch] = useState('')
+  const [bFilter, setBFilter] = useState('All')
 
   useEffect(() => { getAdminEventsAction().then(setEvents) }, [])
+  useEffect(() => { if (tab === 'bookings') getAdminEventBookingsAction().then(setEvtBookings) }, [tab])
 
   const setStatus = async (id: string, s: string) => {
     const toEnum: Record<string, string> = { Published: 'PUBLISHED', Draft: 'DRAFT', Cancelled: 'CANCELLED' }
@@ -2380,6 +2386,11 @@ function EventsPanel() {
   const remove    = async (id: string) => {
     await adminDeleteEventAction(id)
     setEvents(p => p.filter(e => e.id !== id))
+  }
+
+  const cancelEvtBooking = async (ref: string) => {
+    await adminCancelEventBookingAction(ref)
+    setEvtBookings(p => p.map(b => b.ref === ref ? { ...b, status: 'Cancelled' } : b))
   }
 
   const visible = useMemo(() => {
@@ -2394,9 +2405,98 @@ function EventsPanel() {
   const published = events.filter(e => e.status === 'Published').length
   const upcoming  = events.filter(e => e.status === 'Published' && new Date(e.date) >= new Date()).length
 
+  const visibleBookings = useMemo(() => {
+    let list = bFilter === 'All' ? evtBookings : evtBookings.filter(b => b.status === bFilter)
+    if (bSearch) {
+      const q = bSearch.toLowerCase()
+      list = list.filter(b => b.guest.toLowerCase().includes(q) || b.event.toLowerCase().includes(q) || b.ref.toLowerCase().includes(q) || b.email.toLowerCase().includes(q))
+    }
+    return list
+  }, [evtBookings, bFilter, bSearch])
+
   return (
     <div>
       <PageHeader title="Events" sub={`${events.length} total · ${published} published · ${upcoming} upcoming`} />
+
+      {/* Tab switcher */}
+      <div className="inline-flex gap-1 bg-white rounded-xl p-1 mb-5" style={{ border: `1px solid ${SAND}` }}>
+        {(['listings', 'bookings'] as const).map(t => (
+          <button key={t} onClick={() => setTab(t)}
+            style={{ padding: '6px 16px', borderRadius: 10, fontSize: 13, fontWeight: tab === t ? 600 : 400, backgroundColor: tab === t ? CHARCOAL : 'transparent', color: tab === t ? 'white' : COCONUT, border: 'none', cursor: 'pointer', textTransform: 'capitalize' }}>
+            {t === 'listings' ? 'Event Listings' : `Bookings (${evtBookings.length || '…'})`}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'bookings' ? (
+        <div>
+          <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex-1 min-w-[200px]">
+              <SearchBar value={bSearch} onChange={setBSearch} placeholder="Search guest, event, ref…" />
+            </div>
+          </div>
+
+          <div className="flex gap-2 mb-4 overflow-x-auto">
+            {['All', 'Pending', 'Confirmed', 'Cancelled'].map(s => (
+              <button key={s} onClick={() => setBFilter(s)}
+                style={{ padding: '6px 14px', borderRadius: 10, fontSize: 13, fontWeight: bFilter === s ? 600 : 400, flexShrink: 0, backgroundColor: bFilter === s ? CHARCOAL : 'white', color: bFilter === s ? 'white' : COCONUT, border: `1px solid ${bFilter === s ? CHARCOAL : SAND}`, cursor: 'pointer' }}>
+                {s} <span style={{ opacity: 0.5, fontSize: 11 }}>{s === 'All' ? evtBookings.length : evtBookings.filter(b => b.status === s).length}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="space-y-3">
+            {visibleBookings.map(b => (
+              <div key={b.id} className="bg-white rounded-xl p-4" style={{ border: `1px solid ${b.status === 'Cancelled' ? '#FECACA' : SAND}` }}>
+                <div className="flex items-start justify-between gap-3 flex-wrap mb-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <span style={{ fontSize: 13, fontWeight: 700, color: CHARCOAL }}>{b.event}</span>
+                      <StatusBadge status={b.status} />
+                    </div>
+                    <p style={{ fontSize: 12, color: COCONUT }}>
+                      {b.guest} · {b.email}{b.phone ? ` · ${b.phone}` : ''}
+                    </p>
+                  </div>
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: CHARCOAL }}>IDR {b.total.toLocaleString('id-ID')}</p>
+                    <p style={{ fontSize: 11, color: COCONUT }}>{b.tickets} ticket{b.tickets > 1 ? 's' : ''}</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-x-4 gap-y-1 mb-3">
+                  <span style={{ fontSize: 12, color: COCONUT }}>📅 Event: {b.eventDate}</span>
+                  <span style={{ fontSize: 12, color: COCONUT }}>🗓 Booked: {b.bookedOn}</span>
+                  <span style={{ fontSize: 12, color: COCONUT }}>Ref: {b.ref.slice(0, 8).toUpperCase()}</span>
+                  {b.paymentId && <span style={{ fontSize: 12, color: COCONUT }}>Txn: {b.paymentId}</span>}
+                </div>
+
+                <div className="flex items-center gap-2 pt-3" style={{ borderTop: `1px solid ${IVORY}` }}>
+                  {b.status !== 'Cancelled' && b.status !== 'Completed' && (
+                    <button
+                      onClick={() => { if (confirm(`Cancel booking for ${b.guest} — ${b.event}?`)) cancelEvtBooking(b.ref) }}
+                      className="flex items-center gap-1 hover:opacity-80"
+                      style={{ height: 30, padding: '0 12px', borderRadius: 8, border: `1px solid ${SAND}`, backgroundColor: 'white', fontSize: 12, fontWeight: 600, color: TERRACOTTA, cursor: 'pointer' }}>
+                      <XCircle size={11} /> Cancel
+                    </button>
+                  )}
+                  {b.status === 'Cancelled' && (
+                    <span style={{ fontSize: 12, color: COCONUT, fontStyle: 'italic' }}>Booking cancelled — manual refund required</span>
+                  )}
+                </div>
+              </div>
+            ))}
+
+            {visibleBookings.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl" style={{ border: `1px solid ${SAND}` }}>
+                <Ticket size={28} style={{ color: GOLD, marginBottom: 12 }} />
+                <p style={{ fontSize: 15, fontWeight: 600, color: CHARCOAL }}>No event bookings found</p>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <>
 
       <div className="grid grid-cols-3 gap-4 mb-5">
         {[
@@ -2507,6 +2607,8 @@ function EventsPanel() {
           </div>
         )}
       </div>
+        </>
+      )}
     </div>
   )
 }

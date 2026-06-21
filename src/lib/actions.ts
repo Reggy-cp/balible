@@ -1120,6 +1120,51 @@ export async function adminCompleteBookingAction(ref: string): Promise<{ ok: boo
   } catch { return { ok: false } }
 }
 
+// ── Event booking admin ───────────────────────────────────────────────────────
+
+export type AdminEventBooking = {
+  id: string; ref: string; guest: string; email: string; phone: string
+  event: string; eventDate: string; host: string
+  tickets: number; total: number; status: string
+  bookedOn: string; paymentId: string
+}
+
+export async function getAdminEventBookingsAction(): Promise<AdminEventBooking[]> {
+  await requireAdmin()
+  try {
+    const rows = await prisma.eventBooking.findMany({
+      include: {
+        event: { include: { operator: { include: { user: { select: { name: true } } } } } },
+      },
+      orderBy: { createdAt: 'desc' },
+    })
+    const statusDisplay: Record<string, string> = { CONFIRMED: 'Confirmed', PENDING: 'Pending', COMPLETED: 'Completed', CANCELLED: 'Cancelled' }
+    const TZ = 'Asia/Makassar'
+    return rows.map((b, i) => ({
+      id: `EB${String(i + 1).padStart(3, '0')}`,
+      ref: b.bookingRef,
+      guest: b.guestName, email: b.guestEmail, phone: b.guestPhone ?? '',
+      event: b.event.title,
+      eventDate: b.event.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: TZ }),
+      host: b.event.operator.user.name,
+      tickets: b.tickets, total: b.totalPrice,
+      status: statusDisplay[String(b.status)] ?? 'Pending',
+      bookedOn: b.createdAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      paymentId: b.paymentId ?? '',
+    }))
+  } catch { return [] }
+}
+
+export async function adminCancelEventBookingAction(ref: string): Promise<{ ok: boolean }> {
+  await requireAdmin()
+  try {
+    await prisma.eventBooking.update({ where: { bookingRef: ref }, data: { status: 'CANCELLED' } })
+    const session = await getServerSession(authOptions)
+    await logActivity({ actor: session?.user?.name ?? 'Admin', actorId: session?.user?.id, action: `Cancelled event booking ${ref}`, type: 'booking', entityId: ref })
+    return { ok: true }
+  } catch { return { ok: false } }
+}
+
 export type AdminUser = {
   id: string; name: string; email: string; role: string
   bookings: number; totalSpend: number; joined: string; status: string
