@@ -184,21 +184,25 @@ export default function RentalTabs({ rental }: { rental: RentalData }) {
         {active === 'Reviews' && (
           <div>
             <div className="flex items-center justify-between gap-4 mb-8 pb-6" style={{ borderBottom: '1px solid #E8E4DE' }}>
-              <div className="flex items-center gap-4">
-                <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 52, fontWeight: 700, color: '#111111', lineHeight: 1 }}>
-                  {rental.rating.toFixed(1)}
-                </span>
-                <div>
-                  <div className="flex gap-0.5 mb-1">
-                    {[1,2,3,4,5].map(i => (
-                      <Star key={i} size={16} fill={i <= Math.round(rental.rating) ? '#C8A97E' : 'none'} color="#C8A97E" />
-                    ))}
+              {rental.totalReviews > 0 ? (
+                <div className="flex items-center gap-4">
+                  <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 52, fontWeight: 700, color: '#111111', lineHeight: 1 }}>
+                    {rental.rating.toFixed(1)}
+                  </span>
+                  <div>
+                    <div className="flex gap-0.5 mb-1">
+                      {[1,2,3,4,5].map(i => (
+                        <Star key={i} size={16} fill={i <= Math.round(rental.rating) ? '#C8A97E' : 'none'} color="#C8A97E" />
+                      ))}
+                    </div>
+                    <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>
+                      {rental.totalReviews} reviews
+                    </p>
                   </div>
-                  <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>
-                    {rental.totalReviews} reviews
-                  </p>
                 </div>
-              </div>
+              ) : (
+                <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#9E9A94' }}>No reviews yet</p>
+              )}
             </div>
 
             <div className="space-y-6">
@@ -258,11 +262,13 @@ export default function RentalTabs({ rental }: { rental: RentalData }) {
                   {rental.operator.businessName}
                 </p>
               )}
-              <div className="flex items-center gap-2 mt-2">
-                <Star size={13} fill="#C8A97E" color="#C8A97E" />
-                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111' }}>{rental.operator.rating}</span>
-                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>· {rental.operator.totalReviews} reviews</span>
-              </div>
+              {rental.operator.totalReviews > 0 && (
+                <div className="flex items-center gap-2 mt-2">
+                  <Star size={13} fill="#C8A97E" color="#C8A97E" />
+                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111' }}>{rental.operator.rating.toFixed(1)}</span>
+                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>· {rental.operator.totalReviews} reviews</span>
+                </div>
+              )}
               {rental.operator.description && (
                 <p className="mt-4" style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: '#6F675C', lineHeight: 1.7, maxWidth: 480 }}>
                   {rental.operator.description}
