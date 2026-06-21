@@ -4,13 +4,13 @@ import { getServiceFeeRateAction } from '@/lib/actions'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
-import RentalGallery from './RentalGallery'
+import ExperienceGalleryFull from '@/components/ExperienceGalleryFull'
 import RentalBookingWidget from './RentalBookingWidget'
 import RentalMobileModal from './RentalMobileModal'
 import RentalTabs from './RentalTabs'
 import RentalRecommendations from './RentalRecommendations'
 import ReadMore from '@/components/ReadMore'
-import { MapPin, Star, Camera, Clock, Package } from 'lucide-react'
+import { MapPin, Star, Clock, Package } from 'lucide-react'
 
 export const revalidate = 3600
 
@@ -67,8 +67,6 @@ export default async function RentalPage({ params }: { params: { slug: string } 
   const area         = AREA_LABEL[String(rental.area)] ?? String(rental.area)
   const fallback     = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&auto=format&fit=crop&q=80'
   const images       = rental.images.length ? rental.images : [fallback]
-  const thumbPhotos  = [...images.slice(0, 5)]
-  while (thumbPhotos.length < 5) thumbPhotos.push(thumbPhotos[0])
 
   const depositLine  = (rental.includes ?? []).find((l: string) => l.startsWith('Deposit:')) ?? null
   const depositRaw   = depositLine ? depositLine.replace('Deposit: IDR ', '').replace(' (refundable)', '') : null
@@ -90,32 +88,8 @@ export default async function RentalPage({ params }: { params: { slug: string } 
           ← Back to rentals
         </a>
 
-        {/* ── DESKTOP GALLERY ── */}
-        <div className="hidden lg:flex gap-2 mb-8" style={{ height: 380 }}>
-          {/* Main photo */}
-          <div className="relative overflow-hidden flex-1" style={{ borderRadius: 12 }}>
-            <img src={thumbPhotos[0]} alt={rental.title} className="w-full h-full object-cover" />
-          </div>
-          {/* 2×2 grid */}
-          <div className="grid grid-cols-2 gap-2" style={{ width: '38%' }}>
-            {thumbPhotos.slice(1, 5).map((src, i) => (
-              <div key={i} className="relative overflow-hidden" style={{ borderRadius: 8 }}>
-                <img src={src} alt={`View ${i + 2}`} className="w-full h-full object-cover" />
-                {i === 3 && (
-                  <button className="absolute inset-0 flex items-center justify-center gap-1.5" style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}>
-                    <Camera size={14} color="white" />
-                    <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: 'white', fontWeight: 500 }}>View all photos</span>
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── MOBILE GALLERY ── visible only on screens < 1024px */}
-        <div className="block lg:hidden">
-          <RentalGallery images={images} title={rental.title} />
-        </div>
+        {/* ── GALLERY ── */}
+        <ExperienceGalleryFull images={images} title={rental.title} />
 
         {/* ── TWO-COLUMN LAYOUT ── */}
         <div className="flex flex-col lg:flex-row gap-10">
