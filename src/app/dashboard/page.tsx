@@ -1899,17 +1899,19 @@ function ProfilePanel({ profile: liveProfile }: { profile?: HostProfile }) {
 
         {/* ── Contact support ── */}
         {!readOnly && (
-          <div className="bg-white rounded-xl p-5 flex items-center justify-between" style={{ border: '1px solid #E8E4DE' }}>
-            <div>
-              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111', marginBottom: 2 }}>{t('db_need_help')}</p>
-              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>{t('db_contact_desc')}</p>
+          <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111', marginBottom: 2 }}>{t('db_need_help')}</p>
+                <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>{t('db_contact_desc')}</p>
+              </div>
+              <button
+                onClick={() => setContactOpen(true)}
+                style={{ flexShrink: 0, height: 40, paddingInline: 20, borderRadius: 10, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 13, fontWeight: 600, color: '#111111', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}
+              >
+                {t('db_contact_us_btn')}
+              </button>
             </div>
-            <button
-              onClick={() => setContactOpen(true)}
-              style={{ flexShrink: 0, height: 40, paddingInline: 20, borderRadius: 10, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 13, fontWeight: 600, color: '#111111', cursor: 'pointer', fontFamily: 'var(--font-inter)', marginLeft: 16 }}
-            >
-              {t('db_contact_us_btn')}
-            </button>
           </div>
         )}
 
