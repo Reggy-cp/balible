@@ -2555,7 +2555,7 @@ function SidebarInner({ activeNav, setActiveNav, hostName, unreadMessages }: { a
           ← Back to site
         </a>
         <a
-          href="/auth/signout"
+          href="/api/auth/logout"
           className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors"
           style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, fontFamily: 'var(--font-inter)', textDecoration: 'none' }}
         >
