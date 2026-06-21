@@ -538,27 +538,27 @@ function ExperiencesPanel({ commissionRate, initialExperiences, triggerNewExp }:
   const setField = (k: keyof typeof BLANK_FORM, v: string) => setFormData(p => ({ ...p, [k]: v }))
   const setCategory = (cat: string) => setFormData(p => ({ ...p, category: cat, subcategory: SUBCATEGORY_MAP[cat]?.[0] ?? '' }))
 
-  const uploadImage = async (file: File): Promise<string | null> => {
+  const uploadImage = async (file: File, hint?: string): Promise<{ url: string; alt: string } | null> => {
     const fd = new FormData()
     fd.append('file', file)
+    fd.append('hint', hint ?? `${formData.title || 'Bali experience'} photo`)
     const res = await fetch('/api/upload-image', { method: 'POST', body: fd })
     if (!res.ok) return null
-    const { url } = await res.json()
-    return url as string
+    return res.json()
   }
 
   const handleImageFile = async (file: File) => {
     if (!file.type.startsWith('image/')) return
-    const url = await uploadImage(file)
-    if (url) setImagePreview(url)
+    const result = await uploadImage(file, `${formData.title || 'Bali experience'} cover photo`)
+    if (result) setImagePreview(result.url)
   }
 
   const handleGalleryFiles = async (files: FileList | null) => {
     if (!files) return
     const slots = 8 - galleryPreviews.length
     const toUpload = Array.from(files).filter(f => f.type.startsWith('image/')).slice(0, slots)
-    const urls = await Promise.all(toUpload.map(uploadImage))
-    setGalleryPreviews(prev => [...prev, ...(urls.filter(Boolean) as string[])])
+    const results = await Promise.all(toUpload.map((f, i) => uploadImage(f, `${formData.title || 'Bali experience'} gallery photo ${galleryPreviews.length + i + 1}`)))
+    setGalleryPreviews(prev => [...prev, ...(results.filter(Boolean).map(r => r!.url))])
   }
 
   const removeGalleryImage = (idx: number) =>
@@ -1733,7 +1733,7 @@ function ProfilePanel({ profile: liveProfile }: { profile?: HostProfile }) {
   const uploadAvatar = async (file: File) => {
     setAvatarUploading(true)
     try {
-      const fd = new FormData(); fd.append('file', file)
+      const fd = new FormData(); fd.append('file', file); fd.append('hint', 'host profile avatar')
       const res = await fetch('/api/upload-image', { method: 'POST', body: fd })
       const json = await res.json()
       const url: string = json.url
