@@ -165,9 +165,15 @@ function ExperienceCard({
                 <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>{exp.area}</span>
               </div>
               <div className="flex items-center gap-1">
-                <Star size={10} fill="#C8A97E" color="#C8A97E" />
-                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 700, color: '#111111' }}>{exp.rating.toFixed(1)}</span>
-                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>({exp.reviews})</span>
+                {exp.reviews > 0 ? (
+                  <>
+                    <Star size={10} fill="#C8A97E" color="#C8A97E" />
+                    <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, fontWeight: 700, color: '#111111' }}>{exp.rating.toFixed(1)}</span>
+                    <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>({exp.reviews})</span>
+                  </>
+                ) : (
+                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#9E9A94' }}>New</span>
+                )}
               </div>
               <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>⏱ {exp.duration}</span>
             </div>
@@ -202,9 +208,15 @@ function ExperienceCard({
           </h3>
           <div className="flex items-center gap-2 mb-3">
             <div className="flex items-center gap-1">
-              <Star size={11} fill="#C8A97E" color="#C8A97E" />
-              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 700, color: '#111111' }}>{exp.rating.toFixed(1)}</span>
-              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>({exp.reviews})</span>
+              {exp.reviews > 0 ? (
+                <>
+                  <Star size={11} fill="#C8A97E" color="#C8A97E" />
+                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 700, color: '#111111' }}>{exp.rating.toFixed(1)}</span>
+                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>({exp.reviews})</span>
+                </>
+              ) : (
+                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#9E9A94' }}>New</span>
+              )}
             </div>
             <span style={{ color: '#E8E4DE' }}>·</span>
             <div className="flex items-center gap-1">

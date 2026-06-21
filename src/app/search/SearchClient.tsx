@@ -229,9 +229,15 @@ function ResultCard({ r, date, guests }: { r: SearchResult; date: string; guests
               <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>{r.area}</span>
             </div>
             <div className="flex items-center gap-1">
-              <Star size={11} fill="#C8A97E" color="#C8A97E" />
-              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 700, color: '#111111' }}>{r.rating}</span>
-              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>({r.reviews})</span>
+              {r.reviews > 0 ? (
+                <>
+                  <Star size={11} fill="#C8A97E" color="#C8A97E" />
+                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 700, color: '#111111' }}>{Number(r.rating).toFixed(1)}</span>
+                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>({r.reviews})</span>
+                </>
+              ) : (
+                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#9E9A94' }}>New</span>
+              )}
             </div>
             <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>⏱ {durationLabel}</span>
           </div>
