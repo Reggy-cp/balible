@@ -91,6 +91,7 @@ export type CreateBookingInput = {
   slug: string
   rawDate: string
   rawTime?: string
+  numSlots?: number
   guests: number
   guestName: string
   guestEmail: string
@@ -131,8 +132,9 @@ export async function createBookingAction(
     // Price is computed server-side from the DB; client-supplied totals are never trusted
     const minG = (exp as any).minGuests ?? 1
     const guests = Math.max(minG, Math.min(exp.maxGuests, Math.trunc(input.guests) || minG))
+    const numSlots = Math.min(20, Math.max(1, Math.trunc(input.numSlots ?? 1) || 1))
     const feeRate = await getServiceFeeRate()
-    const totalPrice = computeBookingTotal(exp.price, guests, feeRate)
+    const totalPrice = computeBookingTotal(exp.price, guests, feeRate) * numSlots
 
     // Booking starts PENDING; the Midtrans webhook flips it to CONFIRMED on
     // settlement and sends the confirmation email at that point.

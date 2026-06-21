@@ -145,7 +145,7 @@ function MiniCalendar({
 export default function BookingWidget({ price, slug, duration, maxGuests = 8, embedded = false, rating, totalReviews, blockedDates = [] }: { price: number; slug?: string; duration?: string; maxGuests?: number; embedded?: boolean; rating?: number; totalReviews?: number; blockedDates?: string[] }) {
   const { t } = useLanguage()
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
-  const [selectedTime, setSelectedTime] = useState<string | null>(null)
+  const [selectedTimes, setSelectedTimes] = useState<string[]>([])
   const [guests, setGuests] = useState(1)
   const [wishlisted, setWishlisted] = useState(false)
   const { status } = useSession()
@@ -191,32 +191,34 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
   useEffect(() => {
     if (!selectedDate || !schedule) return
     const idx = dowToScheduleIdx(new Date(selectedDate + 'T12:00:00').getDay())
-    if (!schedule[idx]?.enabled) { setSelectedDate(null); setSelectedTime(null) }
+    if (!schedule[idx]?.enabled) { setSelectedDate(null); setSelectedTimes([]) }
   }, [schedule, selectedDate])
 
-  // Clear selectedTime if it's in the past or fully booked
+  // Remove any selected times that are now past or fully booked
   useEffect(() => {
-    if (!selectedDate || !selectedTime) return
+    if (!selectedDate || selectedTimes.length === 0) return
     const { todayStr, nowMins } = currentTime
-    const pastCheck = selectedDate === todayStr && parseTimeMins(selectedTime) <= nowMins
-    const fullCheck = (bookedGuests[selectedTime] ?? 0) >= effectiveMaxGuests
-    if (pastCheck || fullCheck) setSelectedTime(null)
-  }, [selectedDate, selectedTime, bookedGuests, currentTime, effectiveMaxGuests])
+    setSelectedTimes(prev => prev.filter(t => {
+      const past = selectedDate === todayStr && parseTimeMins(t) <= nowMins
+      const full = (bookedGuests[t] ?? 0) >= effectiveMaxGuests
+      return !past && !full
+    }))
+  }, [selectedDate, bookedGuests, currentTime, effectiveMaxGuests])
 
-  // When a time slot is picked, clamp guest count to remaining capacity
+  // Toggle a time slot in/out of selectedTimes
   const handleTimeSelect = (slot: string) => {
-    setSelectedTime(prev => {
-      if (prev === slot) return null
+    setSelectedTimes(prev => {
+      if (prev.includes(slot)) return prev.filter(t => t !== slot)
       const remaining = effectiveMaxGuests - (bookedGuests[slot] ?? 0)
       setGuests(g => Math.min(g, remaining))
-      return slot
+      return [...prev, slot]
     })
   }
 
-  // Clear time when date changes
+  // Clear times when date changes
   const handleDateSelect = (d: string) => {
     setSelectedDate(d)
-    setSelectedTime(null)
+    setSelectedTimes([])
   }
 
   const formatted = effectivePrice.toLocaleString('id-ID')
@@ -294,7 +296,7 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
           </p>
           <div className="flex flex-wrap gap-2">
             {slots.map(slot => {
-              const isSel = slot === selectedTime
+              const isSel = selectedTimes.includes(slot)
               const remaining = effectiveMaxGuests - (bookedGuests[slot] ?? 0)
               const isAlmostFull = remaining <= 3
               return (
@@ -352,8 +354,8 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
           className="w-full px-3 py-2.5 rounded-md outline-none appearance-none cursor-pointer"
           style={{ border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', backgroundColor: 'white' }}>
           {Array.from(
-            { length: selectedTime
-                ? effectiveMaxGuests - (bookedGuests[selectedTime] ?? 0)
+            { length: selectedTimes.length > 0
+                ? Math.min(...selectedTimes.map(t => effectiveMaxGuests - (bookedGuests[t] ?? 0)))
                 : effectiveMaxGuests },
             (_, i) => i + 1
           ).map(n => (
@@ -363,20 +365,20 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
       </div>
 
       {/* Summary */}
-      {selectedDate && selectedTime && (
+      {selectedDate && selectedTimes.length > 0 && (
         <div className="mt-4 p-3 rounded-lg" style={{ backgroundColor: '#F5F1EB' }}>
           <div className="flex justify-between mb-1">
-            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>{t('date_time')}</span>
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>Selected times</span>
             <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 600, color: '#111111' }}>
-              {minsToLabel(parseTimeMins(selectedTime))} – {endTimeLabel(selectedTime)}
+              {[...selectedTimes].sort().map(t => minsToLabel(parseTimeMins(t))).join(', ')}
             </span>
           </div>
           <div className="flex justify-between">
             <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>
-              IDR {formatted} × {guests} guest{guests > 1 ? 's' : ''}
+              IDR {formatted} × {guests} guest{guests > 1 ? 's' : ''}{selectedTimes.length > 1 ? ` × ${selectedTimes.length} sessions` : ''}
             </span>
             <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111' }}>
-              IDR {(effectivePrice * guests).toLocaleString('id-ID')}
+              IDR {(effectivePrice * guests * selectedTimes.length).toLocaleString('id-ID')}
             </span>
           </div>
         </div>
@@ -384,20 +386,20 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
 
       <a
         href={
-          selectedDate && selectedTime
-            ? `/checkout?slug=${slug ?? ''}&date=${selectedDate}&time=${selectedTime}&guests=${guests}&maxGuests=${effectiveMaxGuests}`
+          selectedDate && selectedTimes.length > 0
+            ? `/checkout?slug=${slug ?? ''}&date=${selectedDate}&times=${encodeURIComponent(selectedTimes.join(','))}&guests=${guests}&maxGuests=${effectiveMaxGuests}`
             : '#'
         }
-        onClick={e => { if (!selectedDate || !selectedTime) e.preventDefault() }}
+        onClick={e => { if (!selectedDate || selectedTimes.length === 0) e.preventDefault() }}
         className="w-full mt-4 flex items-center justify-center font-medium hover:opacity-90 transition-opacity"
         style={{
           height: 44, borderRadius: 8, fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500,
           textDecoration: 'none', display: 'flex',
-          backgroundColor: selectedDate && selectedTime ? '#111111' : '#E8E4DE',
-          color: selectedDate && selectedTime ? 'white' : '#9E9A94',
-          cursor: selectedDate && selectedTime ? 'pointer' : 'not-allowed',
+          backgroundColor: selectedDate && selectedTimes.length > 0 ? '#111111' : '#E8E4DE',
+          color: selectedDate && selectedTimes.length > 0 ? 'white' : '#9E9A94',
+          cursor: selectedDate && selectedTimes.length > 0 ? 'pointer' : 'not-allowed',
         }}>
-        {!selectedDate ? t('select_date') : !selectedTime ? t('select_time') : t('book_experience')}
+        {!selectedDate ? t('select_date') : selectedTimes.length === 0 ? t('select_time') : t('book_experience')}
       </a>
 
       <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#4A7C59', textAlign: 'center', marginTop: 10 }}>

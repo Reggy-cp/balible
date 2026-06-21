@@ -233,9 +233,9 @@ function BookingSummary({ booking, guests, editing, onEdit }: { booking: Booking
 
 // ── Step 1: Experience & Date ──────────────────────────────────────────────────
 
-function StepExperience({ booking, guests, setGuests, onNext, slots, selectedRawTime, setSelectedRawTime, dayDisabled }: {
+function StepExperience({ booking, guests, setGuests, onNext, slots, selectedRawTimes, setSelectedRawTimes, dayDisabled }: {
   booking: BookingData; guests: number; setGuests: (n: number) => void; onNext: () => void
-  slots: string[]; selectedRawTime: string; setSelectedRawTime: (t: string) => void; dayDisabled?: boolean
+  slots: string[]; selectedRawTimes: string[]; setSelectedRawTimes: (t: string[]) => void; dayDisabled?: boolean
 }) {
   return (
     <div className="bg-white rounded-xl p-6" style={{ border: '1px solid #E8E4DE' }}>
@@ -274,11 +274,11 @@ function StepExperience({ booking, guests, setGuests, onNext, slots, selectedRaw
         ) : slots.length > 0 ? (
           <div className="flex flex-wrap gap-2 overflow-y-auto" style={{ maxHeight: 140 }}>
             {slots.map(slot => {
-              const isSel = slot === selectedRawTime
+              const isSel = selectedRawTimes.includes(slot)
               return (
                 <button
                   key={slot}
-                  onClick={() => setSelectedRawTime(isSel ? '' : slot)}
+                  onClick={() => setSelectedRawTimes(isSel ? selectedRawTimes.filter(t => t !== slot) : [...selectedRawTimes, slot])}
                   style={{
                     padding: '7px 14px', borderRadius: 8, fontSize: 13, fontWeight: isSel ? 600 : 400,
                     backgroundColor: isSel ? '#111111' : 'white',
@@ -331,18 +331,18 @@ function StepExperience({ booking, guests, setGuests, onNext, slots, selectedRaw
 
       <button
         onClick={onNext}
-        disabled={dayDisabled || (slots.length > 0 && !selectedRawTime)}
+        disabled={dayDisabled || (slots.length > 0 && selectedRawTimes.length === 0)}
         className="w-full flex items-center justify-center hover:opacity-90 transition-opacity"
         style={{
           height: 48,
-          backgroundColor: (dayDisabled || (slots.length > 0 && !selectedRawTime)) ? '#E8E4DE' : '#111111',
-          color: (dayDisabled || (slots.length > 0 && !selectedRawTime)) ? '#9E9A94' : 'white',
+          backgroundColor: (dayDisabled || (slots.length > 0 && selectedRawTimes.length === 0)) ? '#E8E4DE' : '#111111',
+          color: (dayDisabled || (slots.length > 0 && selectedRawTimes.length === 0)) ? '#9E9A94' : 'white',
           borderRadius: 10, fontSize: 15, fontWeight: 600, border: 'none',
-          cursor: (dayDisabled || (slots.length > 0 && !selectedRawTime)) ? 'not-allowed' : 'pointer',
+          cursor: (dayDisabled || (slots.length > 0 && selectedRawTimes.length === 0)) ? 'not-allowed' : 'pointer',
           fontFamily: 'var(--font-inter)',
         }}
       >
-        {dayDisabled ? 'Date not available' : slots.length > 0 && !selectedRawTime ? 'Select a time to continue' : 'Continue to Details →'}
+        {dayDisabled ? 'Date not available' : slots.length > 0 && selectedRawTimes.length === 0 ? 'Select a time to continue' : 'Continue to Details →'}
       </button>
     </div>
   )
@@ -1255,7 +1255,7 @@ function CheckoutInner() {
 
   const slug      = params.get('slug')      || 'pottery-making-class'
   const rawDate   = params.get('date')      || ''
-  const rawTime   = params.get('time')      || ''
+  const rawTimes  = (params.get('times') || params.get('time') || '').split(',').filter(Boolean)
   const maxGuests = Math.max(1, parseInt(params.get('maxGuests') || '8') || 8)
   const initGuests = Math.max(1, Math.min(maxGuests, parseInt(params.get('guests') || '1') || 1))
 
@@ -1278,7 +1278,7 @@ function CheckoutInner() {
       email: c.email || session.user?.email || '',
     }))
   }, [session])
-  const [selectedRawTime, setSelectedRawTime] = useState(rawTime)
+  const [selectedRawTimes, setSelectedRawTimes] = useState<string[]>(rawTimes)
   const [schedule, setSchedule] = useState<ScheduleDay[] | null>(null)
   const [bookedGuests, setBookedGuests] = useState<Record<string, number>>({})
 
@@ -1329,12 +1329,13 @@ function CheckoutInner() {
 
   const booking: BookingData = {
     title: expMeta.title, area: expMeta.area, image: expMeta.image, meetingPoint: expMeta.meetingPoint,
-    date: formatDate(rawDate), time: formatTime(selectedRawTime), rawTime: selectedRawTime,
+    date: formatDate(rawDate), time: selectedRawTimes.map(formatTime).join(', '), rawTime: selectedRawTimes.join(','),
     pricePerPerson: expMeta.price, serviceFeeRate: expMeta.serviceFeeRate,
     slug, rawDate, maxGuests: expMeta.maxGuests || maxGuests, minGuests: expMeta.minGuests || 1,
   }
 
-  const sub   = booking.pricePerPerson * guests
+  const numSlots = Math.max(1, selectedRawTimes.length)
+  const sub   = booking.pricePerPerson * guests * numSlots
   const fee   = Math.round(sub * booking.serviceFeeRate)
   const total = sub + fee
 
@@ -1365,6 +1366,7 @@ function CheckoutInner() {
         slug: booking.slug,
         rawDate: booking.rawDate,
         rawTime: booking.rawTime || undefined,
+        numSlots,
         guests,
         guestName: contact.fullName || 'Guest',
         guestEmail: contact.email || '',
@@ -1425,7 +1427,7 @@ function CheckoutInner() {
 
         <div className="flex flex-col lg:flex-row gap-6">
           <div className="flex-1 min-w-0">
-            {step === 0 && <StepExperience booking={booking} guests={guests} setGuests={setGuests} onNext={() => setStep(1)} slots={slots} selectedRawTime={selectedRawTime} setSelectedRawTime={setSelectedRawTime} dayDisabled={dayDisabled} />}
+            {step === 0 && <StepExperience booking={booking} guests={guests} setGuests={setGuests} onNext={() => setStep(1)} slots={slots} selectedRawTimes={selectedRawTimes} setSelectedRawTimes={setSelectedRawTimes} dayDisabled={dayDisabled} />}
             {step === 1 && <StepDetails contact={contact} setContact={setContact} onNext={() => setStep(2)} />}
             {step === 2 && <StepPayment total={total} onPay={startPayment} paying={paying} error={payError} />}
             {step === 3 && <StepConfirmation booking={booking} guests={guests} bookingRef={paidRef} payStatus={payStatus} />}
