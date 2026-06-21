@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 
 export const revalidate = 3600
-import { MapPin, Star, Clock, Users, Award, ChevronRight, CalendarDays, Ticket, ExternalLink, MessageCircle, Heart, Leaf, Globe } from 'lucide-react'
+import { MapPin, Star, Clock, Users, Award, ChevronRight, CalendarDays, Ticket, ExternalLink, MessageCircle, Heart, Globe } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
@@ -242,13 +242,6 @@ function EventCard({ ev }: { ev: HostEvent }) {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-const BADGES = [
-  { icon: Users,          label: 'Local Expert',    desc: 'Born and raised in Bali' },
-  { icon: Heart,          label: 'Made with Heart', desc: 'Every experience crafted with care' },
-  { icon: Users,          label: 'Small Groups',    desc: 'Intimate, personal attention' },
-  { icon: Leaf,           label: 'Sustainable',     desc: 'Eco-conscious local practices' },
-]
-
 export default async function HostPage({ params }: { params: { slug: string } }) {
   const host = await getHostFromDB(params.slug)
   if (!host) notFound()
@@ -337,26 +330,8 @@ export default async function HostPage({ params }: { params: { slug: string } })
         </div>
       </div>
 
-      {/* ── BADGES STRIP ── */}
-      <div style={{ backgroundColor: 'white', borderBottom: '1px solid #E8E4DE' }}>
-        <div className="max-w-[1100px] mx-auto px-6 lg:px-16 py-5">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {BADGES.map(({ icon: Icon, label, desc }) => (
-              <div key={label} className="flex items-start gap-3">
-                <div className="flex-shrink-0 flex items-center justify-center rounded-xl" style={{ width: 40, height: 40, backgroundColor: '#F5F1EB' }}>
-                  <Icon size={18} style={{ color: '#6F675C' }} />
-                </div>
-                <div>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: '#111111' }}>{label}</p>
-                  <p style={{ fontSize: 12, color: '#6F675C', lineHeight: 1.4 }}>{desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
 
-      {/* ── BODY ── */}
+{/* ── BODY ── */}
       <div className="max-w-[1100px] mx-auto px-6 lg:px-16 py-10 pb-28">
         <div className="flex flex-col lg:flex-row gap-10">
 
