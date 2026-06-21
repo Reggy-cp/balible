@@ -164,11 +164,18 @@ export default function HostOnboardingPage() {
             </p>
 
             <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle}>Host / Business name</label>
+              <label style={labelStyle}>
+                Company / Brand name
+                <span style={{ fontWeight: 400, color: '#9E9A94', marginLeft: 6 }}>— shown on your public profile</span>
+              </label>
               <input
                 type="text" required value={businessName} onChange={e => setBusinessName(e.target.value)}
-                placeholder="e.g. Made's Ubud Kitchen" style={inputStyle}
+                placeholder="e.g. Salsa Spa, Made's Ubud Kitchen, Bali Surf Co."
+                style={inputStyle}
               />
+              <p style={{ fontSize: 12, color: '#9E9A94', marginTop: 5 }}>
+                This is the name guests will see when browsing your experiences. Use your brand or company name, not your personal name.
+              </p>
             </div>
 
             <div style={{ marginBottom: 24 }}>
