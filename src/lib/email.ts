@@ -859,3 +859,51 @@ export async function sendEventBookingCancellationEmail(input: {
     return { sent: false }
   }
 }
+
+export async function sendAdminEventCancellationAlert(input: {
+  bookingRef: string
+  guestName: string
+  guestEmail: string
+  guestPhone: string
+  eventTitle: string
+  eventDate: Date
+  tickets: number
+  totalPaid: number
+}): Promise<{ sent: boolean }> {
+  const client = getClient()
+  if (!client) return { sent: false }
+  const { bookingRef, guestName, guestEmail, guestPhone, eventTitle, eventDate, tickets, totalPaid } = input
+  const TZ = 'Asia/Makassar'
+  const dateStr = eventDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: TZ })
+  try {
+    await client.emails.send({
+      from: FROM,
+      to: 'hello@balible.com',
+      subject: `[Event Cancelled] ${bookingRef.slice(0,8).toUpperCase()} — ${eventTitle}`,
+      html: layout(`
+        <p style="margin:0 0 4px;font-size:13px;color:#B66A45;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">⚠️ EVENT BOOKING CANCELLED</p>
+        <h1 style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:24px;color:${BRAND.ink};">Event Booking Cancelled${totalPaid > 0 ? ' — Refund Required' : ''}</h1>
+        <p style="margin:0 0 20px;font-size:15px;color:${BRAND.muted};line-height:1.7;">
+          An event booking has been cancelled by admin.${totalPaid > 0 ? ' Please process the refund via the Midtrans dashboard within 3 business days.' : ''}
+        </p>
+        <div style="background:${BRAND.bg};border:1px solid ${BRAND.border};border-radius:12px;padding:20px 24px;margin-bottom:24px;">
+          <table style="width:100%;border-collapse:collapse;">
+            <tr><td style="padding:6px 0;font-size:13px;color:${BRAND.muted};width:130px;">Booking ref</td><td style="padding:6px 0;font-size:13px;color:${BRAND.ink};font-weight:600;">${bookingRef.slice(0,8).toUpperCase()}</td></tr>
+            <tr><td style="padding:6px 0;font-size:13px;color:${BRAND.muted};">Event</td><td style="padding:6px 0;font-size:13px;color:${BRAND.ink};font-weight:600;">${eventTitle}</td></tr>
+            <tr><td style="padding:6px 0;font-size:13px;color:${BRAND.muted};">Event date</td><td style="padding:6px 0;font-size:13px;color:${BRAND.ink};font-weight:600;">${dateStr}</td></tr>
+            <tr><td style="padding:6px 0;font-size:13px;color:${BRAND.muted};">Tickets</td><td style="padding:6px 0;font-size:13px;color:${BRAND.ink};font-weight:600;">${tickets} ticket${tickets > 1 ? 's' : ''}</td></tr>
+            <tr><td style="padding:6px 0;font-size:13px;color:${BRAND.muted};">Guest</td><td style="padding:6px 0;font-size:13px;color:${BRAND.ink};font-weight:600;">${guestName}</td></tr>
+            <tr><td style="padding:6px 0;font-size:13px;color:${BRAND.muted};">Email</td><td style="padding:6px 0;font-size:13px;color:${BRAND.ink};font-weight:600;">${guestEmail}</td></tr>
+            ${guestPhone ? `<tr><td style="padding:6px 0;font-size:13px;color:${BRAND.muted};">Phone</td><td style="padding:6px 0;font-size:13px;color:${BRAND.ink};font-weight:600;">${guestPhone}</td></tr>` : ''}
+            ${totalPaid > 0 ? `<tr style="border-top:1px solid ${BRAND.border};"><td style="padding:10px 0 0;font-size:14px;color:${BRAND.ink};font-weight:700;">Refund amount</td><td style="padding:10px 0 0;font-size:14px;color:${BRAND.ink};font-weight:700;">IDR ${totalPaid.toLocaleString('id-ID')}</td></tr>` : ''}
+          </table>
+        </div>
+        ${totalPaid > 0 ? `<a href="https://dashboard.midtrans.com" style="display:inline-block;padding:12px 24px;background-color:${BRAND.ink};color:white;font-size:14px;font-weight:600;text-decoration:none;border-radius:8px;">Open Midtrans Dashboard →</a>` : ''}
+      `),
+    })
+    return { sent: true }
+  } catch (err) {
+    console.error('[email] admin event cancellation alert failed:', err)
+    return { sent: false }
+  }
+}

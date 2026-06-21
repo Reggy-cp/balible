@@ -1175,6 +1175,16 @@ export async function adminCancelEventBookingAction(ref: string): Promise<{ ok: 
         tickets: booking.tickets,
         totalPaid: booking.totalPrice,
       })),
+      import('./email').then(m => m.sendAdminEventCancellationAlert({
+        bookingRef: booking.bookingRef,
+        guestName: booking.guestName,
+        guestEmail: booking.guestEmail,
+        guestPhone: booking.guestPhone ?? '',
+        eventTitle: booking.event.title,
+        eventDate: booking.event.date,
+        tickets: booking.tickets,
+        totalPaid: booking.totalPrice,
+      })),
     ])
     return { ok: true }
   } catch { return { ok: false } }
