@@ -1344,13 +1344,33 @@ export async function submitReviewAction(slug: string, rating: number, comment: 
     if (!hasCompleted) return { ok: false, error: 'You can only review experiences you have completed.' }
     const existing = await prisma.review.findFirst({ where: { userId: user.id, experienceId: exp.id } })
     if (existing) return { ok: false, error: 'You have already reviewed this experience' }
+    const expFull = await prisma.experience.findUnique({
+      where: { id: exp.id },
+      select: { operatorId: true },
+    })
     await prisma.review.create({ data: { userId: user.id, experienceId: exp.id, rating, comment } })
-    const allRatings = await prisma.review.findMany({ where: { experienceId: exp.id }, select: { rating: true } })
-    const avg = allRatings.reduce((a, r) => a + r.rating, 0) / allRatings.length
+
+    // Recalculate experience rating
+    const expReviews = await prisma.review.findMany({ where: { experienceId: exp.id }, select: { rating: true } })
+    const expAvg = expReviews.reduce((a, r) => a + r.rating, 0) / expReviews.length
     await prisma.experience.update({
       where: { id: exp.id },
-      data: { rating: Math.round(avg * 10) / 10, totalReviews: allRatings.length },
+      data: { rating: Math.round(expAvg * 10) / 10, totalReviews: expReviews.length },
     })
+
+    // Recalculate operator aggregate rating across all their experiences
+    if (expFull?.operatorId) {
+      const opReviews = await prisma.review.findMany({
+        where: { experience: { operatorId: expFull.operatorId } },
+        select: { rating: true },
+      })
+      const opAvg = opReviews.reduce((a, r) => a + r.rating, 0) / opReviews.length
+      await prisma.operator.update({
+        where: { id: expFull.operatorId },
+        data: { rating: Math.round(opAvg * 10) / 10, totalReviews: opReviews.length },
+      })
+    }
+
     return { ok: true }
   } catch {
     return { ok: false, error: 'Failed to submit review' }
