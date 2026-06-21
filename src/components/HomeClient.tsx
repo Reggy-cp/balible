@@ -31,6 +31,14 @@ const CAT_GRID = [
   { label: 'Services',            Icon: Briefcase,  href: '/categories/services',  photo: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&auto=format&fit=crop&q=80' },
 ]
 
+const HERO_SLIDES = [
+  { src: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1400&auto=format&fit=crop&q=85', alt: 'Bali rice terraces' },
+  { src: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=1400&auto=format&fit=crop&q=85', alt: 'Bali temple ceremony' },
+  { src: 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=1400&auto=format&fit=crop&q=85', alt: 'Bali jungle waterfall' },
+  { src: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=1400&auto=format&fit=crop&q=85', alt: 'Bali spa wellness' },
+  { src: 'https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?w=1400&auto=format&fit=crop&q=85', alt: 'Bali sunset beach' },
+]
+
 const WHY_ITEMS = [
   { Icon: ShieldCheck, title: 'Curated with Care',     body: 'Every experience is personally reviewed for quality and authenticity.' },
   { Icon: Users,       title: 'Local Connections',     body: 'We work directly with passionate local hosts and artisans.' },
@@ -130,6 +138,12 @@ export default function HomeClient({ experiences, upcomingEvents }: { experience
   const [subscribeError, setSubscribeError] = useState<string | null>(null)
   const [activeCategory, setActiveCategory] = useState('All')
   const [nearbyArea, setNearbyArea]         = useState<string | null>(null)
+  const [heroSlide, setHeroSlide]           = useState(0)
+
+  useEffect(() => {
+    const id = setInterval(() => setHeroSlide(s => (s + 1) % HERO_SLIDES.length), 5000)
+    return () => clearInterval(id)
+  }, [])
 
   useEffect(() => {
     if (!navigator?.geolocation) return
@@ -234,16 +248,41 @@ export default function HomeClient({ experiences, upcomingEvents }: { experience
 
       {/* ── HERO ── */}
       <section className="relative" style={{ height: 'clamp(280px, 40vw, 520px)' }}>
-        <div className="absolute inset-0">
-          <img
-            src="https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1400&auto=format&fit=crop&q=85"
-            alt="Bali rice terraces"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.2) 60%, transparent 100%)' }} />
+        <div className="absolute inset-0 overflow-hidden">
+          {HERO_SLIDES.map((slide, i) => (
+            <img
+              key={slide.src}
+              src={slide.src}
+              alt={slide.alt}
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ opacity: i === heroSlide ? 1 : 0, transition: 'opacity 1s ease-in-out', zIndex: i === heroSlide ? 1 : 0 }}
+            />
+          ))}
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.2) 60%, transparent 100%)', zIndex: 2 }} />
         </div>
 
-        <div className="absolute bottom-0 left-0 p-8 lg:p-16" style={{ maxWidth: 560 }}>
+        {/* Dot navigation */}
+        <div className="absolute bottom-4 right-6 flex items-center gap-2" style={{ zIndex: 10 }}>
+          {HERO_SLIDES.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setHeroSlide(i)}
+              aria-label={`Slide ${i + 1}`}
+              style={{
+                width: i === heroSlide ? 20 : 6,
+                height: 6,
+                borderRadius: 3,
+                border: 'none',
+                cursor: 'pointer',
+                backgroundColor: i === heroSlide ? '#C8A97E' : 'rgba(255,255,255,0.5)',
+                transition: 'all 0.3s ease',
+                padding: 0,
+              }}
+            />
+          ))}
+        </div>
+
+        <div className="absolute bottom-0 left-0 p-8 lg:p-16" style={{ maxWidth: 560, zIndex: 3 }}>
           <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px, 4vw, 58px)', color: 'white', lineHeight: 1.1, fontWeight: 700, maxWidth: 420 }}>
             Curated Experiences in Bali
           </h1>
