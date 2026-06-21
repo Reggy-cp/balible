@@ -1488,6 +1488,105 @@ function ReviewsPanel({ initialReviews }: { initialReviews?: DashReview[] }) {
   )
 }
 
+// ── Language multi-select ──────────────────────────────────────────────────────
+
+const LANGUAGE_OPTIONS = [
+  'English', 'Bahasa Indonesia', 'Balinese', 'Mandarin', 'Japanese',
+  'Korean', 'French', 'German', 'Spanish', 'Italian', 'Dutch',
+  'Russian', 'Arabic', 'Hindi', 'Portuguese',
+]
+
+function LanguageMultiSelect({
+  value, onChange, disabled,
+}: { value: string; onChange: (v: string) => void; disabled: boolean }) {
+  const [open, setOpen] = useState(false)
+  const selected = value ? value.split(',').map(s => s.trim()).filter(Boolean) : []
+
+  const toggle = (lang: string) => {
+    const next = selected.includes(lang)
+      ? selected.filter(l => l !== lang)
+      : [...selected, lang]
+    onChange(next.join(', '))
+  }
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <button
+        type="button"
+        onClick={() => !disabled && setOpen(o => !o)}
+        style={{
+          width: '100%', minHeight: 42, borderRadius: 10,
+          border: '1px solid #E8E4DE', backgroundColor: disabled ? '#F8F6F2' : 'white',
+          padding: '6px 14px', display: 'flex', alignItems: 'center', flexWrap: 'wrap',
+          gap: 6, cursor: disabled ? 'default' : 'pointer', textAlign: 'left',
+          fontFamily: 'var(--font-inter)', boxSizing: 'border-box' as const,
+        }}
+      >
+        {selected.length === 0 ? (
+          <span style={{ fontSize: 14, color: '#9E9A94' }}>Select languages…</span>
+        ) : (
+          selected.map(lang => (
+            <span key={lang} style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              backgroundColor: '#F5F1EB', color: '#111111', borderRadius: 6,
+              fontSize: 12, fontWeight: 500, padding: '2px 8px',
+            }}>
+              {lang}
+              {!disabled && (
+                <span
+                  onClick={e => { e.stopPropagation(); toggle(lang) }}
+                  style={{ cursor: 'pointer', color: '#6F675C', lineHeight: 1 }}
+                >×</span>
+              )}
+            </span>
+          ))
+        )}
+        {!disabled && (
+          <span style={{ marginLeft: 'auto', fontSize: 11, color: '#6F675C' }}>
+            {open ? '▲' : '▼'}
+          </span>
+        )}
+      </button>
+
+      {open && !disabled && (
+        <>
+          <div style={{ position: 'fixed', inset: 0, zIndex: 10 }} onClick={() => setOpen(false)} />
+          <div style={{
+            position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, zIndex: 20,
+            backgroundColor: 'white', border: '1px solid #E8E4DE', borderRadius: 10,
+            boxShadow: '0 8px 24px rgba(0,0,0,0.08)', padding: '6px 0', maxHeight: 240, overflowY: 'auto',
+          }}>
+            {LANGUAGE_OPTIONS.map(lang => (
+              <button
+                key={lang}
+                type="button"
+                onClick={() => toggle(lang)}
+                style={{
+                  width: '100%', textAlign: 'left', padding: '8px 14px',
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  backgroundColor: 'transparent', border: 'none', cursor: 'pointer',
+                  fontFamily: 'var(--font-inter)', fontSize: 14,
+                  color: selected.includes(lang) ? '#111111' : '#6F675C',
+                }}
+              >
+                <span style={{
+                  width: 16, height: 16, borderRadius: 4, flexShrink: 0,
+                  border: `2px solid ${selected.includes(lang) ? '#C8A97E' : '#E8E4DE'}`,
+                  backgroundColor: selected.includes(lang) ? '#C8A97E' : 'white',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  {selected.includes(lang) && <span style={{ color: 'white', fontSize: 10, lineHeight: 1 }}>✓</span>}
+                </span>
+                {lang}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 // ── Profile Panel ─────────────────────────────────────────────────────────────
 
 const HOST_PROFILE_DEFAULTS = {
@@ -1622,7 +1721,7 @@ function ProfilePanel({ profile: liveProfile }: { profile?: HostProfile }) {
                   {['Ubud','Canggu','Kuta','Seminyak','Uluwatu','Gianyar','Sanur','Nusa Dua','Amed','Jimbaran','Kintamani','Sidemen','Medewi'].map(a => <option key={a}>{a}</option>)}
                 </select>
               </div>
-              <div>{label('Languages')}<input value={profile.languages} onChange={set('languages')} disabled={readOnly} placeholder="e.g. English, Bahasa Indonesia" style={inputStyle(readOnly)} /></div>
+              <div>{label('Languages')}<LanguageMultiSelect value={profile.languages} onChange={v => setProfile(p => ({ ...p, languages: v }))} disabled={readOnly} /></div>
             </div>
             <div>
               {label('About / bio')}
