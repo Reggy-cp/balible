@@ -2561,10 +2561,10 @@ export async function updateOperatorSettingsAction(data: {
   blockedDates?: string[]
   coverPhoto?: string | null
   galleryImages?: string[]
-}): Promise<{ ok: boolean }> {
+}): Promise<{ ok: boolean; err?: string }> {
   try {
     const user = await getSessionUser()
-    if (!user) return { ok: false }
+    if (!user) return { ok: false, err: 'no_session' }
     await prisma.operator.update({
       where: { userId: user.id },
       data: {
@@ -2579,9 +2579,9 @@ export async function updateOperatorSettingsAction(data: {
     })
     return { ok: true }
   } catch (e: any) {
-    console.error('BALIBLE_ERR_CODE ' + (e?.code ?? 'NO_CODE'))
-    console.error('BALIBLE_ERR_MSG ' + String(e?.message ?? '').slice(0, 400))
-    return { ok: false }
+    const msg = String(e?.code ?? '') + ' ' + String(e?.message ?? '').slice(0, 200)
+    console.error('BALIBLE_ERR', msg)
+    return { ok: false, err: msg }
   }
 }
 
