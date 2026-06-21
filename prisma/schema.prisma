@@ -85,6 +85,8 @@ model Operator {
   country      String?
   notifSettings       Json?
   blockedDates        String[]  @default([])
+  coverPhoto          String?
+  galleryImages       String[]  @default([])
   verified            Boolean  @default(false)
   rating              Float    @default(0)
   totalReviews        Int      @default(0)

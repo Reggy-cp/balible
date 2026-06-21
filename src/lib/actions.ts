@@ -1573,6 +1573,8 @@ export type HostProfile = {
   country: string
   nationality: string
   dateOfBirth: string
+  coverPhoto: string | null
+  galleryImages: string[]
 }
 
 export type HostDashboardData = {
@@ -1743,6 +1745,8 @@ export async function getHostDashboardData(viewOperatorId?: string): Promise<Hos
       country: operator.country ?? '',
       nationality: (operator.user as any).nationality ?? '',
       dateOfBirth: (operator.user as any).dateOfBirth ? new Date((operator.user as any).dateOfBirth).toISOString().slice(0, 10) : '',
+      coverPhoto: (operator as any).coverPhoto ?? null,
+      galleryImages: (operator as any).galleryImages ?? [],
     }
     return { hostName: operator.user.name, commissionRate: Math.round(commRateDecimal * 100), experiences, bookings, reviews, earningsByMonth, totalGross, pendingPayout, profile }
   } catch {
@@ -2555,6 +2559,8 @@ export async function updateOperatorSettingsAction(data: {
   payoutAccountNumber?: string
   payoutAccountName?: string
   blockedDates?: string[]
+  coverPhoto?: string | null
+  galleryImages?: string[]
 }): Promise<{ ok: boolean }> {
   try {
     const user = await getSessionUser()
@@ -2567,6 +2573,8 @@ export async function updateOperatorSettingsAction(data: {
         ...(data.payoutAccountNumber !== undefined && { payoutAccountNumber: data.payoutAccountNumber || null }),
         ...(data.payoutAccountName !== undefined && { payoutAccountName: data.payoutAccountName || null }),
         ...(data.blockedDates !== undefined && { blockedDates: data.blockedDates }),
+        ...(data.coverPhoto !== undefined && { coverPhoto: data.coverPhoto }),
+        ...(data.galleryImages !== undefined && { galleryImages: data.galleryImages }),
       },
     })
     return { ok: true }

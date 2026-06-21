@@ -103,13 +103,14 @@ async function getHostFromDB(slug: string): Promise<Host | null> {
 
     const operatorArea = op.area ? AREA_DISPLAY[String(op.area)] ?? '' : ''
     const firstExpArea = op.experiences[0] ? AREA_DISPLAY[String(op.experiences[0].area)] ?? '' : ''
-    const coverImage = (op.experiences[0]?.images as string[] | undefined)?.[0]
+    const coverImage = (op as any).coverPhoto
+      ?? (op.experiences[0]?.images as string[] | undefined)?.[0]
       ?? 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1400&auto=format&fit=crop&q=85'
 
-    // Flatten gallery: all images from all experiences, deduplicated
-    const galleryImages = Array.from(new Set(
-      op.experiences.flatMap(e => (e.images as string[]) ?? [])
-    )).slice(0, 10)
+    // Host's own gallery images first, then fill from experience images (deduplicated)
+    const hostGallery: string[] = (op as any).galleryImages ?? []
+    const expImages = op.experiences.flatMap(e => (e.images as string[]) ?? [])
+    const galleryImages = Array.from(new Set([...hostGallery, ...expImages])).slice(0, 12)
 
     // Flatten reviews across all experiences
     type DbReview = { id: string; rating: number; comment: string; createdAt: Date; user: { name: string; image: string | null } }
@@ -321,7 +322,7 @@ export default async function HostPage({ params }: { params: { slug: string } })
               <div className="mb-10">
                 <div className="flex items-center justify-between mb-4">
                   <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111' }}>
-                    A glimpse into {firstName}&apos;s world
+                    A glimpse into {displayName}&apos;s world
                   </h2>
                 </div>
                 <div className="flex gap-3 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>

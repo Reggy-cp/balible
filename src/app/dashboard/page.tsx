@@ -2679,7 +2679,7 @@ function AvailabilityPanel({ bookings }: { bookings?: DashBooking[] }) {
 
 // ── Photos Panel ──────────────────────────────────────────────────────────────
 
-function PhotosPanel({ experiences }: { experiences?: DashExp[] }) {
+function PhotosPanel({ experiences, profile }: { experiences?: DashExp[]; profile?: HostProfile }) {
   const readOnly = useContext(ReadOnlyContext)
   const { t } = useLanguage()
   const exps = experiences ?? []
@@ -2688,6 +2688,60 @@ function PhotosPanel({ experiences }: { experiences?: DashExp[] }) {
   )
   const [uploading, setUploading] = useState<Record<number, boolean>>({})
   const fileRefs = useRef<Record<number, HTMLInputElement | null>>({})
+
+  // Profile media state
+  const [coverPhoto, setCoverPhoto] = useState<string | null>(profile?.coverPhoto ?? null)
+  const [galleryImages, setGalleryImages] = useState<string[]>(profile?.galleryImages ?? [])
+  const [coverUploading, setCoverUploading] = useState(false)
+  const [galleryUploading, setGalleryUploading] = useState(false)
+  const coverInputRef = useRef<HTMLInputElement>(null)
+  const galleryInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (profile?.coverPhoto !== undefined) setCoverPhoto(profile.coverPhoto)
+    if (profile?.galleryImages) setGalleryImages(profile.galleryImages)
+  }, [profile])
+
+  const uploadToBlob = async (file: File, hint: string): Promise<string | null> => {
+    const fd = new FormData(); fd.append('file', file); fd.append('hint', hint)
+    const res = await fetch('/api/upload-image', { method: 'POST', body: fd })
+    const json = await res.json()
+    return json.url ?? null
+  }
+
+  const handleCoverUpload = async (file: File) => {
+    if (readOnly || !file.type.startsWith('image/')) return
+    setCoverUploading(true)
+    const url = await uploadToBlob(file, 'host profile banner cover photo')
+    if (url) {
+      setCoverPhoto(url)
+      await updateOperatorSettingsAction({ coverPhoto: url })
+    }
+    setCoverUploading(false)
+  }
+
+  const removeCover = async () => {
+    setCoverPhoto(null)
+    await updateOperatorSettingsAction({ coverPhoto: null })
+  }
+
+  const handleGalleryUpload = async (file: File) => {
+    if (readOnly || !file.type.startsWith('image/')) return
+    setGalleryUploading(true)
+    const url = await uploadToBlob(file, 'host gallery photo Bali')
+    if (url) {
+      const next = [...galleryImages, url]
+      setGalleryImages(next)
+      await updateOperatorSettingsAction({ galleryImages: next })
+    }
+    setGalleryUploading(false)
+  }
+
+  const removeGalleryImage = async (idx: number) => {
+    const next = galleryImages.filter((_, i) => i !== idx)
+    setGalleryImages(next)
+    await updateOperatorSettingsAction({ galleryImages: next })
+  }
 
   const persist = (expId: number, arr: string[]) => {
     const exp = exps.find(e => e.id === expId)
@@ -2719,6 +2773,76 @@ function PhotosPanel({ experiences }: { experiences?: DashExp[] }) {
   return (
     <div>
       <PageHeader title={t('db_photos_title')} subtitle={t('db_photos_sub')} />
+
+      {/* ── Profile banner & gallery ── */}
+      <div className="bg-white rounded-xl p-5 mb-5" style={{ border: '1px solid #E8E4DE' }}>
+        <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 4 }}>
+          Profile Banner
+        </h3>
+        <p style={{ fontSize: 13, color: '#6F675C', marginBottom: 16 }}>
+          Hero image shown at the top of your host profile page. Recommended: landscape 1400×600px.
+        </p>
+        <input ref={coverInputRef} type="file" accept="image/*" className="hidden"
+          onChange={e => { const f = e.target.files?.[0]; if (f) handleCoverUpload(f); if (coverInputRef.current) coverInputRef.current.value = '' }} />
+        {coverPhoto ? (
+          <div className="relative rounded-xl overflow-hidden mb-3" style={{ height: 160 }}>
+            <img src={coverPhoto} alt="Banner" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 hover:opacity-100 transition-opacity" style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}>
+              <button onClick={() => coverInputRef.current?.click()}
+                style={{ height: 36, paddingInline: 16, borderRadius: 8, border: 'none', backgroundColor: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                Change
+              </button>
+              <button onClick={removeCover}
+                style={{ height: 36, paddingInline: 16, borderRadius: 8, border: 'none', backgroundColor: '#B66A45', color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                Remove
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div onClick={() => coverInputRef.current?.click()}
+            className="flex flex-col items-center justify-center cursor-pointer hover:bg-stone-50 transition-colors rounded-xl mb-3"
+            style={{ height: 130, border: '2px dashed #E8E4DE', gap: 8 }}>
+            <Camera size={22} style={{ color: '#9E9A94' }} />
+            <span style={{ fontSize: 13, color: '#9E9A94' }}>{coverUploading ? 'Uploading…' : 'Upload banner photo'}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="bg-white rounded-xl p-5 mb-5" style={{ border: '1px solid #E8E4DE' }}>
+        <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 4 }}>
+          Gallery — &ldquo;A glimpse into your world&rdquo;
+        </h3>
+        <p style={{ fontSize: 13, color: '#6F675C', marginBottom: 16 }}>
+          These photos appear in the gallery strip on your host page. Add up to 12 photos.
+        </p>
+        <input ref={galleryInputRef} type="file" accept="image/*" className="hidden"
+          onChange={e => { const f = e.target.files?.[0]; if (f) handleGalleryUpload(f); if (galleryInputRef.current) galleryInputRef.current.value = '' }} />
+        <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+          {galleryImages.map((src, idx) => (
+            <div key={idx} className="relative group" style={{ aspectRatio: '1', borderRadius: 10, overflow: 'hidden' }}>
+              <img src={src} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}>
+                <button onClick={() => removeGalleryImage(idx)}
+                  style={{ width: 28, height: 28, borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.9)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Trash2 size={12} style={{ color: '#B66A45' }} />
+                </button>
+              </div>
+            </div>
+          ))}
+          {galleryImages.length < 12 && (
+            <div onClick={() => !readOnly && galleryInputRef.current?.click()}
+              className="flex flex-col items-center justify-center cursor-pointer hover:bg-stone-50 transition-colors"
+              style={{ aspectRatio: '1', borderRadius: 10, border: '2px dashed #E8E4DE', gap: 4 }}>
+              <Camera size={15} style={{ color: '#9E9A94' }} />
+              <span style={{ fontSize: 10, color: '#9E9A94' }}>{galleryUploading ? '…' : 'Add'}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 16 }}>
+        Experience Photos
+      </h3>
       <div className="space-y-5">
         {exps.map(exp => {
           const photos = galleries[exp.id] ?? [exp.image]
@@ -3159,7 +3283,7 @@ export default function DashboardPage() {
       case 'bookings':      return <BookingsPanel initialBookings={liveBookings} />
       case 'availability':  return <AvailabilityPanel bookings={liveBookings} />
       case 'earnings':      return <EarningsPanel commissionRate={commissionRate} experiences={liveExperiences} bookings={liveBookings} earningsByMonth={liveEarningsByMonth} totalGross={liveTotalGross} pendingPayout={livePendingPayout} payouts={livePayouts} />
-      case 'photos':        return <PhotosPanel experiences={liveExperiences} />
+      case 'photos':        return <PhotosPanel experiences={liveExperiences} profile={liveProfile} />
       case 'reviews':       return <ReviewsPanel initialReviews={liveReviews} />
       case 'messages':      return <MessagesPanel />
       case 'profile':       return <ProfilePanel profile={liveProfile} />
