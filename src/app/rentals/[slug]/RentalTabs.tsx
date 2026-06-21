@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Star, CheckCircle2, XCircle, X, MapPin, ExternalLink, Package, Shield } from 'lucide-react'
-import { createReviewAction } from '@/lib/actions'
+import { createReviewAction, checkCanReviewAction } from '@/lib/actions'
 
 function hostSlug(name: string) {
   return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
@@ -110,6 +110,11 @@ export default function RentalTabs({ rental }: { rental: RentalData }) {
   const [showForm, setShowForm] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [userReviewDone, setUserReviewDone] = useState(false)
+  const [canReview, setCanReview] = useState(false)
+
+  useEffect(() => {
+    checkCanReviewAction(rental.slug).then(r => setCanReview(r.canReview))
+  }, [rental.slug])
 
   const ownerName = rental.operator.user.name
   const ownerAvatar = rental.operator.avatar ?? rental.operator.user.image
@@ -276,7 +281,7 @@ export default function RentalTabs({ rental }: { rental: RentalData }) {
                   </p>
                 </div>
               </div>
-              {!userReviewDone && !showForm && (
+              {canReview && !userReviewDone && !showForm && (
                 <button
                   onClick={() => setShowForm(true)}
                   style={{ height: 38, padding: '0 18px', borderRadius: 8, border: '1px solid #111111', background: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111', flexShrink: 0 }}

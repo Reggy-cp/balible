@@ -236,6 +236,22 @@ export async function createRentalBookingAction(input: {
 
 // ── Review ────────────────────────────────────────────────────────────────────
 
+export async function checkCanReviewAction(slug: string): Promise<{ canReview: boolean }> {
+  try {
+    const user = await getSessionUser()
+    if (!user) return { canReview: false }
+    const exp = await prisma.experience.findUnique({ where: { slug }, select: { id: true } })
+    if (!exp) return { canReview: false }
+    const hasCompleted = await prisma.booking.findFirst({
+      where: { userId: user.id, experienceId: exp.id, status: 'COMPLETED' },
+      select: { id: true },
+    })
+    return { canReview: !!hasCompleted }
+  } catch {
+    return { canReview: false }
+  }
+}
+
 export async function createReviewAction(input: {
   slug: string
   rating: number
@@ -247,6 +263,12 @@ export async function createReviewAction(input: {
 
     const exp = await prisma.experience.findUnique({ where: { slug: input.slug } })
     if (!exp) return { ok: false }
+
+    const hasCompleted = await prisma.booking.findFirst({
+      where: { userId: user.id, experienceId: exp.id, status: 'COMPLETED' },
+      select: { id: true },
+    })
+    if (!hasCompleted) return { ok: false }
 
     // Upsert: one review per user per experience
     const existing = await prisma.review.findFirst({
@@ -1315,6 +1337,11 @@ export async function submitReviewAction(slug: string, rating: number, comment: 
     if (!user) return { ok: false, error: 'Not signed in' }
     const exp = await prisma.experience.findUnique({ where: { slug }, select: { id: true } })
     if (!exp) return { ok: false, error: 'Experience not found' }
+    const hasCompleted = await prisma.booking.findFirst({
+      where: { userId: user.id, experienceId: exp.id, status: 'COMPLETED' },
+      select: { id: true },
+    })
+    if (!hasCompleted) return { ok: false, error: 'You can only review experiences you have completed.' }
     const existing = await prisma.review.findFirst({ where: { userId: user.id, experienceId: exp.id } })
     if (existing) return { ok: false, error: 'You have already reviewed this experience' }
     await prisma.review.create({ data: { userId: user.id, experienceId: exp.id, rating, comment } })
