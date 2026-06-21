@@ -242,7 +242,7 @@ export default function Navbar() {
                       </a>
                       <div style={{ borderTop: '1px solid #F5F1EB', margin: '4px 0' }} />
                       <a
-                        href="/api/auth/logout"
+                        href="/auth/signout"
                         className="flex w-full items-center gap-2.5 px-4 py-2.5 hover:bg-stone-50 transition-colors"
                         style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#B66A45', textDecoration: 'none', display: 'flex' }}
                       >
@@ -324,7 +324,7 @@ export default function Navbar() {
                   <a href="/wishlist" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', textDecoration: 'none' }}>
                     <span style={{ fontSize: 16 }}>🤍</span> {t('nav_wishlist')}
                   </a>
-                  <a href="/api/auth/logout" className="flex w-full items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#B66A45', textDecoration: 'none' }}>
+                  <a href="/auth/signout" className="flex w-full items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#B66A45', textDecoration: 'none' }}>
                     {t('nav_sign_out')}
                   </a>
                 </div>
