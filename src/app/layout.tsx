@@ -5,6 +5,7 @@ import AuthProvider from '@/components/AuthProvider'
 import { LanguageProvider } from '@/contexts/LanguageContext'
 import './globals.css'
 import ChatWidget from '@/components/ChatWidget'
+import PushPrompt from '@/components/PushPrompt'
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -55,6 +56,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {children}
           </LanguageProvider>
           <ChatWidget />
+          <PushPrompt />
         </body>
         <GoogleAnalytics gaId="G-YVD0CCC602" />
       </html>
