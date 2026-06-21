@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 
 export const revalidate = 3600
-import { MapPin, Star, Clock, Users, Award, ChevronRight, CalendarDays, Ticket, ExternalLink, MessageCircle, Heart, Globe } from 'lucide-react'
+import { MapPin, Star, Clock, Users, Award, ChevronRight, CalendarDays, Ticket, ExternalLink, MessageCircle, Heart } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
@@ -249,10 +249,9 @@ export default async function HostPage({ params }: { params: { slug: string } })
   const displayName = host.businessName || host.name
   const firstName = host.name.split(' ')[0]
   const totalReviews = host.totalReviews || host.experiences.reduce((s, e) => s + e.reviews, 0)
-  const heroPhoto = host.avatar ?? host.coverImage
 
   return (
-    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
+    <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: 'white', minHeight: '100vh' }}>
       <Navbar />
 
       {/* ── HERO ── */}
@@ -317,15 +316,6 @@ export default async function HostPage({ params }: { params: { slug: string } })
               </div>
             </div>
 
-            {/* RIGHT — host portrait */}
-            <div className="hidden lg:block flex-shrink-0" style={{ width: 260 }}>
-              <img
-                src={heroPhoto}
-                alt={host.name}
-                style={{ width: 260, height: 340, objectFit: 'cover', borderRadius: 20, boxShadow: '0 24px 60px rgba(0,0,0,0.45)' }}
-              />
-            </div>
-
           </div>
         </div>
       </div>
@@ -337,38 +327,6 @@ export default async function HostPage({ params }: { params: { slug: string } })
 
           {/* LEFT — main content */}
           <div className="flex-1 min-w-0">
-
-            {/* About section */}
-            {host.bio && (
-              <div className="mb-10">
-                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#111111', marginBottom: 20 }}>
-                  About {firstName}
-                </h2>
-                <div className="flex flex-col sm:flex-row gap-8">
-                  <div className="flex-1">
-                    <p style={{ fontSize: 15, color: '#4A4540', lineHeight: 1.85 }}>{host.bio}</p>
-                    {host.languages.length > 0 && (
-                      <div className="flex items-center gap-2 mt-5 flex-wrap">
-                        <Globe size={14} style={{ color: '#C8A97E' }} />
-                        <span style={{ fontSize: 13, color: '#6F675C' }}>Speaks:</span>
-                        {host.languages.map(lang => (
-                          <span key={lang} style={{ padding: '3px 10px', borderRadius: 20, fontSize: 12, fontWeight: 500, backgroundColor: '#F5F1EB', color: '#6F675C', border: '1px solid #E8E4DE' }}>{lang}</span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  {host.avatar && (
-                    <div className="flex-shrink-0">
-                      <img
-                        src={host.avatar}
-                        alt={host.name}
-                        style={{ width: 200, height: 240, objectFit: 'cover', borderRadius: 16, boxShadow: '0 8px 32px rgba(0,0,0,0.1)' }}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
 
             {/* Gallery strip */}
             {host.galleryImages.length > 1 && (
