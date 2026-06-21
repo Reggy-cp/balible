@@ -16,7 +16,7 @@ export default withAuth(
     }
 
     // Dashboard requires OPERATOR or ADMIN role
-    if (pathname.startsWith('/dashboard') && token?.role !== 'OPERATOR' && token?.role !== 'PROVIDER' && token?.role !== 'ADMIN') {
+    if (pathname.startsWith('/dashboard') && token?.role !== 'OPERATOR' && token?.role !== 'ADMIN') {
       return NextResponse.redirect(new URL('/', req.url))
     }
 
