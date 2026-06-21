@@ -7,6 +7,7 @@ import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
 import WishlistHeart from '@/components/WishlistHeart'
+import { HostChatButton, SaveHostButton, AskKalaButton } from '@/components/HostButtons'
 import { prisma } from '@/lib/prisma'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -299,6 +300,10 @@ export default async function HostPage({ params }: { params: { slug: string } })
                   <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)' }}>Member since {host.memberSince}</span>
                 </div>
               </div>
+              <div className="flex items-center gap-3">
+                <HostChatButton firstName={firstName} />
+                <SaveHostButton slug={host.slug} />
+              </div>
             </div>
 
           </div>
@@ -368,6 +373,11 @@ export default async function HostPage({ params }: { params: { slug: string } })
                   <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111' }}>
                     What travelers say about {firstName}
                   </h2>
+                  {host.experiences[0] && (
+                    <a href={`/experiences/${host.experiences[0].slug}`} style={{ fontSize: 13, fontWeight: 600, color: '#C8A97E', textDecoration: 'none', flexShrink: 0 }}>
+                      View all reviews →
+                    </a>
+                  )}
                 </div>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {host.reviews.slice(0, 3).map(r => (
@@ -492,6 +502,16 @@ export default async function HostPage({ params }: { params: { slug: string } })
               </div>
             </div>
 
+            {/* Ask Kala card */}
+            <div className="bg-white rounded-2xl p-5" style={{ border: '1px solid #E8E4DE' }}>
+              <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: '#111111', marginBottom: 6 }}>
+                Have a question?
+              </p>
+              <p style={{ fontSize: 13, color: '#6F675C', lineHeight: 1.6, marginBottom: 14 }}>
+                Ask Kala, your AI travel guide, about {firstName} or their experiences.
+              </p>
+              <AskKalaButton firstName={firstName} />
+            </div>
 
           </div>
         </div>
