@@ -50,11 +50,12 @@ function generateSlots(open: string, close: string, durMins: number): string[] {
 }
 
 function MiniCalendar({
-  selected, onSelect, schedule,
+  selected, onSelect, schedule, blockedDates = [],
 }: {
   selected: string | null
   onSelect: (d: string) => void
   schedule: ScheduleDay[] | null
+  blockedDates?: string[]
 }) {
   const now = new Date()
   const [year, setYear] = useState(now.getFullYear())
@@ -68,6 +69,8 @@ function MiniCalendar({
   const hasSchedule = schedule && schedule.some(d => d.enabled)
 
   const isAvailable = (d: number) => {
+    const dateStr = toStr(d)
+    if (blockedDates.includes(dateStr)) return false
     if (!hasSchedule) return true
     const dow = new Date(year, month, d).getDay()
     return schedule![dowToScheduleIdx(dow)].enabled
@@ -139,7 +142,7 @@ function MiniCalendar({
   )
 }
 
-export default function BookingWidget({ price, slug, duration, maxGuests = 8, embedded = false, rating, totalReviews }: { price: number; slug?: string; duration?: string; maxGuests?: number; embedded?: boolean; rating?: number; totalReviews?: number }) {
+export default function BookingWidget({ price, slug, duration, maxGuests = 8, embedded = false, rating, totalReviews, blockedDates = [] }: { price: number; slug?: string; duration?: string; maxGuests?: number; embedded?: boolean; rating?: number; totalReviews?: number; blockedDates?: string[] }) {
   const { t } = useLanguage()
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
@@ -280,7 +283,7 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
       {/* Date picker */}
       <div className="mt-5">
         <p className="mb-2" style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>Select date</p>
-        <MiniCalendar selected={selectedDate} onSelect={handleDateSelect} schedule={schedule} />
+        <MiniCalendar selected={selectedDate} onSelect={handleDateSelect} schedule={schedule} blockedDates={blockedDates} />
       </div>
 
       {/* Time slots — shown after a date is selected */}
