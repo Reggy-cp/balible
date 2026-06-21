@@ -108,6 +108,21 @@ export async function createBookingAction(
     const exp = await prisma.experience.findUnique({ where: { slug: input.slug } })
     if (!exp) return { ok: false, error: 'This experience is not available for online payment yet.' }
 
+    // Block duplicate bookings on the same date
+    const bookingDate = new Date(input.rawDate)
+    bookingDate.setUTCHours(0, 0, 0, 0)
+    const nextDay = new Date(bookingDate)
+    nextDay.setUTCDate(nextDay.getUTCDate() + 1)
+    const duplicate = await prisma.booking.findFirst({
+      where: {
+        userId: user.id,
+        experienceId: exp.id,
+        date: { gte: bookingDate, lt: nextDay },
+        status: { in: ['PENDING', 'CONFIRMED'] },
+      },
+    })
+    if (duplicate) return { ok: false, error: 'You already have a booking for this experience on that date.' }
+
     // Price is computed server-side from the DB; client-supplied totals are never trusted
     const minG = (exp as any).minGuests ?? 1
     const guests = Math.max(minG, Math.min(exp.maxGuests, Math.trunc(input.guests) || minG))
@@ -185,6 +200,21 @@ export async function createRentalBookingAction(input: {
 
     const diff = new Date(input.endDate).getTime() - new Date(input.startDate).getTime()
     if (diff <= 0) return { ok: false, error: 'Return date must be after pick-up date.' }
+
+    // Block duplicate rentals starting on the same date
+    const pickupDate = new Date(input.startDate)
+    pickupDate.setUTCHours(0, 0, 0, 0)
+    const pickupNextDay = new Date(pickupDate)
+    pickupNextDay.setUTCDate(pickupNextDay.getUTCDate() + 1)
+    const duplicateRental = await prisma.booking.findFirst({
+      where: {
+        userId: user.id,
+        experienceId: rental.id,
+        date: { gte: pickupDate, lt: pickupNextDay },
+        status: { in: ['PENDING', 'CONFIRMED'] },
+      },
+    })
+    if (duplicateRental) return { ok: false, error: 'You already have a booking for this rental on that date.' }
 
     const period = rental.duration || 'per day'
     const periods = Math.max(1, Math.ceil(diff / rentalPeriodMs(period)))
