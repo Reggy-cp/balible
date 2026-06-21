@@ -155,9 +155,12 @@ model Booking {
   guestPhone       String?
   time             String?
   notes            String?
+  groupRef         String?
   reviewRequested  Boolean       @default(false)
   reminderSent     Boolean       @default(false)
   createdAt        DateTime      @default(now())
+
+  @@index([groupRef])
 }
 
 model Review {

@@ -103,10 +103,18 @@ export async function POST(req: NextRequest) {
   const failed  = ['deny', 'cancel', 'expire'].includes(transaction_status)
 
   if (paid && booking.status !== 'CONFIRMED') {
-    await prisma.booking.update({
-      where: { id: booking.id },
-      data: { status: 'CONFIRMED', paymentId: transaction_id ?? null },
-    })
+    // For multi-date bookings, groupRef links all records; otherwise just update the one
+    if ((booking as any).groupRef) {
+      await prisma.booking.updateMany({
+        where: { groupRef: (booking as any).groupRef },
+        data: { status: 'CONFIRMED', paymentId: transaction_id ?? null },
+      })
+    } else {
+      await prisma.booking.update({
+        where: { id: booking.id },
+        data: { status: 'CONFIRMED', paymentId: transaction_id ?? null },
+      })
+    }
     await createNotification({
       userId: booking.userId,
       type: 'payment',
@@ -174,10 +182,17 @@ export async function POST(req: NextRequest) {
       expiryTime: expiry_time,
     })
   } else if (failed && booking.status === 'PENDING') {
-    await prisma.booking.update({
-      where: { id: booking.id },
-      data: { status: 'CANCELLED', paymentId: transaction_id ?? null },
-    })
+    if ((booking as any).groupRef) {
+      await prisma.booking.updateMany({
+        where: { groupRef: (booking as any).groupRef },
+        data: { status: 'CANCELLED', paymentId: transaction_id ?? null },
+      })
+    } else {
+      await prisma.booking.update({
+        where: { id: booking.id },
+        data: { status: 'CANCELLED', paymentId: transaction_id ?? null },
+      })
+    }
     const reason = transaction_status === 'expire' ? 'payment_expired'
       : transaction_status === 'deny' ? 'payment_failed'
       : 'cancelled'

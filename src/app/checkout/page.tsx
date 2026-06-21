@@ -142,8 +142,8 @@ function MobileBookingSummary({ booking, guests, total, editing, onEdit }: { boo
 
 // ── Booking summary sidebar ────────────────────────────────────────────────────
 
-function BookingSummary({ booking, guests, editing, onEdit }: { booking: BookingData; guests: number; editing?: boolean; onEdit: () => void }) {
-  const sub = booking.pricePerPerson * guests
+function BookingSummary({ booking, guests, editing, onEdit, numSlots = 1, numDates = 1, rawDate, extraDates = [] }: { booking: BookingData; guests: number; editing?: boolean; onEdit: () => void; numSlots?: number; numDates?: number; rawDate?: string; extraDates?: string[] }) {
+  const sub = booking.pricePerPerson * guests * numSlots * numDates
   const fee = Math.round(sub * booking.serviceFeeRate)
   const total = sub + fee
 
@@ -163,7 +163,7 @@ function BookingSummary({ booking, guests, editing, onEdit }: { booking: Booking
         <div className="flex justify-between items-start">
           <div>
             {[
-              { label: 'Date',   value: booking.date },
+              { label: 'Date',   value: extraDates.length > 0 ? [rawDate ?? '', ...extraDates].sort().map(d => { const parts = d.split('-'); return `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+(parts[1]??'1')-1]} ${+(parts[2]??'1')}` }).join(', ') : booking.date },
               ...(booking.time ? [{ label: 'Time', value: booking.time }] : []),
               { label: 'Guests', value: `${guests} guest${guests > 1 ? 's' : ''}` },
             ].map(({ label, value }) => (
@@ -198,7 +198,7 @@ function BookingSummary({ booking, guests, editing, onEdit }: { booking: Booking
       <div className="pt-4 space-y-2">
         <div className="flex justify-between">
           <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>
-            IDR {booking.pricePerPerson.toLocaleString('id-ID')} × {guests} guest{guests > 1 ? 's' : ''}
+            IDR {booking.pricePerPerson.toLocaleString('id-ID')} × {guests} guest{guests > 1 ? 's' : ''}{numSlots * numDates > 1 ? ` × ${numSlots * numDates} sessions` : ''}
           </span>
           <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>IDR {sub.toLocaleString('id-ID')}</span>
         </div>
@@ -1255,7 +1255,8 @@ function CheckoutInner() {
 
   const slug      = params.get('slug')      || 'pottery-making-class'
   const rawDate   = params.get('date')      || ''
-  const rawTimes  = (params.get('times') || params.get('time') || '').split(',').filter(Boolean)
+  const rawTimes      = (params.get('times') || params.get('time') || '').split(',').filter(Boolean)
+  const extraDates    = (params.get('extraDates') || '').split(',').filter(Boolean)
   const maxGuests = Math.max(1, parseInt(params.get('maxGuests') || '8') || 8)
   const initGuests = Math.max(1, Math.min(maxGuests, parseInt(params.get('guests') || '1') || 1))
 
@@ -1335,7 +1336,8 @@ function CheckoutInner() {
   }
 
   const numSlots = Math.max(1, selectedRawTimes.length)
-  const sub   = booking.pricePerPerson * guests * numSlots
+  const numDates = Math.max(1, 1 + extraDates.length)
+  const sub   = booking.pricePerPerson * guests * numSlots * numDates
   const fee   = Math.round(sub * booking.serviceFeeRate)
   const total = sub + fee
 
@@ -1365,6 +1367,7 @@ function CheckoutInner() {
       const res = await createBookingAction({
         slug: booking.slug,
         rawDate: booking.rawDate,
+        extraDates: extraDates.length > 0 ? extraDates : undefined,
         rawTime: booking.rawTime || undefined,
         numSlots,
         guests,
@@ -1435,7 +1438,7 @@ function CheckoutInner() {
           {/* Full sidebar — desktop only */}
           {step < 3 && (
             <div className="hidden lg:block" style={{ width: 340, flexShrink: 0 }}>
-              <BookingSummary booking={booking} guests={guests} editing={step === 0} onEdit={() => { setStep(0); window.scrollTo({ top: 0, behavior: 'smooth' }) }} />
+              <BookingSummary booking={booking} guests={guests} editing={step === 0} onEdit={() => { setStep(0); window.scrollTo({ top: 0, behavior: 'smooth' }) }} numSlots={numSlots} numDates={numDates} rawDate={rawDate} extraDates={extraDates} />
             </div>
           )}
         </div>

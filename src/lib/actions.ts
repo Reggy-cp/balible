@@ -90,6 +90,7 @@ export async function getUserWishlist(): Promise<string[]> {
 export type CreateBookingInput = {
   slug: string
   rawDate: string
+  extraDates?: string[]
   rawTime?: string
   numSlots?: number
   guests: number
@@ -109,53 +110,69 @@ export async function createBookingAction(
     const exp = await prisma.experience.findUnique({ where: { slug: input.slug }, include: { operator: { select: { blockedDates: true } } } })
     if (!exp) return { ok: false, error: 'This experience is not available for online payment yet.' }
 
-    // Block bookings on host-blocked dates
-    const dateKey = new Date(input.rawDate).toISOString().split('T')[0]
+    const allDates = [input.rawDate, ...(input.extraDates ?? [])]
     const blocked = (exp.operator.blockedDates as string[]) ?? []
-    if (blocked.includes(dateKey)) return { ok: false, error: 'This date is not available. Please choose another date.' }
 
-    // Block duplicate bookings on the same date
-    const bookingDate = new Date(input.rawDate)
-    bookingDate.setUTCHours(0, 0, 0, 0)
-    const nextDay = new Date(bookingDate)
-    nextDay.setUTCDate(nextDay.getUTCDate() + 1)
-    const duplicate = await prisma.booking.findFirst({
-      where: {
-        userId: user.id,
-        experienceId: exp.id,
-        date: { gte: bookingDate, lt: nextDay },
-        status: { in: ['PENDING', 'CONFIRMED'] },
-      },
-    })
-    if (duplicate) return { ok: false, error: 'You already have a booking for this experience on that date.' }
+    // Validate all dates
+    for (const rawDate of allDates) {
+      const dateKey = new Date(rawDate).toISOString().split('T')[0]
+      if (blocked.includes(dateKey)) return { ok: false, error: 'One or more selected dates are not available. Please review your selection.' }
+    }
+
+    // Check for duplicate bookings on any selected date
+    for (const rawDate of allDates) {
+      const bookingDate = new Date(rawDate)
+      bookingDate.setUTCHours(0, 0, 0, 0)
+      const nextDay = new Date(bookingDate)
+      nextDay.setUTCDate(nextDay.getUTCDate() + 1)
+      const duplicate = await prisma.booking.findFirst({
+        where: { userId: user.id, experienceId: exp.id, date: { gte: bookingDate, lt: nextDay }, status: { in: ['PENDING', 'CONFIRMED'] } },
+      })
+      if (duplicate) return { ok: false, error: 'You already have a booking for this experience on one of the selected dates.' }
+    }
 
     // Price is computed server-side from the DB; client-supplied totals are never trusted
     const minG = (exp as any).minGuests ?? 1
     const guests = Math.max(minG, Math.min(exp.maxGuests, Math.trunc(input.guests) || minG))
     const numSlots = Math.min(20, Math.max(1, Math.trunc(input.numSlots ?? 1) || 1))
     const feeRate = await getServiceFeeRate()
-    const totalPrice = computeBookingTotal(exp.price, guests, feeRate) * numSlots
+    const pricePerBooking = computeBookingTotal(exp.price, guests, feeRate) * numSlots
+    const totalPrice = pricePerBooking * allDates.length
 
-    // Booking starts PENDING; the Midtrans webhook flips it to CONFIRMED on
-    // settlement and sends the confirmation email at that point.
-    const booking = await prisma.booking.create({
-      data: {
-        userId: user.id,
-        experienceId: exp.id,
-        date: new Date(input.rawDate),
-        time: input.rawTime ?? null,
-        guests,
-        totalPrice,
-        guestName: input.guestName,
-        guestEmail: input.guestEmail,
-        guestPhone: input.guestPhone ?? null,
-        notes: input.notes ?? null,
-        status: 'PENDING',
-      },
+    // Create all bookings in a transaction; first bookingRef is used as the Midtrans orderId
+    // and stored as groupRef on all records so the webhook can confirm them together.
+    const bookings = await prisma.$transaction(async (tx) => {
+      const created = []
+      for (const rawDate of allDates) {
+        const b = await tx.booking.create({
+          data: {
+            userId: user.id,
+            experienceId: exp.id,
+            date: new Date(rawDate),
+            time: input.rawTime ?? null,
+            guests,
+            totalPrice: pricePerBooking,
+            guestName: input.guestName,
+            guestEmail: input.guestEmail,
+            guestPhone: input.guestPhone ?? null,
+            notes: input.notes ?? null,
+            status: 'PENDING',
+          },
+        })
+        created.push(b)
+      }
+      // Tag all with the first booking's ref as groupRef
+      const groupRef = created[0].bookingRef
+      if (created.length > 1) {
+        await tx.booking.updateMany({ where: { id: { in: created.map(b => b.id) } }, data: { groupRef } })
+      }
+      return created
     })
 
+    const primaryBooking = bookings[0]
+
     const snap = await createSnapTransaction({
-      orderId: booking.bookingRef,
+      orderId: primaryBooking.bookingRef,
       grossAmount: totalPrice,
       customerName: input.guestName,
       customerEmail: input.guestEmail,
@@ -172,7 +189,7 @@ export async function createBookingAction(
       href: '/profile',
     })
 
-    return { ok: true, bookingRef: booking.bookingRef, snapToken: snap.token }
+    return { ok: true, bookingRef: primaryBooking.bookingRef, snapToken: snap.token }
   } catch {
     return { ok: false, error: 'Something went wrong. Please try again.' }
   }
