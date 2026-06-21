@@ -700,3 +700,50 @@ export async function sendPasswordResetEmail({ to, name, token }: { to: string; 
     return { sent: false }
   }
 }
+
+// ── Review request ─────────────────────────────────────────────────────────────
+
+export async function sendReviewRequestEmail({
+  to,
+  guestName,
+  experienceTitle,
+  isRental,
+}: {
+  to: string
+  guestName: string
+  experienceTitle: string
+  isRental: boolean
+}): Promise<{ sent: boolean }> {
+  const client = getClient()
+  if (!client) {
+    console.warn('[email] RESEND_API_KEY not set — skipping review request email to', to)
+    return { sent: false }
+  }
+  const reviewUrl = `${SITE_URL}/profile?tab=bookings`
+  const noun = isRental ? 'rental' : 'experience'
+  try {
+    await client.emails.send({
+      from: FROM,
+      to,
+      subject: `How was ${isRental ? 'your rental' : 'it'}? Leave a review for ${experienceTitle}`,
+      html: layout(`
+        <p style="margin:0 0 4px;font-size:13px;color:${BRAND.gold};font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">YOUR REVIEW MATTERS</p>
+        <h1 style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:24px;color:${BRAND.ink};">How was your ${noun}?</h1>
+        <p style="margin:0 0 20px;font-size:15px;color:${BRAND.muted};line-height:1.7;">
+          Hi ${guestName}, we hope you enjoyed <strong style="color:${BRAND.ink};">${experienceTitle}</strong>!
+          Taking a minute to share your experience helps other travelers in Bali find great local ${noun}s.
+        </p>
+        <a href="${reviewUrl}" style="display:inline-block;padding:14px 28px;background-color:${BRAND.ink};color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;border-radius:10px;">
+          Write a review →
+        </a>
+        <p style="margin:24px 0 0;font-size:13px;color:${BRAND.muted};line-height:1.7;">
+          It only takes 2 minutes. Your honest feedback makes a real difference for the host and future guests.
+        </p>
+      `),
+    })
+    return { sent: true }
+  } catch (err) {
+    console.error('[email] review request email failed:', err)
+    return { sent: false }
+  }
+}

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { createNotification } from '@/lib/notifications'
+import { sendReviewRequestEmail } from '@/lib/email'
 
 // Called daily at 02:00 UTC (10:00 AM Bali time).
 // Flips CONFIRMED → COMPLETED for bookings whose date has passed.
@@ -22,6 +23,8 @@ export async function GET(req: NextRequest) {
     select: {
       id: true,
       userId: true,
+      guestName: true,
+      guestEmail: true,
       experience: { select: { title: true, category: true } },
     },
   })
@@ -36,15 +39,23 @@ export async function GET(req: NextRequest) {
   })
 
   await Promise.allSettled(
-    toComplete.map(b => {
+    toComplete.flatMap(b => {
       const isRental = String(b.experience.category) === 'RENTALS'
-      return createNotification({
-        userId: b.userId,
-        type: 'info',
-        title: 'How was it? Leave a review',
-        body: `You recently completed "${b.experience.title}". Share your experience — it helps other ${isRental ? 'renters' : 'travelers'} discover great options in Bali.`,
-        href: '/profile?tab=bookings',
-      })
+      return [
+        createNotification({
+          userId: b.userId,
+          type: 'info',
+          title: 'How was it? Leave a review',
+          body: `You recently completed "${b.experience.title}". Share your experience — it helps other ${isRental ? 'renters' : 'travelers'} discover great options in Bali.`,
+          href: '/profile?tab=bookings',
+        }),
+        sendReviewRequestEmail({
+          to: b.guestEmail,
+          guestName: b.guestName,
+          experienceTitle: b.experience.title,
+          isRental,
+        }),
+      ]
     })
   )
 
