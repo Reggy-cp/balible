@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { useSession, signOut } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import {
   LayoutDashboard, Compass, Users, CalendarDays, Star,
   CreditCard, BarChart2, Settings, Menu, X,
@@ -3492,14 +3492,13 @@ function Sidebar({ activeNav, setActiveNav, pendingHosts = 0, pendingListings = 
           style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, fontFamily: 'var(--font-inter)', textDecoration: 'none' }}>
           ← Back to site
         </a>
-        <button
-          type="button"
-          onClick={() => signOut({ redirect: false }).then(() => { window.location.href = '/' })}
-          className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors"
-          style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, fontFamily: 'var(--font-inter)', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+        <a
+          href="/auth/signout"
+          className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors"
+          style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, fontFamily: 'var(--font-inter)', textDecoration: 'none' }}
         >
           <LogOut size={14} /> Sign out
-        </button>
+        </a>
       </div>
     </>
   )
