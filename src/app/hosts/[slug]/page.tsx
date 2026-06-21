@@ -296,88 +296,58 @@ export default async function HostPage({ params }: { params: { slug: string } })
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.55) 100%)' }} />
       </div>
 
-      {/* ── PROFILE CARD (overlaps banner) ── */}
+      {/* ── PROFILE + DETAILS (two-column, overlaps banner) ── */}
       <div className="max-w-[1100px] mx-auto px-6 lg:px-16">
-        <div className="relative -mt-16 mb-8 flex flex-col sm:flex-row sm:items-end gap-5">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 -mt-16 mb-10">
 
-          {/* Avatar */}
-          <div className="flex-shrink-0" style={{ zIndex: 1 }}>
-            <img
-              src={host.avatar ?? '/avatar-default.png'}
-              alt={host.name}
-              className="rounded-2xl object-cover"
-              style={{ width: 128, height: 128, border: '4px solid white', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}
-            />
-          </div>
-
-          {/* Name + stats row */}
-          <div className="flex-1 pb-1" style={{ zIndex: 1 }}>
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-              <div>
+          {/* LEFT — avatar + name + bio */}
+          <div className="flex-1 min-w-0">
+            {/* Avatar row */}
+            <div className="flex items-end gap-4 mb-5">
+              <img
+                src={host.avatar ?? '/avatar-default.png'}
+                alt={host.name}
+                className="rounded-2xl object-cover flex-shrink-0"
+                style={{ width: 120, height: 120, border: '4px solid white', boxShadow: '0 4px 20px rgba(0,0,0,0.15)', zIndex: 1, position: 'relative' }}
+              />
+              <div className="pb-1">
                 {host.businessName && (
-                  <p style={{ fontSize: 12, fontWeight: 600, color: '#C8A97E', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 2 }}>
+                  <p style={{ fontSize: 11, fontWeight: 600, color: '#C8A97E', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 2 }}>
                     {host.name}
                   </p>
                 )}
-                <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(22px,3vw,30px)', fontWeight: 700, color: '#111111', lineHeight: 1.2 }}>
+                <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(20px,3vw,28px)', fontWeight: 700, color: '#111111', lineHeight: 1.2 }}>
                   {displayName}
                 </h1>
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
                   {host.area && (
-                    <span className="flex items-center gap-1" style={{ fontSize: 13, color: '#6F675C' }}>
-                      <MapPin size={12} style={{ color: '#C8A97E' }} />{host.area}, Bali
+                    <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#6F675C' }}>
+                      <MapPin size={11} style={{ color: '#C8A97E' }} />{host.area}, Bali
                     </span>
                   )}
                   {totalReviews > 0 && (
-                    <span className="flex items-center gap-1" style={{ fontSize: 13, color: '#6F675C' }}>
-                      <Star size={12} fill="#C8A97E" color="#C8A97E" />
+                    <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#6F675C' }}>
+                      <Star size={11} fill="#C8A97E" color="#C8A97E" />
                       <strong style={{ color: '#111111' }}>{host.rating.toFixed(1)}</strong>
-                      &nbsp;({totalReviews} reviews)
+                      &nbsp;({totalReviews})
                     </span>
                   )}
-                  <span className="flex items-center gap-1" style={{ fontSize: 13, color: '#6F675C' }}>
-                    <Award size={12} style={{ color: '#C8A97E' }} />Host since {host.memberSince}
-                  </span>
-                  <span className="flex items-center gap-1" style={{ fontSize: 13, color: '#6F675C' }}>
-                    <ChevronRight size={12} style={{ color: '#C8A97E' }} />{host.experiences.length} experience{host.experiences.length !== 1 ? 's' : ''}
-                  </span>
+                  <span style={{ fontSize: 12, color: '#9E9A94' }}>Host since {host.memberSince}</span>
                 </div>
               </div>
-
-              {host.website && (
-                <a
-                  href={host.website.startsWith('http') ? host.website : `https://${host.website}`}
-                  target="_blank" rel="noopener noreferrer"
-                  className="flex-shrink-0 flex items-center gap-2 hover:opacity-80 transition-opacity"
-                  style={{ height: 38, paddingInline: 16, borderRadius: 10, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 13, fontWeight: 600, color: '#111111', textDecoration: 'none' }}
-                >
-                  <ExternalLink size={13} style={{ color: '#C8A97E' }} />
-                  {host.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
-                </a>
-              )}
             </div>
-          </div>
-        </div>
-      </div>
 
-      {/* ── BODY ── */}
-      <div className="max-w-[1100px] mx-auto px-6 lg:px-16 pb-28">
-        <div className="flex flex-col lg:flex-row gap-8">
-
-          {/* LEFT — bio + experiences + events */}
-          <div className="flex-1 min-w-0">
-
-            {/* About */}
+            {/* Bio card */}
             {host.bio && (
-              <div className="bg-white rounded-2xl p-6 mb-7" style={{ border: '1px solid #E8E4DE' }}>
-                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 19, fontWeight: 700, color: '#111111', marginBottom: 12 }}>
+              <div className="bg-white rounded-2xl p-6" style={{ border: '1px solid #E8E4DE' }}>
+                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111', marginBottom: 10 }}>
                   About {displayName}
                 </h2>
-                <p style={{ fontSize: 15, color: '#4A4540', lineHeight: 1.8 }}>{host.bio}</p>
+                <p style={{ fontSize: 14, color: '#4A4540', lineHeight: 1.8 }}>{host.bio}</p>
                 {host.languages.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-5">
+                  <div className="flex flex-wrap gap-2 mt-4">
                     {host.languages.map((lang: string) => (
-                      <span key={lang} style={{ padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 500, backgroundColor: '#F5F1EB', color: '#6F675C', border: '1px solid #E8E4DE' }}>
+                      <span key={lang} style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 500, backgroundColor: '#F5F1EB', color: '#6F675C', border: '1px solid #E8E4DE' }}>
                         {lang}
                       </span>
                     ))}
@@ -385,45 +355,14 @@ export default async function HostPage({ params }: { params: { slug: string } })
                 )}
               </div>
             )}
-
-            {/* Experiences */}
-            {host.experiences.length > 0 && (
-              <div className="mb-8">
-                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 19, fontWeight: 700, color: '#111111', marginBottom: 16 }}>
-                  Experiences
-                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 400, color: '#9E9A94', marginLeft: 10 }}>
-                    {host.experiences.length} listing{host.experiences.length !== 1 ? 's' : ''}
-                  </span>
-                </h2>
-                <div className={`grid gap-5 ${host.experiences.length === 1 ? 'grid-cols-1 max-w-sm' : 'sm:grid-cols-2'}`}>
-                  {host.experiences.map((exp: Experience) => <ExpCard key={exp.slug} exp={exp} />)}
-                </div>
-              </div>
-            )}
-
-            {/* Events */}
-            {host.events.length > 0 && (
-              <div className="mb-8">
-                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 19, fontWeight: 700, color: '#111111', marginBottom: 16 }}>
-                  Events
-                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 400, color: '#9E9A94', marginLeft: 10 }}>
-                    {host.events.length} event{host.events.length !== 1 ? 's' : ''}
-                  </span>
-                </h2>
-                <div className={`grid gap-5 ${host.events.length === 1 ? 'grid-cols-1 max-w-sm' : 'sm:grid-cols-2'}`}>
-                  {host.events.map((ev: HostEvent) => <EventCard key={ev.slug} ev={ev} />)}
-                </div>
-              </div>
-            )}
           </div>
 
           {/* RIGHT — details card */}
-          <div style={{ width: 272, flexShrink: 0, alignSelf: 'flex-start', position: 'sticky', top: 88 }}>
+          <div className="lg:mt-16" style={{ width: '100%', maxWidth: 272, flexShrink: 0 }}>
             <div className="bg-white rounded-2xl p-5" style={{ border: '1px solid #E8E4DE' }}>
               <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 14 }}>
                 Host details
               </h3>
-
               <div className="space-y-3">
                 {totalReviews > 0 && (
                   <div className="flex items-center justify-between">
@@ -474,20 +413,55 @@ export default async function HostPage({ params }: { params: { slug: string } })
                   </div>
                 )}
               </div>
-
-              <div className="mt-5 pt-4" style={{ borderTop: '1px solid #F0EDE8' }}>
-                <a
-                  href="/experiences"
-                  className="flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
-                  style={{ height: 44, backgroundColor: '#111111', color: 'white', borderRadius: 10, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}
-                >
-                  Browse all experiences
-                </a>
-              </div>
+              {host.website && (
+                <div className="mt-4 pt-4" style={{ borderTop: '1px solid #F0EDE8' }}>
+                  <a
+                    href={host.website.startsWith('http') ? host.website : `https://${host.website}`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+                    style={{ height: 42, backgroundColor: '#111111', color: 'white', borderRadius: 10, fontSize: 13, fontWeight: 600, textDecoration: 'none' }}
+                  >
+                    <ExternalLink size={13} /> Visit website
+                  </a>
+                </div>
+              )}
             </div>
           </div>
 
         </div>
+      </div>
+
+      {/* ── EXPERIENCES + EVENTS (full width) ── */}
+      <div className="max-w-[1100px] mx-auto px-6 lg:px-16 pb-28">
+
+        {host.experiences.length > 0 && (
+          <div className="mb-10">
+            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', marginBottom: 16 }}>
+              Experiences
+              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 400, color: '#9E9A94', marginLeft: 10 }}>
+                {host.experiences.length} listing{host.experiences.length !== 1 ? 's' : ''}
+              </span>
+            </h2>
+            <div className={`grid gap-5 ${host.experiences.length === 1 ? 'grid-cols-1 max-w-sm' : 'sm:grid-cols-2 lg:grid-cols-3'}`}>
+              {host.experiences.map((exp: Experience) => <ExpCard key={exp.slug} exp={exp} />)}
+            </div>
+          </div>
+        )}
+
+        {host.events.length > 0 && (
+          <div className="mb-8">
+            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', marginBottom: 16 }}>
+              Events
+              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 400, color: '#9E9A94', marginLeft: 10 }}>
+                {host.events.length} event{host.events.length !== 1 ? 's' : ''}
+              </span>
+            </h2>
+            <div className={`grid gap-5 ${host.events.length === 1 ? 'grid-cols-1 max-w-sm' : 'sm:grid-cols-2 lg:grid-cols-3'}`}>
+              {host.events.map((ev: HostEvent) => <EventCard key={ev.slug} ev={ev} />)}
+            </div>
+          </div>
+        )}
+
       </div>
 
       <Footer />
