@@ -271,9 +271,6 @@ export default async function HostPage({ params }: { params: { slug: string } })
               <p style={{ fontSize: 11, fontWeight: 700, color: '#C8A97E', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 14 }}>
                 Host on Balible
               </p>
-              {host.businessName && (
-                <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}>{host.name}</p>
-              )}
               <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(28px,4vw,46px)', fontWeight: 700, color: 'white', lineHeight: 1.15, marginBottom: 14 }}>
                 {displayName}
               </h1>
@@ -302,7 +299,7 @@ export default async function HostPage({ params }: { params: { slug: string } })
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <HostChatButton firstName={firstName} operatorId={host.operatorId} />
+                <HostChatButton firstName={displayName} operatorId={host.operatorId} />
                 <SaveHostButton slug={host.slug} />
               </div>
             </div>
@@ -341,7 +338,7 @@ export default async function HostPage({ params }: { params: { slug: string } })
             {host.experiences.length > 0 && (
               <div className="mb-10">
                 <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', marginBottom: 16 }}>
-                  Experience by {firstName}
+                  Experience by {displayName}
                   <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 400, color: '#9E9A94', marginLeft: 10 }}>
                     {host.experiences.length} listing{host.experiences.length !== 1 ? 's' : ''}
                   </span>
@@ -356,7 +353,7 @@ export default async function HostPage({ params }: { params: { slug: string } })
             {host.events.length > 0 && (
               <div className="mb-10">
                 <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', marginBottom: 16 }}>
-                  Event by {firstName}
+                  Event by {displayName}
                   <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 400, color: '#9E9A94', marginLeft: 10 }}>
                     {host.events.length} event{host.events.length !== 1 ? 's' : ''}
                   </span>
