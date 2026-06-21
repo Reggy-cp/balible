@@ -2512,6 +2512,7 @@ function AvailabilityPanel({ bookings }: { bookings?: DashBooking[] }) {
   const [blocked, setBlocked] = useState<Set<string>>(new Set())
   const [saving, setSaving] = useState(false)
   const [saved, setSaved]   = useState(false)
+  const [saveErr, setSaveErr] = useState(false)
   const [dirty, setDirty]   = useState(false)
 
   useEffect(() => {
@@ -2528,10 +2529,11 @@ function AvailabilityPanel({ bookings }: { bookings?: DashBooking[] }) {
   const dayKey = (d: number) => `${year}-${monthStr}-${String(d).padStart(2, '0')}`
 
   const saveBlocked = async (next: Set<string>) => {
-    setSaving(true); setSaved(false)
-    await updateOperatorSettingsAction({ blockedDates: Array.from(next) })
-    setSaving(false); setSaved(true); setDirty(false)
-    setTimeout(() => setSaved(false), 2500)
+    setSaving(true); setSaved(false); setSaveErr(false)
+    const res = await updateOperatorSettingsAction({ blockedDates: Array.from(next) })
+    setSaving(false)
+    if (res.ok) { setSaved(true); setDirty(false); setTimeout(() => setSaved(false), 2500) }
+    else { setSaveErr(true); setTimeout(() => setSaveErr(false), 4000) }
   }
 
   const toggle = (d: number) => {
@@ -2658,18 +2660,23 @@ function AvailabilityPanel({ bookings }: { bookings?: DashBooking[] }) {
           disabled={saving || !dirty}
           style={{
             height: 44, paddingInline: 28, borderRadius: 10, border: 'none',
-            backgroundColor: saved ? '#4A7C59' : dirty ? '#111111' : '#D1CDC7',
+            backgroundColor: saveErr ? '#B66A45' : saved ? '#4A7C59' : dirty ? '#111111' : '#D1CDC7',
             color: 'white', fontSize: 14, fontWeight: 600,
             cursor: saving || !dirty ? 'default' : 'pointer',
             fontFamily: 'var(--font-inter)', transition: 'background 0.2s',
             display: 'flex', alignItems: 'center', gap: 8,
           }}
         >
-          {saving ? t('db_saving') : saved ? <><Check size={14} /> {t('db_saved')}</> : t('db_save_changes')}
+          {saving ? t('db_saving') : saved ? <><Check size={14} /> {t('db_saved')}</> : saveErr ? 'Failed — try again' : t('db_save_changes')}
         </button>
-        {dirty && !saving && (
+        {dirty && !saving && !saveErr && (
           <span style={{ fontSize: 13, color: '#9E9A94', fontFamily: 'var(--font-inter)' }}>
             {t('db_unsaved_changes')}
+          </span>
+        )}
+        {saveErr && (
+          <span style={{ fontSize: 13, color: '#B66A45', fontFamily: 'var(--font-inter)' }}>
+            Could not save — check your connection
           </span>
         )}
       </div>

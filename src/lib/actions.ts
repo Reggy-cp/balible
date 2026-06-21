@@ -2578,7 +2578,7 @@ export async function updateOperatorSettingsAction(data: {
       },
     })
     return { ok: true }
-  } catch { return { ok: false } }
+  } catch (e) { console.error('[updateOperatorSettingsAction]', e); return { ok: false } }
 }
 
 // ── Experience gallery images ─────────────────────────────────────────────────
