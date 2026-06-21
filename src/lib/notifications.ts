@@ -1,4 +1,5 @@
 import { prisma } from './prisma'
+import { sendPushToUser } from './push'
 
 // Server-only helper. Deliberately NOT a 'use server' action — notifications
 // are created by trusted server code (booking actions, payment webhook), never
@@ -22,6 +23,8 @@ export async function createNotification(input: {
         href: input.href ?? null,
       },
     })
+    // Best-effort push — doesn't block and won't throw
+    sendPushToUser(input.userId, { title: input.title, body: input.body, href: input.href }).catch(() => {})
   } catch (err) {
     // Best-effort: a notification failure must never break the calling flow
     console.error('[notifications] create failed:', err)

@@ -36,6 +36,7 @@ model User {
   wishlist         WishlistItem[]
   operator         Operator?
   notifications    Notification[]
+  pushSubscriptions PushSubscription[]
   eventBookings    EventBooking[]
   conversations    Conversation[]
   sentMessages     Message[]
@@ -332,6 +333,18 @@ model Notification {
   createdAt DateTime @default(now())
 
   @@index([userId, read])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model Conversation {

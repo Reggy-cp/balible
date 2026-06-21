@@ -504,7 +504,7 @@ function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences, bo
 
 // ── Experiences Panel ─────────────────────────────────────────────────────────
 
-function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRate: number; initialExperiences?: DashExp[] }) {
+function ExperiencesPanel({ commissionRate, initialExperiences, triggerNewExp }: { commissionRate: number; initialExperiences?: DashExp[]; triggerNewExp?: number }) {
   const readOnly = useContext(ReadOnlyContext)
   const { t } = useLanguage()
   const [filter, setFilter]   = useState('All')
@@ -573,6 +573,18 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
     setItinerary(prev => prev.map((s, i) => i === idx ? { ...s, [field]: value } : s))
 
   const [formStep, setFormStep] = useState(1)
+
+  useEffect(() => {
+    if (triggerNewExp && triggerNewExp > 0) {
+      setEditingExp(null)
+      setFormData(BLANK_FORM)
+      setFormStep(1)
+      setImagePreview(null)
+      setGalleryPreviews([])
+      setSaveError('')
+      setShowForm(true)
+    }
+  }, [triggerNewExp])
 
   const WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
   const [schedule, setSchedule] = useState(
@@ -769,13 +781,6 @@ function ExperiencesPanel({ commissionRate, initialExperiences }: { commissionRa
             </div>
           </div>
         ))}
-      </div>
-
-      <div className="sm:hidden mt-4" style={{ display: readOnly ? 'none' : undefined }}>
-        <button onClick={() => setShowForm(true)} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl"
-          style={{ backgroundColor: '#111111', color: 'white', fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
-          <Plus size={15} /> New Experience
-        </button>
       </div>
 
       {/* Create modal — step-by-step wizard */}
@@ -1920,12 +1925,42 @@ const HOST_NOTIF_DEFAULTS  = { newBooking: true, cancellation: true, review: fal
 
 function SettingsPanel() {
   const readOnly = useContext(ReadOnlyContext)
-  const { t } = useLanguage()
+  const { t, locale, setLocale } = useLanguage()
   const [notifs, setNotifs]   = useState(HOST_NOTIF_DEFAULTS)
   const [payout, setPayout]   = useState({ bankName: '', accountNumber: '', accountHolder: '' })
   const [saved, setSaved]     = useState(false)
   const [saving, setSaving]   = useState(false)
   const [notifSaved, setNotifSaved] = useState(false)
+  const [pushState, setPushState] = useState<'unknown' | 'granted' | 'denied' | 'subscribing'>('unknown')
+
+  useEffect(() => {
+    if (typeof Notification !== 'undefined') {
+      setPushState(Notification.permission === 'granted' ? 'granted' : Notification.permission === 'denied' ? 'denied' : 'unknown')
+    }
+  }, [])
+
+  const enablePush = async () => {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return
+    setPushState('subscribing')
+    try {
+      const reg = await navigator.serviceWorker.register('/sw.js')
+      const permission = await Notification.requestPermission()
+      if (permission !== 'granted') { setPushState('denied'); return }
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+      })
+      const json = sub.toJSON()
+      await fetch('/api/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ endpoint: sub.endpoint, keys: json.keys }),
+      })
+      setPushState('granted')
+    } catch {
+      setPushState('unknown')
+    }
+  }
 
   useEffect(() => {
     getOperatorSettingsAction().then(s => {
@@ -2009,6 +2044,32 @@ function SettingsPanel() {
               <input value={payout.accountHolder} onChange={e => setPayout(p => ({ ...p, accountHolder: e.target.value }))}
                 style={{ width: '100%', height: 42, borderRadius: 10, border: '1px solid #E8E4DE', padding: '0 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none' }} />
             </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
+          <h2 className="mb-1" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>{t('db_push_label')}</h2>
+          <p className="mb-4" style={{ fontSize: 13, color: '#6F675C' }}>{t('db_push_desc')}</p>
+          {pushState === 'denied' ? (
+            <p style={{ fontSize: 13, color: '#B66A45', fontWeight: 500 }}>{t('db_push_denied')}</p>
+          ) : (
+            <button onClick={enablePush} disabled={pushState === 'granted' || pushState === 'subscribing'}
+              style={{ height: 40, paddingInline: 20, borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: pushState === 'granted' ? 'default' : 'pointer', fontFamily: 'var(--font-inter)', transition: 'all 0.15s', border: 'none', backgroundColor: pushState === 'granted' ? '#F0F7F2' : '#111111', color: pushState === 'granted' ? '#4A7C59' : 'white', opacity: pushState === 'subscribing' ? 0.6 : 1 }}>
+              {pushState === 'granted' ? t('db_push_enabled') : pushState === 'subscribing' ? '…' : t('db_push_enable')}
+            </button>
+          )}
+        </div>
+
+        <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E8E4DE' }}>
+          <h2 className="mb-1" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>{t('db_language_label')}</h2>
+          <p className="mb-4" style={{ fontSize: 13, color: '#6F675C' }}>{t('db_language_desc')}</p>
+          <div className="flex gap-2">
+            {([['en', 'English'], ['id', 'Bahasa Indonesia']] as const).map(([code, label]) => (
+              <button key={code} onClick={() => setLocale(code)}
+                style={{ height: 40, paddingInline: 20, borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-inter)', transition: 'all 0.15s', border: locale === code ? 'none' : '1px solid #E8E4DE', backgroundColor: locale === code ? '#111111' : 'white', color: locale === code ? 'white' : '#6F675C' }}>
+                {label}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -2728,7 +2789,7 @@ function HostNotifBell({ onSettings, align = 'left', dark = false }: { onSetting
 
 function SidebarInner({ activeNav, setActiveNav, hostName, unreadMessages }: { activeNav: string; setActiveNav: (id: string) => void; hostName?: string; unreadMessages?: number }) {
   const { data: session } = useSession()
-  const { t } = useLanguage()
+  const { t, locale, setLocale } = useLanguage()
   const displayName = hostName ?? session?.user?.name ?? 'Host'
   const initial = displayName.charAt(0).toUpperCase()
   return (
@@ -2775,6 +2836,15 @@ function SidebarInner({ activeNav, setActiveNav, hostName, unreadMessages }: { a
       </nav>
 
       <div className="mx-3 mb-6 space-y-1">
+        {/* Language toggle */}
+        <div className="flex items-center gap-1 px-3 py-2">
+          {(['en', 'id'] as const).map(l => (
+            <button key={l} onClick={() => setLocale(l)}
+              style={{ flex: 1, height: 28, borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 600, fontFamily: 'var(--font-inter)', letterSpacing: '0.05em', transition: 'all 0.15s', backgroundColor: locale === l ? '#C8A97E' : 'rgba(255,255,255,0.08)', color: locale === l ? 'white' : 'rgba(255,255,255,0.4)' }}>
+              {l.toUpperCase()}
+            </button>
+          ))}
+        </div>
         <a href="/" className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors"
           style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, fontFamily: 'var(--font-inter)', textDecoration: 'none' }}>
           {t('db_back_to_site')}
@@ -2973,6 +3043,7 @@ export default function DashboardPage() {
 
   const [activeNav, setActiveNav]   = useState('overview')
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [triggerNewExp, setTriggerNewExp] = useState(0)
   const [liveExperiences, setLiveExperiences]     = useState<DashExp[] | undefined>(undefined)
   const [liveBookings, setLiveBookings]           = useState<DashBooking[] | undefined>(undefined)
   const [liveReviews, setLiveReviews]             = useState<DashReview[] | undefined>(undefined)
@@ -3026,7 +3097,7 @@ export default function DashboardPage() {
   const renderPanel = () => {
     switch (activeNav) {
       case 'overview':      return <OverviewPanel onNav={setActiveNav} commissionRate={commissionRate} experiences={liveExperiences} bookings={liveBookings} reviews={liveReviews} hostName={liveHostName} earningsByMonth={liveEarningsByMonth} pendingPayout={livePendingPayout} payouts={livePayouts} />
-      case 'experiences':   return <ExperiencesPanel commissionRate={commissionRate} initialExperiences={liveExperiences} />
+      case 'experiences':   return <ExperiencesPanel commissionRate={commissionRate} initialExperiences={liveExperiences} triggerNewExp={triggerNewExp} />
       case 'events':        return <EventsPanel />
       case 'bookings':      return <BookingsPanel initialBookings={liveBookings} />
       case 'availability':  return <AvailabilityPanel bookings={liveBookings} />
@@ -3089,7 +3160,15 @@ export default function DashboardPage() {
           <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>
             {(() => { const item = NAV_ITEMS.find(n => n.id === activeNav); return item ? t(item.labelKey) : 'Dashboard' })()}
           </span>
-          <HostNotifBell onSettings={() => setActiveNav('settings')} align="right" dark />
+          <div className="flex items-center gap-2">
+            {activeNav === 'experiences' && !readOnly && (
+              <button onClick={() => setTriggerNewExp(n => n + 1)}
+                style={{ width: 34, height: 34, backgroundColor: '#111111', color: 'white', border: 'none', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                <Plus size={17} />
+              </button>
+            )}
+            <HostNotifBell onSettings={() => setActiveNav('settings')} align="right" dark />
+          </div>
         </div>
 
         {renderPanel()}
