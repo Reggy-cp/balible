@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Heart, Star, X } from 'lucide-react'
+import { Star, X } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 
 const HOST_KEY = 'balible_saved_hosts'
@@ -22,7 +22,7 @@ export function HostChatButton({ firstName, operatorId }: { firstName: string; o
       className="flex items-center gap-2 hover:opacity-90 transition-opacity"
       style={{ height: 44, paddingInline: 22, borderRadius: 22, backgroundColor: 'white', color: '#111111', fontSize: 14, fontWeight: 600, textDecoration: 'none', flexShrink: 0 }}
     >
-      💬 Chat with {firstName}
+      Chat with {firstName}
     </a>
   )
 }
@@ -48,7 +48,6 @@ export function SaveHostButton({ slug }: { slug: string }) {
       className="flex items-center gap-2 hover:opacity-90 transition-opacity"
       style={{ height: 44, paddingInline: 20, borderRadius: 22, border: '1.5px solid rgba(255,255,255,0.4)', backgroundColor: 'transparent', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}
     >
-      <Heart size={15} fill={saved ? '#ef4444' : 'none'} color={saved ? '#ef4444' : 'white'} />
       {saved ? 'Saved' : 'Save host'}
     </button>
   )
