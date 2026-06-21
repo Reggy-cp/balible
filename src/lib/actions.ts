@@ -1571,7 +1571,7 @@ export async function updateHostProfileAction(input: {
   name?: string; businessName?: string; bio?: string
   phone?: string; area?: string; languages?: string
   website?: string; address?: string; city?: string; country?: string
-  nationality?: string; dateOfBirth?: string
+  nationality?: string; dateOfBirth?: string; avatar?: string
 }): Promise<{ ok: boolean; error?: string }> {
   try {
     const user = await getSessionUser()
@@ -1591,6 +1591,7 @@ export async function updateHostProfileAction(input: {
         address: input.address?.trim() || null,
         city: input.city?.trim() || null,
         country: input.country?.trim() || null,
+        ...(input.avatar !== undefined ? { avatar: input.avatar } : {}),
       },
     })
     const userUpdate: Record<string, unknown> = {}

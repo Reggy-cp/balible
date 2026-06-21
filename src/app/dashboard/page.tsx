@@ -1604,6 +1604,9 @@ function ProfilePanel({ profile: liveProfile }: { profile?: HostProfile }) {
   const [saved, setSaved]   = useState(false)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(false)
+  const [avatarUploading, setAvatarUploading] = useState(false)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const avatarInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!liveProfile) return
@@ -1619,7 +1622,22 @@ function ProfilePanel({ profile: liveProfile }: { profile?: HostProfile }) {
     }))
   }, [liveProfile])
 
-  const avatarSrc = (liveProfile?.image ?? session?.user?.image) ?? null
+  const avatarSrc = avatarPreview ?? (liveProfile?.image ?? session?.user?.image) ?? null
+
+  const uploadAvatar = async (file: File) => {
+    setAvatarUploading(true)
+    try {
+      const fd = new FormData(); fd.append('file', file)
+      const res = await fetch('/api/upload-image', { method: 'POST', body: fd })
+      const json = await res.json()
+      const url: string = json.url
+      if (!url) return
+      setAvatarPreview(url)
+      await updateHostProfileAction({ avatar: url })
+    } catch { /* silent */ } finally {
+      setAvatarUploading(false)
+    }
+  }
 
   const save = async () => {
     if (readOnly || saving) return
@@ -1671,10 +1689,26 @@ function ProfilePanel({ profile: liveProfile }: { profile?: HostProfile }) {
               }
             </div>
             {!readOnly && (
-              <button className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: '#111111', border: 'none', cursor: 'pointer' }}>
-                <Camera size={12} style={{ color: 'white' }} />
-              </button>
+              <>
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={e => { const f = e.target.files?.[0]; if (f) uploadAvatar(f); e.target.value = '' }}
+                />
+                <button
+                  onClick={() => avatarInputRef.current?.click()}
+                  disabled={avatarUploading}
+                  className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: '#111111', border: 'none', cursor: avatarUploading ? 'default' : 'pointer', opacity: avatarUploading ? 0.6 : 1 }}
+                  title="Change profile photo"
+                >
+                  {avatarUploading
+                    ? <span style={{ width: 10, height: 10, border: '2px solid white', borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.7s linear infinite' }} />
+                    : <Camera size={12} style={{ color: 'white' }} />}
+                </button>
+              </>
             )}
           </div>
           <div>
