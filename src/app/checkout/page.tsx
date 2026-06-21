@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { ChevronUp, Shield, Award, Clock, Edit2, Lock, MapPin } from 'lucide-react'
+import Image from 'next/image'
 import MobileNav from '@/components/MobileNav'
 import { createBookingAction, createRentalBookingAction, getExperienceForCheckout, getBookingStatusAction, getExperienceScheduleAction, getBookedSlotsAction, type ExpCheckoutMeta } from '@/lib/actions'
 
@@ -883,8 +884,8 @@ function RentalCheckout({ params }: { params: URLSearchParams }) {
     <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
       <nav className="bg-white" style={{ height: 56, borderBottom: '1px solid #E8E4DE' }}>
         <div className="flex items-center justify-between h-full px-6 lg:px-16 max-w-[1440px] mx-auto">
-          <a href="/" className="flex flex-col leading-none" style={{ textDecoration: 'none' }}>
-            <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111' }}>BALIBLE</span>
+          <a href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+            <Image src="/logo-dark.png" alt="Balible" width={120} height={36} style={{ objectFit: 'contain', height: 32, width: 'auto', display: 'block' }} priority />
           </a>
           <div className="flex items-center gap-1.5">
             <Lock size={12} style={{ color: '#4A7C59' }} />
@@ -1160,8 +1161,8 @@ function CheckoutInner() {
     <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh' }}>
       <nav className="bg-white" style={{ height: 56, borderBottom: '1px solid #E8E4DE' }}>
         <div className="flex items-center justify-between h-full px-6 lg:px-16 max-w-[1440px] mx-auto">
-          <a href="/" className="flex flex-col leading-none" style={{ textDecoration: 'none' }}>
-            <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111' }}>BALIBLE</span>
+          <a href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+            <Image src="/logo-dark.png" alt="Balible" width={120} height={36} style={{ objectFit: 'contain', height: 32, width: 'auto', display: 'block' }} priority />
           </a>
           <div className="flex items-center gap-1.5">
             <Lock size={12} style={{ color: '#4A7C59' }} />
