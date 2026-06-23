@@ -2164,6 +2164,72 @@ function AnalyticsPanel() {
     }
   }, [tab, days, useCustom, customStart, customEnd])
 
+  const exportAnalytics = () => {
+    if (!data) return
+    const fmt = (v: number) => `IDR ${v.toLocaleString('id-ID')}`
+    const period = useCustom && customStart && customEnd ? `${customStart} to ${customEnd}` : `Last ${effectiveDays} days`
+
+    const sections: string[][] = [
+      ['Balible Analytics Export', period, new Date().toLocaleDateString('en-US', { dateStyle: 'long' })],
+      [],
+      ['=== OVERVIEW METRICS ==='],
+      ['Metric', 'Value', 'vs Prev Period'],
+      ['Bookings',          String(data.metrics.bookings.value),           `${data.metrics.bookings.change}%`],
+      ['Gross Revenue',     fmt(data.metrics.revenue.value),               `${data.metrics.revenue.change}%`],
+      ['Platform Revenue',  fmt(data.metrics.platformRevenue.value),       `${data.metrics.platformRevenue.change}%`],
+      [`Service Fee (${Math.round(data.serviceFeeRate*100)}%)`, fmt(data.metrics.serviceFee.value), `${data.metrics.serviceFee.change}%`],
+      [`Commission (${Math.round(data.commissionRate*100)}%)`,  fmt(data.metrics.commission.value),  `${data.metrics.commission.change}%`],
+      ['Avg Booking Value', fmt(data.metrics.avgBookingValue.value),        `${data.metrics.avgBookingValue.change}%`],
+      ['New Users',         String(data.metrics.newUsers.value),            `${data.metrics.newUsers.change}%`],
+      ['New Hosts',         String(data.metrics.newHosts.value),            `${data.metrics.newHosts.change}%`],
+      ['Cancel Rate',       `${data.metrics.cancelRate.value}%`,            `${data.metrics.cancelRate.change}%`],
+      ['Cancelled Bookings', String(data.metrics.cancelledBookings.value),  `${data.metrics.cancelledBookings.change}%`],
+      ['Cancelled Revenue', fmt(data.metrics.cancelledRevenue.value),       `${data.metrics.cancelledRevenue.change}%`],
+      [],
+      ['=== COMMISSION BREAKDOWN ==='],
+      ['Type', 'Commission'],
+      ['Experiences', fmt(data.metrics.commissionExp.value)],
+      ['Rentals',     fmt(data.metrics.commissionRentals.value)],
+      ['Events',      fmt(data.metrics.commissionEvents.value)],
+      [],
+      ['=== SERVICE FEE BREAKDOWN ==='],
+      ['Type', 'Service Fee'],
+      ['Experiences', fmt(data.metrics.serviceFeeExp.value)],
+      ['Rentals',     fmt(data.metrics.serviceFeeRentals.value)],
+      ['Events',      fmt(data.metrics.serviceFeeEvents.value)],
+      [],
+      ['=== BOOKING TREND ==='],
+      ['Period', 'Current', 'Previous'],
+      ...data.bookingTrend.map(r => [r.label, String(r.current), String(r.prev)]),
+      [],
+      ['=== REVENUE TREND ==='],
+      ['Period', 'Current (IDR)', 'Previous (IDR)'],
+      ...data.revenueTrend.map(r => [r.label, String(r.current), String(r.prev)]),
+      [],
+      ['=== TOP EXPERIENCES ==='],
+      ['Title', 'Category', 'Area', 'Bookings', 'Revenue', 'Rating'],
+      ...data.topExperiences.map(e => [e.title, e.category, e.area, String(e.bookings), String(e.revenue), String(e.rating)]),
+      [],
+      ['=== CATEGORY BREAKDOWN ==='],
+      ['Category', 'Bookings', 'Revenue', 'Share %'],
+      ...data.categoryBreakdown.map(c => [c.name, String(c.bookings), String(c.revenue), `${c.pct}%`]),
+      [],
+      ['=== TOP HOSTS ==='],
+      ['Host', 'Business', 'Bookings', 'Revenue'],
+      ...data.topHosts.map(h => [h.name, h.business, String(h.bookings), String(h.revenue)]),
+      [],
+      ['=== BOOKING STATUS ==='],
+      ['Status', 'Count'],
+      ...data.bookingStatus.map(s => [s.status, String(s.count)]),
+    ]
+
+    const csv = sections.map(row => row.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n')
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }))
+    a.download = `balible-analytics-${period.replace(/\s+/g, '-').toLowerCase()}.csv`
+    a.click()
+  }
+
   const PERIODS = [{ label: '7D', value: 7 }, { label: '30D', value: 30 }, { label: '3M', value: 90 }, { label: '12M', value: 365 }]
   const TABS = [
     { id: 'overview', label: 'Overview' },
@@ -2209,6 +2275,12 @@ function AnalyticsPanel() {
           <button onClick={() => { setUseCustom(v => !v); setCustomStart(''); setCustomEnd('') }}
             style={{ height: 36, padding: '0 14px', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', border: `1px solid ${SAND}`, backgroundColor: useCustom ? CHARCOAL : 'white', color: useCustom ? 'white' : COCONUT }}>
             {useCustom ? '✕ Clear' : 'Custom range'}
+          </button>
+          {/* Export */}
+          <button onClick={exportAnalytics} disabled={!data || loading}
+            className="flex items-center gap-1.5 hover:opacity-80 disabled:opacity-40"
+            style={{ height: 36, padding: '0 14px', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', border: `1px solid ${SAND}`, backgroundColor: 'white', color: COCONUT }}>
+            <Download size={13} /> Export CSV
           </button>
         </div>
       </div>
