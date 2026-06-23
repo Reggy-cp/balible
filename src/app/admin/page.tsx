@@ -3511,7 +3511,7 @@ function SettingsPanel() {
     const [res] = await Promise.all([
       updateCommissionRateAction(parseInt(commission || '0', 10)),
       saveAdminSettingsAction({
-        service_fee:  JSON.stringify(serviceFee),
+        service_fee:  JSON.stringify(serviceFee.replace(',', '.')),
         platform:     JSON.stringify(platform),
         admin_notifs: JSON.stringify(notifs),
       }),
@@ -3574,8 +3574,8 @@ function SettingsPanel() {
               <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: COCONUT, marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Guest service fee (%)</label>
               <div className="flex items-center gap-2 mb-2">
                 <input
-                  type="text" inputMode="numeric" value={serviceFee}
-                  onChange={e => { const v = e.target.value.replace(/[^0-9]/g, ''); if (v === '' || parseInt(v) <= 100) setServiceFee(v) }}
+                  type="text" inputMode="decimal" value={serviceFee}
+                  onChange={e => { const v = e.target.value.replace(/[^0-9.,]/g, '').replace(/,/g, '.'); if (v === '' || parseFloat(v) <= 100) setServiceFee(v) }}
                   style={{ width: 100, height: 42, borderRadius: 10, border: `1px solid ${SAND}`, padding: '0 14px', fontSize: 18, fontFamily: 'var(--font-playfair)', fontWeight: 700, color: CHARCOAL, outline: 'none', textAlign: 'center' }} />
                 <span style={{ fontSize: 18, color: COCONUT, fontWeight: 700 }}>%</span>
               </div>
