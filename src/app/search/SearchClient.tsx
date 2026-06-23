@@ -330,6 +330,7 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
     filters.duration !== 'Any duration',
     filters.priceRange[0] > 0 || filters.priceRange[1] < PRICE_MAX,
     filters.guests > 1,
+    !!filters.date,
   ].filter(Boolean).length
 
   return (
@@ -498,8 +499,13 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
           </div>
 
           {/* Active filter chips */}
-          {(activeSidebarCount > 0 || !!filters.date) && (
+          {(activeSidebarCount > 0 || filters.category !== 'All') && (
             <div className="flex flex-wrap gap-2 mb-4">
+              {filters.category !== 'All' && (
+                <button onClick={() => updateFilters({ category: 'All' })} className="flex items-center gap-1 px-3 py-1 rounded-full" style={{ backgroundColor: '#C8A97E', color: 'white', fontSize: 12, fontFamily: 'var(--font-inter)', border: 'none', cursor: 'pointer' }}>
+                  {filters.category} <X size={10} />
+                </button>
+              )}
               {filters.location !== 'All Locations' && (
                 <button onClick={() => updateFilters({ location: 'All Locations' })} className="flex items-center gap-1 px-3 py-1 rounded-full" style={{ backgroundColor: '#111111', color: 'white', fontSize: 12, fontFamily: 'var(--font-inter)', border: 'none', cursor: 'pointer' }}>
                   {filters.location} <X size={10} />
@@ -536,7 +542,7 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
             <div className="flex flex-col items-center justify-center py-24 text-center">
               <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#111111', marginBottom: 8 }}>No results found</p>
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', marginBottom: 20 }}>Try adjusting your filters or search term.</p>
-              <button onClick={() => { setSearch(''); setFilters(DEFAULT_FILTERS) }} style={{ height: 40, padding: '0 20px', backgroundColor: '#111111', color: 'white', borderRadius: 8, fontSize: 13, fontWeight: 500, border: 'none', cursor: 'pointer' }}>
+              <button onClick={() => { setSearch(''); setFilters(DEFAULT_FILTERS); setSort('Recommended') }} style={{ height: 40, padding: '0 20px', backgroundColor: '#111111', color: 'white', borderRadius: 8, fontSize: 13, fontWeight: 500, border: 'none', cursor: 'pointer' }}>
                 Clear all filters
               </button>
             </div>
