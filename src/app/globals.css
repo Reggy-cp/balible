@@ -109,6 +109,25 @@ input[type="range"].price-range::-moz-range-thumb {
   pointer-events: all;
 }
 
+/* Dashboard mobile layout */
+.dashboard-main-pb {
+  padding-bottom: max(80px, calc(60px + env(safe-area-inset-bottom)));
+}
+@media (min-width: 1024px) {
+  .dashboard-main-pb {
+    padding-bottom: 32px;
+  }
+}
+
+.messages-panel-height {
+  height: calc(100vh - 260px - env(safe-area-inset-bottom));
+}
+@media (min-width: 1024px) {
+  .messages-panel-height {
+    height: calc(100vh - 200px);
+  }
+}
+
 /* Line clamp utilities */
 .line-clamp-2 {
   display: -webkit-box;

@@ -212,7 +212,7 @@ function WithdrawModal({ onClose, pendingNet, commissionRate, isRequested, isPai
   ) : isRequested ? (
     <div className="p-6 text-center">
       <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3" style={{ backgroundColor: '#FDF8F4' }}>
-        <span style={{ fontSize: 28 }}>⏳</span>
+        <Clock size={28} style={{ color: '#C8A97E' }} />
       </div>
       <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 8 }}>{t('db_withdrawal_progress')}</p>
       <p style={{ fontSize: 13, color: '#6F675C', lineHeight: 1.55 }}>{t('db_withdrawal_processing')}</p>
@@ -480,7 +480,7 @@ function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences, bo
             <button onClick={() => setWithdrawOpen(true)}
               className="w-full flex items-center justify-center hover:opacity-90 transition-opacity"
               style={{ height: 36, borderRadius: 9, border: isPayoutRequested || isPayoutPaid ? '1px solid #E8E4DE' : 'none', backgroundColor: isPayoutRequested || isPayoutPaid ? 'white' : '#111111', color: isPayoutRequested || isPayoutPaid ? '#6F675C' : 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-              {isPayoutPaid ? `${t('db_payout_sent')} ✓` : isPayoutRequested ? `${t('db_withdrawal_pending')} ⏳` : pendingNet !== null && pendingNet > 0 ? `${t('db_withdraw')} ${fmt(pendingNet)}` : t('db_withdraw_earnings')}
+              {isPayoutPaid ? (<><Check size={14} /> {t('db_payout_sent')}</>) : isPayoutRequested ? (<><Clock size={14} /> {t('db_withdrawal_pending')}</>) : pendingNet !== null && pendingNet > 0 ? `${t('db_withdraw')} ${fmt(pendingNet)}` : t('db_withdraw_earnings')}
             </button>
             )}
           </div>
@@ -761,7 +761,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences, triggerNewExp }:
                 </div>
                 <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1.5">
                   <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>IDR {exp.price.toLocaleString('id-ID')}<span style={{ fontWeight: 400, color: '#6F675C' }}>/person</span></span>
-                  <span style={{ fontSize: 12, color: '#6F675C' }}>⭐ {exp.rating} ({exp.totalReviews})</span>
+                  <span style={{ fontSize: 12, color: '#6F675C', display: 'inline-flex', alignItems: 'center', gap: 3 }}><Star size={11} style={{ color: '#C8A97E', flexShrink: 0 }} /> {exp.rating} ({exp.totalReviews})</span>
                   <span style={{ fontSize: 12, color: '#6F675C' }}>{exp.bookings} {t('db_bookings_count')}</span>
                   <span style={{ fontSize: 12, fontWeight: 600, color: '#4A7C59' }}>{fmt(Math.round(exp.earnings * (100 - commissionRate) / 100))} <span style={{ fontSize: 10, fontWeight: 400, color: '#9E9A94' }}>{t('db_net')}</span></span>
                 </div>
@@ -1288,8 +1288,8 @@ function BookingsPanel({ initialBookings, initialEventBookings }: { initialBooki
                   </div>
                   <p className="mt-1.5" style={{ fontSize: 13, color: '#111111', fontWeight: 500 }}>{b.experience}</p>
                   <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
-                    <span style={{ fontSize: 12, color: '#6F675C' }}>📅 {b.date}{b.time ? ` · ${b.time}` : ''}</span>
-                    <span style={{ fontSize: 12, color: '#6F675C' }}>👤 {b.guests} guest{b.guests > 1 ? 's' : ''}</span>
+                    <span style={{ fontSize: 12, color: '#6F675C', display: 'inline-flex', alignItems: 'center', gap: 3 }}><CalendarDays size={11} style={{ flexShrink: 0 }} /> {b.date}{b.time ? ` · ${b.time}` : ''}</span>
+                    <span style={{ fontSize: 12, color: '#6F675C', display: 'inline-flex', alignItems: 'center', gap: 3 }}><Users size={11} style={{ flexShrink: 0 }} /> {b.guests} guest{b.guests > 1 ? 's' : ''}</span>
                     <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>IDR {b.total.toLocaleString('id-ID')}</span>
                   </div>
                   <p style={{ fontSize: 11, color: '#C8C4BE', marginTop: 3 }}>{b.ref} · {t('db_booked_label')} {b.bookedOn}</p>
@@ -1342,8 +1342,8 @@ function BookingsPanel({ initialBookings, initialEventBookings }: { initialBooki
                   </div>
                   <p className="mt-1.5" style={{ fontSize: 13, color: '#111111', fontWeight: 500 }}>{b.eventTitle}</p>
                   <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
-                    <span style={{ fontSize: 12, color: '#6F675C' }}>📅 {b.eventDate}</span>
-                    <span style={{ fontSize: 12, color: '#6F675C' }}>🎟 {b.tickets} ticket{b.tickets > 1 ? 's' : ''}</span>
+                    <span style={{ fontSize: 12, color: '#6F675C', display: 'inline-flex', alignItems: 'center', gap: 3 }}><CalendarDays size={11} style={{ flexShrink: 0 }} /> {b.eventDate}</span>
+                    <span style={{ fontSize: 12, color: '#6F675C', display: 'inline-flex', alignItems: 'center', gap: 3 }}><Ticket size={11} style={{ flexShrink: 0 }} /> {b.tickets} ticket{b.tickets > 1 ? 's' : ''}</span>
                     <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>{b.total === 0 ? 'Free' : `IDR ${b.total.toLocaleString('id-ID')}`}</span>
                   </div>
                   <p style={{ fontSize: 11, color: '#C8C4BE', marginTop: 3 }}>{b.ref.slice(0, 8).toUpperCase()} · Booked {b.bookedOn}</p>
@@ -3419,7 +3419,7 @@ function MessagesPanel() {
   return (
     <div>
       <PageHeader title={t('db_messages_title')} subtitle={t('db_messages_sub')} />
-      <div className="flex gap-4" style={{ height: 'calc(100vh - 200px)', minHeight: 400 }}>
+      <div className="flex gap-4 messages-panel-height" style={{ minHeight: 400 }}>
 
         {/* Conversation list — hidden on mobile when thread is open */}
         <div className={`${selected ? 'hidden lg:flex' : 'flex'} bg-white rounded-xl overflow-hidden flex-shrink-0`} style={{ width: '100%', maxWidth: 280, border: '1px solid #E8E4DE', flexDirection: 'column' }}>
@@ -3634,7 +3634,7 @@ export default function DashboardPage() {
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 min-w-0 p-5 lg:p-8 pb-20 lg:pb-8">
+      <main className="flex-1 min-w-0 p-5 lg:p-8 lg:pb-8 dashboard-main-pb">
 
         {/* Admin read-only view banner */}
         {readOnly && (
@@ -3652,8 +3652,11 @@ export default function DashboardPage() {
 
         {/* Mobile top bar */}
         <div className="flex items-center justify-between mb-6 lg:hidden">
-          <button onClick={() => setSidebarOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+          <button onClick={() => setSidebarOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', position: 'relative', padding: 4 }}>
             <Menu size={22} style={{ color: '#111111' }} />
+            {unreadMessages > 0 && (
+              <span style={{ position: 'absolute', top: 2, right: 2, width: 8, height: 8, borderRadius: 4, backgroundColor: '#C8A97E', border: '1.5px solid #F5F1EB' }} />
+            )}
           </button>
           <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>
             {(() => { const item = NAV_ITEMS.find(n => n.id === activeNav); return item ? t(item.labelKey) : 'Dashboard' })()}
@@ -3673,19 +3676,21 @@ export default function DashboardPage() {
       </main>
 
       {/* Mobile bottom nav */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white z-40 flex items-center"
-        style={{ height: 60, borderTop: '1px solid #E8E4DE' }}>
-        {NAV_ITEMS.slice(0, 5).map(({ id, Icon, labelKey }) => {
-          const active = activeNav === id
-          return (
-            <button key={id} onClick={() => setActiveNav(id)}
-              className="flex flex-col items-center justify-center gap-0.5"
-              style={{ background: 'none', border: 'none', cursor: 'pointer', flex: 1, height: '100%' }}>
-              <Icon size={18} style={{ color: active ? '#C8A97E' : '#6F675C' }} />
-              <span style={{ fontSize: 9, color: active ? '#C8A97E' : '#6F675C', fontWeight: active ? 600 : 400 }}>{t(labelKey)}</span>
-            </button>
-          )
-        })}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white z-40"
+        style={{ borderTop: '1px solid #E8E4DE', paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        <div className="flex items-center" style={{ height: 60 }}>
+          {NAV_ITEMS.slice(0, 5).map(({ id, Icon, labelKey }) => {
+            const active = activeNav === id
+            return (
+              <button key={id} onClick={() => setActiveNav(id)}
+                className="flex flex-col items-center justify-center gap-0.5"
+                style={{ background: 'none', border: 'none', cursor: 'pointer', flex: 1, height: '100%' }}>
+                <Icon size={18} style={{ color: active ? '#C8A97E' : '#6F675C' }} />
+                <span style={{ fontSize: 9, color: active ? '#C8A97E' : '#6F675C', fontWeight: active ? 600 : 400 }}>{t(labelKey)}</span>
+              </button>
+            )
+          })}
+        </div>
       </nav>
     </div>
     </ReadOnlyContext.Provider>
