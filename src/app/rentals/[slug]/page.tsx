@@ -9,7 +9,6 @@ import RentalBookingWidget from './RentalBookingWidget'
 import RentalMobileModal from './RentalMobileModal'
 import RentalTabs from './RentalTabs'
 import RentalRecommendations from './RentalRecommendations'
-import ReadMore from '@/components/ReadMore'
 import { MapPin, Star, Clock, Package } from 'lucide-react'
 
 export const revalidate = 3600
@@ -124,13 +123,6 @@ export default async function RentalPage({ params }: { params: { slug: string } 
                 <span style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>{area}, Bali</span>
               </div>
             </div>
-
-            {/* Description preview — full text is in the About tab */}
-            {rental.description && (
-              <div className="mt-4">
-                <ReadMore text={rental.description} />
-              </div>
-            )}
 
             {/* Info badges */}
             <div className="flex flex-wrap gap-5 mt-5">
