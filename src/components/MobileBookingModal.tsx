@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 import BookingWidget from './BookingWidget'
 
@@ -13,12 +13,19 @@ export default function MobileBookingModal({
 }) {
   const [open, setOpen] = useState(false)
 
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden'
+      return () => { document.body.style.overflow = '' }
+    }
+  }, [open])
+
   return (
     <>
       {/* Sticky bottom bar */}
       <div
-        className="fixed bottom-16 md:bottom-0 left-0 right-0 z-40 lg:hidden bg-white px-4 py-3"
-        style={{ borderTop: '1px solid #E8E4DE', boxShadow: '0 -4px 16px rgba(0,0,0,0.08)' }}
+        className="fixed bottom-16 md:bottom-0 left-0 right-0 z-40 lg:hidden bg-white px-4 pt-3"
+        style={{ borderTop: '1px solid #E8E4DE', boxShadow: '0 -4px 16px rgba(0,0,0,0.08)', paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
       >
         <div className="flex items-center justify-between">
           <div>
@@ -80,7 +87,7 @@ export default function MobileBookingModal({
         </div>
 
         {/* Widget */}
-        <div className="px-5 pt-4 pb-12">
+        <div className="px-5 pt-4" style={{ paddingBottom: 'max(48px, env(safe-area-inset-bottom))' }}>
           <BookingWidget price={price} slug={slug} duration={duration} maxGuests={maxGuests} rating={rating} totalReviews={totalReviews} blockedDates={blockedDates} title={title} image={image} area={area} embedded />
         </div>
       </div>
