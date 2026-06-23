@@ -2163,7 +2163,7 @@ function AnalyticsPanel() {
         <div>
           {/* Metric cards */}
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-            <GAMetricCard label="Bookings"          value={data.metrics.bookings.value}        change={data.metrics.bookings.change}        good="up"   fmtValue={v => v.toLocaleString()} desc="Total confirmed & pending bookings (experiences + events)" />
+            <GAMetricCard label="Bookings"          value={data.metrics.bookings.value}        change={data.metrics.bookings.change}        good="up"   fmtValue={v => v.toLocaleString()} desc="All bookings created this period across experiences and events" />
             <GAMetricCard label="Gross Revenue"     value={data.metrics.revenue.value}         change={data.metrics.revenue.change}         good="up"   fmtValue={fmt}                     desc="Total amount paid by guests including service fees" />
             <GAMetricCard label="Platform Revenue"  value={data.metrics.platformRevenue.value} change={data.metrics.platformRevenue.change} good="up"   fmtValue={fmt}                     desc={`What Balible keeps — service fee + commission`} />
             <GAMetricCard label={`Commission (${Math.round(data.commissionRate * 100)}%)`} value={data.metrics.commission.value} change={data.metrics.commission.change} good="up" fmtValue={fmt} desc="Deducted from host gross before payout" />

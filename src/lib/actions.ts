@@ -2055,8 +2055,8 @@ export async function getAnalyticsDataAction(days: number): Promise<AnalyticsDat
       where: { createdAt: { gte: prevStart } },
       select: { createdAt: true, role: true },
     })
-    const currUsers = allUsers.filter(u => u.createdAt >= periodStart).length
-    const prevUsers = allUsers.filter(u => u.createdAt < periodStart).length
+    const currUsers = allUsers.filter(u => u.createdAt >= periodStart && u.role !== 'ADMIN').length
+    const prevUsers = allUsers.filter(u => u.createdAt < periodStart && u.role !== 'ADMIN').length
 
     // ── Hosts ─────────────────────────────────────────────────────────────────
     const allOps = await prisma.operator.findMany({
@@ -2090,52 +2090,64 @@ export async function getAnalyticsDataAction(days: number): Promise<AnalyticsDat
       const pEB = prevEB.filter(b => b.createdAt >= pbs && b.createdAt < pbe)
       const label = fmtLabel(bs)
       bookingTrend.push({ label, current: cB.length + cEB.length, prev: pB.length + pEB.length })
-      revenueTrend.push({ label, current: cB.reduce((a, b) => a + b.totalPrice, 0) + cEB.reduce((a, b) => a + b.totalPrice, 0), prev: pB.reduce((a, b) => a + b.totalPrice, 0) + pEB.reduce((a, b) => a + b.totalPrice, 0) })
-      userGrowth.push({ label, count: allUsers.filter(u => u.createdAt >= bs && u.createdAt < be).length })
+      // Revenue trend: paid bookings only
+      revenueTrend.push({
+        label,
+        current: cB.filter(b => PAID.includes(b.status)).reduce((a, b) => a + b.totalPrice, 0) + cEB.filter(b => PAID.includes(b.status)).reduce((a, b) => a + b.totalPrice, 0),
+        prev:    pB.filter(b => PAID.includes(b.status)).reduce((a, b) => a + b.totalPrice, 0) + pEB.filter(b => PAID.includes(b.status)).reduce((a, b) => a + b.totalPrice, 0),
+      })
+      userGrowth.push({ label, count: allUsers.filter(u => u.createdAt >= bs && u.createdAt < be && u.role !== 'ADMIN').length })
     }
 
-    // ── Top experiences ───────────────────────────────────────────────────────
+    // ── Top experiences (paid bookings only for revenue) ──────────────────────
     const expMap = new Map<string, AnalyticsData['topExperiences'][0]>()
     for (const b of curr) {
       const key = b.experience.title
       const e = expMap.get(key) ?? { title: b.experience.title, bookings: 0, revenue: 0, rating: b.experience.rating, area: AREA_DISPLAY[String(b.experience.area)] ?? String(b.experience.area), category: CATEGORY_DISPLAY[String(b.experience.category)] ?? String(b.experience.category) }
-      e.bookings++; e.revenue += b.totalPrice
+      e.bookings++
+      if (PAID.includes(b.status)) e.revenue += b.totalPrice
       expMap.set(key, e)
     }
     const topExperiences = Array.from(expMap.values()).sort((a, b) => b.bookings - a.bookings).slice(0, 10)
 
-    // ── Category breakdown ────────────────────────────────────────────────────
+    // ── Category breakdown (paid revenue only) ────────────────────────────────
     const catMap = new Map<string, { bookings: number; revenue: number }>()
     for (const b of curr) {
       const k = String(b.experience.category)
       const e = catMap.get(k) ?? { bookings: 0, revenue: 0 }
-      e.bookings++; e.revenue += b.totalPrice; catMap.set(k, e)
+      e.bookings++
+      if (PAID.includes(b.status)) e.revenue += b.totalPrice
+      catMap.set(k, e)
     }
     const totalCatB = Array.from(catMap.values()).reduce((a, b) => a + b.bookings, 0) || 1
     const categoryBreakdown = Array.from(catMap.entries()).sort((a, b) => b[1].bookings - a[1].bookings)
       .map(([cat, d]) => ({ name: CATEGORY_DISPLAY[cat] ?? cat, ...d, pct: Math.round((d.bookings / totalCatB) * 100), color: CAT_COLORS[cat] ?? '#9E9A94' }))
 
-    // ── Area breakdown ────────────────────────────────────────────────────────
+    // ── Area breakdown (paid revenue only) ────────────────────────────────────
     const areaMap = new Map<string, { bookings: number; revenue: number }>()
     for (const b of curr) {
       const k = AREA_DISPLAY[String(b.experience.area)] ?? String(b.experience.area)
       const e = areaMap.get(k) ?? { bookings: 0, revenue: 0 }
-      e.bookings++; e.revenue += b.totalPrice; areaMap.set(k, e)
+      e.bookings++
+      if (PAID.includes(b.status)) e.revenue += b.totalPrice
+      areaMap.set(k, e)
     }
     const areaBreakdown = Array.from(areaMap.entries()).sort((a, b) => b[1].bookings - a[1].bookings).map(([name, d]) => ({ name, ...d }))
 
-    // ── Top hosts ─────────────────────────────────────────────────────────────
+    // ── Top hosts (paid revenue only) ─────────────────────────────────────────
     const hostMap = new Map<string, AnalyticsData['topHosts'][0]>()
     for (const b of curr) {
       const k = b.experience.operator.businessName
       const h = hostMap.get(k) ?? { name: b.experience.operator.user.name, business: b.experience.operator.businessName, bookings: 0, revenue: 0, rating: 0 }
-      h.bookings++; h.revenue += b.totalPrice; hostMap.set(k, h)
+      h.bookings++
+      if (PAID.includes(b.status)) h.revenue += b.totalPrice
+      hostMap.set(k, h)
     }
     const topHosts = Array.from(hostMap.values()).sort((a, b) => b.revenue - a.revenue).slice(0, 10)
 
-    // ── Booking status ────────────────────────────────────────────────────────
+    // ── Booking status (exp + event bookings combined) ────────────────────────
     const statusMap = new Map<string, number>()
-    for (const b of curr) { const s = String(b.status); statusMap.set(s, (statusMap.get(s) ?? 0) + 1) }
+    for (const b of [...curr, ...currEB]) { const s = String(b.status); statusMap.set(s, (statusMap.get(s) ?? 0) + 1) }
     const bookingStatus = Array.from(statusMap.entries()).map(([s, count]) => ({
       status: s.charAt(0) + s.slice(1).toLowerCase(), count, color: STATUS_COLORS[s] ?? '#9E9A94',
     }))
