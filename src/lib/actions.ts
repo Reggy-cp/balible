@@ -1966,6 +1966,8 @@ export type AnalyticsData = {
     newHosts: AnalyticsMetric
     avgBookingValue: AnalyticsMetric
     cancelRate: AnalyticsMetric
+    cancelledBookings: AnalyticsMetric
+    cancelledRevenue: AnalyticsMetric
   }
   bookingTrend: { label: string; current: number; prev: number }[]
   revenueTrend:  { label: string; current: number; prev: number }[]
@@ -1992,7 +1994,7 @@ export async function getAnalyticsDataAction(days: number): Promise<AnalyticsDat
   const empty: AnalyticsData = {
     commissionRate: COMMISSION_RATE,
     serviceFeeRate: 0,
-    metrics: { bookings: { value: 0, change: 0 }, revenue: { value: 0, change: 0 }, commission: { value: 0, change: 0 }, platformRevenue: { value: 0, change: 0 }, newUsers: { value: 0, change: 0 }, newHosts: { value: 0, change: 0 }, avgBookingValue: { value: 0, change: 0 }, cancelRate: { value: 0, change: 0 } },
+    metrics: { bookings: { value: 0, change: 0 }, revenue: { value: 0, change: 0 }, commission: { value: 0, change: 0 }, platformRevenue: { value: 0, change: 0 }, newUsers: { value: 0, change: 0 }, newHosts: { value: 0, change: 0 }, avgBookingValue: { value: 0, change: 0 }, cancelRate: { value: 0, change: 0 }, cancelledBookings: { value: 0, change: 0 }, cancelledRevenue: { value: 0, change: 0 } },
     bookingTrend: [], revenueTrend: [], userGrowth: [],
     topExperiences: [], categoryBreakdown: [], areaBreakdown: [], topHosts: [], bookingStatus: [],
   }
@@ -2043,12 +2045,20 @@ export async function getAnalyticsDataAction(days: number): Promise<AnalyticsDat
     const prevPaidCount = prevPaid.length + prevPaidEB.length
     const currAvg  = currPaidCount ? Math.round(currRev / currPaidCount) : 0
     const prevAvg  = prevPaidCount ? Math.round(prevRev / prevPaidCount) : 0
-    const currCancelExp = curr.filter(b => b.status === 'CANCELLED').length
-    const currCancelEv  = currEB.filter(b => b.status === 'CANCELLED').length
-    const prevCancelExp = prev.filter(b => b.status === 'CANCELLED').length
-    const prevCancelEv  = prevEB.filter(b => b.status === 'CANCELLED').length
-    const currCancel = currAllCount ? Math.round(((currCancelExp + currCancelEv) / currAllCount) * 100) : 0
-    const prevCancel = prevAllCount ? Math.round(((prevCancelExp + prevCancelEv) / prevAllCount) * 100) : 0
+    const currCancelledExp = curr.filter(b => b.status === 'CANCELLED')
+    const currCancelledEv  = currEB.filter(b => b.status === 'CANCELLED')
+    const prevCancelledExp = prev.filter(b => b.status === 'CANCELLED')
+    const prevCancelledEv  = prevEB.filter(b => b.status === 'CANCELLED')
+    const currCancelExp = currCancelledExp.length
+    const currCancelEv  = currCancelledEv.length
+    const prevCancelExp = prevCancelledExp.length
+    const prevCancelEv  = prevCancelledEv.length
+    const currCancelCount = currCancelExp + currCancelEv
+    const prevCancelCount = prevCancelExp + prevCancelEv
+    const currCancelRev = currCancelledExp.reduce((a, b) => a + b.totalPrice, 0) + currCancelledEv.reduce((a, b) => a + b.totalPrice, 0)
+    const prevCancelRev = prevCancelledExp.reduce((a, b) => a + b.totalPrice, 0) + prevCancelledEv.reduce((a, b) => a + b.totalPrice, 0)
+    const currCancel = currAllCount ? Math.round((currCancelCount / currAllCount) * 100) : 0
+    const prevCancel = prevAllCount ? Math.round((prevCancelCount / prevAllCount) * 100) : 0
 
     // ── Users ─────────────────────────────────────────────────────────────────
     const allUsers = await prisma.user.findMany({
@@ -2174,7 +2184,9 @@ export async function getAnalyticsDataAction(days: number): Promise<AnalyticsDat
         newUsers:        { value: currUsers,       change: pct(currUsers, prevUsers) },
         newHosts:        { value: currHosts,       change: pct(currHosts, prevHosts) },
         avgBookingValue: { value: currAvg,         change: pct(currAvg, prevAvg) },
-        cancelRate:      { value: currCancel,      change: pct(currCancel, prevCancel) },
+        cancelRate:        { value: currCancel,       change: pct(currCancel, prevCancel) },
+        cancelledBookings: { value: currCancelCount,  change: pct(currCancelCount, prevCancelCount) },
+        cancelledRevenue:  { value: currCancelRev,    change: pct(currCancelRev, prevCancelRev) },
       },
       bookingTrend, revenueTrend, userGrowth,
       topExperiences, categoryBreakdown, areaBreakdown, topHosts, bookingStatus,
