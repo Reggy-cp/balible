@@ -2823,6 +2823,12 @@ function PhotosPanel({ experiences, profile }: { experiences?: DashExp[]; profil
     if (profile?.galleryImageAlts) setGalleryImageAlts(profile.galleryImageAlts)
   }, [profile])
 
+  useEffect(() => {
+    if (!experiences || dirty) return
+    setGalleries(Object.fromEntries(experiences.map(e => [e.id, e.images.length > 0 ? e.images : [e.image].filter(Boolean)])))
+    setExpAlts(Object.fromEntries(experiences.map(e => [e.id, e.imageAlts ?? []])))
+  }, [experiences])
+
   const uploadToBlob = async (file: File, hint: string): Promise<{ url: string; alt: string } | null> => {
     const fd = new FormData(); fd.append('file', file); fd.append('hint', hint)
     const res = await fetch('/api/upload-image', { method: 'POST', body: fd })
@@ -2860,26 +2866,29 @@ function PhotosPanel({ experiences, profile }: { experiences?: DashExp[]; profil
   }
 
   const addPhoto = (expId: number, src: string, alt = '') => {
-    setGalleries(prev => { const arr = [...(prev[expId] ?? []), src]; setDirty(true); return { ...prev, [expId]: arr } })
+    setGalleries(prev => { const arr = [...(prev[expId] ?? []), src]; return { ...prev, [expId]: arr } })
     setExpAlts(prev => { const arr = [...(prev[expId] ?? []), alt]; return { ...prev, [expId]: arr } })
+    setDirty(true)
   }
 
   const removePhoto = (expId: number, idx: number) => {
-    setGalleries(prev => { const arr = [...(prev[expId] ?? [])]; arr.splice(idx, 1); setDirty(true); return { ...prev, [expId]: arr } })
+    setGalleries(prev => { const arr = [...(prev[expId] ?? [])]; arr.splice(idx, 1); return { ...prev, [expId]: arr } })
     setExpAlts(prev => { const arr = [...(prev[expId] ?? [])]; arr.splice(idx, 1); return { ...prev, [expId]: arr } })
+    setDirty(true)
   }
 
   const setCover = (expId: number, idx: number) => {
     setGalleries(prev => {
       const arr = [...(prev[expId] ?? [])]
       const [photo] = arr.splice(idx, 1); arr.unshift(photo)
-      setDirty(true); return { ...prev, [expId]: arr }
+      return { ...prev, [expId]: arr }
     })
     setExpAlts(prev => {
       const arr = [...(prev[expId] ?? [])]
       const [alt] = arr.splice(idx, 1); arr.unshift(alt)
       return { ...prev, [expId]: arr }
     })
+    setDirty(true)
   }
 
   const handleFile = async (expId: number, file: File) => {
