@@ -61,13 +61,6 @@ export default function DestinationExperiences({
               : `Explore ${firstName}`}
           </h2>
         </div>
-        <a
-          href={`/search?location=${areaSlug}`}
-          className="hidden sm:flex items-center gap-1.5 hover:opacity-80 transition-opacity"
-          style={{ fontSize: 13, color, fontWeight: 600, textDecoration: 'none' }}
-        >
-          View all <ArrowRight size={13} />
-        </a>
       </div>
 
       {experiences.length > 0 && (
@@ -204,14 +197,11 @@ export default function DestinationExperiences({
                           <span style={{ fontSize: 12, color: '#6F675C' }}>{formatDuration(exp.durationMins)}</span>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between pt-3" style={{ borderTop: '1px solid #E8E4DE' }}>
-                        <div>
-                          <span style={{ fontSize: 11, color: '#6F675C' }}>From </span>
-                          <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: '#111111' }}>
-                            IDR {exp.price.toLocaleString('id-ID')}
-                          </span>
-                        </div>
-                        <span style={{ fontSize: 12, color, fontWeight: 600 }}>Book →</span>
+                      <div className="pt-3" style={{ borderTop: '1px solid #E8E4DE' }}>
+                        <span style={{ fontSize: 11, color: '#6F675C' }}>From </span>
+                        <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: '#111111' }}>
+                          IDR {exp.price.toLocaleString('id-ID')}
+                        </span>
                       </div>
                     </div>
                   </div>

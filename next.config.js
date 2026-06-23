@@ -24,6 +24,11 @@ const nextConfig = {
       { source: '/:path*', headers: securityHeaders },
     ]
   },
+  async redirects() {
+    return [
+      { source: '/experiences', destination: '/search', permanent: true },
+    ]
+  },
 }
 
 module.exports = nextConfig

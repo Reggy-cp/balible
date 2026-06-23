@@ -910,6 +910,41 @@ function ExperiencesPanel({ commissionRate, initialExperiences, triggerNewExp }:
                     <label style={labelStyle}>{t('db_whats_not_included')}</label>
                     <textarea value={formData.excludes} onChange={e => setField('excludes', e.target.value)} placeholder={"One item per line\ne.g. Transport to venue\nGratuities"} rows={4} style={{ ...inputStyle, resize: 'none' }} />
                   </div>
+                  <div>
+                    <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
+                      <label style={labelStyle}>Itinerary <span style={{ fontWeight: 400, color: '#9E9A94' }}>(optional)</span></label>
+                      <button type="button" onClick={addStep}
+                        style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: '#C8A97E', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                        <Plus size={13} /> Add step
+                      </button>
+                    </div>
+                    <div className="space-y-2">
+                      {itinerary.map((step, idx) => (
+                        <div key={idx} className="flex gap-2 items-start">
+                          <input
+                            type="text"
+                            value={step.time}
+                            onChange={e => updateStep(idx, 'time', e.target.value)}
+                            placeholder="e.g. 9:00 AM"
+                            style={{ ...inputStyle, width: 110, flexShrink: 0 }}
+                          />
+                          <input
+                            type="text"
+                            value={step.activity}
+                            onChange={e => updateStep(idx, 'activity', e.target.value)}
+                            placeholder="Describe this part of the experience"
+                            style={{ ...inputStyle, flex: 1 }}
+                          />
+                          {itinerary.length > 1 && (
+                            <button type="button" onClick={() => removeStep(idx)}
+                              style={{ flexShrink: 0, width: 36, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: '1px solid #E8E4DE', borderRadius: 8, cursor: 'pointer', color: '#B66A45' }}>
+                              <Trash2 size={13} />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
 

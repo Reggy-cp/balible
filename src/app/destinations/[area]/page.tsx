@@ -453,7 +453,7 @@ export default async function DestinationAreaPage({ params }: { params: { area: 
       </div>
 
       {/* CTA BANNER */}
-      <div className="mx-5 lg:mx-8 mb-16 rounded-2xl overflow-hidden max-w-[1100px] lg:mx-auto" style={{ maxWidth: 1100, margin: '0 auto 64px' }}>
+      <div className="mx-5 lg:mx-auto mb-16 rounded-2xl overflow-hidden" style={{ maxWidth: 1100 }}>
         <div className="relative px-8 py-14 text-center" style={{ backgroundColor: '#111111' }}>
           <div className="absolute inset-0 opacity-10" style={{ backgroundImage: `radial-gradient(circle at 20% 50%, ${data.color} 0%, transparent 50%), radial-gradient(circle at 80% 50%, #C8A97E 0%, transparent 50%)`, pointerEvents: 'none' }} />
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, letterSpacing: '0.2em', color: '#C8A97E', textTransform: 'uppercase', marginBottom: 10 }}>
@@ -462,7 +462,7 @@ export default async function DestinationAreaPage({ params }: { params: { area: 
           <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: 'white', marginBottom: 12 }}>
             Book an Experience in {data.name.split(' ')[0]}
           </h2>
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: 'rgba(255,255,255,0.65)', marginBottom: 28, maxWidth: 440, margin: '0 auto 28px' }}>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 15, color: 'rgba(255,255,255,0.65)', maxWidth: 440, margin: '0 auto 28px' }}>
             Handpicked by people who know the island. Every experience is led by a local.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">

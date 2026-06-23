@@ -1,9 +1,8 @@
-import { MapPin, Star, Clock, Users, Globe } from 'lucide-react'
+import { MapPin, Star, Clock, Users, Globe, Signal } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import BookingWidget from '@/components/BookingWidget'
 import ExperienceTabs from '@/components/ExperienceTabs'
 import RecommendationsSection from '@/components/RecommendationsSection'
-import ReadMore from '@/components/ReadMore'
 import WishlistHeart from '@/components/WishlistHeart'
 import ShareButton from '@/components/ShareButton'
 import MobileNav from '@/components/MobileNav'
@@ -128,7 +127,7 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
       if (scoreB !== scoreA) return scoreB - scoreA
       return b.rating - a.rating
     })
-    .slice(0, 3)
+    .slice(0, 8)
 
   return (
     <div style={{ fontFamily: 'var(--font-inter)' }}>
@@ -183,15 +182,11 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
               </div>
             </div>
 
-            <div className="mt-4">
-              <ReadMore text={experience.description} />
-            </div>
-
             {/* Info badges */}
             <div className="flex flex-wrap gap-5 mt-5">
               {[
-                { Icon: Clock,  text: experience.duration },
-                { Icon: Users,  text: experience.level },
+                { Icon: Clock,   text: experience.duration },
+                { Icon: Signal, text: experience.level },
                 { Icon: Globe,  text: experience.language },
                 { Icon: Users,  text: `Max ${experience.maxGuests} people` },
               ].map(({ Icon, text }) => (

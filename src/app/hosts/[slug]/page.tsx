@@ -8,6 +8,7 @@ import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
 import WishlistHeart from '@/components/WishlistHeart'
 import { HostChatButton, SaveHostButton, AskKalaButton, AllReviewsModal } from '@/components/HostButtons'
+import RecommendationsSection from '@/components/RecommendationsSection'
 import { prisma } from '@/lib/prisma'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -245,9 +246,38 @@ function EventCard({ ev }: { ev: HostEvent }) {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
+async function getRecommendedExperiences(excludeSlugs: string[]) {
+  try {
+    const AREA_DISPLAY: Record<string, string> = {
+      UBUD: 'Ubud', CANGGU: 'Canggu', SEMINYAK: 'Seminyak', KUTA: 'Kuta',
+      ULUWATU: 'Uluwatu', GIANYAR: 'Gianyar', KINTAMANI: 'Kintamani',
+      AMED: 'Amed', SIDEMEN: 'Sidemen', SANUR: 'Sanur',
+      NUSA_DUA: 'Nusa Dua', JIMBARAN: 'Jimbaran', MEDEWI: 'Medewi',
+    }
+    const exps = await prisma.experience.findMany({
+      where: { status: 'ACTIVE', NOT: { slug: { in: excludeSlugs } } },
+      select: { slug: true, title: true, category: true, area: true, price: true, rating: true, totalReviews: true, images: true, featured: true },
+      orderBy: [{ featured: 'desc' }, { rating: 'desc' }],
+      take: 8,
+    })
+    return exps.map(e => ({
+      slug: e.slug, title: e.title,
+      category: String(e.category),
+      area: AREA_DISPLAY[String(e.area)] ?? String(e.area),
+      price: e.price, rating: e.rating, totalReviews: e.totalReviews,
+      images: e.images as string[],
+    }))
+  } catch {
+    return []
+  }
+}
+
 export default async function HostPage({ params }: { params: { slug: string } }) {
   const host = await getHostFromDB(params.slug)
   if (!host) notFound()
+
+  const excludeSlugs = host.experiences.map(e => e.slug)
+  const recommended = await getRecommendedExperiences(excludeSlugs)
 
   const displayName = host.businessName || host.name
   const firstName = host.name.split(' ')[0]
@@ -495,7 +525,7 @@ export default async function HostPage({ params }: { params: { slug: string } })
               </div>
               <div className="mt-5 pt-4" style={{ borderTop: '1px solid #F0EDE8' }}>
                 <a
-                  href="/experiences"
+                  href="/search"
                   className="flex items-center justify-center hover:opacity-90 transition-opacity"
                   style={{ height: 42, backgroundColor: '#111111', color: 'white', borderRadius: 10, fontSize: 13, fontWeight: 600, textDecoration: 'none' }}
                 >
@@ -519,6 +549,7 @@ export default async function HostPage({ params }: { params: { slug: string } })
         </div>
       </div>
 
+      <RecommendationsSection items={recommended} />
       <Footer />
       <MobileNav />
     </div>

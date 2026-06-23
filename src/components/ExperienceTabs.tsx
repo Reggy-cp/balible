@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Star, CheckCircle2, XCircle, MapPin, ExternalLink } from 'lucide-react'
-import Image from 'next/image'
+import { Star, CheckCircle2, XCircle, MapPin, ExternalLink, Clock } from 'lucide-react'
 
 function hostSlug(name: string) {
   return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
@@ -43,10 +42,10 @@ type ExperienceData = {
   totalReviews: number
 }
 
-const TABS = ['About', "What's included", 'Reviews', 'Host']
-
 export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
   const [active, setActive] = useState('About')
+  const hasItinerary = (exp.itinerary?.length ?? 0) > 0
+  const TABS = ['About', "What's included", ...(hasItinerary ? ['Itinerary'] : []), 'Reviews', 'Host']
   const [includes] = useState<string[]>(exp.includes)
   const [excludes] = useState<string[]>(exp.excludes)
 
@@ -107,27 +106,6 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
                 </div>
               )}
 
-              {exp.meetingPoint && (
-                <div className="mt-6">
-                  <h4 className="mb-3" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 600, color: '#111111' }}>Meeting point</h4>
-                  <div className="flex items-start gap-3 p-3 rounded-xl" style={{ backgroundColor: '#F5F1EB', border: '1px solid #E8E4DE' }}>
-                    <MapPin size={15} style={{ color: '#C8A97E', flexShrink: 0, marginTop: 2 }} />
-                    <div className="flex-1 min-w-0">
-                      <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', fontWeight: 500, lineHeight: 1.5 }}>{exp.meetingPoint}</p>
-                      <a
-                        href={`https://maps.google.com/?q=${encodeURIComponent(exp.meetingPoint + ', Bali, Indonesia')}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 mt-1.5 hover:opacity-70 transition-opacity"
-                        style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 600, color: '#C8A97E', textDecoration: 'none' }}
-                      >
-                        <ExternalLink size={11} />
-                        Open in Google Maps
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Host card */}
@@ -211,6 +189,28 @@ export default function ExperienceTabs({ exp }: { exp: ExperienceData }) {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* ── ITINERARY ── */}
+        {active === 'Itinerary' && (
+          <div className="space-y-4">
+            {(exp.itinerary ?? []).map((item, i) => (
+              <div key={i} className="flex gap-4">
+                <div className="flex flex-col items-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#F5F1EB', border: '1px solid #E8E4DE' }}>
+                    <Clock size={13} style={{ color: '#C8A97E' }} />
+                  </div>
+                  {i < (exp.itinerary ?? []).length - 1 && (
+                    <div className="w-px flex-1 mt-2" style={{ backgroundColor: '#E8E4DE', minHeight: 24 }} />
+                  )}
+                </div>
+                <div className="pb-4 flex-1">
+                  <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 700, color: '#C8A97E', marginBottom: 4 }}>{item.time}</p>
+                  <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#3A3530', lineHeight: 1.6 }}>{item.activity}</p>
+                </div>
+              </div>
+            ))}
           </div>
         )}
 

@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import Image from 'next/image'
 import { useSession } from 'next-auth/react'
 import {
-  Menu, X, ChevronDown, LayoutDashboard, User,
+  Menu, X, ChevronDown, LayoutDashboard, User, MapPin,
   Leaf, Scissors, Landmark, Mountain, Waves, ChefHat, Sun, Users, Bike, Briefcase,
 } from 'lucide-react'
 import NotificationBell from '@/components/NotificationBell'
@@ -25,11 +25,27 @@ const CATEGORIES: CategoryDef[] = [
   { labelKey: 'cat_service',   Icon: Briefcase,  slug: 'services' },
 ]
 
-type NavLink = { labelKey: TranslationKey; href: string; hasDropdown: boolean }
+type NavLink = { labelKey: TranslationKey; href: string; dropdown: 'experiences' | 'destinations' | null }
 const NAV_LINKS: NavLink[] = [
-  { labelKey: 'nav_experiences',  href: '/search',       hasDropdown: true },
-  { labelKey: 'nav_destinations', href: '/destinations', hasDropdown: false },
-  { labelKey: 'nav_events',       href: '/events',       hasDropdown: false },
+  { labelKey: 'nav_experiences',  href: '/search',       dropdown: 'experiences' },
+  { labelKey: 'nav_destinations', href: '/destinations', dropdown: 'destinations' },
+  { labelKey: 'nav_events',       href: '/events',       dropdown: null },
+]
+
+const DESTINATIONS = [
+  { name: 'Ubud',      slug: 'ubud' },
+  { name: 'Canggu',    slug: 'canggu' },
+  { name: 'Uluwatu',   slug: 'uluwatu' },
+  { name: 'Seminyak',  slug: 'seminyak' },
+  { name: 'Jimbaran',  slug: 'jimbaran' },
+  { name: 'Kintamani', slug: 'kintamani' },
+  { name: 'Sanur',     slug: 'sanur' },
+  { name: 'Nusa Dua',  slug: 'nusa-dua' },
+  { name: 'Amed',      slug: 'amed' },
+  { name: 'Medewi',    slug: 'medewi' },
+  { name: 'Gianyar',   slug: 'gianyar' },
+  { name: 'Sidemen',   slug: 'sidemen' },
+  { name: 'Kuta',      slug: 'kuta' },
 ]
 
 type MobileLink = { labelKey: TranslationKey; href: string }
@@ -46,6 +62,8 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [dropOpen, setDropOpen] = useState(false)
   const dropRef = useRef<HTMLDivElement>(null)
+  const [destOpen, setDestOpen] = useState(false)
+  const destRef = useRef<HTMLDivElement>(null)
   const { data: session, status } = useSession()
   const isLoaded = status !== 'loading'
   const isSignedIn = status === 'authenticated'
@@ -64,6 +82,9 @@ export default function Navbar() {
       if (dropRef.current && !dropRef.current.contains(e.target as Node)) {
         setDropOpen(false)
       }
+      if (destRef.current && !destRef.current.contains(e.target as Node)) {
+        setDestOpen(false)
+      }
       if (accountRef.current && !accountRef.current.contains(e.target as Node)) {
         setAccountOpen(false)
       }
@@ -75,7 +96,7 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
-  useEffect(() => { setMenuOpen(false); setDropOpen(false) }, [pathname])
+  useEffect(() => { setMenuOpen(false); setDropOpen(false); setDestOpen(false) }, [pathname])
 
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' : pathname.startsWith(href)
@@ -92,36 +113,20 @@ export default function Navbar() {
 
           {/* Desktop nav */}
           <div className="hidden lg:flex items-center gap-1">
-            {NAV_LINKS.map(({ labelKey, href, hasDropdown }) =>
-              hasDropdown ? (
+            {NAV_LINKS.map(({ labelKey, href, dropdown }) => {
+              if (dropdown === 'experiences') return (
                 <div key={labelKey} className="relative" ref={dropRef}>
                   <button
                     onClick={() => setDropOpen(o => !o)}
                     className="flex items-center gap-1 px-3 py-2 rounded-lg transition-colors hover:bg-stone-50"
-                    style={{
-                      fontFamily: 'var(--font-inter)', fontSize: 14,
-                      color: isActive(href) ? '#C8A97E' : '#111111',
-                      fontWeight: isActive(href) ? 600 : 400,
-                      background: 'none', border: 'none', cursor: 'pointer',
-                    }}
+                    style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: isActive(href) ? '#C8A97E' : '#111111', fontWeight: isActive(href) ? 600 : 400, background: 'none', border: 'none', cursor: 'pointer' }}
                   >
                     {t(labelKey)}
-                    <ChevronDown
-                      size={13}
-                      style={{ color: '#6F675C', transition: 'transform 0.15s', transform: dropOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                    />
+                    <ChevronDown size={13} style={{ color: '#6F675C', transition: 'transform 0.15s', transform: dropOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
                   </button>
-
                   {dropOpen && (
-                    <div
-                      className="absolute top-full left-0 mt-2 bg-white rounded-2xl shadow-xl"
-                      style={{ width: 280, border: '1px solid #E8E4DE', padding: '12px 8px' }}
-                    >
-                      <a
-                        href="/search"
-                        className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors"
-                        style={{ textDecoration: 'none', marginBottom: 4 }}
-                      >
+                    <div className="absolute top-full left-0 mt-2 bg-white rounded-2xl shadow-xl" style={{ width: 280, border: '1px solid #E8E4DE', padding: '12px 8px' }}>
+                      <a href="/search" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors" style={{ textDecoration: 'none', marginBottom: 4 }}>
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#F5F1EB' }}>
                           <span style={{ fontSize: 14 }}>🌟</span>
                         </div>
@@ -135,12 +140,7 @@ export default function Navbar() {
                         {t('nav_browse_category')}
                       </p>
                       {CATEGORIES.map(({ labelKey: catKey, Icon, slug }) => (
-                        <a
-                          key={slug}
-                          href={`/categories/${slug}`}
-                          className="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-stone-50 transition-colors"
-                          style={{ textDecoration: 'none' }}
-                        >
+                        <a key={slug} href={`/categories/${slug}`} className="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-stone-50 transition-colors" style={{ textDecoration: 'none' }}>
                           <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#F5F1EB' }}>
                             <Icon size={13} style={{ color: '#C8A97E' }} />
                           </div>
@@ -150,21 +150,53 @@ export default function Navbar() {
                     </div>
                   )}
                 </div>
-              ) : (
-                <a
-                  key={labelKey}
-                  href={href}
-                  className="px-3 py-2 rounded-lg transition-colors hover:bg-stone-50"
-                  style={{
-                    fontFamily: 'var(--font-inter)', fontSize: 14, textDecoration: 'none',
-                    color: isActive(href) ? '#C8A97E' : '#111111',
-                    fontWeight: isActive(href) ? 600 : 400,
-                  }}
-                >
+              )
+
+              if (dropdown === 'destinations') return (
+                <div key={labelKey} className="relative" ref={destRef}>
+                  <button
+                    onClick={() => setDestOpen(o => !o)}
+                    className="flex items-center gap-1 px-3 py-2 rounded-lg transition-colors hover:bg-stone-50"
+                    style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: isActive(href) ? '#C8A97E' : '#111111', fontWeight: isActive(href) ? 600 : 400, background: 'none', border: 'none', cursor: 'pointer' }}
+                  >
+                    {t(labelKey)}
+                    <ChevronDown size={13} style={{ color: '#6F675C', transition: 'transform 0.15s', transform: destOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+                  </button>
+                  {destOpen && (
+                    <div className="absolute top-full left-0 mt-2 bg-white rounded-2xl shadow-xl" style={{ width: 300, border: '1px solid #E8E4DE', padding: '12px 8px' }}>
+                      <a href="/destinations" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors" style={{ textDecoration: 'none', marginBottom: 4 }}>
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#F5F1EB' }}>
+                          <MapPin size={14} style={{ color: '#C8A97E' }} />
+                        </div>
+                        <div>
+                          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111' }}>All Destinations</p>
+                          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>Explore all areas of Bali</p>
+                        </div>
+                      </a>
+                      <div style={{ height: 1, backgroundColor: '#F5F1EB', marginBottom: 8, marginInline: 8 }} />
+                      <p style={{ fontFamily: 'var(--font-inter)', fontSize: 10, fontWeight: 700, color: '#6F675C', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '4px 12px 8px' }}>
+                        Explore by Area
+                      </p>
+                      <div className="grid grid-cols-2 gap-0.5">
+                        {DESTINATIONS.map(({ name, slug }) => (
+                          <a key={slug} href={`/destinations/${slug}`} className="flex items-center gap-2.5 px-4 py-2 rounded-xl hover:bg-stone-50 transition-colors" style={{ textDecoration: 'none' }}>
+                            <MapPin size={11} style={{ color: '#C8A97E', flexShrink: 0 }} />
+                            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>{name}</span>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+
+              return (
+                <a key={labelKey} href={href} className="px-3 py-2 rounded-lg transition-colors hover:bg-stone-50"
+                  style={{ fontFamily: 'var(--font-inter)', fontSize: 14, textDecoration: 'none', color: isActive(href) ? '#C8A97E' : '#111111', fontWeight: isActive(href) ? 600 : 400 }}>
                   {t(labelKey)}
                 </a>
               )
-            )}
+            })}
           </div>
 
           {/* Right side */}
