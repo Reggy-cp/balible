@@ -35,6 +35,7 @@ import {
   getAdminSettingsAction, saveAdminSettingsAction,
   adminSaveFeaturedAction,
   getActivityLogsAction, type AuditLogEntry,
+  getSiteActivityAction, type SiteActivityItem,
 } from '@/lib/actions'
 import { COMMISSION_RATE, PAYOUT_MIN_NET } from '@/lib/constants'
 
@@ -60,8 +61,9 @@ const NAV_ITEMS = [
   { id: 'reviews',     label: 'Reviews',     Icon: Star },
   { id: 'payments',    label: 'Payments',    Icon: CreditCard },
   { id: 'analytics',   label: 'Analytics',   Icon: BarChart2 },
-  { id: 'featured',    label: 'Featured',    Icon: Sparkles },
-  { id: 'activity',    label: 'Activity Log',Icon: Activity },
+  { id: 'featured',      label: 'Featured',       Icon: Sparkles },
+  { id: 'live_activity', label: 'Live Activity',  Icon: TrendingUp },
+  { id: 'activity',      label: 'Activity Log',   Icon: Activity },
   { id: 'seo',         label: 'SEO',         Icon: FileText },
   { id: 'emails',      label: 'Emails',      Icon: MailOpen },
   { id: 'newsletter',  label: 'Newsletter',  Icon: Mail },
@@ -3095,6 +3097,115 @@ function ActivityLogPanel() {
   )
 }
 
+// ── Live Activity Panel ───────────────────────────────────────────────────────
+
+const ACTIVITY_FILTERS = [
+  { id: 'all',           label: 'All' },
+  { id: 'booking',       label: 'Bookings' },
+  { id: 'event_booking', label: 'Events' },
+  { id: 'review',        label: 'Reviews' },
+  { id: 'new_user',      label: 'New Users' },
+  { id: 'new_host',      label: 'New Hosts' },
+]
+
+const ACTIVITY_META: Record<string, { label: string; Icon: React.ElementType; color: string; bg: string }> = {
+  booking:       { label: 'Booking',       Icon: CalendarDays, color: '#4A7C59', bg: '#F0F7F2' },
+  event_booking: { label: 'Event Booking', Icon: Ticket,       color: '#7C5C4A', bg: '#FDF6F2' },
+  review:        { label: 'Review',        Icon: Star,         color: '#C8A97E', bg: '#FDF8F4' },
+  new_user:      { label: 'New User',      Icon: User,         color: '#4A6C7C', bg: '#F2F6F8' },
+  new_host:      { label: 'New Host',      Icon: Users,        color: '#7C4A7C', bg: '#F8F2F8' },
+}
+
+function LiveActivityPanel() {
+  const [filter, setFilter] = useState('all')
+  const [search, setSearch] = useState('')
+  const [items, setItems] = useState<SiteActivityItem[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    getSiteActivityAction().then(d => { setItems(d); setLoading(false) })
+  }, [])
+
+  const visible = items.filter(a => {
+    if (filter !== 'all' && a.type !== filter) return false
+    if (search) {
+      const q = search.toLowerCase()
+      if (!a.userName.toLowerCase().includes(q) && !a.title.toLowerCase().includes(q) && !a.detail.toLowerCase().includes(q)) return false
+    }
+    return true
+  })
+
+  return (
+    <div>
+      <PageHeader title="Live Activity" sub="Real-time feed of all platform activity — bookings, reviews, signups" />
+
+      {/* Filters + search */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <div className="flex gap-2 flex-wrap">
+          {ACTIVITY_FILTERS.map(f => (
+            <button key={f.id} onClick={() => setFilter(f.id)}
+              className="flex-shrink-0"
+              style={{ height: 32, padding: '0 14px', borderRadius: 20, border: `1px solid ${filter === f.id ? CHARCOAL : SAND}`, backgroundColor: filter === f.id ? CHARCOAL : 'white', color: filter === f.id ? 'white' : COCONUT, fontSize: 13, fontWeight: filter === f.id ? 600 : 400, cursor: 'pointer' }}>
+              {f.label}
+            </button>
+          ))}
+        </div>
+        <div className="relative sm:ml-auto">
+          <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: COCONUT }} />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search user, title…"
+            style={{ height: 36, paddingLeft: 32, paddingRight: 12, borderRadius: 10, border: `1px solid ${SAND}`, fontSize: 13, color: CHARCOAL, outline: 'none', width: 220 }} />
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl overflow-hidden" style={{ border: `1px solid ${SAND}` }}>
+        {loading && (
+          <div className="py-12 text-center">
+            <p style={{ fontSize: 13, color: COCONUT }}>Loading…</p>
+          </div>
+        )}
+        {!loading && visible.length === 0 && (
+          <div className="py-12 text-center">
+            <TrendingUp size={24} style={{ color: SAND, margin: '0 auto 8px' }} />
+            <p style={{ fontSize: 13, color: COCONUT }}>No activity yet.</p>
+          </div>
+        )}
+        {visible.map((item, i) => {
+          const meta = ACTIVITY_META[item.type] ?? ACTIVITY_META.new_user
+          const Icon = meta.Icon
+          return (
+            <div key={item.id} className="flex items-start gap-4 px-5 py-4 hover:bg-stone-50 transition-colors"
+              style={{ borderBottom: i < visible.length - 1 ? `1px solid ${IVORY}` : 'none' }}>
+              <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                style={{ backgroundColor: meta.bg }}>
+                <Icon size={15} style={{ color: meta.color }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                  <span style={{ fontSize: 13, fontWeight: 600, color: CHARCOAL }}>{item.userName}</span>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: meta.color, backgroundColor: meta.bg, padding: '1px 8px', borderRadius: 20 }}>{meta.label}</span>
+                  {item.status && (
+                    <span style={{ fontSize: 11, color: COCONUT, backgroundColor: IVORY, padding: '1px 8px', borderRadius: 20 }}>{item.status}</span>
+                  )}
+                </div>
+                <p style={{ fontSize: 13, color: CHARCOAL, lineHeight: 1.4 }}>{item.title}</p>
+                <p style={{ fontSize: 12, color: COCONUT, marginTop: 1 }}>{item.detail}</p>
+              </div>
+              <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                {item.amount != null && item.amount > 0 && (
+                  <span style={{ fontSize: 13, fontWeight: 700, color: CHARCOAL, fontFamily: 'var(--font-playfair)' }}>
+                    IDR {item.amount.toLocaleString('id-ID')}
+                  </span>
+                )}
+                <span style={{ fontSize: 11, color: COCONUT, whiteSpace: 'nowrap' }}>{fmtRelative(item.createdAt)}</span>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 // ── SEO Panel ─────────────────────────────────────────────────────────────────
 
 const DEFAULT_SEO = {
@@ -3664,8 +3775,9 @@ export default function AdminPage() {
       case 'reviews':     return <ReviewsPanel />
       case 'payments':    return <PaymentsPanel />
       case 'analytics':   return <AnalyticsPanel />
-      case 'featured':    return <FeaturedPanel />
-      case 'activity':    return <ActivityLogPanel />
+      case 'featured':      return <FeaturedPanel />
+      case 'live_activity': return <LiveActivityPanel />
+      case 'activity':      return <ActivityLogPanel />
       case 'seo':         return <SEOPanel />
       case 'emails':      return <EmailsPanel />
       case 'newsletter':  return <NewsletterPanel />

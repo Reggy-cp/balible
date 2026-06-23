@@ -2604,6 +2604,97 @@ export async function getActivityLogsAction(limit = 200): Promise<AuditLogEntry[
   } catch { return [] }
 }
 
+export type SiteActivityItem = {
+  id: string
+  type: 'booking' | 'event_booking' | 'review' | 'new_user' | 'new_host'
+  createdAt: string
+  userName: string
+  title: string
+  detail: string
+  amount?: number
+  status?: string
+}
+
+export async function getSiteActivityAction(limit = 60): Promise<SiteActivityItem[]> {
+  await requireAdmin()
+  try {
+    const [bookings, eventBookings, reviews, users] = await Promise.all([
+      prisma.booking.findMany({
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          user: { select: { name: true } },
+          experience: { select: { title: true } },
+        },
+      }),
+      prisma.eventBooking.findMany({
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          user: { select: { name: true } },
+          event: { select: { title: true } },
+        },
+      }),
+      prisma.review.findMany({
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          user: { select: { name: true } },
+          experience: { select: { title: true } },
+        },
+      }),
+      prisma.user.findMany({
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, name: true, email: true, role: true, createdAt: true },
+      }),
+    ])
+
+    const items: SiteActivityItem[] = [
+      ...bookings.map(b => ({
+        id: `bk-${b.id}`,
+        type: 'booking' as const,
+        createdAt: b.createdAt.toISOString(),
+        userName: b.user.name,
+        title: b.experience.title,
+        detail: `${b.guests} guest${b.guests > 1 ? 's' : ''} · ${new Date(b.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
+        amount: b.totalPrice,
+        status: b.status,
+      })),
+      ...eventBookings.map(b => ({
+        id: `ev-${b.id}`,
+        type: 'event_booking' as const,
+        createdAt: b.createdAt.toISOString(),
+        userName: b.user.name,
+        title: b.event.title,
+        detail: `${b.tickets} ticket${b.tickets > 1 ? 's' : ''}`,
+        amount: b.totalPrice,
+        status: b.status,
+      })),
+      ...reviews.map(r => ({
+        id: `rv-${r.id}`,
+        type: 'review' as const,
+        createdAt: r.createdAt.toISOString(),
+        userName: r.user.name,
+        title: r.experience.title,
+        detail: `${r.rating}/5 stars`,
+      })),
+      ...users.map(u => ({
+        id: `us-${u.id}`,
+        type: (u.role === 'OPERATOR' ? 'new_host' : 'new_user') as 'new_host' | 'new_user',
+        createdAt: u.createdAt.toISOString(),
+        userName: u.name,
+        title: u.role === 'OPERATOR' ? 'Host registered' : 'New user signed up',
+        detail: u.email,
+      })),
+    ]
+
+    return items
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, limit)
+  } catch { return [] }
+}
+
 // ── Admin settings (Setting model) ───────────────────────────────────────────
 
 export async function getAdminSettingsAction(keys: string[]): Promise<Record<string, string | null>> {
