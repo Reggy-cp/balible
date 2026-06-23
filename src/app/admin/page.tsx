@@ -36,7 +36,7 @@ import {
   adminSaveFeaturedAction,
   getActivityLogsAction, type AuditLogEntry,
   getSiteActivityAction, type SiteActivityItem,
-  bulkApproveHostsAction, bulkSuspendHostsAction, bulkDeleteUsersAction,
+  bulkApproveHostsAction, bulkSuspendHostsAction, bulkDeleteUsersAction, bulkRemoveHostsAction,
 } from '@/lib/actions'
 import { COMMISSION_RATE, PAYOUT_MIN_NET } from '@/lib/constants'
 
@@ -1094,6 +1094,14 @@ function HostsPanel() {
     setHosts(h => h.map(x => selected.has(x.id) ? { ...x, status: 'Pending' } : x))
     setSelected(new Set()); setBulkWorking(false)
   }
+  async function bulkRemove() {
+    const ids = Array.from(selected)
+    if (!confirm(`Remove ${ids.length} host${ids.length > 1 ? 's' : ''}?\n\nThis will:\n• Deactivate all their listings\n• Delete their host account\n• Downgrade them to a regular guest\n\nThis cannot be undone.`)) return
+    setBulkWorking(true)
+    await bulkRemoveHostsAction(ids)
+    setHosts(h => h.filter(x => !selected.has(x.id)))
+    setSelected(new Set()); setBulkWorking(false)
+  }
 
   return (
     <div>
@@ -1138,6 +1146,11 @@ function HostsPanel() {
               className="flex items-center gap-1.5 hover:opacity-90 disabled:opacity-50"
               style={{ height: 32, padding: '0 14px', borderRadius: 8, border: 'none', backgroundColor: TERRACOTTA, color: 'white', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
               <XCircle size={12} /> Suspend all
+            </button>
+            <button onClick={bulkRemove} disabled={bulkWorking}
+              className="flex items-center gap-1.5 hover:opacity-90 disabled:opacity-50"
+              style={{ height: 32, padding: '0 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.3)', backgroundColor: 'transparent', color: 'white', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+              <Trash2 size={12} /> Remove
             </button>
             <button onClick={() => setSelected(new Set())}
               style={{ height: 32, padding: '0 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', backgroundColor: 'transparent', color: 'rgba(255,255,255,0.7)', fontSize: 12, cursor: 'pointer' }}>

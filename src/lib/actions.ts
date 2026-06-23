@@ -1378,6 +1378,25 @@ export async function bulkDeleteUsersAction(ids: string[]): Promise<{ ok: boolea
   } catch { return { ok: false, count: 0 } }
 }
 
+export async function bulkRemoveHostsAction(operatorIds: string[]): Promise<{ ok: boolean; count: number }> {
+  await requireAdmin()
+  try {
+    await prisma.$transaction(async tx => {
+      // Deactivate all experiences and events owned by these operators
+      await tx.experience.updateMany({ where: { operatorId: { in: operatorIds } }, data: { status: 'PAUSED' } })
+      await tx.event.updateMany({ where: { operatorId: { in: operatorIds } }, data: { status: 'DRAFT' } })
+      // Get user IDs before deleting operators
+      const ops = await tx.operator.findMany({ where: { id: { in: operatorIds } }, select: { userId: true } })
+      const userIds = ops.map(o => o.userId)
+      // Delete operator records
+      await tx.operator.deleteMany({ where: { id: { in: operatorIds } } })
+      // Downgrade users back to TOURIST
+      await tx.user.updateMany({ where: { id: { in: userIds } }, data: { role: 'TOURIST' } })
+    })
+    return { ok: true, count: operatorIds.length }
+  } catch { return { ok: false, count: 0 } }
+}
+
 export type AdminAnalytics = {
   topExperiences: { title: string; bookings: number }[]
   monthlyBookings: number[]
