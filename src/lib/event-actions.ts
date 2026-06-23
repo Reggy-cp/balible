@@ -4,6 +4,7 @@ import { prisma } from './prisma'
 import { getSessionUser } from './user'
 import { createSnapTransaction } from './midtrans'
 import { createNotification } from './notifications'
+import { sendEventBookingConfirmation } from './email'
 
 async function getFeeRate(): Promise<number> {
   try {
@@ -257,13 +258,25 @@ export async function createEventBookingAction(input: {
     })
 
     if (event.price === 0) {
-      await createNotification({
-        userId: user.id,
-        type: 'booking',
-        title: 'Event booking confirmed 🎉',
-        body: `You're registered for ${event.title}. See you there!`,
-        href: '/profile?tab=bookings',
-      })
+      await Promise.allSettled([
+        createNotification({
+          userId: user.id,
+          type: 'booking',
+          title: 'Event booking confirmed',
+          body: `You're registered for ${event.title}. See you there!`,
+          href: '/profile?tab=bookings',
+        }),
+        sendEventBookingConfirmation({
+          to: input.guestEmail,
+          guestName: input.guestName,
+          bookingRef: booking.bookingRef,
+          eventTitle: event.title,
+          eventDate: event.date,
+          eventLocation: event.location,
+          tickets: booking.tickets,
+          totalPrice: 0,
+        }),
+      ])
       return { ok: true, bookingRef: booking.bookingRef }
     }
 

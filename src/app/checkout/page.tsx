@@ -7,7 +7,7 @@ import { ChevronUp, Shield, Award, Clock, Edit2, Lock, MapPin } from 'lucide-rea
 import Image from 'next/image'
 import MobileNav from '@/components/MobileNav'
 import { createBookingAction, createRentalBookingAction, getExperienceForCheckout, getBookingStatusAction, getExperienceScheduleAction, getBookedSlotsAction, type ExpCheckoutMeta } from '@/lib/actions'
-import { createEventBookingAction } from '@/lib/event-actions'
+import { createEventBookingAction, getEventRemainingTickets } from '@/lib/event-actions'
 
 const STEPS = ['Experience & Date', 'Your Details', 'Payment', 'Confirmation']
 type Step = 0 | 1 | 2 | 3
@@ -1024,6 +1024,7 @@ function EventCheckout({ params }: { params: URLSearchParams }) {
 
   const [step, setStep]         = useState<Step>(0)
   const [tickets, setTickets]   = useState(initTickets)
+  const [remaining, setRemaining] = useState<number | null>(null)
   const [contact, setContact]   = useState<ContactFields>({ fullName: '', email: '', phone: '', requests: '' })
   const [paying, setPaying]     = useState(false)
   const [payError, setPayError] = useState<string | null>(null)
@@ -1034,6 +1035,16 @@ function EventCheckout({ params }: { params: URLSearchParams }) {
     if (!session?.user) return
     setContact(c => ({ ...c, fullName: c.fullName || session.user?.name || '', email: c.email || session.user?.email || '' }))
   }, [session])
+
+  useEffect(() => {
+    if (!slug) return
+    getEventRemainingTickets(slug).then(r => {
+      if (r !== null) {
+        setRemaining(r)
+        setTickets(t => Math.min(t, Math.max(1, r)))
+      }
+    })
+  }, [slug])
 
   useEffect(() => {
     const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY
@@ -1154,13 +1165,23 @@ function EventCheckout({ params }: { params: URLSearchParams }) {
                 </div>
                 <div className="mb-6">
                   <label style={{ fontSize: 12, fontWeight: 700, color: '#6F675C', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 10 }}>Number of tickets</label>
-                  <div className="flex items-center gap-3" style={{ background: '#F9F7F5', borderRadius: 10, padding: '10px 14px', border: '1.5px solid #E2DDD6', width: 'fit-content' }}>
-                    <button onClick={() => setTickets(t => Math.max(1, t - 1))}
-                      style={{ width: 32, height: 32, borderRadius: 8, border: '1.5px solid #E2DDD6', background: 'white', cursor: 'pointer', fontSize: 18, color: '#6F675C', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</button>
-                    <span style={{ minWidth: 60, textAlign: 'center', fontSize: 15, fontWeight: 600, color: '#111111' }}>{tickets} ticket{tickets > 1 ? 's' : ''}</span>
-                    <button onClick={() => setTickets(t => t + 1)}
-                      style={{ width: 32, height: 32, borderRadius: 8, border: '1.5px solid #E2DDD6', background: 'white', cursor: 'pointer', fontSize: 18, color: '#6F675C', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
-                  </div>
+                  {remaining !== null && remaining <= 10 && remaining > 0 && (
+                    <p style={{ fontSize: 12, fontWeight: 700, color: '#B45309', marginBottom: 8 }}>Only {remaining} ticket{remaining !== 1 ? 's' : ''} left!</p>
+                  )}
+                  {remaining !== null && remaining <= 0 ? (
+                    <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 10, padding: '12px 16px' }}>
+                      <p style={{ fontSize: 14, fontWeight: 700, color: '#DC2626' }}>Sold out — no tickets remaining</p>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3" style={{ background: '#F9F7F5', borderRadius: 10, padding: '10px 14px', border: '1.5px solid #E2DDD6', width: 'fit-content' }}>
+                      <button onClick={() => setTickets(t => Math.max(1, t - 1))}
+                        style={{ width: 32, height: 32, borderRadius: 8, border: '1.5px solid #E2DDD6', background: 'white', cursor: 'pointer', fontSize: 18, color: '#6F675C', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</button>
+                      <span style={{ minWidth: 60, textAlign: 'center', fontSize: 15, fontWeight: 600, color: '#111111' }}>{tickets} ticket{tickets > 1 ? 's' : ''}</span>
+                      <button onClick={() => setTickets(t => Math.min(remaining ?? 20, t + 1))}
+                        disabled={tickets >= (remaining ?? 20)}
+                        style={{ width: 32, height: 32, borderRadius: 8, border: '1.5px solid #E2DDD6', background: tickets >= (remaining ?? 20) ? '#F5F1EB' : 'white', cursor: tickets >= (remaining ?? 20) ? 'not-allowed' : 'pointer', fontSize: 18, color: tickets >= (remaining ?? 20) ? '#C8C4BE' : '#6F675C', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
+                    </div>
+                  )}
                 </div>
                 {price > 0 && (
                   <div className="mb-6" style={{ background: '#F9F7F5', borderRadius: 10, padding: '14px 16px', border: '1px solid #EAE6E0' }}>
