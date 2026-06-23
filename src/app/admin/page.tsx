@@ -2018,17 +2018,20 @@ function BarSparkChart({ data, color }: { data: number[]; color: string }) {
   )
 }
 
-function GAMetricCard({ label, value, change, good = 'up', fmtValue }: {
-  label: string; value: number; change: number; good?: 'up' | 'down'; fmtValue: (v: number) => string
+function GAMetricCard({ label, value, change, good = 'up', fmtValue, desc }: {
+  label: string; value: number; change: number; good?: 'up' | 'down'; fmtValue: (v: number) => string; desc?: string
 }) {
   const isGood = good === 'up' ? change >= 0 : change <= 0
   const changeColor = change === 0 ? COCONUT : isGood ? FOREST : TERRACOTTA
   const arrow = change > 0 ? '↑' : change < 0 ? '↓' : '→'
   return (
-    <div className="bg-white rounded-xl p-5" style={{ border: `1px solid ${SAND}` }}>
-      <p style={{ fontSize: 11, color: COCONUT, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</p>
-      <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(18px,2vw,26px)', fontWeight: 700, color: CHARCOAL, marginTop: 4, lineHeight: 1.1 }}>{fmtValue(value)}</p>
-      <p style={{ fontSize: 12, color: changeColor, marginTop: 5, fontWeight: 500 }}>
+    <div className="bg-white rounded-xl p-5 flex flex-col justify-between" style={{ border: `1px solid ${SAND}` }}>
+      <div>
+        <p style={{ fontSize: 11, color: COCONUT, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</p>
+        <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(18px,2vw,26px)', fontWeight: 700, color: CHARCOAL, marginTop: 4, lineHeight: 1.1 }}>{fmtValue(value)}</p>
+        {desc && <p style={{ fontSize: 11, color: COCONUT, marginTop: 4, lineHeight: 1.4 }}>{desc}</p>}
+      </div>
+      <p style={{ fontSize: 12, color: changeColor, marginTop: 8, fontWeight: 500 }}>
         {arrow} {Math.abs(change)}% <span style={{ color: COCONUT, fontWeight: 400 }}>vs prev. period</span>
       </p>
     </div>
@@ -2160,12 +2163,12 @@ function AnalyticsPanel() {
         <div>
           {/* Metric cards */}
           <div className="grid grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
-            <GAMetricCard label="Bookings"         value={data.metrics.bookings.value}       change={data.metrics.bookings.change}       good="up"   fmtValue={v => v.toLocaleString()} />
-            <GAMetricCard label="Gross Revenue"    value={data.metrics.revenue.value}        change={data.metrics.revenue.change}        good="up"   fmtValue={fmt} />
-            <GAMetricCard label="New Users"        value={data.metrics.newUsers.value}       change={data.metrics.newUsers.change}       good="up"   fmtValue={v => v.toLocaleString()} />
-            <GAMetricCard label="New Hosts"        value={data.metrics.newHosts.value}       change={data.metrics.newHosts.change}       good="up"   fmtValue={v => v.toLocaleString()} />
-            <GAMetricCard label="Avg Booking Value" value={data.metrics.avgBookingValue.value} change={data.metrics.avgBookingValue.change} good="up" fmtValue={fmt} />
-            <GAMetricCard label="Cancel Rate"      value={data.metrics.cancelRate.value}     change={data.metrics.cancelRate.change}     good="down" fmtValue={v => `${v}%`} />
+            <GAMetricCard label="Bookings"          value={data.metrics.bookings.value}        change={data.metrics.bookings.change}        good="up"   fmtValue={v => v.toLocaleString()} desc="Total confirmed & pending bookings (experiences + events)" />
+            <GAMetricCard label="Gross Revenue"     value={data.metrics.revenue.value}         change={data.metrics.revenue.change}         good="up"   fmtValue={fmt}                     desc="Total amount paid by guests including service fees" />
+            <GAMetricCard label="New Users"         value={data.metrics.newUsers.value}        change={data.metrics.newUsers.change}        good="up"   fmtValue={v => v.toLocaleString()} desc="Guest accounts registered in this period" />
+            <GAMetricCard label="New Hosts"         value={data.metrics.newHosts.value}        change={data.metrics.newHosts.change}        good="up"   fmtValue={v => v.toLocaleString()} desc="Host accounts created in this period" />
+            <GAMetricCard label="Avg Booking Value" value={data.metrics.avgBookingValue.value} change={data.metrics.avgBookingValue.change} good="up"   fmtValue={fmt}                     desc="Average revenue per booking across all types" />
+            <GAMetricCard label="Cancel Rate"       value={data.metrics.cancelRate.value}      change={data.metrics.cancelRate.change}      good="down" fmtValue={v => `${v}%`}            desc="Percentage of bookings cancelled in this period" />
           </div>
 
           {/* Dual-line charts */}
@@ -2227,10 +2230,10 @@ function AnalyticsPanel() {
       {!loading && data && tab === 'audience' && (
         <div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <GAMetricCard label="New Users"  value={data.metrics.newUsers.value}  change={data.metrics.newUsers.change}  good="up" fmtValue={v => v.toLocaleString()} />
-            <GAMetricCard label="New Hosts"  value={data.metrics.newHosts.value}  change={data.metrics.newHosts.change}  good="up" fmtValue={v => v.toLocaleString()} />
-            <GAMetricCard label="Bookings"   value={data.metrics.bookings.value}  change={data.metrics.bookings.change}  good="up" fmtValue={v => v.toLocaleString()} />
-            <GAMetricCard label="Avg Spend"  value={data.metrics.avgBookingValue.value} change={data.metrics.avgBookingValue.change} good="up" fmtValue={fmt} />
+            <GAMetricCard label="New Users" value={data.metrics.newUsers.value}        change={data.metrics.newUsers.change}        good="up" fmtValue={v => v.toLocaleString()} desc="Guest accounts registered in this period" />
+            <GAMetricCard label="New Hosts" value={data.metrics.newHosts.value}        change={data.metrics.newHosts.change}        good="up" fmtValue={v => v.toLocaleString()} desc="New host accounts created in this period" />
+            <GAMetricCard label="Bookings"  value={data.metrics.bookings.value}        change={data.metrics.bookings.change}        good="up" fmtValue={v => v.toLocaleString()} desc="Total bookings made by all guests" />
+            <GAMetricCard label="Avg Spend" value={data.metrics.avgBookingValue.value} change={data.metrics.avgBookingValue.change} good="up" fmtValue={fmt}                     desc="Average amount spent per booking" />
           </div>
 
           <div className="grid lg:grid-cols-2 gap-5 mb-6">
@@ -2281,10 +2284,10 @@ function AnalyticsPanel() {
       {!loading && data && tab === 'revenue' && (
         <div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <GAMetricCard label="Gross Revenue"      value={data.metrics.revenue.value}        change={data.metrics.revenue.change}        good="up"   fmtValue={fmt} />
-            <GAMetricCard label={`Commission (${Math.round(data.commissionRate * 100)}%)`} value={data.metrics.commission.value} change={data.metrics.commission.change} good="up" fmtValue={fmt} />
-            <GAMetricCard label="Avg Booking Value"  value={data.metrics.avgBookingValue.value} change={data.metrics.avgBookingValue.change} good="up"   fmtValue={fmt} />
-            <GAMetricCard label="Bookings"           value={data.metrics.bookings.value}       change={data.metrics.bookings.change}       good="up"   fmtValue={v => v.toLocaleString()} />
+            <GAMetricCard label="Gross Revenue"     value={data.metrics.revenue.value}        change={data.metrics.revenue.change}        good="up" fmtValue={fmt}                     desc="Total amount collected from all guest payments" />
+            <GAMetricCard label={`Commission (${Math.round(data.commissionRate * 100)}%)`} value={data.metrics.commission.value} change={data.metrics.commission.change} good="up" fmtValue={fmt} desc="Platform earnings deducted from host payouts" />
+            <GAMetricCard label="Avg Booking Value" value={data.metrics.avgBookingValue.value} change={data.metrics.avgBookingValue.change} good="up" fmtValue={fmt}                     desc="Average revenue per booking this period" />
+            <GAMetricCard label="Bookings"          value={data.metrics.bookings.value}       change={data.metrics.bookings.change}       good="up" fmtValue={v => v.toLocaleString()} desc="Total bookings completed or pending payment" />
           </div>
 
           <div className="bg-white rounded-xl p-5 mb-5" style={{ border: `1px solid ${SAND}` }}>
