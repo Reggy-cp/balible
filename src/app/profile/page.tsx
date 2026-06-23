@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import {
   User, Heart, CalendarDays, Settings, Star, MapPin, Clock,
   Edit2, Camera, Check, Home, Search, Map, X, MessageCircle, Send,
+  Ticket, Users,
 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import Navbar from '@/components/Navbar'
@@ -453,10 +454,12 @@ type EventBookingItem = NonNullable<UserData['eventBookings']>[number]
 function BookingsTab({ dbBookings, dbEventBookings, onRefresh }: { dbBookings?: Booking[]; dbEventBookings?: EventBookingItem[]; onRefresh: () => void }) {
   const [cancelled, setCancelled] = useState<Set<string>>(new Set())
   const [cancelling, setCancelling] = useState<string | null>(null)
+  const [cancellingEvent, setCancellingEvent] = useState<string | null>(null)
   const [reviewing, setReviewing] = useState<Booking | null>(null)
   const [detailBooking, setDetailBooking] = useState<Booking | null>(null)
   const [chatBooking, setChatBooking] = useState<Booking | null>(null)
   const [confirmCancel, setConfirmCancel] = useState<Booking | null>(null)
+  const [confirmCancelEvent, setConfirmCancelEvent] = useState<EventBookingItem | null>(null)
 
   const cancel = async (b: Booking) => {
     setCancelling(b.id)
@@ -471,9 +474,12 @@ function BookingsTab({ dbBookings, dbEventBookings, onRefresh }: { dbBookings?: 
   }
 
   const cancelEvent = async (b: EventBookingItem) => {
+    setCancellingEvent(b.id)
     const res = await cancelEventBookingAction(b.id)
+    setCancellingEvent(null)
     if (res.ok) {
       setCancelled(s => new Set(s).add(b.id))
+      setConfirmCancelEvent(null)
     } else {
       alert(res.error ?? 'Failed to cancel booking.')
     }
@@ -492,118 +498,140 @@ function BookingsTab({ dbBookings, dbEventBookings, onRefresh }: { dbBookings?: 
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>No bookings yet.</p>
           <a href="/search" style={{ display: 'inline-block', marginTop: 12, fontSize: 13, color: '#C8A97E', textDecoration: 'underline' }}>Browse experiences →</a>
         </div>
-      ) : allBookings.map(b => {
-        const isCancelled = cancelled.has(b.id)
-        const effectiveStatus = isCancelled ? 'Cancelled' : b.status
-        return (
-        <div key={b.id} className="bg-white rounded-xl p-4" style={{ border: '1px solid #E8E4DE', opacity: isCancelled ? 0.6 : 1, transition: 'opacity 0.2s' }}>
-          <div className="flex gap-4">
-            <img src={b.image} alt={b.title} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2">
-                <a href={`/${b.category === 'RENTALS' ? 'rentals' : 'experiences'}/${b.slug}`} style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 600, color: '#111111', textDecoration: 'none', lineHeight: 1.3 }} className="hover:opacity-70 transition-opacity">
-                  {b.title}
-                </a>
-                <div className="flex-shrink-0"><StatusBadge status={effectiveStatus} /></div>
-              </div>
-              <div className="flex items-center gap-1 mt-0.5">
-                <MapPin size={11} style={{ color: '#6F675C' }} />
-                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>{b.area}</span>
-              </div>
-              <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1.5">
-                <span style={{ fontSize: 12, color: '#6F675C' }}>📅 {b.date}{b.time ? ` · ${b.time}` : ''}</span>
-                <span style={{ fontSize: 12, color: '#6F675C' }}>👤 {b.guests} guest{b.guests > 1 ? 's' : ''}</span>
-                <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>IDR {b.total.toLocaleString('id-ID')}</span>
-              </div>
-              {/* Button row */}
-              <div className="flex flex-wrap gap-2 mt-2">
-                <button onClick={() => setDetailBooking({ ...b, status: effectiveStatus })}
-                  style={{ backgroundColor: '#FEF9EC', border: '1px solid #E8D9C4', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12, color: '#C8A97E', fontWeight: 600 }}
-                  className="hover:opacity-75 transition-opacity">
-                  View details
-                </button>
-                {b.operatorId && (
-                  <button onClick={() => setChatBooking(b)}
-                    style={{ backgroundColor: '#F5F1EB', border: '1px solid #E8E4DE', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12, color: '#6F675C', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}
-                    className="hover:opacity-75 transition-opacity">
-                    <MessageCircle size={12} />
-                    Message Host
-                  </button>
-                )}
-                {effectiveStatus === 'Completed' && !b.rating && (
-                  <button onClick={() => setReviewing(b)}
-                    style={{ backgroundColor: '#FEF9EC', border: '1px solid #E8D9C4', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12, color: '#C8A97E', fontWeight: 600 }}
-                    className="hover:opacity-80 transition-opacity">
-                    Leave a review
-                  </button>
-                )}
-                {b.cancellable && !isCancelled && (
-                  <button
-                    onClick={() => setConfirmCancel(b)}
-                    style={{ height: 29, padding: '0 12px', border: '1px solid #FECACA', borderRadius: 6, fontSize: 12, color: '#B66A45', backgroundColor: 'white', cursor: 'pointer' }}>
-                    Cancel &amp; Refund
-                  </button>
-                )}
-              </div>
-              {effectiveStatus === 'Completed' && b.rating && (
-                <div className="flex items-center gap-1 mt-2">
-                  {[1,2,3,4,5].map(i => <Star key={i} size={11} fill={i <= b.rating! ? '#C8A97E' : '#E8E4DE'} color={i <= b.rating! ? '#C8A97E' : '#E8E4DE'} />)}
-                  <span style={{ fontSize: 12, color: '#6F675C', marginLeft: 2 }}>You rated this</span>
-                </div>
+      ) : (
+        <>
+          {/* ── Experiences ── */}
+          {allBookings.length > 0 && (
+            <>
+              {allEventBookings.length > 0 && (
+                <p style={{ fontSize: 11, fontWeight: 700, color: '#9E9A94', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>Experiences</p>
               )}
-              {effectiveStatus === 'Pending' && (
-                <p className="mt-2" style={{ fontSize: 12, color: '#C8A97E' }}>Awaiting payment confirmation</p>
-              )}
-            </div>
-          </div>
-        </div>
-        )
-      })}
-
-      {allEventBookings.map(b => {
-        const isCancelled = cancelled.has(b.id)
-        const effectiveStatus = isCancelled ? 'Cancelled' : b.status
-        return (
-          <div key={b.id} className="bg-white rounded-xl p-4" style={{ border: '1px solid #E8E4DE', opacity: isCancelled ? 0.6 : 1, transition: 'opacity 0.2s' }}>
-            <div className="flex gap-4">
-              {b.image ? (
-                <img src={b.image} alt={b.title} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
-              ) : (
-                <div className="w-16 h-16 rounded-xl flex-shrink-0 flex items-center justify-center" style={{ background: '#F5F1EB', fontSize: 28 }}>🎟</div>
-              )}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-2">
-                  <a href={`/events/${b.slug}`} style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 600, color: '#111111', textDecoration: 'none', lineHeight: 1.3 }} className="hover:opacity-70 transition-opacity">
-                    {b.title}
-                  </a>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <span style={{ fontSize: 10, fontWeight: 700, color: '#C8A97E', background: '#FEF9EC', border: '1px solid #E8D9C4', borderRadius: 4, padding: '2px 6px', letterSpacing: '0.05em' }}>EVENT</span>
-                    <StatusBadge status={effectiveStatus} />
+              {allBookings.map(b => {
+                const isCancelled = cancelled.has(b.id)
+                const effectiveStatus = isCancelled ? 'Cancelled' : b.status
+                return (
+                  <div key={b.id} className="bg-white rounded-xl p-4" style={{ border: '1px solid #E8E4DE', opacity: isCancelled ? 0.6 : 1, transition: 'opacity 0.2s' }}>
+                    <div className="flex gap-4">
+                      <img src={b.image} alt={b.title} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <a href={`/${b.category === 'RENTALS' ? 'rentals' : 'experiences'}/${b.slug}`} style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 600, color: '#111111', textDecoration: 'none', lineHeight: 1.3 }} className="hover:opacity-70 transition-opacity">
+                            {b.title}
+                          </a>
+                          <div className="flex-shrink-0"><StatusBadge status={effectiveStatus} /></div>
+                        </div>
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <MapPin size={11} style={{ color: '#6F675C' }} />
+                          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>{b.area}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1.5">
+                          <span style={{ fontSize: 12, color: '#6F675C', display: 'inline-flex', alignItems: 'center', gap: 4 }}><CalendarDays size={11} />{b.date}{b.time ? ` · ${b.time}` : ''}</span>
+                          <span style={{ fontSize: 12, color: '#6F675C', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Users size={11} />{b.guests} guest{b.guests > 1 ? 's' : ''}</span>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>IDR {b.total.toLocaleString('id-ID')}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          <button onClick={() => setDetailBooking({ ...b, status: effectiveStatus })}
+                            style={{ backgroundColor: '#FEF9EC', border: '1px solid #E8D9C4', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12, color: '#C8A97E', fontWeight: 600 }}
+                            className="hover:opacity-75 transition-opacity">
+                            View details
+                          </button>
+                          {b.operatorId && (
+                            <button onClick={() => setChatBooking(b)}
+                              style={{ backgroundColor: '#F5F1EB', border: '1px solid #E8E4DE', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12, color: '#6F675C', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}
+                              className="hover:opacity-75 transition-opacity">
+                              <MessageCircle size={12} />
+                              Message Host
+                            </button>
+                          )}
+                          {effectiveStatus === 'Completed' && !b.rating && (
+                            <button onClick={() => setReviewing(b)}
+                              style={{ backgroundColor: '#FEF9EC', border: '1px solid #E8D9C4', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12, color: '#C8A97E', fontWeight: 600 }}
+                              className="hover:opacity-80 transition-opacity">
+                              Leave a review
+                            </button>
+                          )}
+                          {b.cancellable && !isCancelled && (
+                            <button onClick={() => setConfirmCancel(b)}
+                              style={{ height: 29, padding: '0 12px', border: '1px solid #FECACA', borderRadius: 6, fontSize: 12, color: '#B66A45', backgroundColor: 'white', cursor: 'pointer' }}>
+                              Cancel &amp; Refund
+                            </button>
+                          )}
+                        </div>
+                        {effectiveStatus === 'Completed' && b.rating && (
+                          <div className="flex items-center gap-1 mt-2">
+                            {[1,2,3,4,5].map(i => <Star key={i} size={11} fill={i <= b.rating! ? '#C8A97E' : '#E8E4DE'} color={i <= b.rating! ? '#C8A97E' : '#E8E4DE'} />)}
+                            <span style={{ fontSize: 12, color: '#6F675C', marginLeft: 2 }}>You rated this</span>
+                          </div>
+                        )}
+                        {effectiveStatus === 'Pending' && (
+                          <p className="mt-2" style={{ fontSize: 12, color: '#C8A97E' }}>Awaiting payment confirmation</p>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1.5">
-                  <span style={{ fontSize: 12, color: '#6F675C' }}>📅 {b.date}</span>
-                  <span style={{ fontSize: 12, color: '#6F675C' }}>📍 {b.location}</span>
-                  <span style={{ fontSize: 12, color: '#6F675C' }}>🎟 {b.tickets} ticket{b.tickets > 1 ? 's' : ''}</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>IDR {b.total.toLocaleString('id-ID')}</span>
-                </div>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {b.cancellable && !isCancelled && (
-                    <button
-                      onClick={() => { if (confirm(`Cancel your tickets for ${b.title}?`)) cancelEvent(b) }}
-                      style={{ height: 29, padding: '0 12px', border: '1px solid #FECACA', borderRadius: 6, fontSize: 12, color: '#B66A45', backgroundColor: 'white', cursor: 'pointer' }}>
-                      Cancel & Refund
-                    </button>
-                  )}
-                </div>
-                {effectiveStatus === 'Pending' && (
-                  <p className="mt-2" style={{ fontSize: 12, color: '#C8A97E' }}>Awaiting payment confirmation</p>
-                )}
-              </div>
-            </div>
-          </div>
-        )
-      })}
+                )
+              })}
+            </>
+          )}
+
+          {/* ── Event tickets ── */}
+          {allEventBookings.length > 0 && (
+            <>
+              {allBookings.length > 0 && (
+                <p style={{ fontSize: 11, fontWeight: 700, color: '#9E9A94', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 8, marginBottom: 4 }}>Event Tickets</p>
+              )}
+              {allEventBookings.map(b => {
+                const isCancelled = cancelled.has(b.id)
+                const effectiveStatus = isCancelled ? 'Cancelled' : b.status
+                return (
+                  <div key={b.id} className="bg-white rounded-xl p-4" style={{ border: '1px solid #E8E4DE', opacity: isCancelled ? 0.6 : 1, transition: 'opacity 0.2s' }}>
+                    <div className="flex gap-4">
+                      {b.image ? (
+                        <img src={b.image} alt={b.title} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
+                      ) : (
+                        <div className="w-16 h-16 rounded-xl flex-shrink-0 flex items-center justify-center" style={{ background: '#F5F1EB', fontSize: 28 }}>🎟</div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <a href={`/events/${b.slug}`} style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 600, color: '#111111', textDecoration: 'none', lineHeight: 1.3 }} className="hover:opacity-70 transition-opacity">
+                            {b.title}
+                          </a>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <span style={{ fontSize: 10, fontWeight: 700, color: '#C8A97E', background: '#FEF9EC', border: '1px solid #E8D9C4', borderRadius: 4, padding: '2px 6px', letterSpacing: '0.05em' }}>EVENT</span>
+                            <StatusBadge status={effectiveStatus} />
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1.5">
+                          <span style={{ fontSize: 12, color: '#6F675C', display: 'inline-flex', alignItems: 'center', gap: 4 }}><CalendarDays size={11} />{b.date}</span>
+                          <span style={{ fontSize: 12, color: '#6F675C', display: 'inline-flex', alignItems: 'center', gap: 4 }}><MapPin size={11} />{b.location}</span>
+                          <span style={{ fontSize: 12, color: '#6F675C', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Ticket size={11} />{b.tickets} ticket{b.tickets > 1 ? 's' : ''}</span>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>{b.total === 0 ? 'Free' : `IDR ${b.total.toLocaleString('id-ID')}`}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          <a href={`/events/${b.slug}`}
+                            style={{ backgroundColor: '#FEF9EC', border: '1px solid #E8D9C4', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12, color: '#C8A97E', fontWeight: 600, textDecoration: 'none' }}
+                            className="hover:opacity-75 transition-opacity">
+                            View event
+                          </a>
+                          {b.cancellable && !isCancelled && (
+                            <button onClick={() => setConfirmCancelEvent(b)}
+                              style={{ height: 29, padding: '0 12px', border: '1px solid #FECACA', borderRadius: 6, fontSize: 12, color: '#B66A45', backgroundColor: 'white', cursor: 'pointer' }}>
+                              Cancel &amp; Refund
+                            </button>
+                          )}
+                        </div>
+                        {effectiveStatus === 'Pending' && (
+                          <p className="mt-2" style={{ fontSize: 12, color: '#C8A97E' }}>Awaiting payment confirmation</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </>
+          )}
+        </>
+      )}
 
       {reviewing && (
         <ReviewModal
@@ -629,6 +657,40 @@ function BookingsTab({ dbBookings, dbEventBookings, onRefresh }: { dbBookings?: 
           onConfirm={() => cancel(confirmCancel)}
           onClose={() => setConfirmCancel(null)}
         />
+      )}
+      {confirmCancelEvent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={e => { if (e.target === e.currentTarget) setConfirmCancelEvent(null) }}>
+          <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl overflow-hidden" style={{ border: '1px solid #E8E4DE' }}>
+            <div className="px-6 pt-6 pb-2">
+              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111', marginBottom: 8 }}>Cancel tickets?</h2>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.6, marginBottom: 12 }}>
+                You're about to cancel <strong style={{ color: '#111111' }}>{confirmCancelEvent.tickets} ticket{confirmCancelEvent.tickets > 1 ? 's' : ''}</strong> for <strong style={{ color: '#111111' }}>{confirmCancelEvent.title}</strong> on <strong style={{ color: '#111111' }}>{confirmCancelEvent.date}</strong>.
+              </p>
+              {confirmCancelEvent.total > 0 && (
+                <div style={{ backgroundColor: '#FEF9EC', border: '1px solid #E8D4B8', borderRadius: 10, padding: '12px 14px', marginBottom: 20 }}>
+                  <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111', fontWeight: 600, marginBottom: 4 }}>Refund of IDR {confirmCancelEvent.total.toLocaleString('id-ID')}</p>
+                  <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', lineHeight: 1.6 }}>
+                    Your refund will be processed within 3–5 business days.
+                  </p>
+                </div>
+              )}
+            </div>
+            <div className="flex gap-3 px-6 pb-6">
+              <button
+                onClick={() => cancelEvent(confirmCancelEvent)}
+                disabled={cancellingEvent === confirmCancelEvent.id}
+                style={{ flex: 1, height: 42, borderRadius: 10, border: 'none', backgroundColor: '#B66A45', color: 'white', fontSize: 14, fontWeight: 600, cursor: cancellingEvent === confirmCancelEvent.id ? 'default' : 'pointer', opacity: cancellingEvent === confirmCancelEvent.id ? 0.7 : 1, fontFamily: 'var(--font-inter)' }}>
+                {cancellingEvent === confirmCancelEvent.id ? 'Cancelling…' : 'Yes, cancel tickets'}
+              </button>
+              <button
+                onClick={() => setConfirmCancelEvent(null)}
+                disabled={!!cancellingEvent}
+                style={{ flex: 1, height: 42, borderRadius: 10, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 14, color: '#6F675C', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}>
+                Keep tickets
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
