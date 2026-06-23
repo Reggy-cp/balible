@@ -1986,6 +1986,10 @@ export type AnalyticsData = {
     cancelRate: AnalyticsMetric
     cancelledBookings: AnalyticsMetric
     cancelledRevenue: AnalyticsMetric
+    serviceFee: AnalyticsMetric
+    commissionExp: AnalyticsMetric
+    commissionRentals: AnalyticsMetric
+    commissionEvents: AnalyticsMetric
   }
   bookingTrend: { label: string; current: number; prev: number }[]
   revenueTrend:  { label: string; current: number; prev: number }[]
@@ -2012,7 +2016,7 @@ export async function getAnalyticsDataAction(days: number): Promise<AnalyticsDat
   const empty: AnalyticsData = {
     commissionRate: COMMISSION_RATE,
     serviceFeeRate: 0,
-    metrics: { bookings: { value: 0, change: 0 }, revenue: { value: 0, change: 0 }, commission: { value: 0, change: 0 }, platformRevenue: { value: 0, change: 0 }, newUsers: { value: 0, change: 0 }, newHosts: { value: 0, change: 0 }, avgBookingValue: { value: 0, change: 0 }, cancelRate: { value: 0, change: 0 }, cancelledBookings: { value: 0, change: 0 }, cancelledRevenue: { value: 0, change: 0 } },
+    metrics: { bookings: { value: 0, change: 0 }, revenue: { value: 0, change: 0 }, commission: { value: 0, change: 0 }, platformRevenue: { value: 0, change: 0 }, newUsers: { value: 0, change: 0 }, newHosts: { value: 0, change: 0 }, avgBookingValue: { value: 0, change: 0 }, cancelRate: { value: 0, change: 0 }, cancelledBookings: { value: 0, change: 0 }, cancelledRevenue: { value: 0, change: 0 }, serviceFee: { value: 0, change: 0 }, commissionExp: { value: 0, change: 0 }, commissionRentals: { value: 0, change: 0 }, commissionEvents: { value: 0, change: 0 } },
     bookingTrend: [], revenueTrend: [], userGrowth: [],
     topExperiences: [], categoryBreakdown: [], areaBreakdown: [], topHosts: [], bookingStatus: [],
   }
@@ -2182,14 +2186,26 @@ export async function getAnalyticsDataAction(days: number): Promise<AnalyticsDat
 
     const currCommission = Math.round(currRev * commRate)
     const prevCommission = Math.round(prevRev * commRate)
+    // Service fee = amount added on top by guests: totalPrice * feeRate / (1 + feeRate)
+    const calcServiceFee = (rev: number) => feeRate > 0 ? Math.round(rev * feeRate / (1 + feeRate)) : 0
+    const currServiceFee = calcServiceFee(currRev)
+    const prevServiceFee = calcServiceFee(prevRev)
     // Platform revenue = service fee (from guest) + commission (from host)
-    // basePrice = totalPrice / (1 + feeRate); serviceFee = totalPrice - basePrice
-    const calcPlatformRev = (rev: number) => {
-      const base = feeRate > 0 ? Math.round(rev / (1 + feeRate)) : rev
-      return Math.round((rev - base) + base * commRate)
-    }
-    const currPlatformRev = calcPlatformRev(currRev)
-    const prevPlatformRev = calcPlatformRev(prevRev)
+    const currPlatformRev = currServiceFee + Math.round(currRev > 0 ? (currRev - currServiceFee) * commRate : 0)
+    const prevPlatformRev = prevServiceFee + Math.round(prevRev > 0 ? (prevRev - prevServiceFee) * commRate : 0)
+    // Commission broken down by booking type
+    const currRevExp     = currPaid.filter(b => String(b.experience.category) !== 'RENTALS').reduce((a, b) => a + b.totalPrice, 0)
+    const prevRevExp     = prevPaid.filter(b => String(b.experience.category) !== 'RENTALS').reduce((a, b) => a + b.totalPrice, 0)
+    const currRevRentals = currPaid.filter(b => String(b.experience.category) === 'RENTALS').reduce((a, b) => a + b.totalPrice, 0)
+    const prevRevRentals = prevPaid.filter(b => String(b.experience.category) === 'RENTALS').reduce((a, b) => a + b.totalPrice, 0)
+    const currRevEvents  = currPaidEB.reduce((a, b) => a + b.totalPrice, 0)
+    const prevRevEvents  = prevPaidEB.reduce((a, b) => a + b.totalPrice, 0)
+    const currCommExp     = Math.round(currRevExp     * commRate)
+    const prevCommExp     = Math.round(prevRevExp     * commRate)
+    const currCommRentals = Math.round(currRevRentals * commRate)
+    const prevCommRentals = Math.round(prevRevRentals * commRate)
+    const currCommEvents  = Math.round(currRevEvents  * commRate)
+    const prevCommEvents  = Math.round(prevRevEvents  * commRate)
 
     return {
       commissionRate: commRate,
@@ -2205,6 +2221,10 @@ export async function getAnalyticsDataAction(days: number): Promise<AnalyticsDat
         cancelRate:        { value: currCancel,       change: pct(currCancel, prevCancel) },
         cancelledBookings: { value: currCancelCount,  change: pct(currCancelCount, prevCancelCount) },
         cancelledRevenue:  { value: currCancelRev,    change: pct(currCancelRev, prevCancelRev) },
+        serviceFee:        { value: currServiceFee,    change: pct(currServiceFee, prevServiceFee) },
+        commissionExp:     { value: currCommExp,       change: pct(currCommExp, prevCommExp) },
+        commissionRentals: { value: currCommRentals,   change: pct(currCommRentals, prevCommRentals) },
+        commissionEvents:  { value: currCommEvents,    change: pct(currCommEvents, prevCommEvents) },
       },
       bookingTrend, revenueTrend, userGrowth,
       topExperiences, categoryBreakdown, areaBreakdown, topHosts, bookingStatus,

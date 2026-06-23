@@ -2239,6 +2239,7 @@ function AnalyticsPanel() {
             <GAMetricCard label="Gross Revenue"        value={data.metrics.revenue.value}            change={data.metrics.revenue.change}            good="up"   fmtValue={fmt}                     desc="Total amount paid by guests including service fees" />
             <GAMetricCard label="Platform Revenue"     value={data.metrics.platformRevenue.value}    change={data.metrics.platformRevenue.change}    good="up"   fmtValue={fmt}                     desc="What Balible keeps — service fee + commission" />
             <GAMetricCard label={`Commission (${Math.round(data.commissionRate * 100)}%)`} value={data.metrics.commission.value} change={data.metrics.commission.change} good="up" fmtValue={fmt} desc="Deducted from host gross before payout" />
+            <GAMetricCard label={`Service Fee (${Math.round(data.serviceFeeRate * 100)}%)`} value={data.metrics.serviceFee.value} change={data.metrics.serviceFee.change} good="up" fmtValue={fmt} desc="Guest service fee collected on top of base booking price" />
             <GAMetricCard label="Avg Booking Value"    value={data.metrics.avgBookingValue.value}    change={data.metrics.avgBookingValue.change}    good="up"   fmtValue={fmt}                     desc="Average revenue per paid booking" />
             <GAMetricCard label="Cancel Rate"          value={data.metrics.cancelRate.value}         change={data.metrics.cancelRate.change}         good="down" fmtValue={v => `${v}%`}            desc="Share of bookings cancelled this period" />
             <GAMetricCard label="Cancelled Bookings"   value={data.metrics.cancelledBookings.value}  change={data.metrics.cancelledBookings.change}  good="down" fmtValue={v => v.toLocaleString()} desc="Number of bookings cancelled by guests or hosts" />
@@ -2357,14 +2358,18 @@ function AnalyticsPanel() {
 
       {!loading && data && tab === 'revenue' && (
         <div>
-          <div className="grid grid-cols-2 xl:grid-cols-5 gap-4 mb-6">
-            <GAMetricCard label="Gross Revenue"     value={data.metrics.revenue.value}         change={data.metrics.revenue.change}         good="up" fmtValue={fmt}                     desc="Total amount collected from all guest payments" />
-            <GAMetricCard label="Platform Revenue"  value={data.metrics.platformRevenue.value} change={data.metrics.platformRevenue.change} good="up" fmtValue={fmt}                     desc={`Balible's net earnings — service fee + commission`} />
+          <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+            <GAMetricCard label="Gross Revenue"      value={data.metrics.revenue.value}         change={data.metrics.revenue.change}         good="up"   fmtValue={fmt}                     desc="Total amount collected from all guest payments" />
+            <GAMetricCard label="Platform Revenue"   value={data.metrics.platformRevenue.value} change={data.metrics.platformRevenue.change} good="up"   fmtValue={fmt}                     desc="Balible's net earnings — service fee + commission" />
+            <GAMetricCard label={`Service Fee (${Math.round(data.serviceFeeRate * 100)}%)`} value={data.metrics.serviceFee.value} change={data.metrics.serviceFee.change} good="up" fmtValue={fmt} desc="Guest service fee portion collected on paid bookings" />
             <GAMetricCard label={`Commission (${Math.round(data.commissionRate * 100)}%)`} value={data.metrics.commission.value} change={data.metrics.commission.change} good="up" fmtValue={fmt} desc="Deducted from host gross before payout" />
             <GAMetricCard label="Avg Booking Value"  value={data.metrics.avgBookingValue.value}   change={data.metrics.avgBookingValue.change}   good="up"   fmtValue={fmt}                     desc="Average revenue per paid booking this period" />
             <GAMetricCard label="Bookings"           value={data.metrics.bookings.value}          change={data.metrics.bookings.change}          good="up"   fmtValue={v => v.toLocaleString()} desc="Total bookings including pending and cancelled" />
-            <GAMetricCard label="Cancelled Bookings" value={data.metrics.cancelledBookings.value} change={data.metrics.cancelledBookings.change} good="down" fmtValue={v => v.toLocaleString()} desc="Number of bookings cancelled this period" />
-            <GAMetricCard label="Cancelled Revenue"  value={data.metrics.cancelledRevenue.value}  change={data.metrics.cancelledRevenue.change}  good="down" fmtValue={fmt}                     desc="Total value of cancelled bookings — revenue not collected" />
+            <GAMetricCard label="Cancelled Bookings"       value={data.metrics.cancelledBookings.value}  change={data.metrics.cancelledBookings.change}  good="down" fmtValue={v => v.toLocaleString()} desc="Number of bookings cancelled this period" />
+            <GAMetricCard label="Cancelled Revenue"        value={data.metrics.cancelledRevenue.value}   change={data.metrics.cancelledRevenue.change}   good="down" fmtValue={fmt}                     desc="Total value of cancelled bookings — revenue not collected" />
+            <GAMetricCard label="Commission — Experiences" value={data.metrics.commissionExp.value}      change={data.metrics.commissionExp.change}      good="up"   fmtValue={fmt}                     desc="Commission earned from experience bookings" />
+            <GAMetricCard label="Commission — Rentals"     value={data.metrics.commissionRentals.value}  change={data.metrics.commissionRentals.change}  good="up"   fmtValue={fmt}                     desc="Commission earned from rental bookings" />
+            <GAMetricCard label="Commission — Events"      value={data.metrics.commissionEvents.value}   change={data.metrics.commissionEvents.change}   good="up"   fmtValue={fmt}                     desc="Commission earned from event ticket sales" />
           </div>
 
           <div className="bg-white rounded-xl p-5 mb-5" style={{ border: `1px solid ${SAND}` }}>
