@@ -26,7 +26,7 @@ import {
   getOperatorSettingsAction, updateOperatorSettingsAction,
   updateExperienceImagesAction,
   updateExperienceScheduleAction,
-  type DashExp, type DashBooking, type DashReview, type EarningsByMonth, type HostProfile,
+  type DashExp, type DashBooking, type DashReview, type DashEventBooking, type EarningsByMonth, type HostProfile,
 } from '@/lib/actions'
 import { PAYOUT_MIN_NET } from '@/lib/constants'
 import {
@@ -315,9 +315,9 @@ function WithdrawModal({ onClose, pendingNet, commissionRate, isRequested, isPai
 
 // ── Overview Panel ────────────────────────────────────────────────────────────
 
-function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences, bookings: liveBookings, reviews: liveReviews, hostName, earningsByMonth: liveEarningsByMonth, pendingPayout: livePendingPayout, payouts: livePayouts }: {
+function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences, bookings: liveBookings, eventBookings: liveEventBookings, reviews: liveReviews, hostName, earningsByMonth: liveEarningsByMonth, pendingPayout: livePendingPayout, payouts: livePayouts }: {
   onNav: (id: string) => void; commissionRate: number
-  experiences?: DashExp[]; bookings?: DashBooking[]; reviews?: DashReview[]; hostName?: string
+  experiences?: DashExp[]; bookings?: DashBooking[]; eventBookings?: DashEventBooking[]; reviews?: DashReview[]; hostName?: string
   earningsByMonth?: EarningsByMonth[]; pendingPayout?: number; payouts?: OperatorPayout[]
 }) {
   const readOnly = useContext(ReadOnlyContext)
@@ -328,8 +328,12 @@ function OverviewPanel({ onNav, commissionRate, experiences: liveExperiences, bo
   const expSource = liveExperiences ?? []
   const totalNetEarnings = expSource.reduce((a, e) => a + e.earnings, 0) * netMult
 
-  const totalBookings  = liveBookings !== undefined ? liveBookings.length : null
-  const activeBookings = liveBookings !== undefined ? liveBookings.filter(b => b.status === 'Confirmed' || b.status === 'Pending').length : null
+  const totalBookings  = liveBookings !== undefined && liveEventBookings !== undefined
+    ? liveBookings.length + liveEventBookings.length : null
+  const activeBookings = liveBookings !== undefined && liveEventBookings !== undefined
+    ? liveBookings.filter(b => b.status === 'Confirmed' || b.status === 'Pending').length +
+      liveEventBookings.filter(b => b.status === 'Confirmed' || b.status === 'Pending').length
+    : null
   const avgRating      = liveReviews !== undefined && liveReviews.length > 0
     ? (liveReviews.reduce((a, r) => a + r.rating, 0) / liveReviews.length).toFixed(1) : null
   const reviewCount    = liveReviews !== undefined ? liveReviews.length : null
@@ -1171,12 +1175,14 @@ function ExperiencesPanel({ commissionRate, initialExperiences, triggerNewExp }:
 
 // ── Bookings Panel ────────────────────────────────────────────────────────────
 
-function BookingsPanel({ initialBookings }: { initialBookings?: DashBooking[] }) {
+function BookingsPanel({ initialBookings, initialEventBookings }: { initialBookings?: DashBooking[]; initialEventBookings?: DashEventBooking[] }) {
   const readOnly = useContext(ReadOnlyContext)
   const { t } = useLanguage()
+  const [tab, setTab]                   = useState<'experiences' | 'events'>('experiences')
   const [statusFilter, setStatusFilter] = useState('All')
   const [search, setSearch]             = useState('')
   const [bookings, setBookings]         = useState<DashBooking[]>(initialBookings ?? [])
+  const [eventBookings]                 = useState<DashEventBooking[]>(initialEventBookings ?? [])
   const [updating, setUpdating]         = useState<string | null>(null)
 
   const statuses = ['All', 'Pending', 'Confirmed', 'Completed', 'Cancelled']
@@ -1184,6 +1190,12 @@ function BookingsPanel({ initialBookings }: { initialBookings?: DashBooking[] })
     const matchStatus = statusFilter === 'All' || b.status === statusFilter
     const q = search.toLowerCase()
     const matchSearch = !q || b.guest.toLowerCase().includes(q) || b.experience.toLowerCase().includes(q) || b.ref.toLowerCase().includes(q)
+    return matchStatus && matchSearch
+  })
+  const filteredEvents = eventBookings.filter(b => {
+    const matchStatus = statusFilter === 'All' || b.status === statusFilter
+    const q = search.toLowerCase()
+    const matchSearch = !q || b.guest.toLowerCase().includes(q) || b.eventTitle.toLowerCase().includes(q) || b.ref.toLowerCase().includes(q)
     return matchStatus && matchSearch
   })
 
@@ -1199,9 +1211,33 @@ function BookingsPanel({ initialBookings }: { initialBookings?: DashBooking[] })
     }
   }
 
+  const exportCsv = () => {
+    if (tab === 'experiences') {
+      const rows = [['Ref','Guest','Experience','Date','Guests','Total','Status'], ...bookings.map(b => [b.ref, b.guest, b.experience, b.date, b.guests, b.total, b.status])]
+      const csv = rows.map(r => r.join(',')).join('\n')
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'bookings.csv'; a.click()
+    } else {
+      const rows = [['Ref','Guest','Email','Event','Date','Tickets','Total','Status'], ...eventBookings.map(b => [b.ref, b.guest, b.email, b.eventTitle, b.eventDate, b.tickets, b.total, b.status])]
+      const csv = rows.map(r => r.join(',')).join('\n')
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'event-bookings.csv'; a.click()
+    }
+  }
+
+  const totalCount = tab === 'experiences' ? bookings.length : eventBookings.length
+
   return (
     <div>
-      <PageHeader title={t('db_bookings_title')} subtitle={`${bookings.length} ${t('db_total_bookings')}`} />
+      <PageHeader title={t('db_bookings_title')} subtitle={`${bookings.length + eventBookings.length} ${t('db_total_bookings')}`} />
+
+      {/* Tab switcher */}
+      <div className="flex gap-1 p-1 mb-5 rounded-xl" style={{ backgroundColor: '#F5F1EB', width: 'fit-content' }}>
+        {(['experiences', 'events'] as const).map(t2 => (
+          <button key={t2} onClick={() => { setTab(t2); setStatusFilter('All'); setSearch('') }}
+            style={{ height: 34, padding: '0 18px', borderRadius: 10, border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s', backgroundColor: tab === t2 ? 'white' : 'transparent', color: tab === t2 ? '#111111' : '#6F675C', boxShadow: tab === t2 ? '0 1px 4px rgba(0,0,0,0.08)' : 'none' }}>
+            {t2 === 'experiences' ? `Experiences (${bookings.length})` : `Events (${eventBookings.length})`}
+          </button>
+        ))}
+      </div>
 
       <div className="flex gap-3 mb-5">
         <div className="relative flex-1">
@@ -1209,12 +1245,7 @@ function BookingsPanel({ initialBookings }: { initialBookings?: DashBooking[] })
           <input placeholder={t('db_search_bookings')} value={search} onChange={e => setSearch(e.target.value)}
             style={{ width: '100%', height: 40, borderRadius: 10, border: '1px solid #E8E4DE', paddingLeft: 34, paddingRight: 14, fontSize: 13, fontFamily: 'var(--font-inter)', color: '#111111', outline: 'none', backgroundColor: 'white' }} />
         </div>
-        <button
-          onClick={() => {
-            const rows = [['Ref','Guest','Experience','Date','Guests','Total','Status'], ...bookings.map(b => [b.ref, b.guest, b.experience, b.date, b.guests, b.total, b.status])]
-            const csv = rows.map(r => r.join(',')).join('\n')
-            const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'bookings.csv'; a.click()
-          }}
+        <button onClick={exportCsv}
           className="flex items-center gap-2 px-4 rounded-xl flex-shrink-0 hover:opacity-80"
           style={{ height: 40, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 13, color: '#6F675C', cursor: 'pointer' }}>
           <Download size={14} /> {t('db_export')}
@@ -1222,61 +1253,106 @@ function BookingsPanel({ initialBookings }: { initialBookings?: DashBooking[] })
       </div>
 
       <div className="flex gap-2 mb-5 overflow-x-auto scrollbar-none">
-        {statuses.map(s => (
-          <button key={s} onClick={() => setStatusFilter(s)}
-            style={{ padding: '7px 14px', borderRadius: 10, fontSize: 13, fontWeight: statusFilter === s ? 600 : 400, flexShrink: 0, backgroundColor: statusFilter === s ? '#111111' : 'white', color: statusFilter === s ? 'white' : '#6F675C', border: '1px solid', borderColor: statusFilter === s ? '#111111' : '#E8E4DE', cursor: 'pointer', transition: 'all 0.15s' }}>
-            {s}
-            <span className="ml-1.5" style={{ fontSize: 11, opacity: 0.6 }}>
-              {s === 'All' ? bookings.length : bookings.filter(b => b.status === s).length}
-            </span>
-          </button>
-        ))}
+        {statuses.map(s => {
+          const count = tab === 'experiences'
+            ? (s === 'All' ? bookings.length : bookings.filter(b => b.status === s).length)
+            : (s === 'All' ? eventBookings.length : eventBookings.filter(b => b.status === s).length)
+          return (
+            <button key={s} onClick={() => setStatusFilter(s)}
+              style={{ padding: '7px 14px', borderRadius: 10, fontSize: 13, fontWeight: statusFilter === s ? 600 : 400, flexShrink: 0, backgroundColor: statusFilter === s ? '#111111' : 'white', color: statusFilter === s ? 'white' : '#6F675C', border: '1px solid', borderColor: statusFilter === s ? '#111111' : '#E8E4DE', cursor: 'pointer', transition: 'all 0.15s' }}>
+              {s} <span style={{ fontSize: 11, opacity: 0.6 }}>{count}</span>
+            </button>
+          )
+        })}
       </div>
 
-      <div className="space-y-3">
-        {filtered.length === 0 && (
-          <div className="bg-white rounded-xl p-10 text-center" style={{ border: '1px solid #E8E4DE' }}>
-            <p style={{ fontSize: 14, color: '#6F675C' }}>{t('db_no_match')}</p>
-          </div>
-        )}
-        {filtered.map(b => (
-          <div key={b.id} className="bg-white rounded-xl p-4" style={{ border: '1px solid #E8E4DE' }}>
-            <div className="flex items-start gap-3">
-              <img src={b.expImage} alt="" className="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between flex-wrap gap-2">
-                  <div>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: '#111111' }}>{b.guest}</p>
-                    <p style={{ fontSize: 12, color: '#6F675C' }}>{b.email}</p>
+      {/* Experience bookings */}
+      {tab === 'experiences' && (
+        <div className="space-y-3">
+          {filtered.length === 0 && (
+            <div className="bg-white rounded-xl p-10 text-center" style={{ border: '1px solid #E8E4DE' }}>
+              <p style={{ fontSize: 14, color: '#6F675C' }}>{t('db_no_match')}</p>
+            </div>
+          )}
+          {filtered.map(b => (
+            <div key={b.id} className="bg-white rounded-xl p-4" style={{ border: '1px solid #E8E4DE' }}>
+              <div className="flex items-start gap-3">
+                <img src={b.expImage} alt="" className="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between flex-wrap gap-2">
+                    <div>
+                      <p style={{ fontSize: 14, fontWeight: 700, color: '#111111' }}>{b.guest}</p>
+                      <p style={{ fontSize: 12, color: '#6F675C' }}>{b.email}</p>
+                    </div>
+                    <StatusBadge status={b.status} />
                   </div>
-                  <StatusBadge status={b.status} />
+                  <p className="mt-1.5" style={{ fontSize: 13, color: '#111111', fontWeight: 500 }}>{b.experience}</p>
+                  <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
+                    <span style={{ fontSize: 12, color: '#6F675C' }}>📅 {b.date}{b.time ? ` · ${b.time}` : ''}</span>
+                    <span style={{ fontSize: 12, color: '#6F675C' }}>👤 {b.guests} guest{b.guests > 1 ? 's' : ''}</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>IDR {b.total.toLocaleString('id-ID')}</span>
+                  </div>
+                  <p style={{ fontSize: 11, color: '#C8C4BE', marginTop: 3 }}>{b.ref} · {t('db_booked_label')} {b.bookedOn}</p>
                 </div>
-                <p className="mt-1.5" style={{ fontSize: 13, color: '#111111', fontWeight: 500 }}>{b.experience}</p>
-                <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
-                  <span style={{ fontSize: 12, color: '#6F675C' }}>📅 {b.date}{b.time ? ` · ${b.time}` : ''}</span>
-                  <span style={{ fontSize: 12, color: '#6F675C' }}>👤 {b.guests} guest{b.guests > 1 ? 's' : ''}</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>IDR {b.total.toLocaleString('id-ID')}</span>
+              </div>
+              {b.status === 'Pending' && !readOnly && (
+                <div className="flex gap-2 mt-3 pt-3" style={{ borderTop: '1px solid #F5F1EB' }}>
+                  <button onClick={() => updateStatus(b, 'CONFIRMED')} disabled={updating === b.id}
+                    className="flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity"
+                    style={{ height: 36, flex: 1, borderRadius: 8, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 13, fontWeight: 600, cursor: updating === b.id ? 'default' : 'pointer', opacity: updating === b.id ? 0.6 : 1 }}>
+                    <CheckCircle size={13} /> {updating === b.id ? t('db_loading') : t('db_confirm_btn')}
+                  </button>
+                  <button onClick={() => updateStatus(b, 'CANCELLED')} disabled={updating === b.id}
+                    className="flex items-center justify-center gap-1.5 hover:bg-red-50 transition-colors"
+                    style={{ height: 36, flex: 1, borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', color: '#B66A45', fontSize: 13, fontWeight: 600, cursor: updating === b.id ? 'default' : 'pointer', opacity: updating === b.id ? 0.6 : 1 }}>
+                    <XCircle size={13} /> {t('db_decline_btn')}
+                  </button>
                 </div>
-                <p style={{ fontSize: 11, color: '#C8C4BE', marginTop: 3 }}>{b.ref} · {t('db_booked_label')} {b.bookedOn}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Event bookings */}
+      {tab === 'events' && (
+        <div className="space-y-3">
+          {filteredEvents.length === 0 && (
+            <div className="bg-white rounded-xl p-10 text-center" style={{ border: '1px solid #E8E4DE' }}>
+              <p style={{ fontSize: 14, color: '#6F675C' }}>No event ticket sales yet.</p>
+            </div>
+          )}
+          {filteredEvents.map(b => (
+            <div key={b.id} className="bg-white rounded-xl p-4" style={{ border: '1px solid #E8E4DE' }}>
+              <div className="flex items-start gap-3">
+                {b.eventImage ? (
+                  <img src={b.eventImage} alt="" className="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
+                ) : (
+                  <div className="w-14 h-14 rounded-xl flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: '#F5F1EB' }}>
+                    <Ticket size={20} style={{ color: '#C8A97E' }} />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between flex-wrap gap-2">
+                    <div>
+                      <p style={{ fontSize: 14, fontWeight: 700, color: '#111111' }}>{b.guest}</p>
+                      <p style={{ fontSize: 12, color: '#6F675C' }}>{b.email}{b.phone ? ` · ${b.phone}` : ''}</p>
+                    </div>
+                    <StatusBadge status={b.status} />
+                  </div>
+                  <p className="mt-1.5" style={{ fontSize: 13, color: '#111111', fontWeight: 500 }}>{b.eventTitle}</p>
+                  <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
+                    <span style={{ fontSize: 12, color: '#6F675C' }}>📅 {b.eventDate}</span>
+                    <span style={{ fontSize: 12, color: '#6F675C' }}>🎟 {b.tickets} ticket{b.tickets > 1 ? 's' : ''}</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: '#111111' }}>{b.total === 0 ? 'Free' : `IDR ${b.total.toLocaleString('id-ID')}`}</span>
+                  </div>
+                  <p style={{ fontSize: 11, color: '#C8C4BE', marginTop: 3 }}>{b.ref.slice(0, 8).toUpperCase()} · Booked {b.bookedOn}</p>
+                </div>
               </div>
             </div>
-            {b.status === 'Pending' && !readOnly && (
-              <div className="flex gap-2 mt-3 pt-3" style={{ borderTop: '1px solid #F5F1EB' }}>
-                <button onClick={() => updateStatus(b, 'CONFIRMED')} disabled={updating === b.id}
-                  className="flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity"
-                  style={{ height: 36, flex: 1, borderRadius: 8, border: 'none', backgroundColor: '#111111', color: 'white', fontSize: 13, fontWeight: 600, cursor: updating === b.id ? 'default' : 'pointer', opacity: updating === b.id ? 0.6 : 1 }}>
-                  <CheckCircle size={13} /> {updating === b.id ? t('db_loading') : t('db_confirm_btn')}
-                </button>
-                <button onClick={() => updateStatus(b, 'CANCELLED')} disabled={updating === b.id}
-                  className="flex items-center justify-center gap-1.5 hover:bg-red-50 transition-colors"
-                  style={{ height: 36, flex: 1, borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', color: '#B66A45', fontSize: 13, fontWeight: 600, cursor: updating === b.id ? 'default' : 'pointer', opacity: updating === b.id ? 0.6 : 1 }}>
-                  <XCircle size={13} /> {t('db_decline_btn')}
-                </button>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -2229,11 +2305,12 @@ const EMPTY_EVENT: EventInput = {
 }
 
 
-function EventsPanel() {
+function EventsPanel({ eventBookings: allEventBookings }: { eventBookings?: DashEventBooking[] }) {
   const readOnly = useContext(ReadOnlyContext)
   const { t } = useLanguage()
   const [events, setEvents] = useState<EventRow[]>([])
   const [loading, setLoading] = useState(true)
+  const [expandedAttendees, setExpandedAttendees] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<EventRow | null>(null)
   const [form, setForm] = useState<EventInput>(EMPTY_EVENT)
@@ -2425,9 +2502,44 @@ function EventsPanel() {
                         style={{ height: 28, padding: '0 10px', borderRadius: 8, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 11, fontWeight: 600, color: '#6F675C', cursor: 'pointer', textDecoration: 'none' }}>
                         <Eye size={10} /> {t('db_view')}
                       </a>
+                      {allEventBookings && (() => {
+                        const attendees = allEventBookings.filter(b => b.eventSlug === ev.slug && (b.status === 'Confirmed' || b.status === 'Pending'))
+                        if (attendees.length === 0) return null
+                        return (
+                          <button onClick={() => setExpandedAttendees(expandedAttendees === ev.id ? null : ev.id)}
+                            className="flex items-center gap-1 hover:opacity-80 transition-opacity"
+                            style={{ height: 28, padding: '0 10px', borderRadius: 8, border: '1px solid #C8A97E', backgroundColor: '#FDF8F4', fontSize: 11, fontWeight: 600, color: '#C8A97E', cursor: 'pointer' }}>
+                            <Users size={10} /> {attendees.length} attendee{attendees.length !== 1 ? 's' : ''}
+                          </button>
+                        )
+                      })()}
                     </div>
                   </div>
                 </div>
+                {/* Attendee list */}
+                {expandedAttendees === ev.id && allEventBookings && (() => {
+                  const attendees = allEventBookings.filter(b => b.eventSlug === ev.slug && (b.status === 'Confirmed' || b.status === 'Pending'))
+                  return (
+                    <div style={{ borderTop: '1px solid #F5F1EB', padding: '12px 16px', backgroundColor: '#FAFAF8' }}>
+                      <p style={{ fontSize: 11, fontWeight: 700, color: '#9E9A94', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Attendees</p>
+                      <div className="space-y-2">
+                        {attendees.map(a => (
+                          <div key={a.id} className="flex items-center justify-between gap-3">
+                            <div className="min-w-0">
+                              <span style={{ fontSize: 13, fontWeight: 600, color: '#111111' }}>{a.guest}</span>
+                              <span style={{ fontSize: 12, color: '#6F675C', marginLeft: 8 }}>{a.email}</span>
+                              {a.phone && <span style={{ fontSize: 12, color: '#6F675C', marginLeft: 8 }}>{a.phone}</span>}
+                            </div>
+                            <div className="flex items-center gap-3 flex-shrink-0">
+                              <span style={{ fontSize: 12, color: '#6F675C' }}>{a.tickets} ticket{a.tickets !== 1 ? 's' : ''}</span>
+                              <StatusBadge status={a.status} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })()}
               </div>
             )
           })}
@@ -3430,6 +3542,7 @@ export default function DashboardPage() {
   const [triggerNewExp, setTriggerNewExp] = useState(0)
   const [liveExperiences, setLiveExperiences]     = useState<DashExp[] | undefined>(undefined)
   const [liveBookings, setLiveBookings]           = useState<DashBooking[] | undefined>(undefined)
+  const [liveEventBookings, setLiveEventBookings] = useState<DashEventBooking[] | undefined>(undefined)
   const [liveReviews, setLiveReviews]             = useState<DashReview[] | undefined>(undefined)
   const [liveHostName, setLiveHostName]           = useState<string | undefined>(undefined)
   const [liveEarningsByMonth, setLiveEarningsByMonth] = useState<EarningsByMonth[] | undefined>(undefined)
@@ -3454,6 +3567,7 @@ export default function DashboardPage() {
       if (!data) return
       setLiveExperiences(data.experiences)
       setLiveBookings(data.bookings)
+      setLiveEventBookings(data.eventBookings)
       setLiveReviews(data.reviews)
       setLiveHostName(data.hostName)
       setLiveEarningsByMonth(data.earningsByMonth)
@@ -3480,10 +3594,10 @@ export default function DashboardPage() {
 
   const renderPanel = () => {
     switch (activeNav) {
-      case 'overview':      return <OverviewPanel onNav={setActiveNav} commissionRate={commissionRate} experiences={liveExperiences} bookings={liveBookings} reviews={liveReviews} hostName={liveHostName} earningsByMonth={liveEarningsByMonth} pendingPayout={livePendingPayout} payouts={livePayouts} />
+      case 'overview':      return <OverviewPanel onNav={setActiveNav} commissionRate={commissionRate} experiences={liveExperiences} bookings={liveBookings} eventBookings={liveEventBookings} reviews={liveReviews} hostName={liveHostName} earningsByMonth={liveEarningsByMonth} pendingPayout={livePendingPayout} payouts={livePayouts} />
       case 'experiences':   return <ExperiencesPanel commissionRate={commissionRate} initialExperiences={liveExperiences} triggerNewExp={triggerNewExp} />
-      case 'events':        return <EventsPanel />
-      case 'bookings':      return <BookingsPanel initialBookings={liveBookings} />
+      case 'events':        return <EventsPanel eventBookings={liveEventBookings} />
+      case 'bookings':      return <BookingsPanel initialBookings={liveBookings} initialEventBookings={liveEventBookings} />
       case 'availability':  return <AvailabilityPanel bookings={liveBookings} />
       case 'earnings':      return <EarningsPanel commissionRate={commissionRate} experiences={liveExperiences} bookings={liveBookings} earningsByMonth={liveEarningsByMonth} totalGross={liveTotalGross} pendingPayout={livePendingPayout} payouts={livePayouts} />
       case 'photos':        return <PhotosPanel experiences={liveExperiences} profile={liveProfile} />
@@ -3491,7 +3605,7 @@ export default function DashboardPage() {
       case 'messages':      return <MessagesPanel />
       case 'profile':       return <ProfilePanel profile={liveProfile} />
       case 'settings':      return <SettingsPanel />
-      default:              return <OverviewPanel onNav={setActiveNav} commissionRate={commissionRate} experiences={liveExperiences} bookings={liveBookings} reviews={liveReviews} hostName={liveHostName} earningsByMonth={liveEarningsByMonth} />
+      default:              return <OverviewPanel onNav={setActiveNav} commissionRate={commissionRate} experiences={liveExperiences} bookings={liveBookings} eventBookings={liveEventBookings} reviews={liveReviews} hostName={liveHostName} earningsByMonth={liveEarningsByMonth} />
     }
   }
 
