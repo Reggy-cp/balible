@@ -7,6 +7,7 @@ import Footer from '@/components/Footer'
 import EventGallery from '@/components/EventGallery'
 import { getEventBySlug, getPublishedEvents } from '@/lib/event-actions'
 import EventBookingCard from './EventBookingCard'
+import EventMobileModal from './EventMobileModal'
 import { prisma } from '@/lib/prisma'
 
 export const revalidate = 3600
@@ -148,8 +149,8 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
             )}
           </div>
 
-          {/* ── RIGHT COLUMN — Booking card ── */}
-          <div className="lg:w-80 flex-shrink-0">
+          {/* ── RIGHT COLUMN — Booking card (desktop only) ── */}
+          <div className="hidden lg:block lg:w-80 flex-shrink-0">
             <div className="sticky bg-white rounded-2xl p-6" style={{ top: 88, border: '1px solid #E8E4DE', boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
 
               {/* Price */}
@@ -262,6 +263,20 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
       )}
 
       <Footer />
+
+      {/* ── MOBILE: sticky bar + bottom sheet ── */}
+      <EventMobileModal
+        slug={event.slug}
+        title={event.title}
+        image={event.coverImage ?? ''}
+        location={event.location}
+        dateStr={dateStr}
+        timeStr={timeStr}
+        price={event.price}
+        feeRate={feeRate}
+        isPast={isPast}
+      />
+
       <MobileNav />
     </div>
   )
