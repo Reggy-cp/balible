@@ -1969,7 +1969,7 @@ export type AnalyticsData = {
 const CAT_COLORS: Record<string, string> = {
   WELLNESS_HEALING: '#4A7C59', ART_CRAFT: '#C8A97E', CULTURE_SPIRITUAL: '#B66A45',
   NATURE_OUTDOORS: '#6F675C', CULINARY: '#111111', WATER_ACTIVITIES: '#3B82F6',
-  LOCAL_EXPERTS: '#8B5CF6', RENTALS: '#EC4899',
+  LOCAL_EXPERTS: '#8B5CF6', RENTALS: '#EC4899', SERVICE: '#0EA5E9',
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -1990,7 +1990,7 @@ export async function getAnalyticsDataAction(days: number): Promise<AnalyticsDat
     const pct = (curr: number, prev: number) =>
       prev === 0 ? (curr > 0 ? 100 : 0) : Math.round(((curr - prev) / prev) * 100)
 
-    // ── Bookings (both periods in one query) ──────────────────────────────────
+    // ── Experience bookings (both periods in one query) ───────────────────────
     const allBookings = await prisma.booking.findMany({
       where: { createdAt: { gte: prevStart } },
       include: {
@@ -2006,12 +2006,27 @@ export async function getAnalyticsDataAction(days: number): Promise<AnalyticsDat
     const curr = allBookings.filter(b => b.createdAt >= periodStart)
     const prev = allBookings.filter(b => b.createdAt < periodStart)
 
-    const currRev  = curr.reduce((a, b) => a + b.totalPrice, 0)
-    const prevRev  = prev.reduce((a, b) => a + b.totalPrice, 0)
-    const currAvg  = curr.length ? Math.round(currRev / curr.length) : 0
-    const prevAvg  = prev.length ? Math.round(prevRev / prev.length) : 0
-    const currCancel = curr.length ? Math.round((curr.filter(b => b.status === 'CANCELLED').length / curr.length) * 100) : 0
-    const prevCancel = prev.length ? Math.round((prev.filter(b => b.status === 'CANCELLED').length / prev.length) * 100) : 0
+    // ── Event bookings (for combined revenue/count) ────────────────────────────
+    const allEventBookings = await prisma.eventBooking.findMany({
+      where: { createdAt: { gte: prevStart } },
+      select: { createdAt: true, totalPrice: true, status: true },
+      orderBy: { createdAt: 'asc' },
+    })
+    const currEB = allEventBookings.filter(b => b.createdAt >= periodStart)
+    const prevEB = allEventBookings.filter(b => b.createdAt < periodStart)
+
+    const currAllCount = curr.length + currEB.length
+    const prevAllCount = prev.length + prevEB.length
+    const currRev  = curr.reduce((a, b) => a + b.totalPrice, 0) + currEB.reduce((a, b) => a + b.totalPrice, 0)
+    const prevRev  = prev.reduce((a, b) => a + b.totalPrice, 0) + prevEB.reduce((a, b) => a + b.totalPrice, 0)
+    const currAvg  = currAllCount ? Math.round(currRev / currAllCount) : 0
+    const prevAvg  = prevAllCount ? Math.round(prevRev / prevAllCount) : 0
+    const currCancelExp = curr.filter(b => b.status === 'CANCELLED').length
+    const currCancelEv  = currEB.filter(b => b.status === 'CANCELLED').length
+    const prevCancelExp = prev.filter(b => b.status === 'CANCELLED').length
+    const prevCancelEv  = prevEB.filter(b => b.status === 'CANCELLED').length
+    const currCancel = currAllCount ? Math.round(((currCancelExp + currCancelEv) / currAllCount) * 100) : 0
+    const prevCancel = prevAllCount ? Math.round(((prevCancelExp + prevCancelEv) / prevAllCount) * 100) : 0
 
     // ── Users ─────────────────────────────────────────────────────────────────
     const allUsers = await prisma.user.findMany({
@@ -2049,9 +2064,11 @@ export async function getAnalyticsDataAction(days: number): Promise<AnalyticsDat
       const pbe = new Date(pbs.getTime() + bucketMs)
       const cB  = curr.filter(b => b.createdAt >= bs && b.createdAt < be)
       const pB  = prev.filter(b => b.createdAt >= pbs && b.createdAt < pbe)
+      const cEB = currEB.filter(b => b.createdAt >= bs && b.createdAt < be)
+      const pEB = prevEB.filter(b => b.createdAt >= pbs && b.createdAt < pbe)
       const label = fmtLabel(bs)
-      bookingTrend.push({ label, current: cB.length,   prev: pB.length })
-      revenueTrend.push({ label, current: cB.reduce((a, b) => a + b.totalPrice, 0), prev: pB.reduce((a, b) => a + b.totalPrice, 0) })
+      bookingTrend.push({ label, current: cB.length + cEB.length, prev: pB.length + pEB.length })
+      revenueTrend.push({ label, current: cB.reduce((a, b) => a + b.totalPrice, 0) + cEB.reduce((a, b) => a + b.totalPrice, 0), prev: pB.reduce((a, b) => a + b.totalPrice, 0) + pEB.reduce((a, b) => a + b.totalPrice, 0) })
       userGrowth.push({ label, count: allUsers.filter(u => u.createdAt >= bs && u.createdAt < be).length })
     }
 
@@ -2103,12 +2120,12 @@ export async function getAnalyticsDataAction(days: number): Promise<AnalyticsDat
 
     return {
       metrics: {
-        bookings:       { value: curr.length, change: pct(curr.length, prev.length) },
+        bookings:       { value: currAllCount, change: pct(currAllCount, prevAllCount) },
         revenue:        { value: currRev,     change: pct(currRev, prevRev) },
         newUsers:       { value: currUsers,   change: pct(currUsers, prevUsers) },
         newHosts:       { value: currHosts,   change: pct(currHosts, prevHosts) },
         avgBookingValue: { value: currAvg,    change: pct(currAvg, prevAvg) },
-        cancelRate:     { value: currCancel,  change: pct(prevCancel, currCancel) },
+        cancelRate:     { value: currCancel,  change: pct(currCancel, prevCancel) },
       },
       bookingTrend, revenueTrend, userGrowth,
       topExperiences, categoryBreakdown, areaBreakdown, topHosts, bookingStatus,

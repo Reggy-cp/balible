@@ -2040,8 +2040,15 @@ function AnalyticsPanel() {
   const [useCustom, setUseCustom] = useState(false)
   const [customStart, setCustomStart] = useState('')
   const [customEnd, setCustomEnd]     = useState('')
+  const [commissionPct, setCommissionPct] = useState(10)
 
   const today = new Date().toISOString().slice(0, 10)
+
+  useEffect(() => {
+    getAdminSettingsAction(['service_fee']).then(s => {
+      try { if (s.service_fee) setCommissionPct(parseFloat(JSON.parse(s.service_fee)) || 10) } catch {}
+    })
+  }, [])
 
   const effectiveDays = useCustom && customStart && customEnd
     ? Math.max(1, Math.round((new Date(customEnd).getTime() - new Date(customStart).getTime()) / 86400000))
@@ -2264,7 +2271,7 @@ function AnalyticsPanel() {
         <div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <GAMetricCard label="Gross Revenue"     value={data.metrics.revenue.value}        change={data.metrics.revenue.change}        good="up"   fmtValue={fmt} />
-            <GAMetricCard label="Platform Commission" value={Math.round(data.metrics.revenue.value * 0.1)} change={data.metrics.revenue.change} good="up" fmtValue={fmt} />
+            <GAMetricCard label={`Platform Fee (${commissionPct}%)`} value={Math.round(data.metrics.revenue.value * commissionPct / 100)} change={data.metrics.revenue.change} good="up" fmtValue={fmt} />
             <GAMetricCard label="Avg Booking Value" value={data.metrics.avgBookingValue.value} change={data.metrics.avgBookingValue.change} good="up"   fmtValue={fmt} />
             <GAMetricCard label="Bookings"          value={data.metrics.bookings.value}       change={data.metrics.bookings.change}       good="up"   fmtValue={v => v.toLocaleString()} />
           </div>
