@@ -1338,25 +1338,42 @@ function BookingsPanel() {
     <div>
       <PageHeader title="All Bookings" sub={`${bookings.length} total · ${visible.length} shown`} />
 
-      {/* Summary cards — scoped to current filter */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
-        {[
-          { label: 'Gross Revenue',       value: fmt(totalRevenue),    color: CHARCOAL },
-          { label: 'Platform Commission', value: fmt(totalCommission), color: FOREST },
-          { label: 'Host Payouts',        value: fmt(totalPayout),     color: GOLD },
-        ].map(s => (
-          <div key={s.label} className="bg-white rounded-xl p-4" style={{ border: `1px solid ${SAND}` }}>
-            <p style={{ fontSize: 11, color: COCONUT }}>{s.label}</p>
-            <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: s.color, marginTop: 4 }}>{s.value}</p>
-            <p style={{ fontSize: 10, color: COCONUT, marginTop: 2 }}>
-              {visible.length} booking{visible.length !== 1 ? 's' : ''} · {statusFilter !== 'All' ? statusFilter : dateRange}
-            </p>
+      {/* Payment status split cards — click to filter */}
+      {(() => {
+        const STATUS_META = [
+          { key: 'All',       label: 'All Bookings',       dot: CHARCOAL,  bg: '#F5F1EB' },
+          { key: 'Pending',   label: 'Pending Payment',    dot: '#D97706',  bg: '#FFFBEB' },
+          { key: 'Confirmed', label: 'Confirmed',          dot: FOREST,    bg: '#F0FDF4' },
+          { key: 'Completed', label: 'Completed',          dot: '#4B6CB7', bg: '#EFF6FF' },
+          { key: 'Cancelled', label: 'Cancelled',          dot: TERRACOTTA, bg: '#FEF2F2' },
+        ]
+        return (
+          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3 mb-5">
+            {STATUS_META.map(s => {
+              const grp = s.key === 'All' ? bookings : bookings.filter(b => b.status === s.key)
+              const rev = grp.reduce((a, b) => a + b.total, 0)
+              const active = statusFilter === s.key
+              return (
+                <button key={s.key} onClick={() => setStatusFilter(s.key)}
+                  className="text-left transition-shadow"
+                  style={{ padding: 14, borderRadius: 12, border: `2px solid ${active ? s.dot : SAND}`, backgroundColor: active ? s.bg : 'white', cursor: 'pointer', outline: 'none' }}>
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: s.dot }} />
+                    <span style={{ fontSize: 11, fontWeight: 600, color: COCONUT, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s.label}</span>
+                  </div>
+                  <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: CHARCOAL, lineHeight: 1.1, marginBottom: 2 }}>
+                    {grp.length}
+                  </p>
+                  <p style={{ fontSize: 11, color: COCONUT }}>{fmt(rev)}</p>
+                </button>
+              )
+            })}
           </div>
-        ))}
-      </div>
+        )
+      })()}
 
       {/* Filters row */}
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="flex flex-wrap gap-2 mb-5">
         <div className="flex-1 min-w-[200px]">
           <SearchBar value={search} onChange={setSearch} placeholder="Search guest, host, experience, ref…" />
         </div>
@@ -1373,15 +1390,16 @@ function BookingsPanel() {
         </button>
       </div>
 
-      {/* Status tabs */}
-      <div className="flex gap-2 mb-5 overflow-x-auto">
-        {['All', 'Pending', 'Confirmed', 'Completed', 'Cancelled'].map(s => (
-          <button key={s} onClick={() => setStatusFilter(s)}
-            style={{ padding: '6px 14px', borderRadius: 10, fontSize: 13, fontWeight: statusFilter === s ? 600 : 400, flexShrink: 0, backgroundColor: statusFilter === s ? CHARCOAL : 'white', color: statusFilter === s ? 'white' : COCONUT, border: '1px solid', borderColor: statusFilter === s ? CHARCOAL : SAND, cursor: 'pointer' }}>
-            {s} <span style={{ opacity: 0.5, fontSize: 11 }}>{s === 'All' ? bookings.length : bookings.filter(b => b.status === s).length}</span>
-          </button>
-        ))}
-      </div>
+      {/* Summary bar for current filter */}
+      {statusFilter !== 'All' && (
+        <div className="flex flex-wrap gap-4 mb-4 px-4 py-3 rounded-xl" style={{ backgroundColor: '#F5F1EB' }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: CHARCOAL }}>{statusFilter}</span>
+          <span style={{ fontSize: 13, color: COCONUT }}>{visible.length} booking{visible.length !== 1 ? 's' : ''}</span>
+          <span style={{ fontSize: 13, color: CHARCOAL }}>Revenue: {fmt(totalRevenue)}</span>
+          <span style={{ fontSize: 13, color: FOREST }}>Commission: {fmt(totalCommission)}</span>
+          <span style={{ fontSize: 13, color: GOLD }}>Payouts: {fmt(totalPayout)}</span>
+        </div>
+      )}
 
       {loading && <p style={{ fontSize: 13, color: COCONUT }}>Loading bookings…</p>}
 
