@@ -1345,6 +1345,24 @@ export async function adminDeleteExperienceAction(id: string): Promise<{ ok: boo
   } catch { return { ok: false } }
 }
 
+export async function bulkUpdateExperienceStatusAction(ids: string[], status: string): Promise<{ ok: boolean; count: number }> {
+  await requireAdmin()
+  try {
+    const validStatuses = ['ACTIVE', 'PAUSED', 'DRAFT']
+    if (!validStatuses.includes(status)) return { ok: false, count: 0 }
+    const result = await prisma.experience.updateMany({ where: { id: { in: ids } }, data: { status: status as any } })
+    return { ok: true, count: result.count }
+  } catch { return { ok: false, count: 0 } }
+}
+
+export async function bulkDeleteExperiencesAction(ids: string[]): Promise<{ ok: boolean; count: number }> {
+  await requireAdmin()
+  try {
+    const result = await prisma.experience.deleteMany({ where: { id: { in: ids } } })
+    return { ok: true, count: result.count }
+  } catch { return { ok: false, count: 0 } }
+}
+
 export async function adminUpdateUserAction(id: string, data: { name: string; email: string; role: string }): Promise<{ ok: boolean; error?: string }> {
   await requireAdmin()
   try {

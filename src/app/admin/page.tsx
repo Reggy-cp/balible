@@ -37,6 +37,7 @@ import {
   getActivityLogsAction, type AuditLogEntry,
   getSiteActivityAction, type SiteActivityItem,
   bulkApproveHostsAction, bulkSuspendHostsAction, bulkDeleteUsersAction, bulkRemoveHostsAction,
+  bulkUpdateExperienceStatusAction, bulkDeleteExperiencesAction,
   getAdminNotificationsAction, markAdminNotificationsReadAction, type AdminNotification,
 } from '@/lib/actions'
 import { COMMISSION_RATE, PAYOUT_MIN_NET } from '@/lib/constants'
@@ -676,6 +677,8 @@ function ExperiencesPanel() {
   const [pending, setPending]   = useState<PendingListing[]>([])
   const [pendingLoaded, setPendingLoaded] = useState(false)
   const [addOpen, setAddOpen]   = useState(false)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [bulkLoading, setBulkLoading] = useState(false)
 
   useEffect(() => {
     getAdminExperiencesAction().then(rows => setExps(rows.filter(e => e.status !== 'Pending Review')))
@@ -685,6 +688,7 @@ function ExperiencesPanel() {
     if (filter === 'Pending Review' && !pendingLoaded) {
       getPendingListingsAction().then(rows => { setPending(rows); setPendingLoaded(true) })
     }
+    setSelected(new Set())
   }, [filter, pendingLoaded])
 
   const handleApprove = async (id: string) => {
@@ -712,6 +716,39 @@ function ExperiencesPanel() {
     return list
   }, [exps, filter, search])
 
+  const allVisibleSelected = visible.length > 0 && visible.every(e => selected.has(e.id))
+  const toggleAll = () => {
+    if (allVisibleSelected) setSelected(new Set())
+    else setSelected(new Set(visible.map(e => e.id)))
+  }
+  const toggleOne = (id: string) => setSelected(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s })
+
+  const bulkStatus = async (status: string) => {
+    const ids = Array.from(selected)
+    setBulkLoading(true)
+    await bulkUpdateExperienceStatusAction(ids, status)
+    const label: Record<string, string> = { ACTIVE: 'Active', PAUSED: 'Paused', DRAFT: 'Draft' }
+    setExps(p => p.map(e => ids.includes(e.id) ? { ...e, status: label[status] ?? e.status } : e))
+    setSelected(new Set())
+    setBulkLoading(false)
+  }
+
+  const bulkDelete = async () => {
+    const ids = Array.from(selected)
+    if (!confirm(`Permanently delete ${ids.length} experience${ids.length !== 1 ? 's' : ''}? This cannot be undone.`)) return
+    setBulkLoading(true)
+    await bulkDeleteExperiencesAction(ids)
+    setExps(p => p.filter(e => !ids.includes(e.id)))
+    setSelected(new Set())
+    setBulkLoading(false)
+  }
+
+  const exportCSV = () => {
+    const rows = [['ID','Title','Host','Area','Category','Price','Status'], ...exps.map(e => [e.id, e.title, e.host, e.area, e.category, e.price, e.status])]
+    const csv = rows.map(r => r.join(',')).join('\n')
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'experiences.csv'; a.click()
+  }
+
   const tabs = ['All', 'Pending Review', 'Active', 'Draft', 'Paused']
 
   return (
@@ -720,18 +757,12 @@ function ExperiencesPanel() {
 
       <div className="flex gap-3 mb-4">
         <SearchBar value={search} onChange={setSearch} placeholder="Search title or host…" />
-        <button
-          onClick={() => {
-            const rows = [['ID','Title','Host','Area','Category','Price','Status'], ...exps.map(e => [e.id, e.title, e.host, e.area, e.category, e.price, e.status])]
-            const csv = rows.map(r => r.join(',')).join('\n')
-            const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'experiences.csv'; a.click()
-          }}
+        <button onClick={exportCSV}
           className="flex items-center gap-2 px-4 rounded-xl flex-shrink-0 hover:opacity-80"
           style={{ height: 38, border: `1px solid ${SAND}`, backgroundColor: 'white', fontSize: 13, color: COCONUT, cursor: 'pointer' }}>
           <Download size={13} /> Export
         </button>
-        <button
-          onClick={() => setAddOpen(true)}
+        <button onClick={() => setAddOpen(true)}
           className="flex items-center gap-2 px-4 rounded-xl flex-shrink-0 hover:opacity-90"
           style={{ height: 38, border: 'none', backgroundColor: CHARCOAL, color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-inter)' }}>
           <Plus size={14} /> Add Experience
@@ -741,10 +772,7 @@ function ExperiencesPanel() {
       {addOpen && (
         <AddExperienceModal
           onClose={() => setAddOpen(false)}
-          onSaved={slug => {
-            setAddOpen(false)
-            window.open(`/experiences/${slug}`, '_blank')
-          }}
+          onSaved={slug => { setAddOpen(false); window.open(`/experiences/${slug}`, '_blank') }}
         />
       )}
 
@@ -761,12 +789,40 @@ function ExperiencesPanel() {
         </div>
       </div>
 
-      {/* Pending Review tab — real DB data */}
+      {/* Bulk action bar */}
+      {selected.size > 0 && filter !== 'Pending Review' && (
+        <div className="flex items-center gap-2 mb-4 px-4 rounded-xl" style={{ height: 48, backgroundColor: CHARCOAL }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'white', marginRight: 4 }}>{selected.size} selected</span>
+          <button onClick={() => bulkStatus('ACTIVE')} disabled={bulkLoading}
+            className="flex items-center gap-1.5 hover:opacity-80"
+            style={{ height: 32, padding: '0 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'none', color: '#86EFAC', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+            <Play size={11} /> Activate
+          </button>
+          <button onClick={() => bulkStatus('PAUSED')} disabled={bulkLoading}
+            className="flex items-center gap-1.5 hover:opacity-80"
+            style={{ height: 32, padding: '0 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'none', color: '#FCD34D', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+            <Pause size={11} /> Pause
+          </button>
+          <button onClick={() => bulkStatus('DRAFT')} disabled={bulkLoading}
+            className="flex items-center gap-1.5 hover:opacity-80"
+            style={{ height: 32, padding: '0 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'none', color: '#D1D5DB', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+            <Edit2 size={11} /> Draft
+          </button>
+          <button onClick={bulkDelete} disabled={bulkLoading}
+            className="flex items-center gap-1.5 hover:opacity-80"
+            style={{ height: 32, padding: '0 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'none', color: '#FCA5A5', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+            <Trash2 size={11} /> Delete
+          </button>
+          <button onClick={() => setSelected(new Set())} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>
+            ✕ Clear
+          </button>
+        </div>
+      )}
+
+      {/* Pending Review tab */}
       {filter === 'Pending Review' && (
         <div className="space-y-3">
-          {!pendingLoaded && (
-            <p style={{ fontSize: 13, color: COCONUT, padding: '24px 0', textAlign: 'center' }}>Loading pending listings…</p>
-          )}
+          {!pendingLoaded && <p style={{ fontSize: 13, color: COCONUT, padding: '24px 0', textAlign: 'center' }}>Loading pending listings…</p>}
           {pendingLoaded && pending.length === 0 && (
             <div className="bg-white rounded-xl p-8 text-center" style={{ border: `1px solid ${SAND}` }}>
               <CheckCircle size={28} style={{ color: FOREST, margin: '0 auto 10px' }} />
@@ -830,9 +886,20 @@ function ExperiencesPanel() {
 
       {filter !== 'Pending Review' && (
         <div className="space-y-3">
+          {/* Select all row */}
+          {visible.length > 0 && (
+            <div className="flex items-center gap-3 px-1 mb-1">
+              <input type="checkbox" checked={allVisibleSelected} onChange={toggleAll}
+                style={{ width: 15, height: 15, cursor: 'pointer', accentColor: CHARCOAL }} />
+              <span style={{ fontSize: 12, color: COCONUT }}>{allVisibleSelected ? 'Deselect all' : `Select all ${visible.length}`}</span>
+            </div>
+          )}
           {visible.map(exp => (
-            <div key={exp.id} className="bg-white rounded-xl p-4" style={{ border: `1px solid ${SAND}` }}>
+            <div key={exp.id} className="bg-white rounded-xl p-4"
+              style={{ border: selected.has(exp.id) ? `2px solid ${CHARCOAL}` : `1px solid ${SAND}`, transition: 'border 0.15s' }}>
               <div className="flex items-start gap-3">
+                <input type="checkbox" checked={selected.has(exp.id)} onChange={() => toggleOne(exp.id)}
+                  style={{ marginTop: 4, width: 15, height: 15, cursor: 'pointer', accentColor: CHARCOAL, flexShrink: 0 }} />
                 <img src={exp.image} alt={exp.title} className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
@@ -885,6 +952,11 @@ function ExperiencesPanel() {
               </div>
             </div>
           ))}
+          {visible.length === 0 && (
+            <div className="bg-white rounded-xl p-8 text-center" style={{ border: `1px solid ${SAND}` }}>
+              <p style={{ fontSize: 13, color: COCONUT }}>No experiences found.</p>
+            </div>
+          )}
         </div>
       )}
     </div>
