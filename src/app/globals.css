@@ -71,6 +71,11 @@ body { top: 0 !important; }
   pointer-events: none;
 }
 
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
 input[type="range"].price-range {
   position: absolute;
   top: -6px;

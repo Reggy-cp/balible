@@ -68,14 +68,15 @@ function FilterLabel({ children }: { children: React.ReactNode }) {
   )
 }
 
-function FilterPanel({ filters, onChange, mobile = false, onClose }: {
+function FilterPanel({ filters, onChange, mobile = false, onClose, sort, onSortChange }: {
   filters: Filters; onChange: (f: Partial<Filters>) => void; mobile?: boolean; onClose?: () => void
+  sort?: string; onSortChange?: (s: string) => void
 }) {
   const { t } = useLanguage()
-  const hasActive = filters.location !== 'All Locations' || filters.duration !== 'Any duration' ||
+  const hasActive = filters.category !== 'All' || filters.location !== 'All Locations' || filters.duration !== 'Any duration' ||
     filters.priceRange[0] > 0 || filters.priceRange[1] < PRICE_MAX || filters.guests > 1
 
-  const clear = () => onChange({ location: 'All Locations', duration: 'Any duration', priceRange: [0, PRICE_MAX], date: '', guests: 1 })
+  const clear = () => onChange({ category: 'All', location: 'All Locations', duration: 'Any duration', priceRange: [0, PRICE_MAX], date: '', guests: 1 })
 
   return (
     <div className={mobile ? 'p-5' : 'p-0'}>
@@ -156,6 +157,28 @@ function FilterPanel({ filters, onChange, mobile = false, onClose }: {
           </div>
         </div>
       </div>
+
+      {mobile && sort !== undefined && onSortChange && (
+        <div className="mt-6">
+          <FilterLabel>Sort by</FilterLabel>
+          <div className="flex flex-col gap-2">
+            {SORT_OPTIONS.map(o => (
+              <button
+                key={o}
+                onClick={() => onSortChange(o)}
+                className="text-left px-3 py-2 rounded-lg transition-colors"
+                style={{
+                  fontFamily: 'var(--font-inter)', fontSize: 13, cursor: 'pointer', border: 'none',
+                  backgroundColor: sort === o ? '#111111' : '#F5F1EB',
+                  color: sort === o ? 'white' : '#111111',
+                }}
+              >
+                {o}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {mobile && (
         <div className="mt-6 flex gap-3">
@@ -271,6 +294,13 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
   const [filters, setFilters]       = useState<Filters>({ ...DEFAULT_FILTERS, date: initialDate, location: initialLocation })
   const [mounted, setMounted]       = useState(false)
   useEffect(() => setMounted(true), [])
+
+  useEffect(() => {
+    if (filterOpen) {
+      document.body.style.overflow = 'hidden'
+      return () => { document.body.style.overflow = '' }
+    }
+  }, [filterOpen])
 
   const updateFilters = (patch: Partial<Filters>) => setFilters(f => ({ ...f, ...patch }))
 
@@ -522,9 +552,12 @@ export default function SearchClient({ initialResults, initialQuery = '', initia
       {filterOpen && (
         <>
           <div className="fixed inset-0 z-40 bg-black/40 lg:hidden" onClick={() => setFilterOpen(false)} />
-          <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl max-h-[90vh] overflow-y-auto lg:hidden" style={{ boxShadow: '0 -4px 32px rgba(0,0,0,0.12)' }}>
+          <div
+            className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl max-h-[90vh] overflow-y-auto lg:hidden"
+            style={{ boxShadow: '0 -4px 32px rgba(0,0,0,0.12)', paddingBottom: 'max(20px, env(safe-area-inset-bottom))', animation: 'slideUp 0.28s cubic-bezier(0.32,0.72,0,1)' }}
+          >
             <div className="w-10 h-1 rounded-full mx-auto mt-3 mb-1" style={{ backgroundColor: '#E8E4DE' }} />
-            <FilterPanel filters={filters} onChange={updateFilters} mobile onClose={() => setFilterOpen(false)} />
+            <FilterPanel filters={filters} onChange={updateFilters} mobile onClose={() => setFilterOpen(false)} sort={sort} onSortChange={setSort} />
           </div>
         </>
       )}
