@@ -2242,6 +2242,7 @@ function EventsPanel() {
   const [saveError, setSaveError] = useState('')
   const [imageMode, setImageMode] = useState<'upload' | 'url'>('url')
   const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [coverUploading, setCoverUploading] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -2260,8 +2261,9 @@ function EventsPanel() {
 
   function openEdit(ev: EventRow) {
     setEditing(ev)
+    const witaDate = new Date(new Date(ev.date).getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 16)
     setForm({
-      title: ev.title, description: ev.description, date: ev.date.slice(0, 16),
+      title: ev.title, description: ev.description, date: witaDate,
       location: ev.location, price: ev.price, capacity: ev.capacity,
       coverImage: ev.coverImage ?? '', status: ev.status as EventInput['status'],
     })
@@ -2272,13 +2274,14 @@ function EventsPanel() {
     setSaveError(''); setShowForm(true)
   }
 
-  function handleImageFile(file: File) {
-    const reader = new FileReader()
-    reader.onload = e => {
-      const url = e.target?.result as string
-      setImagePreview(url); setForm(f => ({ ...f, coverImage: url }))
-    }
-    reader.readAsDataURL(file)
+  async function handleImageFile(file: File) {
+    setCoverUploading(true)
+    const fd = new FormData(); fd.append('file', file); fd.append('hint', 'event cover photo Bali')
+    const res = await fetch('/api/upload-image', { method: 'POST', body: fd })
+    setCoverUploading(false)
+    if (!res.ok) return
+    const json = await res.json()
+    if (json.url) { setImagePreview(json.url); setForm(f => ({ ...f, coverImage: json.url })) }
   }
 
   function makeLocalRow(input: EventInput, slug: string): EventRow {
@@ -2389,9 +2392,9 @@ function EventsPanel() {
                       <div className="min-w-0 flex-1">
                         <p style={{ fontSize: 14, fontWeight: 700, color: '#111111', marginBottom: 2 }}>{ev.title}</p>
                         <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
-                          <span style={{ fontSize: 11, color: '#6F675C' }}>📅 {dateStr} · {timeStr}</span>
-                          <span style={{ fontSize: 11, color: '#6F675C' }}>📍 {ev.location}</span>
-                          <span style={{ fontSize: 11, color: '#6F675C' }}>👥 Max {ev.capacity}</span>
+                          <span style={{ fontSize: 11, color: '#6F675C', display: 'inline-flex', alignItems: 'center', gap: 3 }}><CalendarDays size={10} style={{ flexShrink: 0 }} />{dateStr} · {timeStr}</span>
+                          <span style={{ fontSize: 11, color: '#6F675C', display: 'inline-flex', alignItems: 'center', gap: 3 }}><MapPin size={10} style={{ flexShrink: 0 }} />{ev.location}</span>
+                          <span style={{ fontSize: 11, color: '#6F675C', display: 'inline-flex', alignItems: 'center', gap: 3 }}><Users size={10} style={{ flexShrink: 0 }} />Max {ev.capacity}</span>
                           <span style={{ fontSize: 11, fontWeight: 600, color: '#111111' }}>
                             {ev.price === 0 ? t('db_free') : `IDR ${ev.price.toLocaleString('id-ID')}`}
                           </span>
@@ -2525,7 +2528,12 @@ function EventsPanel() {
                   <>
                     <input ref={fileRef} type="file" accept="image/*" className="hidden"
                       onChange={e => { const f = e.target.files?.[0]; if (f) handleImageFile(f) }} />
-                    {imagePreview ? (
+                    {coverUploading ? (
+                      <div style={{ height: 110, borderRadius: 12, border: '2px dashed #E8E4DE', backgroundColor: '#F9F9F7', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
+                        <div style={{ width: 22, height: 22, borderRadius: '50%', border: '3px solid #E8E4DE', borderTopColor: '#111111', animation: 'spin 0.7s linear infinite' }} />
+                        <p style={{ fontSize: 12, color: '#9E9A94', margin: 0 }}>Uploading…</p>
+                      </div>
+                    ) : imagePreview ? (
                       <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', height: 140 }}>
                         <img src={imagePreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         <button onClick={() => { setImagePreview(null); setForm(f => ({ ...f, coverImage: '' })); if (fileRef.current) fileRef.current.value = '' }}
@@ -2582,9 +2590,9 @@ function EventsPanel() {
                 style={{ flex: 1, height: 44, borderRadius: 10, border: '1px solid #E8E4DE', backgroundColor: 'white', fontSize: 14, fontWeight: 600, color: '#6F675C', cursor: 'pointer' }}>
                 {t('db_cancel')}
               </button>
-              <button onClick={handleSave} disabled={saving}
-                style={{ flex: 2, height: 44, borderRadius: 10, border: 'none', backgroundColor: saving ? '#9E9A94' : '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: saving ? 'wait' : 'pointer', transition: 'background 0.15s' }}>
-                {saving ? t('db_saving') : editing ? t('db_save_changes_ev') : t('db_create_event')}
+              <button onClick={handleSave} disabled={saving || coverUploading}
+                style={{ flex: 2, height: 44, borderRadius: 10, border: 'none', backgroundColor: (saving || coverUploading) ? '#9E9A94' : '#111111', color: 'white', fontSize: 14, fontWeight: 600, cursor: (saving || coverUploading) ? 'wait' : 'pointer', transition: 'background 0.15s' }}>
+                {coverUploading ? 'Uploading image…' : saving ? t('db_saving') : editing ? t('db_save_changes_ev') : t('db_create_event')}
               </button>
             </div>
           </div>

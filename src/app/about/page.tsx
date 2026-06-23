@@ -177,7 +177,7 @@ export default function AboutPage() {
               <div className="p-5">
                 <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111' }}>{member.name}</h3>
                 <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#C8A97E', fontWeight: 600, marginTop: 2, marginBottom: 4 }}>{member.role}</p>
-                <div className="flex items-center gap-1 mb-8">
+                <div className="flex items-center gap-1 mb-3">
                   <MapPin size={10} style={{ color: '#6F675C' }} />
                   <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>{member.location}</span>
                 </div>

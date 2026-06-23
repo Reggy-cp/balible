@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { X, ChevronLeft, ChevronRight } from 'lucide-react'
 
-export default function EventGallery({ images, title }: { images: string[]; title: string; slug?: string }) {
+export default function EventGallery({ images, title }: { images: string[]; title: string }) {
   const photos = Array.from(new Set(images)).filter(Boolean).slice(0, 6)
   const [lightbox, setLightbox] = useState<number | null>(null)
 

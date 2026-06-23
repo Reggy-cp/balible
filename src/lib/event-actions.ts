@@ -108,7 +108,7 @@ export async function createEvent(input: EventInput): Promise<{ ok: boolean; eve
         operatorId: op.id,
         title: input.title,
         description: input.description,
-        date: new Date(input.date),
+        date: new Date(input.date.length === 16 ? input.date + ':00+08:00' : input.date),
         location: input.location,
         price: input.price,
         capacity: input.capacity,
@@ -132,7 +132,7 @@ export async function updateEvent(id: string, input: Partial<EventInput>): Promi
       data: {
         ...(input.title !== undefined && { title: input.title }),
         ...(input.description !== undefined && { description: input.description }),
-        ...(input.date !== undefined && { date: new Date(input.date) }),
+        ...(input.date !== undefined && { date: new Date(input.date.length === 16 ? input.date + ':00+08:00' : input.date) }),
         ...(input.location !== undefined && { location: input.location }),
         ...(input.price !== undefined && { price: input.price }),
         ...(input.capacity !== undefined && { capacity: input.capacity }),
@@ -169,6 +169,18 @@ export async function getPublishedEvents(): Promise<EventRow[]> {
   } catch {
     return []
   }
+}
+
+export async function getEventRemainingTickets(slug: string): Promise<number | null> {
+  try {
+    const event = await prisma.event.findUnique({ where: { slug }, select: { capacity: true, id: true } })
+    if (!event) return null
+    const booked = await prisma.eventBooking.aggregate({
+      where: { eventId: event.id, status: { in: ['PENDING', 'CONFIRMED'] } },
+      _sum: { tickets: true },
+    })
+    return event.capacity - (booked._sum.tickets ?? 0)
+  } catch { return null }
 }
 
 export async function getEventBySlug(slug: string): Promise<(EventRow & { operatorName: string; operatorAvatar: string | null; operatorPhone: string | null }) | null> {
@@ -215,6 +227,16 @@ export async function createEventBookingAction(input: {
     if (duplicate) return { ok: false, error: 'You already have a booking for this event.' }
 
     const tickets = Math.max(1, Math.trunc(input.tickets) || 1)
+
+    // Capacity check — count tickets already reserved (pending or confirmed)
+    const booked = await prisma.eventBooking.aggregate({
+      where: { eventId: event.id, status: { in: ['PENDING', 'CONFIRMED'] } },
+      _sum: { tickets: true },
+    })
+    const reserved = booked._sum.tickets ?? 0
+    const remaining = event.capacity - reserved
+    if (remaining <= 0) return { ok: false, error: 'Sorry, this event is sold out.' }
+    if (tickets > remaining) return { ok: false, error: `Only ${remaining} ticket${remaining !== 1 ? 's' : ''} remaining.` }
     const feeRate = await getFeeRate()
     const subtotal = event.price * tickets
     const fee = event.price === 0 ? 0 : Math.round(subtotal * feeRate)

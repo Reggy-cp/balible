@@ -1602,6 +1602,12 @@ export type DashBooking = {
 
 export type DashReview = { id: string; guest: string; experience: string; rating: number; comment: string; date: string }
 
+export type DashEventBooking = {
+  id: string; ref: string; guest: string; email: string; phone: string | null
+  eventTitle: string; eventImage: string; eventSlug: string
+  eventDate: string; tickets: number; total: number; status: string; bookedOn: string
+}
+
 export type EarningsByMonth = { month: string; gross: number }
 
 export type HostProfile = {
@@ -1635,6 +1641,7 @@ export type HostDashboardData = {
   commissionRate: number
   experiences: DashExp[]
   bookings: DashBooking[]
+  eventBookings: DashEventBooking[]
   reviews: DashReview[]
   earningsByMonth: EarningsByMonth[]
   totalGross: number
@@ -1659,7 +1666,7 @@ export async function getHostDashboardData(viewOperatorId?: string): Promise<Hos
     const now = new Date()
     const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1)
 
-    const [dbExps, dbBookings, dbReviews, earnedBookings, allEarnedBookings, paidPayouts, commRateDecimal] = await Promise.all([
+    const [dbExps, dbBookings, dbReviews, earnedBookings, allEarnedBookings, paidPayouts, commRateDecimal, dbEventBookings] = await Promise.all([
       prisma.experience.findMany({
         where: { operatorId: operator.id },
         include: {
@@ -1709,6 +1716,12 @@ export async function getHostDashboardData(viewOperatorId?: string): Promise<Hos
         select: { gross: true },
       }),
       getCommissionRate(),
+      prisma.eventBooking.findMany({
+        where: { event: { operatorId: operator.id } },
+        include: { event: { select: { title: true, coverImage: true, slug: true, date: true } } },
+        orderBy: { createdAt: 'desc' },
+        take: 100,
+      }),
     ])
 
     // 12-month rolling earnings breakdown
@@ -1809,7 +1822,23 @@ export async function getHostDashboardData(viewOperatorId?: string): Promise<Hos
       whatsapp: (operator as any).whatsapp ?? '',
       youtube: (operator as any).youtube ?? '',
     }
-    return { hostName: operator.user.name, commissionRate: Math.round(commRateDecimal * 100), experiences, bookings, reviews, earningsByMonth, totalGross, pendingPayout, profile }
+    const eventBookings: DashEventBooking[] = dbEventBookings.map(b => ({
+      id: b.bookingRef,
+      ref: b.bookingRef,
+      guest: b.guestName,
+      email: b.guestEmail,
+      phone: b.guestPhone,
+      eventTitle: b.event.title,
+      eventImage: b.event.coverImage ?? '',
+      eventSlug: b.event.slug,
+      eventDate: b.event.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'Asia/Makassar' }),
+      tickets: b.tickets,
+      total: b.totalPrice,
+      status: bookingStatusDisplay[String(b.status)] ?? 'Confirmed',
+      bookedOn: b.createdAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    }))
+
+    return { hostName: operator.user.name, commissionRate: Math.round(commRateDecimal * 100), experiences, bookings, eventBookings, reviews, earningsByMonth, totalGross, pendingPayout, profile }
   } catch {
     return null
   }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verifyNotificationSignature } from '@/lib/midtrans'
-import { sendBookingConfirmation, sendHostBookingAlert, sendBookingCancellation, sendPaymentPendingEmail, sendEventBookingConfirmation } from '@/lib/email'
+import { sendBookingConfirmation, sendHostBookingAlert, sendBookingCancellation, sendPaymentPendingEmail, sendEventBookingConfirmation, sendHostEventAlert } from '@/lib/email'
 import { createNotification } from '@/lib/notifications'
 
 const AREA_DISPLAY: Record<string, string> = {
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
   if (!booking) {
     const evtBooking = await prisma.eventBooking.findUnique({
       where: { bookingRef: order_id },
-      include: { event: true },
+      include: { event: { include: { operator: { include: { user: { select: { name: true, email: true } } } } } } },
     })
     if (!evtBooking) {
       return NextResponse.json({ ok: true, note: 'unknown order' })
@@ -60,11 +60,12 @@ export async function POST(req: NextRequest) {
         where: { id: evtBooking.id },
         data: { status: 'CONFIRMED', paymentId: transaction_id ?? null },
       })
+      const hostUser = evtBooking.event.operator?.user
       await Promise.allSettled([
         createNotification({
           userId: evtBooking.userId,
           type: 'payment',
-          title: "You're in! Event tickets confirmed 🎉",
+          title: "You're in! Event tickets confirmed",
           body: `Payment received — see you at ${evtBooking.event.title}!`,
           href: '/profile?tab=bookings',
         }),
@@ -78,6 +79,21 @@ export async function POST(req: NextRequest) {
           tickets: evtBooking.tickets,
           totalPrice: evtBooking.totalPrice,
         }),
+        hostUser
+          ? sendHostEventAlert({
+              to: hostUser.email,
+              hostName: hostUser.name,
+              guestName: evtBooking.guestName,
+              guestEmail: evtBooking.guestEmail,
+              guestPhone: evtBooking.guestPhone,
+              bookingRef: evtBooking.bookingRef,
+              eventTitle: evtBooking.event.title,
+              eventDate: evtBooking.event.date,
+              eventLocation: evtBooking.event.location,
+              tickets: evtBooking.tickets,
+              totalPrice: evtBooking.totalPrice,
+            })
+          : Promise.resolve({ sent: false }),
       ])
     } else if (failed && evtBooking.status === 'PENDING') {
       await prisma.eventBooking.update({

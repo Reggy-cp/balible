@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { MapPin, Clock, Users, CalendarDays } from 'lucide-react'
+import { MapPin, Clock, Users, CalendarDays, Home, Ticket } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
@@ -20,43 +20,6 @@ export async function generateStaticParams() {
   }
 }
 
-const GALLERY: Record<string, string[]> = {
-  'full-moon-sound-bath': [
-    'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=900&auto=format&fit=crop&q=85',
-    'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1545389336-cf090694435e?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1591017403286-fd8493524e1e?w=600&auto=format&fit=crop&q=80',
-  ],
-  'ubud-sacred-sites-walk': [
-    'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=900&auto=format&fit=crop&q=85',
-    'https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1571212515416-fef01fc43637?w=600&auto=format&fit=crop&q=80',
-  ],
-  'batik-design-workshop': [
-    'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=900&auto=format&fit=crop&q=85',
-    'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1552083375-1447ce886485?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1520637836862-4d197d17c93a?w=600&auto=format&fit=crop&q=80',
-  ],
-  'sunset-cooking-demo': [
-    'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=900&auto=format&fit=crop&q=85',
-    'https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&auto=format&fit=crop&q=80',
-  ],
-  'volcano-sunrise-expedition': [
-    'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=900&auto=format&fit=crop&q=85',
-    'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1533130061792-64b345e4a833?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1520962880247-cfaf541c8724?w=600&auto=format&fit=crop&q=80',
-  ],
-}
 
 export default async function EventDetailPage({ params }: { params: { slug: string } }) {
   const [event, allEvents, feeSetting] = await Promise.all([
@@ -101,10 +64,10 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
 
         {/* Gallery */}
         {(() => {
-          const galleryImages = GALLERY[event.slug] ?? (event.coverImage ? [event.coverImage] : [])
+          const galleryImages = event.images.length > 0 ? event.images : (event.coverImage ? [event.coverImage] : [])
           return galleryImages.length > 0 ? (
             <div className="relative">
-              <EventGallery images={galleryImages} title={event.title} slug={event.slug} />
+              <EventGallery images={galleryImages} title={event.title} />
               {isPast && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none lg:rounded-2xl overflow-hidden" style={{ backgroundColor: 'rgba(0,0,0,0.35)', borderRadius: 16, zIndex: 5 }}>
                   <span style={{ fontSize: 15, fontWeight: 700, color: 'white', backgroundColor: 'rgba(0,0,0,0.6)', padding: '8px 20px', borderRadius: 20, pointerEvents: 'none' }}>
@@ -173,7 +136,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                   ) : (
                     <div className="flex-shrink-0 flex items-center justify-center rounded-full"
                       style={{ width: 52, height: 52, backgroundColor: '#F0EDE8' }}>
-                      <span style={{ fontSize: 22 }}>🏡</span>
+                      <Home size={22} style={{ color: '#9E9A94' }} />
                     </div>
                   )}
                   <div>
@@ -261,7 +224,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                           <img src={ev.coverImage} alt={ev.title} className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: '#F0EDE8' }}>
-                            <span style={{ fontSize: 40 }}>🎟</span>
+                            <Ticket size={36} style={{ color: '#C8C4BE' }} />
                           </div>
                         )}
                         <div className="absolute top-3 left-3" style={{ backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 8, padding: '4px 10px' }}>

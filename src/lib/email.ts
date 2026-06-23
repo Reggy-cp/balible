@@ -860,6 +860,62 @@ export async function sendEventBookingCancellationEmail(input: {
   }
 }
 
+export async function sendHostEventAlert(input: {
+  to: string
+  hostName: string
+  guestName: string
+  guestEmail: string
+  guestPhone?: string | null
+  bookingRef: string
+  eventTitle: string
+  eventDate: Date
+  eventLocation: string
+  tickets: number
+  totalPrice: number
+}): Promise<{ sent: boolean }> {
+  const client = getClient()
+  if (!client) return { sent: false }
+  const TZ = 'Asia/Makassar'
+  const dateStr = input.eventDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: TZ })
+  const timeStr = input.eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: TZ })
+  const row = (label: string, value: string) => `
+    <tr>
+      <td style="padding:7px 0;font-size:13px;color:${BRAND.muted};width:130px;vertical-align:top;">${label}</td>
+      <td style="padding:7px 0;font-size:14px;color:${BRAND.ink};font-weight:600;">${value}</td>
+    </tr>`
+  try {
+    await client.emails.send({
+      from: FROM,
+      to: input.to,
+      subject: `New ticket sale — ${input.eventTitle} (${input.tickets} ticket${input.tickets > 1 ? 's' : ''})`,
+      html: layout(`
+        <p style="margin:0 0 4px;font-size:13px;color:${BRAND.gold};font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">New ticket sale</p>
+        <h1 style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:24px;color:${BRAND.ink};">${input.eventTitle}</h1>
+        <p style="margin:0 0 20px;font-size:15px;color:${BRAND.muted};line-height:1.7;">
+          Hi ${input.hostName}, someone just bought tickets for your event. Here are the details.
+        </p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid ${BRAND.border};border-bottom:1px solid ${BRAND.border};margin-bottom:20px;">
+          ${row('Booking ref', input.bookingRef.slice(0, 8).toUpperCase())}
+          ${row('Date', `${dateStr} · ${timeStr} WITA`)}
+          ${row('Location', input.eventLocation)}
+          ${row('Tickets', `${input.tickets} ticket${input.tickets > 1 ? 's' : ''}`)}
+          ${row('Guest name', input.guestName)}
+          ${row('Guest email', input.guestEmail)}
+          ${input.guestPhone ? row('Guest phone', input.guestPhone) : ''}
+          ${input.totalPrice > 0 ? row('Amount received', `IDR ${input.totalPrice.toLocaleString('id-ID')}`) : ''}
+        </table>
+        <p style="margin:0;font-size:13px;color:${BRAND.muted};line-height:1.7;">
+          Questions? Contact us at hello@balible.com.
+        </p>
+      `),
+    })
+    return { sent: true }
+  } catch (err) {
+    console.error('[email] host event alert failed:', err)
+    return { sent: false }
+  }
+}
+
 export async function sendAdminEventCancellationAlert(input: {
   bookingRef: string
   guestName: string
