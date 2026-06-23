@@ -10,7 +10,7 @@ export default function HostSignUpPage() {
       subCopy="List your experiences, set your own schedule, and welcome guests from around the world to authentic Bali."
       heading="Create your host account"
       submitLabel="Start hosting"
-      redirectTo="/dashboard"
+      redirectTo="/onboarding/host"
       switchLink={
         <>
           Looking to book?{' '}

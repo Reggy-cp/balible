@@ -7,7 +7,7 @@ export async function POST(req: Request) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { businessName, description } = await req.json()
+  const { businessName, description, phone, area, website } = await req.json()
   if (!businessName?.trim() || !description?.trim())
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
 
@@ -18,8 +18,21 @@ export async function POST(req: Request) {
 
   const operator = await prisma.operator.upsert({
     where: { userId: session.user.id },
-    create: { userId: session.user.id, businessName: businessName.trim(), description: description.trim() },
-    update: { businessName: businessName.trim(), description: description.trim() },
+    create: {
+      userId: session.user.id,
+      businessName: businessName.trim(),
+      description: description.trim(),
+      phone: phone?.trim() || null,
+      area: area?.trim() || null,
+      website: website?.trim() || null,
+    },
+    update: {
+      businessName: businessName.trim(),
+      description: description.trim(),
+      phone: phone?.trim() || null,
+      area: area?.trim() || null,
+      website: website?.trim() || null,
+    },
   })
 
   return NextResponse.json({ operatorId: operator.id })

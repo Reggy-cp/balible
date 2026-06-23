@@ -1,20 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 
-const CATEGORIES = [
-  { value: 'ART_CRAFT',        label: 'Art & Craft' },
-  { value: 'WELLNESS_HEALING',         label: 'Wellness & Healing' },
-  { value: 'CULTURE_SPIRITUAL', label: 'Culture & Spiritual' },
-  { value: 'CULINARY',       label: 'Culinary' },
-  { value: 'NATURE_OUTDOORS',           label: 'Nature & Outdoors' },
-  { value: 'WATER_ACTIVITIES', label: 'Water Activities' },
-  { value: 'LOCAL_EXPERTS',    label: 'Local Experts' },
-  { value: 'RENTALS',          label: 'Rentals' },
-  { value: 'SERVICE',          label: 'Services' },
+const INDONESIAN_BANKS = [
+  'BCA', 'Mandiri', 'BNI', 'BRI', 'CIMB Niaga', 'Danamon', 'Permata',
+  'BTN', 'Maybank', 'OCBC NISP', 'Panin', 'Mega', 'BPD Bali', 'GoPay', 'OVO', 'Dana',
 ]
 
 const AREAS = [
@@ -33,7 +26,7 @@ const AREAS = [
   { value: 'SIDEMEN',   label: 'Sidemen' },
 ]
 
-const STEPS = ['Your Profile', 'First Experience', 'Payout Details']
+const STEPS = ['Your Profile', 'Bank Account']
 
 const inputStyle: React.CSSProperties = {
   width: '100%', height: 46, borderRadius: 10, border: '1px solid #E8E4DE',
@@ -47,28 +40,41 @@ const labelStyle: React.CSSProperties = {
 
 export default function HostOnboardingPage() {
   const router = useRouter()
-  const [step, setStep] = useState(1)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [step, setStep]         = useState(1)
+  const [loading, setLoading]   = useState(false)
+  const [error, setError]       = useState('')
+  const [checking, setChecking] = useState(true)
 
-  // Step 1
+  // Step 1 — Profile
   const [businessName, setBusinessName] = useState('')
-  const [bio, setBio] = useState('')
+  const [bio, setBio]                   = useState('')
+  const [phone, setPhone]               = useState('')
+  const [area, setArea]                 = useState('')
+  const [website, setWebsite]           = useState('')
 
-  // Step 2
-  const [title, setTitle] = useState('')
-  const [category, setCategory] = useState('')
-  const [area, setArea] = useState('')
-  const [description, setDescription] = useState('')
-  const [price, setPrice] = useState('')
-  const [duration, setDuration] = useState('')
-  const [maxGuests, setMaxGuests] = useState('')
-  const [meetingPoint, setMeetingPoint] = useState('')
-
-  // Step 3
-  const [payoutBank, setPayoutBank] = useState('')
+  // Step 2 — Bank
+  const [payoutBank, setPayoutBank]       = useState('')
   const [payoutAccount, setPayoutAccount] = useState('')
-  const [payoutName, setPayoutName] = useState('')
+  const [payoutName, setPayoutName]       = useState('')
+
+  // Check onboarding status and prefill
+  useEffect(() => {
+    fetch('/api/onboarding/host/status')
+      .then(r => r.json())
+      .then(d => {
+        if (d.complete) { router.replace('/dashboard'); return }
+        if (d.profile) {
+          setBusinessName(d.profile.businessName ?? '')
+          setBio(d.profile.bio ?? '')
+          setPhone(d.profile.phone ?? '')
+          setArea(d.profile.area ?? '')
+          setWebsite(d.profile.website ?? '')
+          if (d.profileComplete) setStep(2)
+        }
+        setChecking(false)
+      })
+      .catch(() => setChecking(false))
+  }, [router])
 
   async function handleProfile(e: React.FormEvent) {
     e.preventDefault()
@@ -77,25 +83,11 @@ export default function HostOnboardingPage() {
     const res = await fetch('/api/onboarding/host/profile', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ businessName, description: bio }),
+      body: JSON.stringify({ businessName, description: bio, phone, area, website }),
     })
     setLoading(false)
     if (!res.ok) { setError((await res.json()).error ?? 'Something went wrong.'); return }
     setStep(2)
-  }
-
-  async function handleListing(e: React.FormEvent) {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
-    const res = await fetch('/api/onboarding/host/listing', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, category, area, description, price, duration, maxGuests, meetingPoint }),
-    })
-    setLoading(false)
-    if (!res.ok) { setError((await res.json()).error ?? 'Something went wrong.'); return }
-    setStep(3)
   }
 
   async function handlePayout(e: React.FormEvent) {
@@ -111,6 +103,14 @@ export default function HostOnboardingPage() {
     router.push('/dashboard')
   }
 
+  if (checking) {
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: '#F5F1EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 36, height: 36, borderRadius: '50%', border: '3px solid #E8E4DE', borderTopColor: '#111111', animation: 'spin 0.8s linear infinite' }} />
+      </div>
+    )
+  }
+
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#F5F1EB', fontFamily: 'var(--font-inter)', padding: '40px 16px' }}>
 
@@ -122,9 +122,9 @@ export default function HostOnboardingPage() {
       </div>
 
       {/* Progress */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0, marginBottom: 40, maxWidth: 480, margin: '0 auto 40px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', maxWidth: 400, margin: '0 auto 40px' }}>
         {STEPS.map((label, i) => {
-          const n = i + 1
+          const n    = i + 1
           const done = step > n
           const active = step === n
           return (
@@ -160,30 +160,58 @@ export default function HostOnboardingPage() {
               Tell us about yourself
             </h2>
             <p style={{ fontSize: 14, color: '#6F675C', margin: '0 0 28px', lineHeight: 1.6 }}>
-              This is what guests will see on your host profile.
+              This is what guests will see on your public host profile.
             </p>
 
             <div style={{ marginBottom: 16 }}>
               <label style={labelStyle}>
-                Company / Brand name
-                <span style={{ fontWeight: 400, color: '#9E9A94', marginLeft: 6 }}>— shown on your public profile</span>
+                Business / Brand name <span style={{ color: '#B66A45' }}>*</span>
               </label>
               <input
                 type="text" required value={businessName} onChange={e => setBusinessName(e.target.value)}
-                placeholder="e.g. Salsa Spa, Made's Ubud Kitchen, Bali Surf Co."
+                placeholder="e.g. Salsa Spa, Made's Kitchen, Bali Surf Co."
                 style={inputStyle}
               />
               <p style={{ fontSize: 12, color: '#9E9A94', marginTop: 5 }}>
-                This is the name guests will see when browsing your experiences. Use your brand or company name, not your personal name.
+                The name guests will see when browsing your listings.
               </p>
             </div>
 
-            <div style={{ marginBottom: 24 }}>
-              <label style={labelStyle}>About you</label>
+            <div style={{ marginBottom: 16 }}>
+              <label style={labelStyle}>
+                About you <span style={{ color: '#B66A45' }}>*</span>
+              </label>
               <textarea
                 required value={bio} onChange={e => setBio(e.target.value)}
                 placeholder="Tell guests who you are, your background, and what makes your experience special…"
-                style={{ ...inputStyle, height: 120, padding: '12px 14px', resize: 'vertical', lineHeight: 1.6 }}
+                style={{ ...inputStyle, height: 110, padding: '12px 14px', resize: 'vertical', lineHeight: 1.6 }}
+              />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+              <div>
+                <label style={labelStyle}>WhatsApp / Phone <span style={{ color: '#B66A45' }}>*</span></label>
+                <input
+                  type="tel" required value={phone} onChange={e => setPhone(e.target.value)}
+                  placeholder="+62 812 3456 7890"
+                  style={inputStyle}
+                />
+              </div>
+              <div>
+                <label style={labelStyle}>Primary area <span style={{ color: '#B66A45' }}>*</span></label>
+                <select required value={area} onChange={e => setArea(e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
+                  <option value="">Select…</option>
+                  {AREAS.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
+                </select>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: 28 }}>
+              <label style={labelStyle}>Website <span style={{ color: '#9E9A94', fontWeight: 400 }}>(optional)</span></label>
+              <input
+                type="url" value={website} onChange={e => setWebsite(e.target.value)}
+                placeholder="https://yourbrand.com"
+                style={inputStyle}
               />
             </div>
 
@@ -198,79 +226,52 @@ export default function HostOnboardingPage() {
           </form>
         )}
 
-        {/* Step 2 — First Experience */}
+        {/* Step 2 — Bank Account */}
         {step === 2 && (
-          <form onSubmit={handleListing}>
+          <form onSubmit={handlePayout}>
             <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: '#111111', margin: '0 0 6px' }}>
-              Create your first experience
+              How should we pay you?
             </h2>
-            <p style={{ fontSize: 14, color: '#6F675C', margin: '0 0 28px', lineHeight: 1.6 }}>
-              You can refine details and add photos from your dashboard after this step.
+            <p style={{ fontSize: 14, color: '#6F675C', margin: '0 0 16px', lineHeight: 1.6 }}>
+              All payments go to Balible first. We disburse your earnings within 3 business days of each completed booking, minus our platform fee.
             </p>
 
-            <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle}>Experience title</label>
-              <input
-                type="text" required value={title} onChange={e => setTitle(e.target.value)}
-                placeholder="e.g. Traditional Balinese Cooking Class" style={inputStyle}
-              />
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
-              <div>
-                <label style={labelStyle}>Category</label>
-                <select required value={category} onChange={e => setCategory(e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
-                  <option value="">Select…</option>
-                  {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-                </select>
-              </div>
-              <div>
-                <label style={labelStyle}>Area</label>
-                <select required value={area} onChange={e => setArea(e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
-                  <option value="">Select…</option>
-                  {AREAS.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
-                </select>
-              </div>
+            {/* Info banner */}
+            <div style={{ backgroundColor: '#F5F1EB', borderRadius: 12, padding: '14px 16px', marginBottom: 24, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+              <span style={{ fontSize: 16, flexShrink: 0 }}>🔒</span>
+              <p style={{ fontSize: 13, color: '#6F675C', margin: 0, lineHeight: 1.6 }}>
+                Your bank details are stored securely and used only for earning disbursements. You can update them anytime from your dashboard settings.
+              </p>
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle}>Description</label>
-              <textarea
-                required value={description} onChange={e => setDescription(e.target.value)}
-                placeholder="Describe what guests will experience, learn, and take away…"
-                style={{ ...inputStyle, height: 100, padding: '12px 14px', resize: 'vertical', lineHeight: 1.6 }}
+              <label style={labelStyle}>Bank name</label>
+              <input
+                type="text" value={payoutBank} onChange={e => setPayoutBank(e.target.value)}
+                placeholder="e.g. BCA, Mandiri, BNI"
+                list="bank-list"
+                style={inputStyle}
+              />
+              <datalist id="bank-list">
+                {INDONESIAN_BANKS.map(b => <option key={b} value={b} />)}
+              </datalist>
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <label style={labelStyle}>Account number</label>
+              <input
+                type="text" value={payoutAccount} onChange={e => setPayoutAccount(e.target.value)}
+                placeholder="e.g. 1234567890"
+                style={inputStyle}
               />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 16 }}>
-              <div>
-                <label style={labelStyle}>Price (IDR)</label>
-                <input
-                  type="number" required min="0" value={price} onChange={e => setPrice(e.target.value)}
-                  placeholder="500000" style={inputStyle}
-                />
-              </div>
-              <div>
-                <label style={labelStyle}>Duration</label>
-                <input
-                  type="text" required value={duration} onChange={e => setDuration(e.target.value)}
-                  placeholder="2 hours" style={inputStyle}
-                />
-              </div>
-              <div>
-                <label style={labelStyle}>Max guests</label>
-                <input
-                  type="number" required min="1" value={maxGuests} onChange={e => setMaxGuests(e.target.value)}
-                  placeholder="8" style={inputStyle}
-                />
-              </div>
-            </div>
-
-            <div style={{ marginBottom: 24 }}>
-              <label style={labelStyle}>Meeting point</label>
+            <div style={{ marginBottom: 28 }}>
+              <label style={labelStyle}>Account holder name</label>
               <input
-                type="text" value={meetingPoint} onChange={e => setMeetingPoint(e.target.value)}
-                placeholder="e.g. Jl. Monkey Forest No. 5, Ubud" style={inputStyle}
+                type="text" value={payoutName} onChange={e => setPayoutName(e.target.value)}
+                placeholder="Full name exactly as on your bank account"
+                style={inputStyle}
               />
             </div>
 
@@ -285,65 +286,6 @@ export default function HostOnboardingPage() {
               </button>
               <button
                 type="submit" disabled={loading}
-                style={{ flex: 2, height: 46, borderRadius: 10, backgroundColor: '#111111', color: 'white', fontSize: 14, fontWeight: 600, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}
-              >
-                {loading ? 'Saving…' : 'Continue →'}
-              </button>
-            </div>
-          </form>
-        )}
-
-        {/* Step 3 — Payout */}
-        {step === 3 && (
-          <form onSubmit={handlePayout}>
-            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: '#111111', margin: '0 0 6px' }}>
-              How should we pay you?
-            </h2>
-            <p style={{ fontSize: 14, color: '#6F675C', margin: '0 0 16px', lineHeight: 1.6 }}>
-              All guest payments go to Balible first. We disburse your earnings within 3 business days of each completed booking, minus our platform fee.
-            </p>
-
-            {/* Info banner */}
-            <div style={{ backgroundColor: '#F5F1EB', borderRadius: 12, padding: '14px 16px', marginBottom: 24, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-              <span style={{ fontSize: 16, flexShrink: 0 }}>🔒</span>
-              <p style={{ fontSize: 13, color: '#6F675C', margin: 0, lineHeight: 1.6 }}>
-                Your bank details are stored securely and used only for earning disbursements. You can update them anytime from your dashboard.
-              </p>
-            </div>
-
-            <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle}>Bank name</label>
-              <input
-                type="text" value={payoutBank} onChange={e => setPayoutBank(e.target.value)}
-                placeholder="e.g. BCA, Mandiri, BNI" style={inputStyle}
-              />
-            </div>
-
-            <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle}>Account number</label>
-              <input
-                type="text" value={payoutAccount} onChange={e => setPayoutAccount(e.target.value)}
-                placeholder="e.g. 1234567890" style={inputStyle}
-              />
-            </div>
-
-            <div style={{ marginBottom: 28 }}>
-              <label style={labelStyle}>Account holder name</label>
-              <input
-                type="text" value={payoutName} onChange={e => setPayoutName(e.target.value)}
-                placeholder="Full name as on your bank account" style={inputStyle}
-              />
-            </div>
-
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button
-                type="button" onClick={() => setStep(2)}
-                style={{ flex: 1, height: 46, borderRadius: 10, backgroundColor: 'white', color: '#111111', fontSize: 14, fontWeight: 500, border: '1px solid #E8E4DE', cursor: 'pointer' }}
-              >
-                ← Back
-              </button>
-              <button
-                type="submit" disabled={loading}
                 style={{ flex: 2, height: 46, borderRadius: 10, backgroundColor: '#2D5A3D', color: 'white', fontSize: 14, fontWeight: 600, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}
               >
                 {loading ? 'Setting up…' : 'Go to Dashboard 🎉'}
@@ -351,7 +293,7 @@ export default function HostOnboardingPage() {
             </div>
 
             <p style={{ fontSize: 12, color: '#9E9A94', textAlign: 'center', marginTop: 16 }}>
-              You can skip payout details for now and add them later.{' '}
+              You can skip bank details for now and add them later.{' '}
               <button
                 type="button" onClick={() => router.push('/dashboard')}
                 style={{ background: 'none', border: 'none', color: '#111111', fontSize: 12, fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
@@ -362,6 +304,13 @@ export default function HostOnboardingPage() {
           </form>
         )}
       </div>
+
+      <p style={{ textAlign: 'center', fontSize: 13, color: '#9E9A94', marginTop: 24 }}>
+        Already set up?{' '}
+        <Link href="/dashboard" style={{ color: '#111111', fontWeight: 600, textDecoration: 'none' }}>
+          Go to your dashboard →
+        </Link>
+      </p>
     </div>
   )
 }
