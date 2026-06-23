@@ -1354,6 +1354,30 @@ export async function adminUpdateHostAction(id: string, data: { businessName: st
   } catch (e: any) { return { ok: false, error: e.message } }
 }
 
+export async function bulkApproveHostsAction(ids: string[]): Promise<{ ok: boolean; count: number }> {
+  await requireAdmin()
+  try {
+    await prisma.operator.updateMany({ where: { id: { in: ids } }, data: { verified: true } })
+    return { ok: true, count: ids.length }
+  } catch { return { ok: false, count: 0 } }
+}
+
+export async function bulkSuspendHostsAction(ids: string[]): Promise<{ ok: boolean; count: number }> {
+  await requireAdmin()
+  try {
+    await prisma.operator.updateMany({ where: { id: { in: ids } }, data: { verified: false } })
+    return { ok: true, count: ids.length }
+  } catch { return { ok: false, count: 0 } }
+}
+
+export async function bulkDeleteUsersAction(ids: string[]): Promise<{ ok: boolean; count: number }> {
+  await requireAdmin()
+  try {
+    await prisma.user.deleteMany({ where: { id: { in: ids }, role: 'TOURIST' } })
+    return { ok: true, count: ids.length }
+  } catch { return { ok: false, count: 0 } }
+}
+
 export type AdminAnalytics = {
   topExperiences: { title: string; bookings: number }[]
   monthlyBookings: number[]

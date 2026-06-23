@@ -36,6 +36,7 @@ import {
   adminSaveFeaturedAction,
   getActivityLogsAction, type AuditLogEntry,
   getSiteActivityAction, type SiteActivityItem,
+  bulkApproveHostsAction, bulkSuspendHostsAction, bulkDeleteUsersAction,
 } from '@/lib/actions'
 import { COMMISSION_RATE, PAYOUT_MIN_NET } from '@/lib/constants'
 
@@ -1043,18 +1044,20 @@ function EditHostModal({ host, onClose, onSaved }: {
 // ── Hosts Panel ───────────────────────────────────────────────────────────────
 
 function HostsPanel() {
-  const [search, setSearch]   = useState('')
-  const [filter, setFilter]   = useState('All')
-  const [hosts, setHosts]     = useState<AdminHost[]>([])
-  const [editing, setEditing] = useState<AdminHost | null>(null)
+  const [search, setSearch]       = useState('')
+  const [filter, setFilter]       = useState('All')
+  const [hosts, setHosts]         = useState<AdminHost[]>([])
+  const [editing, setEditing]     = useState<AdminHost | null>(null)
+  const [selected, setSelected]   = useState<Set<string>>(new Set())
+  const [bulkWorking, setBulkWorking] = useState(false)
 
   useEffect(() => { getAdminHostsAction().then(setHosts) }, [])
 
-  const approve  = async (id: string) => {
+  const approve = async (id: string) => {
     await approveHostAction(id)
     setHosts(h => h.map(x => x.id === id ? { ...x, status: 'Verified' } : x))
   }
-  const suspend  = async (id: string) => {
+  const suspend = async (id: string) => {
     await suspendHostAction(id)
     setHosts(h => h.map(x => x.id === id ? { ...x, status: 'Pending' } : x))
   }
@@ -1065,7 +1068,32 @@ function HostsPanel() {
     return list
   }, [hosts, filter, search])
 
-  const pending = hosts.filter(h => h.status === 'Pending').length
+  const pending     = hosts.filter(h => h.status === 'Pending').length
+  const allSelected = visible.length > 0 && visible.every(h => selected.has(h.id))
+
+  function toggleAll() {
+    if (allSelected) setSelected(new Set())
+    else setSelected(new Set(visible.map(h => h.id)))
+  }
+  function toggleOne(id: string) {
+    setSelected(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
+  }
+
+  async function bulkApprove() {
+    const ids = Array.from(selected)
+    setBulkWorking(true)
+    await bulkApproveHostsAction(ids)
+    setHosts(h => h.map(x => selected.has(x.id) ? { ...x, status: 'Verified' } : x))
+    setSelected(new Set()); setBulkWorking(false)
+  }
+  async function bulkSuspend() {
+    const ids = Array.from(selected)
+    if (!confirm(`Suspend ${ids.length} host${ids.length > 1 ? 's' : ''}?`)) return
+    setBulkWorking(true)
+    await bulkSuspendHostsAction(ids)
+    setHosts(h => h.map(x => selected.has(x.id) ? { ...x, status: 'Pending' } : x))
+    setSelected(new Set()); setBulkWorking(false)
+  }
 
   return (
     <div>
@@ -1085,10 +1113,10 @@ function HostsPanel() {
         <SearchBar value={search} onChange={setSearch} placeholder="Search host or business name…" />
       </div>
 
-      <div className="overflow-x-auto mb-5 scrollbar-none">
+      <div className="overflow-x-auto mb-4 scrollbar-none">
         <div className="inline-flex gap-1 bg-white rounded-xl p-1" style={{ border: `1px solid ${SAND}` }}>
           {['All', 'Verified', 'Pending', 'Suspended'].map(t => (
-            <button key={t} onClick={() => setFilter(t)}
+            <button key={t} onClick={() => { setFilter(t); setSelected(new Set()) }}
               style={{ padding: '6px 14px', borderRadius: 10, fontSize: 13, fontWeight: filter === t ? 600 : 400, backgroundColor: filter === t ? CHARCOAL : 'transparent', color: filter === t ? 'white' : COCONUT, border: 'none', cursor: 'pointer', flexShrink: 0 }}>
               {t} <span style={{ opacity: 0.5, fontSize: 11 }}>{t === 'All' ? hosts.length : hosts.filter(h => h.status === t).length}</span>
             </button>
@@ -1096,11 +1124,45 @@ function HostsPanel() {
         </div>
       </div>
 
+      {/* Bulk action bar */}
+      {selected.size > 0 && (
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl mb-4" style={{ backgroundColor: CHARCOAL }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'white' }}>{selected.size} selected</span>
+          <div className="flex gap-2 ml-auto">
+            <button onClick={bulkApprove} disabled={bulkWorking}
+              className="flex items-center gap-1.5 hover:opacity-90 disabled:opacity-50"
+              style={{ height: 32, padding: '0 14px', borderRadius: 8, border: 'none', backgroundColor: FOREST, color: 'white', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+              <CheckCircle size={12} /> Approve all
+            </button>
+            <button onClick={bulkSuspend} disabled={bulkWorking}
+              className="flex items-center gap-1.5 hover:opacity-90 disabled:opacity-50"
+              style={{ height: 32, padding: '0 14px', borderRadius: 8, border: 'none', backgroundColor: TERRACOTTA, color: 'white', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+              <XCircle size={12} /> Suspend all
+            </button>
+            <button onClick={() => setSelected(new Set())}
+              style={{ height: 32, padding: '0 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', backgroundColor: 'transparent', color: 'rgba(255,255,255,0.7)', fontSize: 12, cursor: 'pointer' }}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Select-all row */}
+      {visible.length > 0 && (
+        <div className="flex items-center gap-2 px-1 mb-2">
+          <input type="checkbox" checked={allSelected} onChange={toggleAll}
+            style={{ width: 15, height: 15, cursor: 'pointer', accentColor: CHARCOAL }} />
+          <span style={{ fontSize: 12, color: COCONUT }}>Select all ({visible.length})</span>
+        </div>
+      )}
+
       <div className="space-y-3">
         {visible.map(host => (
-          <div key={host.id} className="bg-white rounded-xl p-4" style={{ border: `1px solid ${SAND}` }}>
+          <div key={host.id} className="bg-white rounded-xl p-4" style={{ border: `1px solid ${selected.has(host.id) ? CHARCOAL : SAND}`, transition: 'border-color 0.15s' }}>
             {/* Info row */}
             <div className="flex items-start gap-3">
+              <input type="checkbox" checked={selected.has(host.id)} onChange={() => toggleOne(host.id)}
+                style={{ marginTop: 4, width: 15, height: 15, flexShrink: 0, cursor: 'pointer', accentColor: CHARCOAL }} />
               {host.avatar ? (
                 <img src={host.avatar} alt={host.name} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
               ) : (
@@ -1126,39 +1188,39 @@ function HostsPanel() {
 
             {/* Actions row */}
             <div className="flex flex-wrap gap-2 mt-3 pt-3" style={{ borderTop: `1px solid ${IVORY}` }}>
-                <a href={`/dashboard?operator=${host.id}`} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 hover:opacity-80"
-                  style={{ height: 32, padding: '0 14px', borderRadius: 8, border: `1px solid ${SAND}`, backgroundColor: 'white', color: CHARCOAL, fontSize: 12, fontWeight: 600, cursor: 'pointer', textDecoration: 'none' }}>
-                  <LayoutDashboard size={12} /> View dashboard
-                </a>
-                <button onClick={() => setEditing(host)} className="flex items-center gap-1.5 hover:opacity-80"
-                  style={{ height: 32, padding: '0 14px', borderRadius: 8, border: `1px solid ${SAND}`, backgroundColor: 'white', color: CHARCOAL, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
-                  <Edit2 size={12} /> Edit
-                </button>
-                {host.status === 'Pending' && (
-                  <>
-                    <button onClick={() => approve(host.id)} className="flex items-center gap-1.5 hover:opacity-90"
-                      style={{ height: 32, padding: '0 14px', borderRadius: 8, border: 'none', backgroundColor: CHARCOAL, color: 'white', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
-                      <CheckCircle size={12} /> Approve
-                    </button>
-                    <button onClick={() => suspend(host.id)} className="flex items-center gap-1.5 hover:opacity-80"
-                      style={{ height: 32, padding: '0 14px', borderRadius: 8, border: `1px solid ${SAND}`, backgroundColor: 'white', color: TERRACOTTA, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
-                      <XCircle size={12} /> Decline
-                    </button>
-                  </>
-                )}
-                {host.status === 'Verified' && (
-                  <button onClick={() => suspend(host.id)} className="flex items-center gap-1.5 hover:opacity-80"
-                    style={{ height: 32, padding: '0 14px', borderRadius: 8, border: `1px solid ${SAND}`, backgroundColor: 'white', color: COCONUT, fontSize: 12, cursor: 'pointer' }}>
-                    Suspend
-                  </button>
-                )}
-                {host.status === 'Suspended' && (
+              <a href={`/dashboard?operator=${host.id}`} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-1.5 hover:opacity-80"
+                style={{ height: 32, padding: '0 14px', borderRadius: 8, border: `1px solid ${SAND}`, backgroundColor: 'white', color: CHARCOAL, fontSize: 12, fontWeight: 600, cursor: 'pointer', textDecoration: 'none' }}>
+                <LayoutDashboard size={12} /> View dashboard
+              </a>
+              <button onClick={() => setEditing(host)} className="flex items-center gap-1.5 hover:opacity-80"
+                style={{ height: 32, padding: '0 14px', borderRadius: 8, border: `1px solid ${SAND}`, backgroundColor: 'white', color: CHARCOAL, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                <Edit2 size={12} /> Edit
+              </button>
+              {host.status === 'Pending' && (
+                <>
                   <button onClick={() => approve(host.id)} className="flex items-center gap-1.5 hover:opacity-90"
-                    style={{ height: 32, padding: '0 14px', borderRadius: 8, border: 'none', backgroundColor: FOREST, color: 'white', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
-                    Reinstate
+                    style={{ height: 32, padding: '0 14px', borderRadius: 8, border: 'none', backgroundColor: CHARCOAL, color: 'white', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                    <CheckCircle size={12} /> Approve
                   </button>
-                )}
+                  <button onClick={() => suspend(host.id)} className="flex items-center gap-1.5 hover:opacity-80"
+                    style={{ height: 32, padding: '0 14px', borderRadius: 8, border: `1px solid ${SAND}`, backgroundColor: 'white', color: TERRACOTTA, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                    <XCircle size={12} /> Decline
+                  </button>
+                </>
+              )}
+              {host.status === 'Verified' && (
+                <button onClick={() => suspend(host.id)} className="flex items-center gap-1.5 hover:opacity-80"
+                  style={{ height: 32, padding: '0 14px', borderRadius: 8, border: `1px solid ${SAND}`, backgroundColor: 'white', color: COCONUT, fontSize: 12, cursor: 'pointer' }}>
+                  Suspend
+                </button>
+              )}
+              {host.status === 'Suspended' && (
+                <button onClick={() => approve(host.id)} className="flex items-center gap-1.5 hover:opacity-90"
+                  style={{ height: 32, padding: '0 14px', borderRadius: 8, border: 'none', backgroundColor: FOREST, color: 'white', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                  Reinstate
+                </button>
+              )}
             </div>
           </div>
         ))}
@@ -1375,17 +1437,55 @@ function BookingsPanel() {
 // ── Users Panel ───────────────────────────────────────────────────────────────
 
 function UsersPanel() {
-  const [search, setSearch] = useState('')
-  const [users, setUsers]   = useState<AdminUser[]>([])
-  const [editing, setEditing] = useState<AdminUser | null>(null)
+  const [search, setSearch]       = useState('')
+  const [roleFilter, setRoleFilter] = useState('All')
+  const [users, setUsers]         = useState<AdminUser[]>([])
+  const [editing, setEditing]     = useState<AdminUser | null>(null)
+  const [selected, setSelected]   = useState<Set<string>>(new Set())
+  const [bulkWorking, setBulkWorking] = useState(false)
 
   useEffect(() => { getAdminUsersAction().then(setUsers) }, [])
 
   const visible = useMemo(() => {
-    if (!search) return users
-    const q = search.toLowerCase()
-    return users.filter(u => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.role.toLowerCase().includes(q))
-  }, [users, search])
+    let list = roleFilter === 'All' ? users : users.filter(u => u.role === roleFilter)
+    if (search) {
+      const q = search.toLowerCase()
+      list = list.filter(u => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.role.toLowerCase().includes(q))
+    }
+    return list
+  }, [users, search, roleFilter])
+
+  const allSelected = visible.length > 0 && visible.every(u => selected.has(u.id))
+
+  function toggleAll() {
+    if (allSelected) setSelected(new Set())
+    else setSelected(new Set(visible.map(u => u.id)))
+  }
+  function toggleOne(id: string) {
+    setSelected(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
+  }
+
+  function exportCSV() {
+    const rows = [
+      ['Name', 'Email', 'Role', 'Bookings', 'Total Spend', 'Joined', 'Status'],
+      ...users.filter(u => selected.has(u.id)).map(u => [u.name, u.email, u.role, String(u.bookings), String(u.totalSpend), u.joined, u.status]),
+    ]
+    const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n')
+    const el = document.createElement('a')
+    el.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }))
+    el.download = 'users-export.csv'; el.click()
+  }
+
+  async function bulkDelete() {
+    const ids = Array.from(selected)
+    const tourists = users.filter(u => selected.has(u.id) && u.role === 'TOURIST')
+    if (tourists.length === 0) { alert('Bulk delete only works for guest (Tourist) accounts.'); return }
+    if (!confirm(`Permanently delete ${tourists.length} guest account${tourists.length > 1 ? 's' : ''}? This cannot be undone.`)) return
+    setBulkWorking(true)
+    await bulkDeleteUsersAction(tourists.map(u => u.id))
+    setUsers(u => u.filter(x => !ids.includes(x.id)))
+    setSelected(new Set()); setBulkWorking(false)
+  }
 
   return (
     <div>
@@ -1393,8 +1493,8 @@ function UsersPanel() {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
         {[
-          { label: 'Total Users',      value: users.length.toString() },
-          { label: 'Active (booked)',  value: users.filter(u => u.bookings > 0).length.toString() },
+          { label: 'Total Users',       value: users.length.toString() },
+          { label: 'Active (booked)',   value: users.filter(u => u.bookings > 0).length.toString() },
           { label: 'Total Guest Spend', value: fmt(users.reduce((a, u) => a + u.totalSpend, 0)) },
         ].map(s => (
           <div key={s.label} className="bg-white rounded-xl p-4" style={{ border: `1px solid ${SAND}` }}>
@@ -1404,15 +1504,50 @@ function UsersPanel() {
         ))}
       </div>
 
-      <div className="mb-4">
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
         <SearchBar value={search} onChange={setSearch} placeholder="Search name, email or role…" />
+        <div className="inline-flex gap-1 bg-white rounded-xl p-1 flex-shrink-0" style={{ border: `1px solid ${SAND}` }}>
+          {['All', 'TOURIST', 'OPERATOR', 'ADMIN'].map(r => (
+            <button key={r} onClick={() => { setRoleFilter(r); setSelected(new Set()) }}
+              style={{ padding: '5px 12px', borderRadius: 9, fontSize: 12, fontWeight: roleFilter === r ? 600 : 400, backgroundColor: roleFilter === r ? CHARCOAL : 'transparent', color: roleFilter === r ? 'white' : COCONUT, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              {r === 'All' ? 'All' : r.charAt(0) + r.slice(1).toLowerCase()}
+            </button>
+          ))}
+        </div>
       </div>
+
+      {/* Bulk action bar */}
+      {selected.size > 0 && (
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl mb-4" style={{ backgroundColor: CHARCOAL }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'white' }}>{selected.size} selected</span>
+          <div className="flex gap-2 ml-auto">
+            <button onClick={exportCSV}
+              className="flex items-center gap-1.5 hover:opacity-90"
+              style={{ height: 32, padding: '0 14px', borderRadius: 8, border: 'none', backgroundColor: FOREST, color: 'white', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+              <Download size={12} /> Export CSV
+            </button>
+            <button onClick={bulkDelete} disabled={bulkWorking}
+              className="flex items-center gap-1.5 hover:opacity-90 disabled:opacity-50"
+              style={{ height: 32, padding: '0 14px', borderRadius: 8, border: 'none', backgroundColor: TERRACOTTA, color: 'white', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+              <Trash2 size={12} /> Delete guests
+            </button>
+            <button onClick={() => setSelected(new Set())}
+              style={{ height: 32, padding: '0 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', backgroundColor: 'transparent', color: 'rgba(255,255,255,0.7)', fontSize: 12, cursor: 'pointer' }}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white rounded-xl overflow-hidden" style={{ border: `1px solid ${SAND}` }}>
         <div className="overflow-x-auto">
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead style={{ backgroundColor: IVORY }}>
               <tr>
+                <th style={{ padding: '12px 16px', width: 36 }}>
+                  <input type="checkbox" checked={allSelected} onChange={toggleAll}
+                    style={{ width: 15, height: 15, cursor: 'pointer', accentColor: CHARCOAL }} />
+                </th>
                 {['Name', 'Email', 'Role', 'Bookings', 'Total Spent', 'Joined', 'Status', ''].map(h => (
                   <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: COCONUT, textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>{h}</th>
                 ))}
@@ -1420,7 +1555,11 @@ function UsersPanel() {
             </thead>
             <tbody>
               {visible.map((u) => (
-                <tr key={u.id} style={{ borderTop: `1px solid ${IVORY}` }}>
+                <tr key={u.id} style={{ borderTop: `1px solid ${IVORY}`, backgroundColor: selected.has(u.id) ? '#FAFAF9' : 'white' }}>
+                  <td style={{ padding: '12px 16px' }}>
+                    <input type="checkbox" checked={selected.has(u.id)} onChange={() => toggleOne(u.id)}
+                      style={{ width: 15, height: 15, cursor: 'pointer', accentColor: CHARCOAL }} />
+                  </td>
                   <td style={{ padding: '12px 16px' }}>
                     <div className="flex items-center gap-2.5">
                       <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: GOLD }}>
