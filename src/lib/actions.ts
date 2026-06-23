@@ -1990,6 +1990,9 @@ export type AnalyticsData = {
     commissionExp: AnalyticsMetric
     commissionRentals: AnalyticsMetric
     commissionEvents: AnalyticsMetric
+    serviceFeeExp: AnalyticsMetric
+    serviceFeeRentals: AnalyticsMetric
+    serviceFeeEvents: AnalyticsMetric
   }
   bookingTrend: { label: string; current: number; prev: number }[]
   revenueTrend:  { label: string; current: number; prev: number }[]
@@ -2016,7 +2019,7 @@ export async function getAnalyticsDataAction(days: number): Promise<AnalyticsDat
   const empty: AnalyticsData = {
     commissionRate: COMMISSION_RATE,
     serviceFeeRate: 0,
-    metrics: { bookings: { value: 0, change: 0 }, revenue: { value: 0, change: 0 }, commission: { value: 0, change: 0 }, platformRevenue: { value: 0, change: 0 }, newUsers: { value: 0, change: 0 }, newHosts: { value: 0, change: 0 }, avgBookingValue: { value: 0, change: 0 }, cancelRate: { value: 0, change: 0 }, cancelledBookings: { value: 0, change: 0 }, cancelledRevenue: { value: 0, change: 0 }, serviceFee: { value: 0, change: 0 }, commissionExp: { value: 0, change: 0 }, commissionRentals: { value: 0, change: 0 }, commissionEvents: { value: 0, change: 0 } },
+    metrics: { bookings: { value: 0, change: 0 }, revenue: { value: 0, change: 0 }, commission: { value: 0, change: 0 }, platformRevenue: { value: 0, change: 0 }, newUsers: { value: 0, change: 0 }, newHosts: { value: 0, change: 0 }, avgBookingValue: { value: 0, change: 0 }, cancelRate: { value: 0, change: 0 }, cancelledBookings: { value: 0, change: 0 }, cancelledRevenue: { value: 0, change: 0 }, serviceFee: { value: 0, change: 0 }, commissionExp: { value: 0, change: 0 }, commissionRentals: { value: 0, change: 0 }, commissionEvents: { value: 0, change: 0 }, serviceFeeExp: { value: 0, change: 0 }, serviceFeeRentals: { value: 0, change: 0 }, serviceFeeEvents: { value: 0, change: 0 } },
     bookingTrend: [], revenueTrend: [], userGrowth: [],
     topExperiences: [], categoryBreakdown: [], areaBreakdown: [], topHosts: [], bookingStatus: [],
   }
@@ -2206,6 +2209,12 @@ export async function getAnalyticsDataAction(days: number): Promise<AnalyticsDat
     const prevCommRentals = Math.round(prevRevRentals * commRate)
     const currCommEvents  = Math.round(currRevEvents  * commRate)
     const prevCommEvents  = Math.round(prevRevEvents  * commRate)
+    const currSFeeExp     = calcServiceFee(currRevExp)
+    const prevSFeeExp     = calcServiceFee(prevRevExp)
+    const currSFeeRentals = calcServiceFee(currRevRentals)
+    const prevSFeeRentals = calcServiceFee(prevRevRentals)
+    const currSFeeEvents  = calcServiceFee(currRevEvents)
+    const prevSFeeEvents  = calcServiceFee(prevRevEvents)
 
     return {
       commissionRate: commRate,
@@ -2225,6 +2234,9 @@ export async function getAnalyticsDataAction(days: number): Promise<AnalyticsDat
         commissionExp:     { value: currCommExp,       change: pct(currCommExp, prevCommExp) },
         commissionRentals: { value: currCommRentals,   change: pct(currCommRentals, prevCommRentals) },
         commissionEvents:  { value: currCommEvents,    change: pct(currCommEvents, prevCommEvents) },
+        serviceFeeExp:     { value: currSFeeExp,       change: pct(currSFeeExp, prevSFeeExp) },
+        serviceFeeRentals: { value: currSFeeRentals,   change: pct(currSFeeRentals, prevSFeeRentals) },
+        serviceFeeEvents:  { value: currSFeeEvents,    change: pct(currSFeeEvents, prevSFeeEvents) },
       },
       bookingTrend, revenueTrend, userGrowth,
       topExperiences, categoryBreakdown, areaBreakdown, topHosts, bookingStatus,

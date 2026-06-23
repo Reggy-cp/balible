@@ -2367,9 +2367,12 @@ function AnalyticsPanel() {
             <GAMetricCard label="Bookings"           value={data.metrics.bookings.value}          change={data.metrics.bookings.change}          good="up"   fmtValue={v => v.toLocaleString()} desc="Total bookings including pending and cancelled" />
             <GAMetricCard label="Cancelled Bookings"       value={data.metrics.cancelledBookings.value}  change={data.metrics.cancelledBookings.change}  good="down" fmtValue={v => v.toLocaleString()} desc="Number of bookings cancelled this period" />
             <GAMetricCard label="Cancelled Revenue"        value={data.metrics.cancelledRevenue.value}   change={data.metrics.cancelledRevenue.change}   good="down" fmtValue={fmt}                     desc="Total value of cancelled bookings — revenue not collected" />
-            <GAMetricCard label="Commission — Experiences" value={data.metrics.commissionExp.value}      change={data.metrics.commissionExp.change}      good="up"   fmtValue={fmt}                     desc="Commission earned from experience bookings" />
-            <GAMetricCard label="Commission — Rentals"     value={data.metrics.commissionRentals.value}  change={data.metrics.commissionRentals.change}  good="up"   fmtValue={fmt}                     desc="Commission earned from rental bookings" />
-            <GAMetricCard label="Commission — Events"      value={data.metrics.commissionEvents.value}   change={data.metrics.commissionEvents.change}   good="up"   fmtValue={fmt}                     desc="Commission earned from event ticket sales" />
+            <GAMetricCard label="Commission — Experiences"  value={data.metrics.commissionExp.value}       change={data.metrics.commissionExp.change}       good="up" fmtValue={fmt} desc="Commission earned from experience bookings" />
+            <GAMetricCard label="Commission — Rentals"     value={data.metrics.commissionRentals.value}   change={data.metrics.commissionRentals.change}   good="up" fmtValue={fmt} desc="Commission earned from rental bookings" />
+            <GAMetricCard label="Commission — Events"      value={data.metrics.commissionEvents.value}    change={data.metrics.commissionEvents.change}    good="up" fmtValue={fmt} desc="Commission earned from event ticket sales" />
+            <GAMetricCard label="Service Fee — Experiences" value={data.metrics.serviceFeeExp.value}     change={data.metrics.serviceFeeExp.change}       good="up" fmtValue={fmt} desc="Guest service fee collected on experience bookings" />
+            <GAMetricCard label="Service Fee — Rentals"    value={data.metrics.serviceFeeRentals.value}  change={data.metrics.serviceFeeRentals.change}   good="up" fmtValue={fmt} desc="Guest service fee collected on rental bookings" />
+            <GAMetricCard label="Service Fee — Events"     value={data.metrics.serviceFeeEvents.value}   change={data.metrics.serviceFeeEvents.change}    good="up" fmtValue={fmt} desc="Guest service fee collected on event ticket sales" />
           </div>
 
           <div className="bg-white rounded-xl p-5 mb-5" style={{ border: `1px solid ${SAND}` }}>
