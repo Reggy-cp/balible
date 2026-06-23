@@ -55,11 +55,11 @@ export default function ExperienceGalleryFull({ images, imageAlts, title }: { im
               key={i}
               className="relative overflow-hidden cursor-pointer group"
               style={{ borderRadius: 8 }}
-              onClick={() => openAt(i + 1)}
+              onClick={() => i === 3 ? openAt(0) : openAt(Math.min(i + 1, allPhotos.length - 1))}
             >
               <img
                 src={src}
-                alt={imageAlts?.[i + 1] || title}
+                alt={imageAlts?.[Math.min(i + 1, allPhotos.length - 1)] || title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-400"
               />
               {i === 3 && (
