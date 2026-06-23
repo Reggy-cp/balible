@@ -997,16 +997,23 @@ export type AdminStats = {
 export async function getAdminStatsAction(): Promise<AdminStats> {
   await requireAdmin()
   try {
-    const [totalUsers, totalExperiences, totalBookings, rev, pendingListings, pendingHosts, activeHosts] = await Promise.all([
+    const [totalUsers, totalExperiences, expBookings, expRev, eventBookings, eventRev, pendingListings, pendingHosts, activeHosts] = await Promise.all([
       prisma.user.count({ where: { role: { not: 'ADMIN' as any } } }),
       prisma.experience.count(),
       prisma.booking.count(),
       prisma.booking.aggregate({ _sum: { totalPrice: true }, where: { status: { in: ['CONFIRMED', 'COMPLETED'] } } }),
+      prisma.eventBooking.count(),
+      prisma.eventBooking.aggregate({ _sum: { totalPrice: true }, where: { status: { in: ['CONFIRMED'] } } }),
       prisma.experience.count({ where: { status: 'PENDING_REVIEW' as any } }),
       prisma.operator.count({ where: { verified: false } }),
       prisma.operator.count({ where: { verified: true } }),
     ])
-    return { totalUsers, totalExperiences, totalBookings, totalRevenue: rev._sum.totalPrice ?? 0, pendingListings, pendingHosts, activeHosts }
+    return {
+      totalUsers, totalExperiences,
+      totalBookings: expBookings + eventBookings,
+      totalRevenue: (expRev._sum.totalPrice ?? 0) + (eventRev._sum.totalPrice ?? 0),
+      pendingListings, pendingHosts, activeHosts,
+    }
   } catch {
     return { totalUsers: 0, totalExperiences: 0, totalBookings: 0, totalRevenue: 0, pendingListings: 0, pendingHosts: 0, activeHosts: 0 }
   }
