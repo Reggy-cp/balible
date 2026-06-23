@@ -812,6 +812,7 @@ export type UserData = {
     guests: number
     total: number
     status: string
+    cancellable: boolean
     rating: number | null
     image: string
     slug: string

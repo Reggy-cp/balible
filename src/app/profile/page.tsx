@@ -778,6 +778,7 @@ function MessagesTab({ initialOperatorId }: { initialOperatorId?: string }) {
   const [input, setInput]           = useState('')
   const [sending, setSending]       = useState(false)
   const inputRef                     = useRef<HTMLInputElement>(null)
+  const messagesEndRef               = useRef<HTMLDivElement>(null)
 
   const loadConvs = () =>
     listUserConversationsAction().then(r => { if (r) setConvs(r); setLoading(false) }).catch(() => setLoading(false))
@@ -815,6 +816,7 @@ function MessagesTab({ initialOperatorId }: { initialOperatorId?: string }) {
   }, [activeConv])
 
   useEffect(() => { if (activeConv) setTimeout(() => inputRef.current?.focus(), 100) }, [activeConv])
+  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
 
   const openConv = (c: ConversationSummary) => {
     setActiveConv(c)
@@ -958,6 +960,7 @@ function MessagesTab({ initialOperatorId }: { initialOperatorId?: string }) {
                       </div>
                     </div>
                   ))}
+                  <div ref={messagesEndRef} />
                 </div>
 
                 {/* Input */}
