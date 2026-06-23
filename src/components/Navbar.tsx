@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { useSession } from 'next-auth/react'
 import {
   Menu, X, ChevronDown, LayoutDashboard, User, MapPin,
-  Leaf, Scissors, Landmark, Mountain, Waves, ChefHat, Sun, Users, Bike, Briefcase,
+  Leaf, Scissors, Landmark, Mountain, Waves, ChefHat, Users, Bike, Briefcase,
 } from 'lucide-react'
 import NotificationBell from '@/components/NotificationBell'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -20,7 +20,7 @@ const CATEGORIES: CategoryDef[] = [
   { labelKey: 'cat_culinary',  Icon: ChefHat,   slug: 'culinary' },
   { labelKey: 'cat_nature',    Icon: Mountain,  slug: 'nature-outdoors' },
   { labelKey: 'cat_water',     Icon: Waves,     slug: 'water-activities' },
-  { labelKey: 'cat_experts',   Icon: Users,     slug: 'local-experts' },
+  { labelKey: 'cat_experts',   Icon: Users,      slug: 'local-experts' },
   { labelKey: 'cat_rentals',   Icon: Bike,       slug: 'rentals' },
   { labelKey: 'cat_service',   Icon: Briefcase,  slug: 'services' },
 ]
@@ -354,9 +354,6 @@ export default function Navbar() {
                   <a href={isHost ? dashboardHref : '/profile'} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', textDecoration: 'none' }}>
                     <img src={user?.image ?? '/avatar-default.png'} alt="" className="w-8 h-8 rounded-full object-cover" />
                     {user?.name ?? (isHost ? t('nav_dashboard') : t('nav_profile'))}
-                  </a>
-                  <a href="/wishlist" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', textDecoration: 'none' }}>
-                    <span style={{ fontSize: 16 }}>🤍</span> {t('nav_wishlist')}
                   </a>
                   <a href="/auth/signout" className="flex w-full items-center gap-3 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#B66A45', textDecoration: 'none' }}>
                     {t('nav_sign_out')}

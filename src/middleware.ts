@@ -1,6 +1,7 @@
 import { withAuth } from 'next-auth/middleware'
 import { NextResponse } from 'next/server'
 
+
 export default withAuth(
   function middleware(req) {
     const token = req.nextauth.token
@@ -13,6 +14,13 @@ export default withAuth(
       const url = req.nextUrl.clone()
       url.pathname = '/dashboard'
       return NextResponse.redirect(url)
+    }
+
+    // Operators are blocked from transactional/profile pages — redirect to dashboard
+    const OPERATOR_BLOCKED_PREFIXES = ['/profile', '/checkout', '/wishlist', '/for-hosts']
+    if (token?.role === 'OPERATOR' &&
+        OPERATOR_BLOCKED_PREFIXES.some(p => pathname.startsWith(p))) {
+      return NextResponse.redirect(new URL('/dashboard', req.url))
     }
 
     // Dashboard requires OPERATOR or ADMIN role
@@ -46,5 +54,17 @@ export default withAuth(
 )
 
 export const config = {
-  matcher: ['/', '/dashboard/:path*', '/profile/:path*', '/admin/:path*', '/checkout/:path*'],
+  matcher: [
+    '/',
+    '/dashboard/:path*',
+    '/profile/:path*',
+    '/admin/:path*',
+    '/checkout/:path*',
+    '/search',
+    '/search/:path*',
+    '/experiences/:path*',
+    '/events/:path*',
+    '/wishlist',
+    '/for-hosts',
+  ],
 }

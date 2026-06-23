@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { ChevronRight, Shield } from 'lucide-react'
+import { useSession } from 'next-auth/react'
 import { useLanguage } from '@/contexts/LanguageContext'
 
 
@@ -52,6 +53,8 @@ export default function RentalBookingWidget({
   flat?: boolean
 }) {
   const { t } = useLanguage()
+  const { data: session } = useSession()
+  const isHost = session?.user?.role === 'OPERATOR'
   const today = localToday()
   const [start, setStart] = useState('')
   const [end,   setEnd]   = useState('')
@@ -86,7 +89,18 @@ export default function RentalBookingWidget({
     textTransform: 'uppercase', color: '#9E9A94', marginBottom: 4, display: 'block',
   }
 
-  const inner = (
+  const inner = isHost ? (
+    <div style={{ padding: flat ? '0' : '18px 22px' }}>
+      <div style={{ padding: 16, borderRadius: 10, textAlign: 'center', backgroundColor: '#F5F1EB', border: '1px solid #E8E4DE' }}>
+        <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111', marginBottom: 4 }}>
+          Booking not available for hosts
+        </p>
+        <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', lineHeight: 1.5 }}>
+          Host accounts cannot book rentals. Please use a guest account.
+        </p>
+      </div>
+    </div>
+  ) : (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: flat ? '0' : '18px 22px' }}>
 
       {/* Dates */}

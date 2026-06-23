@@ -20,7 +20,7 @@ export default function Footer() {
   ] as const
 
   return (
-    <footer className="pt-10 px-6 pb-36 md:pb-8" style={{ backgroundColor: '#111111' }}>
+    <footer className="hidden md:block pt-10 px-6 pb-8" style={{ backgroundColor: '#111111' }}>
       <div className="max-w-[1200px] mx-auto">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
           <a href="/" style={{ textDecoration: 'none' }}>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { X } from 'lucide-react'
+import { useSession } from 'next-auth/react'
 import RentalBookingWidget from './RentalBookingWidget'
 import { useLanguage } from '@/contexts/LanguageContext'
 
@@ -19,6 +20,10 @@ export default function RentalMobileModal({
 }) {
   const [open, setOpen] = useState(false)
   const { t } = useLanguage()
+  const { data: session } = useSession()
+  const isHost = session?.user?.role === 'OPERATOR'
+
+  if (isHost) return null
 
   return (
     <>

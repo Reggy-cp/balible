@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { ChevronUp, Shield, Award, Clock, Edit2, Lock, MapPin } from 'lucide-react'
+import { ChevronUp, Shield, Award, Clock, Edit2, Lock, MapPin, CalendarDays, Ticket, Check } from 'lucide-react'
 import Image from 'next/image'
 import MobileNav from '@/components/MobileNav'
 import { createBookingAction, createRentalBookingAction, getExperienceForCheckout, getBookingStatusAction, getExperienceScheduleAction, getBookedSlotsAction, type ExpCheckoutMeta } from '@/lib/actions'
@@ -548,8 +548,8 @@ function StepConfirmation({ booking, guests, bookingRef, payStatus = 'paid' }: {
       <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
         style={{ backgroundColor: pending ? '#FEF9EC' : '#F0F7F2', transition: 'background-color 0.5s' }}>
         {pending
-          ? <span style={{ fontSize: 28 }}>⏳</span>
-          : <span style={{ fontSize: 28, color: '#4A7C59' }}>✓</span>}
+          ? <Clock size={32} style={{ color: '#B45309' }} />
+          : <Check size={32} style={{ color: '#4A7C59' }} />}
       </div>
       <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: '#111111', marginBottom: 8 }}>
         {pending ? 'Waiting for payment…' : 'Booking Confirmed!'}
@@ -804,7 +804,7 @@ function StepRentalConfirmation({ title, area, image, startDate, endDate, units,
     <div className="bg-white rounded-xl p-8 text-center" style={{ border: '1px solid #E8E4DE' }}>
       <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
         style={{ backgroundColor: pending ? '#FEF9EC' : '#F0F7F2' }}>
-        {pending ? <span style={{ fontSize: 28 }}>⏳</span> : <span style={{ fontSize: 28, color: '#4A7C59' }}>✓</span>}
+        {pending ? <Clock size={32} style={{ color: '#B45309' }} /> : <Check size={32} style={{ color: '#4A7C59' }} />}
       </div>
       <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 700, color: '#111111', marginBottom: 8 }}>
         {pending ? 'Waiting for payment…' : 'Rental Confirmed!'}
@@ -939,7 +939,7 @@ function RentalCheckout({ params }: { params: URLSearchParams }) {
         </div>
       </nav>
 
-      <div className="max-w-[1100px] mx-auto px-4 py-6 pb-24 md:pb-10">
+      <div className="max-w-[1100px] mx-auto px-4 py-6 checkout-content-pb">
         <h1 className="mb-5 hidden sm:block" style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 700, color: '#111111' }}>
           Checkout
         </h1>
@@ -1123,7 +1123,7 @@ function EventCheckout({ params }: { params: URLSearchParams }) {
         </div>
       </nav>
 
-      <div className="max-w-[1100px] mx-auto px-4 py-6 pb-24 md:pb-10">
+      <div className="max-w-[1100px] mx-auto px-4 py-6 checkout-content-pb">
         <h1 className="mb-5 hidden sm:block" style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 700, color: '#111111' }}>Checkout</h1>
 
         {step < 3 && (
@@ -1159,8 +1159,14 @@ function EventCheckout({ params }: { params: URLSearchParams }) {
                   {image && <img src={image} alt={title} className="w-20 h-20 rounded-xl object-cover flex-shrink-0" />}
                   <div>
                     <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 16, fontWeight: 700, color: '#111111', marginBottom: 4 }}>{title}</p>
-                    <p style={{ fontSize: 13, color: '#6F675C', marginBottom: 2 }}>📅 {dateStr}{timeStr ? ` · ${timeStr}` : ''}</p>
-                    <p style={{ fontSize: 13, color: '#6F675C' }}>📍 {location}</p>
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <CalendarDays size={13} style={{ color: '#6F675C', flexShrink: 0 }} />
+                      <span style={{ fontSize: 13, color: '#6F675C' }}>{dateStr}{timeStr ? ` · ${timeStr}` : ''}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <MapPin size={13} style={{ color: '#6F675C', flexShrink: 0 }} />
+                      <span style={{ fontSize: 13, color: '#6F675C' }}>{location}</span>
+                    </div>
                   </div>
                 </div>
                 <div className="mb-6">
@@ -1201,7 +1207,8 @@ function EventCheckout({ params }: { params: URLSearchParams }) {
                 )}
                 {price === 0 && (
                   <div className="mb-6 flex items-center gap-2" style={{ background: '#F0FAF4', border: '1px solid #B8E0C8', borderRadius: 10, padding: '12px 16px' }}>
-                    <span style={{ fontSize: 14, color: '#2D6A4F', fontWeight: 600 }}>🎟 Free event — no payment required</span>
+                    <Ticket size={16} style={{ color: '#2D6A4F', flexShrink: 0 }} />
+                    <span style={{ fontSize: 14, color: '#2D6A4F', fontWeight: 600 }}>Free event — no payment required</span>
                   </div>
                 )}
                 <button onClick={() => setStep(1)}
@@ -1214,7 +1221,9 @@ function EventCheckout({ params }: { params: URLSearchParams }) {
             {step === 2 && <StepPayment total={price === 0 ? 0 : total} onPay={startPayment} paying={paying} error={payError} />}
             {step === 3 && (
               <div className="bg-white rounded-2xl p-8 text-center" style={{ border: '1px solid #E8E4DE' }}>
-                <div style={{ width: 60, height: 60, borderRadius: '50%', backgroundColor: '#F0FAF4', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 28 }}>🎟</div>
+                <div style={{ width: 60, height: 60, borderRadius: '50%', backgroundColor: '#F0FAF4', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                  <Ticket size={28} style={{ color: '#4A7C59' }} />
+                </div>
                 <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: '#111111', marginBottom: 8 }}>
                   {isFree ? "You're registered!" : "Tickets confirmed!"}
                 </h2>
@@ -1235,8 +1244,14 @@ function EventCheckout({ params }: { params: URLSearchParams }) {
                 <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 700, color: '#111111', marginBottom: 14 }}>Event Summary</h3>
                 {image && <img src={image} alt={title} className="w-full rounded-xl object-cover mb-4" style={{ height: 140 }} />}
                 <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: '#111111', marginBottom: 8 }}>{title}</p>
-                <p style={{ fontSize: 13, color: '#6F675C', marginBottom: 4 }}>📅 {dateStr}{timeStr ? ` · ${timeStr}` : ''}</p>
-                <p style={{ fontSize: 13, color: '#6F675C', marginBottom: 14 }}>📍 {location}</p>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <CalendarDays size={13} style={{ color: '#6F675C', flexShrink: 0 }} />
+                  <span style={{ fontSize: 13, color: '#6F675C' }}>{dateStr}{timeStr ? ` · ${timeStr}` : ''}</span>
+                </div>
+                <div className="flex items-center gap-1.5 mb-3.5">
+                  <MapPin size={13} style={{ color: '#6F675C', flexShrink: 0 }} />
+                  <span style={{ fontSize: 13, color: '#6F675C' }}>{location}</span>
+                </div>
                 {price > 0 && (
                   <div style={{ borderTop: '1px solid #E8E4DE', paddingTop: 12 }}>
                     <div className="flex justify-between mb-1" style={{ fontSize: 13, color: '#6F675C' }}>
@@ -1277,8 +1292,8 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     return (
       <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: '#F5F1EB', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
         <div style={{ width: '100%', maxWidth: 440, backgroundColor: 'white', borderRadius: 16, padding: '48px 40px', textAlign: 'center', border: '1px solid #E8E4DE' }}>
-          <div style={{ width: 56, height: 56, borderRadius: '50%', backgroundColor: '#F5F1EB', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: 24 }}>
-            🔒
+          <div style={{ width: 56, height: 56, borderRadius: '50%', backgroundColor: '#F5F1EB', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+            <Lock size={24} style={{ color: '#111111' }} />
           </div>
           <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#111111', margin: '0 0 10px' }}>
             Sign in to continue
@@ -1477,7 +1492,7 @@ function CheckoutInner() {
         </div>
       </nav>
 
-      <div className="max-w-[1100px] mx-auto px-4 py-6 pb-24 md:pb-10">
+      <div className="max-w-[1100px] mx-auto px-4 py-6 checkout-content-pb">
         <h1 className="mb-5 hidden sm:block" style={{ fontFamily: 'var(--font-playfair)', fontSize: 28, fontWeight: 700, color: '#111111' }}>
           Checkout
         </h1>

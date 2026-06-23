@@ -6,6 +6,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from './auth'
 import { createSnapTransaction } from './midtrans'
 import { SERVICE_FEE_RATE, computeBookingTotal } from './pricing'
+import { checkRateLimit } from './rate-limit'
 
 export async function getServiceFeeRateAction(): Promise<number> {
   return getServiceFeeRate()
@@ -131,6 +132,9 @@ export async function createBookingAction(
     const user = await getSessionUser()
     if (!user) return { ok: false, error: 'Please sign in to complete your booking.' }
 
+    const { allowed } = await checkRateLimit(`booking:${user.id}`, 10, 60_000)
+    if (!allowed) return { ok: false, error: 'Too many booking attempts. Please wait a moment and try again.' }
+
     const exp = await prisma.experience.findUnique({ where: { slug: input.slug }, include: { operator: { select: { blockedDates: true } } } })
     if (!exp) return { ok: false, error: 'This experience is not available for online payment yet.' }
 
@@ -240,6 +244,9 @@ export async function createRentalBookingAction(input: {
   try {
     const user = await getSessionUser()
     if (!user) return { ok: false, error: 'Please sign in to complete your booking.' }
+
+    const { allowed } = await checkRateLimit(`booking:${user.id}`, 10, 60_000)
+    if (!allowed) return { ok: false, error: 'Too many booking attempts. Please wait a moment and try again.' }
 
     const rental = await prisma.experience.findUnique({ where: { slug: input.slug } })
     if (!rental || String(rental.category) !== 'RENTALS') {

@@ -5,8 +5,9 @@ import { NextResponse } from 'next/server'
 import sharp from 'sharp'
 import Anthropic from '@anthropic-ai/sdk'
 
-const MAX_PX  = 1920
-const QUALITY = 82
+const MAX_PX    = 1920
+const QUALITY   = 82
+const MAX_BYTES = 10 * 1024 * 1024 // 10 MB
 
 async function generateAlt(imageBuffer: Buffer, hint: string): Promise<string> {
   const key = process.env.ANTHROPIC_API_KEY
@@ -39,6 +40,7 @@ export async function POST(req: Request) {
   const file = formData.get('file') as File | null
   const hint = (formData.get('hint') as string | null) ?? 'Bali experience photo'
   if (!file) return NextResponse.json({ error: 'No file' }, { status: 400 })
+  if (file.size > MAX_BYTES) return NextResponse.json({ error: 'File too large. Maximum size is 10 MB.' }, { status: 413 })
 
   const raw = Buffer.from(await file.arrayBuffer())
 

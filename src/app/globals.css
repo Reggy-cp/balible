@@ -139,6 +139,14 @@ input[type="range"].price-range::-moz-range-thumb {
   }
 }
 
+/* Checkout page bottom padding (clears MobileNav + safe-area) */
+.checkout-content-pb {
+  padding-bottom: max(96px, calc(64px + env(safe-area-inset-bottom)));
+}
+@media (min-width: 768px) {
+  .checkout-content-pb { padding-bottom: 40px; }
+}
+
 /* Line clamp utilities */
 .line-clamp-2 {
   display: -webkit-box;

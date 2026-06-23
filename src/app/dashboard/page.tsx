@@ -1,15 +1,15 @@
 'use client'
 
-import { useState, useRef, useEffect, useMemo, createContext, useContext } from 'react'
+import { useState, useRef, useEffect, useMemo, createContext, useContext, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import {
   LayoutDashboard, Compass, CalendarDays, TrendingUp, Star,
   UserCircle, Settings, LogOut, Bell, Plus, ChevronDown,
-  ArrowUpRight, Menu, X, Search, Download,
+  ArrowUpRight, Menu, X, Search, Download, Home,
   MoreHorizontal, Eye, Edit2, Play, Pause, Trash2,
   CheckCircle, XCircle, MapPin, Clock, Users, Camera, Check,
   Ticket, Globe, Lock, ChevronLeft, ChevronRight, CalendarRange, Images,
-  MessageCircle, Send,
+  MessageCircle, Send, CalendarCheck, CreditCard, Info,
 } from 'lucide-react'
 import {
   getHostEvents, createEvent, updateEvent, deleteEvent, updateEventImagesAction,
@@ -33,6 +33,7 @@ import {
   listHostConversationsAction, getMessagesAction, sendMessageAction,
   getHostUnreadCountAction, type ConversationSummary, type ChatMessage,
 } from '@/lib/chat-actions'
+import { getMyNotifications, markMyNotificationsRead, type NotificationRow } from '@/lib/notification-actions'
 import { useLanguage } from '@/contexts/LanguageContext'
 import type { TranslationKey } from '@/lib/i18n'
 
@@ -59,18 +60,33 @@ const AREA_COORDS: Record<string, [number, number]> = {
   'Medewi':    [-8.4724, 114.8493],
 }
 
-const NAV_ITEMS = [
-  { id: 'overview',      labelKey: 'db_nav_overview'     as TranslationKey, Icon: LayoutDashboard },
-  { id: 'experiences',   labelKey: 'nav_experiences'     as TranslationKey, Icon: Compass },
-  { id: 'events',        labelKey: 'nav_events'          as TranslationKey, Icon: Ticket },
-  { id: 'bookings',      labelKey: 'db_nav_bookings'     as TranslationKey, Icon: CalendarDays },
-  { id: 'availability',  labelKey: 'db_nav_availability' as TranslationKey, Icon: CalendarRange },
-  { id: 'earnings',      labelKey: 'db_nav_earnings'     as TranslationKey, Icon: TrendingUp },
-  { id: 'photos',        labelKey: 'db_nav_photos'       as TranslationKey, Icon: Images },
-  { id: 'reviews',       labelKey: 'db_nav_reviews'      as TranslationKey, Icon: Star },
-  { id: 'messages',      labelKey: 'db_nav_messages'     as TranslationKey, Icon: MessageCircle },
-  { id: 'profile',       labelKey: 'nav_profile'         as TranslationKey, Icon: UserCircle },
-  { id: 'settings',      labelKey: 'db_nav_settings'     as TranslationKey, Icon: Settings },
+type NavChild = { id: string; labelKey: TranslationKey; Icon: React.ElementType }
+type NavGroup = { id: string; labelKey: TranslationKey; Icon: React.ElementType; children?: NavChild[] }
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    id: 'overview', labelKey: 'db_nav_overview' as TranslationKey, Icon: LayoutDashboard,
+    children: [
+      { id: 'messages', labelKey: 'db_nav_messages' as TranslationKey, Icon: MessageCircle },
+      { id: 'earnings',  labelKey: 'db_nav_earnings' as TranslationKey,  Icon: TrendingUp },
+      { id: 'reviews',   labelKey: 'db_nav_reviews' as TranslationKey,   Icon: Star },
+    ],
+  },
+  {
+    id: 'experiences', labelKey: 'nav_experiences' as TranslationKey, Icon: Compass,
+    children: [
+      { id: 'events',        labelKey: 'nav_events' as TranslationKey,          Icon: Ticket },
+      { id: 'photos',        labelKey: 'db_nav_photos' as TranslationKey,        Icon: Images },
+      { id: 'availability',  labelKey: 'db_nav_availability' as TranslationKey,  Icon: CalendarRange },
+    ],
+  },
+  { id: 'bookings', labelKey: 'db_nav_bookings' as TranslationKey, Icon: CalendarDays },
+  {
+    id: 'profile', labelKey: 'nav_profile' as TranslationKey, Icon: UserCircle,
+    children: [
+      { id: 'settings', labelKey: 'db_nav_settings' as TranslationKey, Icon: Settings },
+    ],
+  },
 ]
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -3222,55 +3238,106 @@ function PhotosPanel({ experiences, profile }: { experiences?: DashExp[]; profil
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 
-const HOST_NOTIFICATIONS: { id: number; title: string; body: string; time: string; unread: boolean }[] = []
+const HOST_NOTIF_ICONS: Record<string, React.ElementType> = {
+  booking: CalendarCheck,
+  payment: CreditCard,
+  message: MessageCircle,
+  info:    Info,
+}
+
+function timeAgo(iso: string): string {
+  const mins = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 60_000))
+  if (mins < 1)  return 'just now'
+  if (mins < 60) return `${mins}m ago`
+  const h = Math.floor(mins / 60)
+  if (h < 24)    return `${h}h ago`
+  const d = Math.floor(h / 24)
+  return d === 1 ? 'yesterday' : `${d}d ago`
+}
 
 function HostNotifBell({ onSettings, align = 'left', dark = false }: { onSettings: () => void; align?: 'left' | 'right'; dark?: boolean }) {
-  const [notifOpen, setNotifOpen] = useState(false)
-  const [notifs, setNotifs] = useState(HOST_NOTIFICATIONS)
+  const [notifOpen, setNotifOpen]   = useState(false)
+  const [notifs, setNotifs]         = useState<NotificationRow[]>([])
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [loaded, setLoaded]         = useState(false)
   const { t } = useLanguage()
-  const unreadCount = notifs.filter(n => n.unread).length
-  const bellColor = dark ? (unreadCount > 0 ? '#111111' : '#6F675C') : (unreadCount > 0 ? 'white' : 'rgba(255,255,255,0.55)')
+
+  const refresh = useCallback(() => {
+    getMyNotifications()
+      .then(({ notifications, unread }) => { setNotifs(notifications); setUnreadCount(unread); setLoaded(true) })
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    refresh()
+    const id = setInterval(refresh, 60_000)
+    return () => clearInterval(id)
+  }, [refresh])
+
+  const toggle = () => {
+    const next = !notifOpen
+    setNotifOpen(next)
+    if (next && unreadCount > 0) {
+      setUnreadCount(0)
+      markMyNotificationsRead().catch(() => {})
+    }
+  }
+
+  const bellColor = dark
+    ? (unreadCount > 0 ? '#111111' : '#6F675C')
+    : (unreadCount > 0 ? 'white'   : 'rgba(255,255,255,0.55)')
 
   return (
     <div className="relative">
-      <button onClick={() => setNotifOpen(o => !o)}
-        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+      <button onClick={toggle} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, position: 'relative' }}>
         <Bell size={17} style={{ color: bellColor }} />
         {unreadCount > 0 && (
           <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: '#B66A45', fontSize: 9, color: 'white', fontWeight: 700 }}>{unreadCount}</span>
+            style={{ backgroundColor: '#B66A45', fontSize: 9, color: 'white', fontWeight: 700 }}>
+            {unreadCount > 9 ? '9+' : unreadCount}
+          </span>
         )}
       </button>
+
       {notifOpen && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setNotifOpen(false)} />
           <div className="absolute top-9 z-50 bg-white rounded-xl shadow-2xl overflow-hidden"
             style={{ [align === 'right' ? 'right' : 'left']: 0, width: 'min(300px, calc(100vw - 32px))', border: '1px solid #E8E4DE' }}>
+
             <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid #E8E4DE' }}>
               <span style={{ fontSize: 13, fontWeight: 700, color: '#111111' }}>{t('db_notif_bell')}</span>
-              {unreadCount > 0 && (
-                <button onClick={() => setNotifs(n => n.map(x => ({ ...x, unread: false })))}
-                  style={{ fontSize: 11, color: '#C8A97E', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
-                  {t('db_mark_all_read')}
-                </button>
-              )}
             </div>
-            <div>
-              {notifs.map(n => (
-                <div key={n.id} onClick={() => setNotifs(prev => prev.map(x => x.id === n.id ? { ...x, unread: false } : x))}
-                  className="px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors"
-                  style={{ borderBottom: '1px solid #F5F1EB', backgroundColor: n.unread ? '#FFFDF9' : 'white' }}>
-                  <div className="flex items-start gap-2">
-                    {n.unread && <span className="mt-1.5 flex-shrink-0 w-2 h-2 rounded-full" style={{ backgroundColor: '#C8A97E' }} />}
-                    <div className={n.unread ? '' : 'pl-4'}>
-                      <p style={{ fontSize: 13, fontWeight: n.unread ? 600 : 400, color: '#111111', marginBottom: 2 }}>{n.title}</p>
+
+            <div style={{ maxHeight: 340, overflowY: 'auto' }}>
+              {!loaded ? (
+                <p className="px-4 py-6 text-center" style={{ fontSize: 13, color: '#6F675C' }}>Loading…</p>
+              ) : notifs.length === 0 ? (
+                <div className="px-4 py-8 text-center">
+                  <Bell size={22} style={{ color: '#E8E4DE', margin: '0 auto 8px' }} />
+                  <p style={{ fontSize: 13, color: '#6F675C' }}>No notifications yet.</p>
+                </div>
+              ) : notifs.map(n => {
+                const Icon = HOST_NOTIF_ICONS[n.type] ?? Info
+                const inner = (
+                  <div className="flex gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+                    style={{ borderBottom: '1px solid #F5F1EB', backgroundColor: n.read ? 'white' : '#FFFDF9' }}>
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#F5F1EB' }}>
+                      <Icon size={13} style={{ color: '#C8A97E' }} />
+                    </div>
+                    <div className="min-w-0">
+                      <p style={{ fontSize: 13, fontWeight: 600, color: '#111111', marginBottom: 1 }}>{n.title}</p>
                       <p style={{ fontSize: 12, color: '#6F675C', lineHeight: 1.4 }}>{n.body}</p>
-                      <p style={{ fontSize: 11, color: '#9E9A94', marginTop: 3 }}>{n.time}</p>
+                      <p style={{ fontSize: 11, color: '#9E9A94', marginTop: 2 }}>{timeAgo(n.createdAt)}</p>
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+                return n.href
+                  ? <a key={n.id} href={n.href} style={{ textDecoration: 'none', display: 'block' }} onClick={() => setNotifOpen(false)}>{inner}</a>
+                  : <div key={n.id}>{inner}</div>
+              })}
             </div>
+
             <button onClick={() => { onSettings(); setNotifOpen(false) }}
               className="w-full py-3 text-center hover:bg-gray-50 transition-colors"
               style={{ fontSize: 12, color: '#C8A97E', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', borderTop: '1px solid #E8E4DE' }}>
@@ -3288,6 +3355,34 @@ function SidebarInner({ activeNav, setActiveNav, hostName, unreadMessages }: { a
   const { t, locale, setLocale } = useLanguage()
   const displayName = hostName ?? session?.user?.name ?? 'Host'
   const initial = displayName.charAt(0).toUpperCase()
+
+  // Expansion is independent from navigation — groups can be open without being active
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => {
+    const init = new Set<string>()
+    for (const g of NAV_GROUPS) {
+      if (g.id === activeNav || g.children?.some(c => c.id === activeNav)) init.add(g.id)
+    }
+    return init
+  })
+
+  // Auto-expand the parent when a child becomes active (e.g. from mobile bottom nav)
+  useEffect(() => {
+    for (const g of NAV_GROUPS) {
+      if (g.children?.some(c => c.id === activeNav)) {
+        setExpandedGroups(prev => { const n = new Set(prev); n.add(g.id); return n })
+        break
+      }
+    }
+  }, [activeNav])
+
+  function toggleGroup(id: string) {
+    setExpandedGroups(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id); else next.add(id)
+      return next
+    })
+  }
+
   return (
     <>
       <div className="flex items-center justify-between px-5 pt-6 pb-4">
@@ -3313,20 +3408,57 @@ function SidebarInner({ activeNav, setActiveNav, hostName, unreadMessages }: { a
       </div>
 
       <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
-        {NAV_ITEMS.map(({ id, labelKey, Icon }) => {
-          const active = activeNav === id
-          const badge = id === 'messages' && (unreadMessages ?? 0) > 0
+        {NAV_GROUPS.map((group) => {
+          const hasChildren = !!group.children?.length
+          const expanded    = expandedGroups.has(group.id)
+          const groupActive = activeNav === group.id
+          const childActive = group.children?.some(c => c.id === activeNav) ?? false
+          const highlighted = groupActive || childActive
+
+          // Groups with children: inject the group itself as first child so it's navigatable
+          const allChildren: NavChild[] = hasChildren
+            ? [{ id: group.id, labelKey: group.labelKey, Icon: group.Icon }, ...group.children!]
+            : []
+
           return (
-            <button key={id} onClick={() => setActiveNav(id)}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all hover:bg-white/5"
-              style={{ color: active ? '#C8A97E' : 'rgba(255,255,255,0.6)', fontSize: 13, fontFamily: 'var(--font-inter)', fontWeight: active ? 600 : 400, cursor: 'pointer', background: active ? 'rgba(200,169,126,0.1)' : 'none', border: 'none', textAlign: 'left' }}>
-              <Icon size={15} style={{ flexShrink: 0 }} />
-              {t(labelKey)}
-              <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4 }}>
-                {badge && <span style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: '#C8A97E', color: 'white', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{unreadMessages}</span>}
-                {active && !badge && <span style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#C8A97E', display: 'block' }} />}
-              </span>
-            </button>
+            <div key={group.id}>
+              <button
+                onClick={() => hasChildren ? toggleGroup(group.id) : setActiveNav(group.id)}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all hover:bg-white/5"
+                style={{ color: highlighted ? '#C8A97E' : 'rgba(255,255,255,0.6)', fontSize: 13, fontFamily: 'var(--font-inter)', fontWeight: highlighted ? 600 : 400, cursor: 'pointer', background: 'none', border: 'none', textAlign: 'left' }}
+              >
+                <group.Icon size={15} style={{ flexShrink: 0 }} />
+                <span style={{ flex: 1 }}>{t(group.labelKey)}</span>
+                {hasChildren
+                  ? <ChevronDown size={13} style={{ flexShrink: 0, opacity: 0.45, transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
+                  : groupActive && <span style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#C8A97E', flexShrink: 0 }} />
+                }
+              </button>
+
+              {hasChildren && expanded && (
+                <div className="mt-0.5 space-y-0.5" style={{ paddingLeft: 12 }}>
+                  {allChildren.map(child => {
+                    const active = activeNav === child.id
+                    const badge  = child.id === 'messages' && (unreadMessages ?? 0) > 0
+                    return (
+                      <button
+                        key={child.id}
+                        onClick={() => setActiveNav(child.id)}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all hover:bg-white/5"
+                        style={{ color: active ? '#C8A97E' : 'rgba(255,255,255,0.45)', fontSize: 12, fontFamily: 'var(--font-inter)', fontWeight: active ? 600 : 400, cursor: 'pointer', background: active ? 'rgba(200,169,126,0.08)' : 'none', border: 'none', textAlign: 'left' }}
+                      >
+                        <child.Icon size={13} style={{ flexShrink: 0 }} />
+                        <span style={{ flex: 1 }}>{t(child.labelKey)}</span>
+                        {badge
+                          ? <span style={{ width: 16, height: 16, borderRadius: 8, backgroundColor: '#C8A97E', color: 'white', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{unreadMessages}</span>
+                          : active && <span style={{ width: 5, height: 5, borderRadius: 2.5, backgroundColor: '#C8A97E', display: 'block', flexShrink: 0 }} />
+                        }
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
           )
         })}
       </nav>
@@ -3343,7 +3475,7 @@ function SidebarInner({ activeNav, setActiveNav, hostName, unreadMessages }: { a
         </div>
         <a href="/" className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors"
           style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, fontFamily: 'var(--font-inter)', textDecoration: 'none' }}>
-          {t('db_back_to_site')}
+          <Home size={14} /> {t('db_back_to_site')}
         </a>
         <a
           href="/auth/signout"
@@ -3630,7 +3762,7 @@ export default function DashboardPage() {
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex flex-col flex-shrink-0"
         style={{ width: 240, backgroundColor: '#111111', minHeight: '100vh', position: 'sticky', top: 0, height: '100vh' }}>
-        <SidebarInner activeNav={activeNav} setActiveNav={setActiveNav} hostName={liveHostName} />
+        <SidebarInner activeNav={activeNav} setActiveNav={setActiveNav} hostName={liveHostName} unreadMessages={unreadMessages} />
       </aside>
 
       {/* Main content */}
@@ -3659,7 +3791,14 @@ export default function DashboardPage() {
             )}
           </button>
           <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>
-            {(() => { const item = NAV_ITEMS.find(n => n.id === activeNav); return item ? t(item.labelKey) : 'Dashboard' })()}
+            {(() => {
+              for (const g of NAV_GROUPS) {
+                if (g.id === activeNav) return t(g.labelKey)
+                const child = g.children?.find(c => c.id === activeNav)
+                if (child) return t(child.labelKey)
+              }
+              return 'Dashboard'
+            })()}
           </span>
           <div className="flex items-center gap-2">
             {activeNav === 'experiences' && !readOnly && (
@@ -3675,12 +3814,18 @@ export default function DashboardPage() {
         {renderPanel()}
       </main>
 
-      {/* Mobile bottom nav */}
+      {/* Mobile bottom nav — Home + group headers */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white z-40"
         style={{ borderTop: '1px solid #E8E4DE', paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <div className="flex items-center" style={{ height: 60 }}>
-          {NAV_ITEMS.slice(0, 5).map(({ id, Icon, labelKey }) => {
-            const active = activeNav === id
+          <a href="/"
+            className="flex flex-col items-center justify-center gap-0.5"
+            style={{ flex: 1, height: '100%', textDecoration: 'none' }}>
+            <Home size={18} style={{ color: '#6F675C' }} />
+            <span style={{ fontSize: 9, color: '#6F675C', fontWeight: 400 }}>{t('mob_home')}</span>
+          </a>
+          {NAV_GROUPS.map(({ id, Icon, labelKey, children }) => {
+            const active = activeNav === id || (children?.some(c => c.id === activeNav) ?? false)
             return (
               <button key={id} onClick={() => setActiveNav(id)}
                 className="flex flex-col items-center justify-center gap-0.5"

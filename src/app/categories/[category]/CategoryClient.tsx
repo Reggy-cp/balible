@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { Heart, Star, Clock, Users, ChevronDown, SlidersHorizontal, X, MapPin, ArrowRight, Search } from 'lucide-react'
+import { Heart, Star, Clock, Users, ChevronDown, SlidersHorizontal, X, MapPin, ArrowRight, Search, Check } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
@@ -183,14 +183,20 @@ function ExperienceCard({
                   <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#9E9A94' }}>New</span>
                 )}
               </div>
-              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>⏱ {exp.duration}</span>
+              <div className="flex items-center gap-1">
+                <Clock size={10} style={{ color: '#6F675C' }} />
+                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#6F675C' }}>{exp.duration}</span>
+              </div>
             </div>
           </div>
           <div className="mt-2">
             <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#111111' }}>
               From <span style={{ color: '#C8A97E', fontWeight: 600 }}>IDR</span> <span style={{ fontWeight: 600 }}>{exp.price.toLocaleString('id-ID')}</span>
             </p>
-            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#4A7C59', marginTop: 1 }}>✓ Free cancellation</p>
+            <div className="flex items-center gap-1 mt-1">
+              <Check size={10} style={{ color: '#4A7C59' }} />
+              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#4A7C59' }}>Free cancellation</span>
+            </div>
           </div>
         </div>
       </div>

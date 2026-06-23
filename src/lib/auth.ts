@@ -47,7 +47,7 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) return null
 
-        const ip = (req?.headers?.['x-forwarded-for'] as string) ?? 'unknown'
+        const ip = (req?.headers?.['x-forwarded-for'] as string)?.split(',')[0]?.trim() ?? 'unknown'
         const { allowed } = await checkRateLimit(`login:${ip}`, 10, 60_000)
         if (!allowed) throw new Error('Too many login attempts. Please try again in a minute.')
 

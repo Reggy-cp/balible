@@ -5,6 +5,7 @@ import { getSessionUser } from './user'
 import { createSnapTransaction } from './midtrans'
 import { createNotification } from './notifications'
 import { sendEventBookingConfirmation } from './email'
+import { checkRateLimit } from './rate-limit'
 
 async function getFeeRate(): Promise<number> {
   try {
@@ -215,6 +216,9 @@ export async function createEventBookingAction(input: {
   try {
     const user = await getSessionUser()
     if (!user) return { ok: false, error: 'Please sign in to complete your booking.' }
+
+    const { allowed } = await checkRateLimit(`booking:${user.id}`, 10, 60_000)
+    if (!allowed) return { ok: false, error: 'Too many booking attempts. Please wait a moment and try again.' }
 
     const event = await prisma.event.findUnique({ where: { slug: input.slug } })
     if (!event || event.status !== 'PUBLISHED') return { ok: false, error: 'This event is not available for booking.' }

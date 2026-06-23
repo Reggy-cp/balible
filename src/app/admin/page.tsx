@@ -10,6 +10,7 @@ import {
   MoreHorizontal, Bell, LogOut, TrendingUp, Globe, Shield,
   Check, AlertTriangle, Plus, RefreshCw, Flag, Ticket, MapPin, Clock,
   Mail, Megaphone, Send, Sparkles, Activity, FileText, MailOpen, ChevronUp,
+  User, Home,
 } from 'lucide-react'
 import {
   getPendingListingsAction, approveListingAction, rejectListingAction, type PendingListing,
@@ -372,7 +373,7 @@ const AREAS = [
 ]
 
 const EMPTY_FORM: CreateExperienceInput = {
-  title: '', description: '', category: 'CULTURE', area: 'UBUD',
+  title: '', description: '', category: 'CULTURE_SPIRITUAL', area: 'UBUD',
   price: 0, duration: '', level: 'All levels', language: 'English', maxGuests: 10,
   meetingPoint: '', latitude: -8.5069, longitude: 115.2625,
   images: [], highlights: [], includes: [], excludes: [],
@@ -787,8 +788,8 @@ function ExperiencesPanel() {
                         <StatusBadge status="Pending Review" />
                       </div>
                       <div className="flex flex-wrap gap-x-3 gap-y-0.5">
-                        <span style={{ fontSize: 11, color: COCONUT }}>🧑 {exp.hostName}</span>
-                        <span style={{ fontSize: 11, color: COCONUT }}>📍 {exp.area}</span>
+                        <span className="flex items-center gap-1" style={{ fontSize: 11, color: COCONUT }}><User size={10} />{exp.hostName}</span>
+                        <span className="flex items-center gap-1" style={{ fontSize: 11, color: COCONUT }}><MapPin size={10} />{exp.area}</span>
                         <span style={{ fontSize: 11, color: COCONUT }}>{exp.category}</span>
                         <span style={{ fontSize: 11, color: COCONUT }}>{exp.duration}</span>
                         <span style={{ fontSize: 11, color: COCONUT }}>Submitted {exp.submittedAt}</span>
@@ -837,10 +838,10 @@ function ExperiencesPanel() {
                         <StatusBadge status={exp.status} />
                       </div>
                       <div className="flex flex-wrap gap-x-3 gap-y-0.5">
-                        <span style={{ fontSize: 11, color: COCONUT }}>🧑 {exp.host}</span>
-                        <span style={{ fontSize: 11, color: COCONUT }}>📍 {exp.area}</span>
+                        <span className="flex items-center gap-1" style={{ fontSize: 11, color: COCONUT }}><User size={10} />{exp.host}</span>
+                        <span className="flex items-center gap-1" style={{ fontSize: 11, color: COCONUT }}><MapPin size={10} />{exp.area}</span>
                         <span style={{ fontSize: 11, color: COCONUT }}>{exp.category}</span>
-                        <span style={{ fontSize: 11, color: COCONUT }}>⭐ {exp.rating} ({exp.reviews})</span>
+                        <span className="flex items-center gap-1" style={{ fontSize: 11, color: COCONUT }}><Star size={10} />{exp.rating} ({exp.reviews})</span>
                         <span style={{ fontSize: 11, color: COCONUT }}>{exp.bookings} bookings</span>
                       </div>
                     </div>
@@ -1115,7 +1116,7 @@ function HostsPanel() {
                   <span style={{ fontSize: 11, color: COCONUT }}>{host.experiences} listings</span>
                   <span style={{ fontSize: 11, color: COCONUT }}>{host.totalBookings} bookings</span>
                   <span style={{ fontSize: 11, fontWeight: 600, color: FOREST }}>{fmt(host.totalEarnings)} earned</span>
-                  <span style={{ fontSize: 11, color: COCONUT }}>⭐ {host.rating > 0 ? host.rating.toFixed(1) : '—'} ({host.totalReviews} reviews)</span>
+                  <span className="flex items-center gap-1" style={{ fontSize: 11, color: COCONUT }}><Star size={10} />{host.rating > 0 ? host.rating.toFixed(1) : '—'} ({host.totalReviews} reviews)</span>
                   <span style={{ fontSize: 11, color: COCONUT }}>Joined {host.joined}</span>
                 </div>
               </div>
@@ -1331,10 +1332,10 @@ function BookingsPanel() {
               </div>
             </div>
             <div className="flex flex-wrap gap-x-4 gap-y-0.5 mb-1">
-              <span style={{ fontSize: 12, color: COCONUT }}>📋 {b.experience}</span>
-              <span style={{ fontSize: 12, color: COCONUT }}>🧑‍🏫 {b.host}</span>
-              <span style={{ fontSize: 12, color: COCONUT }}>📅 {b.date}</span>
-              <span style={{ fontSize: 12, color: COCONUT }}>👤 {b.guests} guest{b.guests > 1 ? 's' : ''}</span>
+              <span className="flex items-center gap-1" style={{ fontSize: 12, color: COCONUT }}><FileText size={11} />{b.experience}</span>
+              <span className="flex items-center gap-1" style={{ fontSize: 12, color: COCONUT }}><User size={11} />{b.host}</span>
+              <span className="flex items-center gap-1" style={{ fontSize: 12, color: COCONUT }}><CalendarDays size={11} />{b.date}</span>
+              <span className="flex items-center gap-1" style={{ fontSize: 12, color: COCONUT }}><Users size={11} />{b.guests} guest{b.guests > 1 ? 's' : ''}</span>
             </div>
             <p style={{ fontSize: 11, color: '#C8C4BE' }}>
               Booked {b.bookedOn}{b.paymentId ? ` · Payment: ${b.paymentId}` : ''}
@@ -2466,8 +2467,8 @@ function EventsPanel() {
                 </div>
 
                 <div className="flex flex-wrap gap-x-4 gap-y-1 mb-3">
-                  <span style={{ fontSize: 12, color: COCONUT }}>📅 Event: {b.eventDate}</span>
-                  <span style={{ fontSize: 12, color: COCONUT }}>🗓 Booked: {b.bookedOn}</span>
+                  <span className="flex items-center gap-1" style={{ fontSize: 12, color: COCONUT }}><CalendarDays size={11} />Event: {b.eventDate}</span>
+                  <span className="flex items-center gap-1" style={{ fontSize: 12, color: COCONUT }}><CalendarDays size={11} />Booked: {b.bookedOn}</span>
                   <span style={{ fontSize: 12, color: COCONUT }}>Ref: {b.ref.slice(0, 8).toUpperCase()}</span>
                   {b.paymentId && <span style={{ fontSize: 12, color: COCONUT }}>Txn: {b.paymentId}</span>}
                 </div>
@@ -2795,7 +2796,7 @@ function BroadcastPanel() {
           {result && (
             <div className="mb-4 rounded-lg p-3" style={{ backgroundColor: result.ok ? '#F0F7F2' : '#FEF2F2', border: `1px solid ${result.ok ? '#C3E6D0' : '#FECACA'}` }}>
               <p style={{ fontSize: 13, fontWeight: 600, color: result.ok ? FOREST : TERRACOTTA }}>
-                {result.ok ? `✓ Sent to ${result.count} user${result.count !== 1 ? 's' : ''}` : `Error: ${result.error ?? 'Failed to send'}`}
+                {result.ok ? <span className="flex items-center gap-1"><Check size={13} />Sent to {result.count} user{result.count !== 1 ? 's' : ''}</span> : `Error: ${result.error ?? 'Failed to send'}`}
               </p>
             </div>
           )}
@@ -2991,9 +2992,9 @@ const ACT_FILTERS = [
   { id: 'payout',     label: 'Payouts'  },
 ]
 
-const TYPE_ICON: Record<string, string> = {
-  booking: '📅', host: '🧑‍🤝‍🧑', review: '⭐',
-  experience: '🧭', payout: '💰', user: '👤',
+const TYPE_ICON: Record<string, React.ElementType> = {
+  booking: CalendarDays, host: Users, review: Star,
+  experience: Compass, payout: CreditCard, user: User,
 }
 
 function fmtRelative(iso: string) {
@@ -3078,7 +3079,7 @@ function ActivityLogPanel() {
           <div key={item.id} className="flex items-start gap-4 px-5 py-4 hover:bg-stone-50 transition-colors"
             style={{ borderBottom: i < visible.length - 1 ? `1px solid ${IVORY}` : 'none' }}>
             <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: IVORY }}>
-              <span style={{ fontSize: 14 }}>{TYPE_ICON[item.type] ?? '📋'}</span>
+              {(() => { const Icon = TYPE_ICON[item.type] ?? FileText; return <Icon size={14} style={{ color: COCONUT }} /> })()}
             </div>
             <div className="flex-1 min-w-0">
               <p style={{ fontSize: 14, color: CHARCOAL, lineHeight: 1.4 }}>
@@ -3297,10 +3298,10 @@ function EmailsPanel() {
           <div className="flex items-center gap-2">
             <button onClick={sendTest} disabled={sending}
               style={{ height: 38, padding: '0 16px', borderRadius: 10, border: `1px solid ${SAND}`, backgroundColor: 'white', fontSize: 13, fontWeight: 600, color: sent ? FOREST : COCONUT, cursor: 'pointer' }}>
-              {sending ? 'Sending…' : sent ? '✓ Test Sent' : 'Send Test'}
+              {sending ? 'Sending…' : sent ? <span className="flex items-center gap-1"><Check size={12} />Test Sent</span> : 'Send Test'}
             </button>
             <button onClick={save} disabled={saving} style={{ height: 38, padding: '0 20px', borderRadius: 10, border: 'none', backgroundColor: saved ? FOREST : CHARCOAL, color: 'white', fontSize: 13, fontWeight: 600, cursor: saving ? 'default' : 'pointer', opacity: saving ? 0.7 : 1, transition: 'background 0.2s' }}>
-              {saved ? '✓ Saved' : saving ? 'Saving…' : 'Save Templates'}
+              {saved ? <span className="flex items-center gap-1"><Check size={12} />Saved</span> : saving ? 'Saving…' : 'Save Templates'}
             </button>
           </div>
         }
@@ -3571,6 +3572,10 @@ function AdminNotifBell({ onNavigate, align = 'left', dark = false, pendingHosts
 }
 
 function Sidebar({ activeNav, setActiveNav, pendingHosts = 0, pendingListings = 0 }: { activeNav: string; setActiveNav: (id: string) => void; pendingHosts?: number; pendingListings?: number }) {
+  const { data: session } = useSession()
+  const adminName = session?.user?.name ?? 'Admin'
+  const adminInitial = adminName.charAt(0).toUpperCase()
+
   return (
     <>
       <div className="flex items-center justify-between px-5 pt-6 pb-4">
@@ -3581,11 +3586,16 @@ function Sidebar({ activeNav, setActiveNav, pendingHosts = 0, pendingListings = 
       </div>
 
       <div className="flex items-center gap-3 mx-3 px-3 py-3 rounded-xl mb-3" style={{ backgroundColor: 'rgba(255,255,255,0.06)' }}>
-        <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: GOLD }}>
-          <span style={{ fontSize: 14, fontWeight: 700, color: 'white' }}>R</span>
+        <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0" style={{ border: '2px solid rgba(200,169,126,0.5)' }}>
+          {session?.user?.image
+            ? <img src={session.user.image} alt={adminName} className="w-full h-full object-cover" />
+            : <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: GOLD }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: 'white' }}>{adminInitial}</span>
+              </div>
+          }
         </div>
         <div>
-          <p style={{ fontSize: 13, fontWeight: 600, color: 'white' }}>Reggy Caesar</p>
+          <p style={{ fontSize: 13, fontWeight: 600, color: 'white' }}>{adminName}</p>
           <div className="flex items-center gap-1 mt-0.5">
             <Shield size={10} style={{ color: GOLD }} />
             <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)' }}>Platform Owner</p>
@@ -3617,7 +3627,7 @@ function Sidebar({ activeNav, setActiveNav, pendingHosts = 0, pendingListings = 
       <div className="mx-3 mb-6 space-y-1">
         <a href="/" className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors"
           style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, fontFamily: 'var(--font-inter)', textDecoration: 'none' }}>
-          ← Back to site
+          <Home size={14} /> Back to site
         </a>
         <a
           href="/auth/signout"

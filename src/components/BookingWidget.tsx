@@ -150,7 +150,8 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
   const [guests, setGuests] = useState(1)
   const [wishlisted, setWishlisted] = useState(false)
-  const { status } = useSession()
+  const { data: session, status } = useSession()
+  const isHost = session?.user?.role === 'OPERATOR'
   const [schedule, setSchedule] = useState<ScheduleDay[] | null>(null)
   const [bookedGuests, setBookedGuests] = useState<Record<string, number>>({})
 
@@ -296,127 +297,140 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
         </div>
       )}
 
-      {/* Date picker */}
-      <div className="mt-5">
-        <p className="mb-2" style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>Select date</p>
-        <MiniCalendar selected={selectedDate ? [selectedDate] : []} onSelect={handleDateSelect} schedule={schedule} blockedDates={blockedDates} />
-      </div>
-
-      {/* Time slots — shown after a date is selected */}
-      {primaryDate && slots.length > 0 && (
-        <div className="mt-5">
-          <p className="mb-2" style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>
-            Select time {effectiveDuration && <span style={{ color: '#9E9A94' }}>· {effectiveDuration}</span>}
+      {isHost ? (
+        <div className="mt-5 p-4 rounded-lg text-center" style={{ backgroundColor: '#F5F1EB', border: '1px solid #E8E4DE' }}>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111', marginBottom: 4 }}>
+            Booking not available for hosts
           </p>
-          <div className="flex flex-wrap gap-2">
-            {slots.map(slot => {
-              const isSel = selectedTime === slot
-              const remaining = effectiveMaxGuests - (bookedGuests[slot] ?? 0)
-              const isAlmostFull = remaining <= 3
-              return (
-                <button key={slot} onClick={() => handleTimeSelect(slot)}
-                  style={{
-                    padding: '5px 10px', borderRadius: 8, fontSize: 12, fontWeight: isSel ? 600 : 400,
-                    backgroundColor: isSel ? '#111111' : 'white',
-                    color: isSel ? 'white' : '#111111',
-                    border: isSel ? '1px solid #111111' : '1px solid #E8E4DE',
-                    cursor: 'pointer', transition: 'all 0.15s',
-                    fontFamily: 'var(--font-inter)',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
-                    lineHeight: 1.2,
-                  }}>
-                  <span>
-                    {minsToLabel(parseTimeMins(slot))}
-                    {isSel && <span style={{ opacity: 0.65, marginLeft: 4, fontSize: 11 }}>→ {endTimeLabel(slot)}</span>}
-                  </span>
-                  <span style={{
-                    fontSize: 9,
-                    color: isSel ? 'rgba(255,255,255,0.65)' : isAlmostFull ? '#B66A45' : '#B0AA9E',
-                    fontWeight: 400,
-                  }}>
-                    {remaining} left
-                  </span>
-                </button>
-              )
-            })}
-          </div>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', lineHeight: 1.5 }}>
+            Host accounts cannot book experiences. Please use a guest account.
+          </p>
         </div>
-      )}
-
-      {primaryDate && slots.length === 0 && !noSlotsForGuests && (
-        <p style={{ fontSize: 12, color: '#B66A45', marginTop: 12 }}>No available slots for this date.</p>
-      )}
-
-      {noSlotsForGuests && (
-        <div className="flex items-start gap-2 mt-4 p-3 rounded-lg" style={{ backgroundColor: '#FEF3ED', border: '1px solid #F5C9AE' }}>
-          <AlertCircle size={15} style={{ color: '#B66A45', flexShrink: 0, marginTop: 1 }} />
-          <div>
-            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#B66A45', marginBottom: 2 }}>
-              Not enough spots for {guests} guests
-            </p>
-            <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#9E5A35' }}>
-              Only {maxRemaining} spot{maxRemaining !== 1 ? 's' : ''} remaining for this date. Please select {maxRemaining === 1 ? '1 guest' : `up to ${maxRemaining} guests`} to see available times.
-            </p>
+      ) : (
+        <>
+          {/* Date picker */}
+          <div className="mt-5">
+            <p className="mb-2" style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>Select date</p>
+            <MiniCalendar selected={selectedDate ? [selectedDate] : []} onSelect={handleDateSelect} schedule={schedule} blockedDates={blockedDates} />
           </div>
-        </div>
-      )}
 
-      {/* Guests */}
-      <div className="mt-5">
-        <p className="mb-1.5" style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>{t('guests')}</p>
-        <select value={guests} onChange={e => setGuests(Number(e.target.value))}
-          className="w-full px-3 py-2.5 rounded-md outline-none appearance-none cursor-pointer"
-          style={{ border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', backgroundColor: 'white' }}>
-          {Array.from(
-            { length: selectedTime
-                ? effectiveMaxGuests - (bookedGuests[selectedTime] ?? 0)
-                : effectiveMaxGuests },
-            (_, i) => i + 1
-          ).map(n => (
-            <option key={n} value={n}>{n} {n === 1 ? 'guest' : 'guests'}</option>
-          ))}
-        </select>
-      </div>
+          {/* Time slots — shown after a date is selected */}
+          {primaryDate && slots.length > 0 && (
+            <div className="mt-5">
+              <p className="mb-2" style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>
+                Select time {effectiveDuration && <span style={{ color: '#9E9A94' }}>· {effectiveDuration}</span>}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {slots.map(slot => {
+                  const isSel = selectedTime === slot
+                  const remaining = effectiveMaxGuests - (bookedGuests[slot] ?? 0)
+                  const isAlmostFull = remaining <= 3
+                  return (
+                    <button key={slot} onClick={() => handleTimeSelect(slot)}
+                      style={{
+                        padding: '5px 10px', borderRadius: 8, fontSize: 12, fontWeight: isSel ? 600 : 400,
+                        backgroundColor: isSel ? '#111111' : 'white',
+                        color: isSel ? 'white' : '#111111',
+                        border: isSel ? '1px solid #111111' : '1px solid #E8E4DE',
+                        cursor: 'pointer', transition: 'all 0.15s',
+                        fontFamily: 'var(--font-inter)',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
+                        lineHeight: 1.2,
+                      }}>
+                      <span>
+                        {minsToLabel(parseTimeMins(slot))}
+                        {isSel && <span style={{ opacity: 0.65, marginLeft: 4, fontSize: 11 }}>→ {endTimeLabel(slot)}</span>}
+                      </span>
+                      <span style={{
+                        fontSize: 9,
+                        color: isSel ? 'rgba(255,255,255,0.65)' : isAlmostFull ? '#B66A45' : '#B0AA9E',
+                        fontWeight: 400,
+                      }}>
+                        {remaining} left
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
-      {/* Summary */}
-      {selectedDate && selectedTime && (
-        <div className="mt-4 p-3 rounded-lg" style={{ backgroundColor: '#F5F1EB' }}>
-          <div className="flex justify-between mb-1">
-            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>Time</span>
-            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 600, color: '#111111' }}>
-              {minsToLabel(parseTimeMins(selectedTime))}
-            </span>
+          {primaryDate && slots.length === 0 && !noSlotsForGuests && (
+            <p style={{ fontSize: 12, color: '#B66A45', marginTop: 12 }}>No available slots for this date.</p>
+          )}
+
+          {noSlotsForGuests && (
+            <div className="flex items-start gap-2 mt-4 p-3 rounded-lg" style={{ backgroundColor: '#FEF3ED', border: '1px solid #F5C9AE' }}>
+              <AlertCircle size={15} style={{ color: '#B66A45', flexShrink: 0, marginTop: 1 }} />
+              <div>
+                <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#B66A45', marginBottom: 2 }}>
+                  Not enough spots for {guests} guests
+                </p>
+                <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#9E5A35' }}>
+                  Only {maxRemaining} spot{maxRemaining !== 1 ? 's' : ''} remaining for this date. Please select {maxRemaining === 1 ? '1 guest' : `up to ${maxRemaining} guests`} to see available times.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Guests */}
+          <div className="mt-5">
+            <p className="mb-1.5" style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>{t('guests')}</p>
+            <select value={guests} onChange={e => setGuests(Number(e.target.value))}
+              className="w-full px-3 py-2.5 rounded-md outline-none appearance-none cursor-pointer"
+              style={{ border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', backgroundColor: 'white' }}>
+              {Array.from(
+                { length: selectedTime
+                    ? effectiveMaxGuests - (bookedGuests[selectedTime] ?? 0)
+                    : effectiveMaxGuests },
+                (_, i) => i + 1
+              ).map(n => (
+                <option key={n} value={n}>{n} {n === 1 ? 'guest' : 'guests'}</option>
+              ))}
+            </select>
           </div>
-          <div className="flex justify-between">
-            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>
-              IDR {formatted} × {guests} guest{guests > 1 ? 's' : ''}
-            </span>
-            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111' }}>
-              IDR {(effectivePrice * guests).toLocaleString('id-ID')}
-            </span>
-          </div>
-        </div>
+
+          {/* Summary */}
+          {selectedDate && selectedTime && (
+            <div className="mt-4 p-3 rounded-lg" style={{ backgroundColor: '#F5F1EB' }}>
+              <div className="flex justify-between mb-1">
+                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>Time</span>
+                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 600, color: '#111111' }}>
+                  {minsToLabel(parseTimeMins(selectedTime))}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>
+                  IDR {formatted} × {guests} guest{guests > 1 ? 's' : ''}
+                </span>
+                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111' }}>
+                  IDR {(effectivePrice * guests).toLocaleString('id-ID')}
+                </span>
+              </div>
+            </div>
+          )}
+
+          <a
+            href={selectedDate && selectedTime && slug
+              ? `/checkout?slug=${slug}&date=${selectedDate}&times=${encodeURIComponent(selectedTime)}&guests=${guests}&maxGuests=${effectiveMaxGuests}`
+              : undefined}
+            onClick={e => { if (!selectedDate || !selectedTime || !slug) e.preventDefault() }}
+            className="w-full mt-4 flex items-center justify-center font-medium hover:opacity-90 transition-opacity"
+            style={{
+              height: 44, borderRadius: 8, fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500,
+              textDecoration: 'none',
+              backgroundColor: selectedDate && selectedTime ? '#111111' : '#E8E4DE',
+              color: selectedDate && selectedTime ? 'white' : '#9E9A94',
+              cursor: selectedDate && selectedTime ? 'pointer' : 'not-allowed',
+            }}>
+            {!selectedDate ? t('select_date') : !selectedTime ? t('select_time') : t('book_experience')}
+          </a>
+
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#4A7C59', textAlign: 'center', marginTop: 10 }}>
+            ✓ {t('free_cancel_24h')}
+          </p>
+        </>
       )}
-
-      <a
-        href={selectedDate && selectedTime && slug
-          ? `/checkout?slug=${slug}&date=${selectedDate}&times=${encodeURIComponent(selectedTime)}&guests=${guests}&maxGuests=${effectiveMaxGuests}`
-          : undefined}
-        onClick={e => { if (!selectedDate || !selectedTime || !slug) e.preventDefault() }}
-        className="w-full mt-4 flex items-center justify-center font-medium hover:opacity-90 transition-opacity"
-        style={{
-          height: 44, borderRadius: 8, fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500,
-          textDecoration: 'none',
-          backgroundColor: selectedDate && selectedTime ? '#111111' : '#E8E4DE',
-          color: selectedDate && selectedTime ? 'white' : '#9E9A94',
-          cursor: selectedDate && selectedTime ? 'pointer' : 'not-allowed',
-        }}>
-        {!selectedDate ? t('select_date') : !selectedTime ? t('select_time') : t('book_experience')}
-      </a>
-
-      <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#4A7C59', textAlign: 'center', marginTop: 10 }}>
-        ✓ {t('free_cancel_24h')}
-      </p>
 
       {slug && (
         <button

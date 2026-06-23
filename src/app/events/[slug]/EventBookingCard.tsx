@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Ticket } from 'lucide-react'
+import { useSession } from 'next-auth/react'
 import { getEventRemainingTickets } from '@/lib/event-actions'
 
 export default function EventBookingCard({
@@ -18,6 +19,8 @@ export default function EventBookingCard({
 }) {
   const [tickets, setTickets] = useState(1)
   const [remaining, setRemaining] = useState<number | null>(null)
+  const { data: session } = useSession()
+  const isHost = session?.user?.role === 'OPERATOR'
 
   useEffect(() => {
     getEventRemainingTickets(slug).then(r => {
@@ -43,6 +46,19 @@ export default function EventBookingCard({
       tickets: String(tickets),
     })
     window.location.href = `/checkout?${qs}`
+  }
+
+  if (isHost) {
+    return (
+      <div style={{ padding: 16, borderRadius: 10, textAlign: 'center', backgroundColor: '#F5F1EB', border: '1px solid #E8E4DE' }}>
+        <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111', marginBottom: 4 }}>
+          Booking not available for hosts
+        </p>
+        <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', lineHeight: 1.5 }}>
+          Host accounts cannot book events. Please use a guest account.
+        </p>
+      </div>
+    )
   }
 
   if (soldOut) {
