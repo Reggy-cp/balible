@@ -589,7 +589,9 @@ function BookingsTab({ dbBookings, dbEventBookings, onRefresh }: { dbBookings?: 
                       {b.image ? (
                         <img src={b.image} alt={b.title} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
                       ) : (
-                        <div className="w-16 h-16 rounded-xl flex-shrink-0 flex items-center justify-center" style={{ background: '#F5F1EB', fontSize: 28 }}>🎟</div>
+                        <div className="w-16 h-16 rounded-xl flex-shrink-0 flex items-center justify-center" style={{ background: '#F5F1EB' }}>
+                          <Ticket size={24} style={{ color: '#C8A97E' }} />
+                        </div>
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
@@ -1309,31 +1311,36 @@ function ProfilePageInner() {
 
           {/* LEFT — Profile card */}
           <aside className="lg:w-64 flex-shrink-0">
-            <div className="bg-white rounded-2xl p-6 text-center" style={{ border: '1px solid #E8E4DE' }}>
-              {/* Avatar */}
-              <div className="relative mx-auto mb-4" style={{ width: 80, height: 80 }}>
-                <img
-                  src={displayImage ?? '/avatar-default.png'}
-                  alt={displayName}
-                  className="w-full h-full rounded-full object-cover"
-                  style={{ border: '3px solid white', boxShadow: '0 0 0 2px #C8A97E' }}
-                />
-                <button
-                  className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: '#111111', border: '2px solid white', cursor: 'pointer' }}
-                >
-                  <Camera size={12} style={{ color: 'white' }} />
-                </button>
+            <div className="bg-white rounded-2xl p-4 lg:p-6 lg:text-center" style={{ border: '1px solid #E8E4DE' }}>
+              {/* Mobile: horizontal layout · Desktop: centered vertical */}
+              <div className="flex items-center gap-4 lg:block">
+                {/* Avatar */}
+                <div className="relative flex-shrink-0 lg:mx-auto lg:mb-4" style={{ width: 64, height: 64 }}>
+                  <img
+                    src={displayImage ?? '/avatar-default.png'}
+                    alt={displayName}
+                    className="w-full h-full rounded-full object-cover"
+                    style={{ border: '3px solid white', boxShadow: '0 0 0 2px #C8A97E' }}
+                  />
+                  <button
+                    className="absolute bottom-0 right-0 w-6 h-6 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: '#111111', border: '2px solid white', cursor: 'pointer' }}
+                  >
+                    <Camera size={11} style={{ color: 'white' }} />
+                  </button>
+                </div>
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName}</h2>
+                  <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayEmail}</p>
+                  {memberSince && (
+                    <p style={{ fontFamily: 'var(--font-inter)', fontSize: 11, color: '#9E9A94', marginTop: 1 }}>Member since {memberSince}</p>
+                  )}
+                </div>
               </div>
 
-              <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 18, fontWeight: 700, color: '#111111' }}>{displayName}</h2>
-              <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C', marginTop: 3 }}>{displayEmail}</p>
-              {memberSince && (
-                <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', marginTop: 2 }}>Member since {memberSince}</p>
-              )}
-
               {/* Stats */}
-              <div className="grid grid-cols-3 gap-2 mt-5 pt-5" style={{ borderTop: '1px solid #E8E4DE' }}>
+              <div className="grid grid-cols-3 gap-2 mt-4 pt-4" style={{ borderTop: '1px solid #E8E4DE' }}>
                 {[
                   { label: 'Trips',    value: tripsCount },
                   { label: 'Reviews',  value: reviewsCount },
@@ -1380,35 +1387,30 @@ function ProfilePageInner() {
 
       {/* Profile-specific mobile bottom nav */}
       <nav
-        className="fixed bottom-0 left-0 right-0 bg-white md:hidden flex items-center z-50"
-        style={{ height: 64, borderTop: '1px solid #E8E4DE', paddingBottom: 'env(safe-area-inset-bottom)' }}
+        className="fixed bottom-0 left-0 right-0 bg-white md:hidden z-50"
+        style={{ borderTop: '1px solid #E8E4DE', height: 'calc(64px + env(safe-area-inset-bottom))', paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
-        {[
-          { id: 'home',     label: 'Home',     Icon: Home,          href: '/' },
-          { id: 'messages', label: 'Chat',     Icon: MessageCircle, href: null },
-          { id: 'bookings', label: 'Bookings', Icon: CalendarDays,  href: null },
-          { id: 'wishlist', label: 'Wishlist', Icon: Heart,         href: null },
-          { id: 'settings', label: 'Settings', Icon: Settings,      href: null },
-        ].map(({ id, label, Icon, href }) => {
-          const active = href ? false : activeTab === id
-          const inner = (
-            <>
-              <Icon size={20} color={active ? '#C8A97E' : '#6F675C'} />
-              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 10, color: active ? '#C8A97E' : '#6F675C', fontWeight: active ? 600 : 400 }}>
-                {label}
-              </span>
-            </>
-          )
-          return href ? (
-            <a key={id} href={href} className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full" style={{ textDecoration: 'none' }}>
-              {inner}
-            </a>
-          ) : (
-            <button key={id} onClick={() => setActiveTab(id)} className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
-              {inner}
-            </button>
-          )
-        })}
+        <div className="flex items-center" style={{ height: 64 }}>
+          {[
+            { id: 'bookings', label: 'Bookings', Icon: CalendarDays  },
+            { id: 'messages', label: 'Chat',     Icon: MessageCircle },
+            { id: 'wishlist', label: 'Wishlist', Icon: Heart         },
+            { id: 'reviews',  label: 'Reviews',  Icon: Star          },
+            { id: 'settings', label: 'Settings', Icon: Settings      },
+          ].map(({ id, label, Icon }) => {
+            const active = activeTab === id
+            return (
+              <button key={id} onClick={() => setActiveTab(id)}
+                className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full"
+                style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                <Icon size={20} color={active ? '#C8A97E' : '#6F675C'} />
+                <span style={{ fontFamily: 'var(--font-inter)', fontSize: 10, color: active ? '#C8A97E' : '#6F675C', fontWeight: active ? 600 : 400 }}>
+                  {label}
+                </span>
+              </button>
+            )
+          })}
+        </div>
       </nav>
     </div>
   )

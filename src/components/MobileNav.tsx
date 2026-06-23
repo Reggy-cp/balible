@@ -31,9 +31,10 @@ export default function MobileNav() {
 
   return (
     <nav
-        className="fixed bottom-0 left-0 right-0 bg-white z-50 md:hidden flex items-center"
-        style={{ height: 64, borderTop: '1px solid #E8E4DE', paddingBottom: 'env(safe-area-inset-bottom)' }}
+        className="fixed bottom-0 left-0 right-0 bg-white z-50 md:hidden"
+        style={{ borderTop: '1px solid #E8E4DE', height: 'calc(64px + env(safe-area-inset-bottom))', paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
+        <div className="flex items-center" style={{ height: 64 }}>
         {NAV.map(({ Icon, favicon, labelKey, href }) => {
           const active = isActive(href)
           const handleClick = href === null
@@ -80,7 +81,7 @@ export default function MobileNav() {
             </button>
           )
         })}
-
+        </div>
       </nav>
   )
 }
