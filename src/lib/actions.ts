@@ -2029,12 +2029,20 @@ export async function getAnalyticsDataAction(days: number): Promise<AnalyticsDat
     const currEB = allEventBookings.filter(b => b.createdAt >= periodStart)
     const prevEB = allEventBookings.filter(b => b.createdAt < periodStart)
 
+    const PAID = ['CONFIRMED', 'COMPLETED']
     const currAllCount = curr.length + currEB.length
     const prevAllCount = prev.length + prevEB.length
-    const currRev  = curr.reduce((a, b) => a + b.totalPrice, 0) + currEB.reduce((a, b) => a + b.totalPrice, 0)
-    const prevRev  = prev.reduce((a, b) => a + b.totalPrice, 0) + prevEB.reduce((a, b) => a + b.totalPrice, 0)
-    const currAvg  = currAllCount ? Math.round(currRev / currAllCount) : 0
-    const prevAvg  = prevAllCount ? Math.round(prevRev / prevAllCount) : 0
+    // Revenue + commission only from paid bookings
+    const currPaid   = curr.filter(b => PAID.includes(b.status))
+    const prevPaid   = prev.filter(b => PAID.includes(b.status))
+    const currPaidEB = currEB.filter(b => PAID.includes(b.status))
+    const prevPaidEB = prevEB.filter(b => PAID.includes(b.status))
+    const currRev  = currPaid.reduce((a, b) => a + b.totalPrice, 0)   + currPaidEB.reduce((a, b) => a + b.totalPrice, 0)
+    const prevRev  = prevPaid.reduce((a, b) => a + b.totalPrice, 0)   + prevPaidEB.reduce((a, b) => a + b.totalPrice, 0)
+    const currPaidCount = currPaid.length + currPaidEB.length
+    const prevPaidCount = prevPaid.length + prevPaidEB.length
+    const currAvg  = currPaidCount ? Math.round(currRev / currPaidCount) : 0
+    const prevAvg  = prevPaidCount ? Math.round(prevRev / prevPaidCount) : 0
     const currCancelExp = curr.filter(b => b.status === 'CANCELLED').length
     const currCancelEv  = currEB.filter(b => b.status === 'CANCELLED').length
     const prevCancelExp = prev.filter(b => b.status === 'CANCELLED').length
