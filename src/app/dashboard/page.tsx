@@ -691,6 +691,31 @@ function ExperiencesPanel({ commissionRate, initialExperiences, triggerNewExp }:
         setSaveError('Could not save. Check your connection and try again.')
         return
       }
+      // Optimistically reflect changes in the list immediately
+      if (editingExp) {
+        const updated = {
+          ...editingExp,
+          title: formData.title || editingExp.title,
+          category: formData.category,
+          subcategory: formData.subcategory || '',
+          area: formData.area,
+          price: Math.round(Number(formData.price) || editingExp.price),
+          duration: listingInput.duration,
+          maxGuests: formData.category === 'Rentals' ? 1 : (Number(formData.maxGuests) || editingExp.maxGuests),
+          minGuests: formData.category === 'Rentals' ? 1 : (Number(formData.minGuests) || 1),
+          description: formData.description || '',
+          meetingPoint: formData.meetingPoint || '',
+          includes: listingInput.includes,
+          excludes: listingInput.excludes,
+          itinerary: itinerary.filter(s => s.time || s.activity),
+          image: allImages[0] ?? editingExp.image,
+          images: allImages.length ? allImages : editingExp.images,
+          imageAlts: allAlts.length ? allAlts : editingExp.imageAlts,
+          schedule: schedule ?? null,
+          status: action === 'submit' ? 'Pending Review' : editingExp.status,
+        }
+        setExps(prev => prev.map(e => e.id === editingExp.id ? updated : e))
+      }
       closeForm()
       getHostExperiencesAction().then(rows => { if (rows) setExps(rows) }).catch(() => {})
     } catch {

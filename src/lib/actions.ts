@@ -555,11 +555,11 @@ export async function saveExperienceFullAction(
       category: categoryEnum,
       subcategory: input.subcategory || '',
       area: areaEnum,
-      price: input.price || 0,
+      price: Math.round(input.price || 0),
       duration: input.duration || '',
       level: 'All levels',
-      maxGuests: input.maxGuests || 8,
-      minGuests: input.minGuests || 1,
+      maxGuests: Math.round(input.maxGuests || 8),
+      minGuests: Math.round(input.minGuests || 1),
       images: allImages,
       imageAlts: input.imageAlts ?? [],
       highlights: [],
@@ -572,7 +572,11 @@ export async function saveExperienceFullAction(
       ...(input.schedule !== undefined && { schedule: input.schedule }),
     }
 
-    if (existing && existing.operatorId === operator.id) {
+    if (existing && existing.operatorId !== operator.id) {
+      return { ok: false }
+    }
+
+    if (existing) {
       await prisma.experience.update({
         where: { slug: input.slug },
         data: { ...data, status: mode === 'submit' ? 'PENDING_REVIEW' : existing.status },
@@ -584,7 +588,8 @@ export async function saveExperienceFullAction(
     }
 
     return { ok: true }
-  } catch {
+  } catch (err) {
+    console.error('[saveExperienceFullAction] error:', err)
     return { ok: false }
   }
 }
@@ -683,9 +688,10 @@ export async function deleteExperienceAction(slug: string): Promise<{ ok: boolea
 
 export async function getHostExperiencesAction(): Promise<DashExp[] | null> {
   try {
-    const user = await getSessionUser()
-    if (!user) return null
-    const operator = await prisma.operator.findUnique({ where: { userId: user.id } })
+    const session = await getServerSession(authOptions)
+    const userId = session?.user?.id
+    if (!userId) return null
+    const operator = await prisma.operator.findUnique({ where: { userId } })
     if (!operator) return null
     const rows = await prisma.experience.findMany({
       where: { operatorId: operator.id },
