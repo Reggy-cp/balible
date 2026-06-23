@@ -23,7 +23,19 @@ export default function RentalMobileModal({
   const { data: session } = useSession()
   const isHost = session?.user?.role === 'OPERATOR'
 
-  if (isHost) return null
+  if (isHost) return (
+    <div className="fixed bottom-16 md:bottom-0 left-0 right-0 z-40 lg:hidden bg-white px-4 py-4"
+      style={{ borderTop: '1px solid #E8E4DE', boxShadow: '0 -4px 16px rgba(0,0,0,0.08)' }}>
+      <div style={{ padding: '12px 16px', borderRadius: 10, textAlign: 'center', backgroundColor: '#F5F1EB', border: '1px solid #E8E4DE' }}>
+        <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111', marginBottom: 2 }}>
+          Booking not available for hosts
+        </p>
+        <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>
+          Please use a guest account to book.
+        </p>
+      </div>
+    </div>
+  )
 
   return (
     <>
