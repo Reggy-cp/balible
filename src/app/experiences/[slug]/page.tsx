@@ -121,12 +121,14 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
     )
   }
 
-  const currentForRec = {
-    slug: experience.slug, title: experience.title,
-    category: experience.category, area: experience.area,
-    price: experience.price, rating: experience.rating,
-    totalReviews: experience.totalReviews, images: experience.images,
-  }
+  const relatedExperiences = [...allOthers]
+    .sort((a, b) => {
+      const scoreA = (a.category === experience.category ? 2 : 0) + (a.area === experience.area ? 1 : 0)
+      const scoreB = (b.category === experience.category ? 2 : 0) + (b.area === experience.area ? 1 : 0)
+      if (scoreB !== scoreA) return scoreB - scoreA
+      return b.rating - a.rating
+    })
+    .slice(0, 3)
 
   return (
     <div style={{ fontFamily: 'var(--font-inter)' }}>
@@ -206,13 +208,13 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
 
           {/* RIGHT — booking widget (client island) */}
           <div id="booking" className="hidden lg:block lg:w-[340px] flex-shrink-0">
-            <BookingWidget price={experience.price} slug={experience.slug} duration={experience.duration} maxGuests={experience.maxGuests} rating={experience.rating} totalReviews={experience.totalReviews} blockedDates={experience.blockedDates} />
+            <BookingWidget price={experience.price} slug={experience.slug} duration={experience.duration} maxGuests={experience.maxGuests} rating={experience.rating} totalReviews={experience.totalReviews} blockedDates={experience.blockedDates} title={experience.title} image={experience.images[0]} area={experience.area} />
           </div>
         </div>
       </div>
 
       {/* ── AI RECOMMENDATIONS ── */}
-      <RecommendationsSection current={currentForRec} others={allOthers} />
+      <RecommendationsSection items={relatedExperiences} />
       <Footer />
 
       {/* ── MOBILE BOOKING MODAL ── */}
@@ -224,6 +226,9 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
         rating={experience.rating}
         totalReviews={experience.totalReviews}
         blockedDates={experience.blockedDates}
+        title={experience.title}
+        image={experience.images[0]}
+        area={experience.area}
       />
 
       <MobileNav />

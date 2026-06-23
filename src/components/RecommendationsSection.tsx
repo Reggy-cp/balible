@@ -83,78 +83,22 @@ function RecommendationCard({ exp }: { exp: ExpSummary }) {
   )
 }
 
-export default function RecommendationsSection({
-  current,
-  others,
-}: {
-  current: ExpSummary
-  others: ExpSummary[]
-}) {
-  const [recommended, setRecommended] = useState<ExpSummary[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    async function fetchRecs() {
-      try {
-        const res = await fetch('/api/recommendations', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ current, others }),
-        })
-        const data: { recommendations: string[] } = await res.json()
-        const slugs: string[] = data.recommendations || []
-        const matched = slugs
-          .map((slug: string) => others.find(e => e.slug === slug))
-          .filter((e): e is ExpSummary => !!e)
-          .slice(0, 3)
-        setRecommended(matched.length > 0 ? matched : others.slice(0, 3))
-      } catch {
-        setRecommended(others.slice(0, 3))
-      } finally {
-        setLoading(false)
-      }
-    }
-    if (others.length > 0) fetchRecs()
-    else setLoading(false)
-  }, [current.slug])
-
-  if (loading) {
-    return (
-      <section className="py-12 px-6 lg:px-16" style={{ backgroundColor: '#F5F1EB' }}>
-        <div className="max-w-[1440px] mx-auto">
-          <h2 className="mb-6" style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: '#111111' }}>
-            You might also love
-          </h2>
-          <div className="flex gap-5">
-            {[1,2,3].map(i => (
-              <div key={i} className="flex-shrink-0 rounded-xl animate-pulse" style={{ width: 220, height: 260, backgroundColor: '#E8E4DE' }} />
-            ))}
-          </div>
-        </div>
-      </section>
-    )
-  }
-
-  if (recommended.length === 0) return null
+export default function RecommendationsSection({ items }: { items: ExpSummary[] }) {
+  if (items.length === 0) return null
 
   return (
     <section className="py-12 px-6 lg:px-16" style={{ backgroundColor: '#F5F1EB' }}>
       <div className="max-w-[1440px] mx-auto">
         <div className="flex items-end justify-between mb-6">
-          <div>
-            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: '#111111' }}>
-              You might also love
-            </h2>
-            <p className="mt-1" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
-              Recommended by our AI based on what you're viewing.
-            </p>
-          </div>
+          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: '#111111' }}>
+            You might also love
+          </h2>
           <a href="/search" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#C8A97E', textDecoration: 'underline' }} className="flex-shrink-0 hover:opacity-70 transition-opacity">
             View all →
           </a>
         </div>
         <div className="flex gap-5 overflow-x-auto scrollbar-none pb-2">
-          {recommended.map(exp => <RecommendationCard key={exp.slug} exp={exp} />)}
+          {items.map(exp => <RecommendationCard key={exp.slug} exp={exp} />)}
         </div>
       </div>
     </section>

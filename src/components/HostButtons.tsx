@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Star, X } from 'lucide-react'
+import { Star, X, Bookmark } from 'lucide-react'
 import { useSession } from 'next-auth/react'
+import { toggleSavedHostAction } from '@/lib/actions'
 
 const HOST_KEY = 'balible_saved_hosts'
 
@@ -29,17 +30,20 @@ export function HostChatButton({ firstName, operatorId }: { firstName: string; o
 
 export function SaveHostButton({ slug }: { slug: string }) {
   const [saved, setSaved] = useState(false)
+  const { status } = useSession()
+  const isSignedIn = status === 'authenticated'
 
   useEffect(() => {
     setSaved(getSavedHosts().includes(slug))
   }, [slug])
 
-  const toggle = () => {
+  const toggle = async () => {
     const next = !saved
     setSaved(next)
     const list = getSavedHosts()
     const updated = next ? [...list, slug] : list.filter(s => s !== slug)
     localStorage.setItem(HOST_KEY, JSON.stringify(updated))
+    if (isSignedIn) toggleSavedHostAction(slug).catch(() => {})
   }
 
   return (
@@ -48,6 +52,7 @@ export function SaveHostButton({ slug }: { slug: string }) {
       className="flex items-center gap-2 hover:opacity-90 transition-opacity"
       style={{ height: 44, paddingInline: 20, borderRadius: 22, border: '1.5px solid rgba(255,255,255,0.4)', backgroundColor: 'transparent', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}
     >
+      <Bookmark size={14} fill={saved ? 'white' : 'none'} />
       {saved ? 'Saved' : 'Save host'}
     </button>
   )

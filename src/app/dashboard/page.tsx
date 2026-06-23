@@ -1721,6 +1721,7 @@ const HOST_PROFILE_DEFAULTS = {
   bio: '', area: 'Ubud', languages: 'English, Bahasa Indonesia',
   website: '', address: '', city: '', country: '',
   nationality: '', dateOfBirth: '',
+  instagram: '', tiktok: '', facebook: '', whatsapp: '', youtube: '',
 }
 
 function ProfilePanel({ profile: liveProfile }: { profile?: HostProfile }) {
@@ -1748,6 +1749,9 @@ function ProfilePanel({ profile: liveProfile }: { profile?: HostProfile }) {
       address: liveProfile.address, city: liveProfile.city,
       country: liveProfile.country, nationality: liveProfile.nationality,
       dateOfBirth: liveProfile.dateOfBirth,
+      instagram: liveProfile.instagram ?? '', tiktok: liveProfile.tiktok ?? '',
+      facebook: liveProfile.facebook ?? '', whatsapp: liveProfile.whatsapp ?? '',
+      youtube: liveProfile.youtube ?? '',
     }))
   }, [liveProfile])
 
@@ -1762,7 +1766,6 @@ function ProfilePanel({ profile: liveProfile }: { profile?: HostProfile }) {
       const url: string = json.url
       if (!url) return
       setAvatarPreview(url)
-      await updateHostProfileAction({ avatar: url })
     } catch { /* silent */ } finally {
       setAvatarUploading(false)
     }
@@ -1776,6 +1779,9 @@ function ProfilePanel({ profile: liveProfile }: { profile?: HostProfile }) {
       phone: profile.phone, area: profile.area, languages: profile.languages,
       website: profile.website, address: profile.address, city: profile.city,
       country: profile.country, nationality: profile.nationality, dateOfBirth: profile.dateOfBirth,
+      instagram: profile.instagram, tiktok: profile.tiktok, facebook: profile.facebook,
+      whatsapp: profile.whatsapp, youtube: profile.youtube,
+      ...(avatarPreview !== null ? { avatar: avatarPreview } : {}),
     }).catch(() => ({ ok: false }))
     setSaving(false)
     if (res.ok) { setSaved(true); setTimeout(() => setSaved(false), 2500) }
@@ -1890,6 +1896,46 @@ function ProfilePanel({ profile: liveProfile }: { profile?: HostProfile }) {
               {label(t('db_about_bio'))}
               <textarea rows={4} value={profile.bio} onChange={set('bio')} disabled={readOnly}
                 style={{ width: '100%', borderRadius: 10, border: '1px solid #E8E4DE', padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', resize: 'none', outline: 'none', lineHeight: 1.6, backgroundColor: readOnly ? '#F8F6F2' : 'white', boxSizing: 'border-box' }} />
+            </div>
+          </div>
+        </div>
+
+        {/* ── Social Media ── */}
+        <div className="bg-white rounded-xl p-6" style={{ border: '1px solid #E8E4DE' }}>
+          <h2 className="mb-1" style={{ fontFamily: 'var(--font-playfair)', fontSize: 17, fontWeight: 700, color: '#111111' }}>Social Media</h2>
+          <p className="mb-5" style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>Enter your username or handle — no need to include the full URL.</p>
+          <div className="space-y-4">
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                {label('Instagram')}
+                <div className="flex items-center" style={{ border: '1px solid #E8E4DE', borderRadius: 10, backgroundColor: readOnly ? '#F8F6F2' : 'white', overflow: 'hidden' }}>
+                  <span style={{ padding: '0 12px', fontSize: 13, color: '#6F675C', fontFamily: 'var(--font-inter)', borderRight: '1px solid #E8E4DE', whiteSpace: 'nowrap', lineHeight: '42px' }}>@</span>
+                  <input value={profile.instagram} onChange={set('instagram')} disabled={readOnly} placeholder="yourhandle" style={{ flex: 1, height: 42, padding: '0 12px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', border: 'none', outline: 'none', backgroundColor: 'transparent' }} />
+                </div>
+              </div>
+              <div>
+                {label('TikTok')}
+                <div className="flex items-center" style={{ border: '1px solid #E8E4DE', borderRadius: 10, backgroundColor: readOnly ? '#F8F6F2' : 'white', overflow: 'hidden' }}>
+                  <span style={{ padding: '0 12px', fontSize: 13, color: '#6F675C', fontFamily: 'var(--font-inter)', borderRight: '1px solid #E8E4DE', whiteSpace: 'nowrap', lineHeight: '42px' }}>@</span>
+                  <input value={profile.tiktok} onChange={set('tiktok')} disabled={readOnly} placeholder="yourhandle" style={{ flex: 1, height: 42, padding: '0 12px', fontSize: 14, fontFamily: 'var(--font-inter)', color: '#111111', border: 'none', outline: 'none', backgroundColor: 'transparent' }} />
+                </div>
+              </div>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                {label('Facebook')}
+                <input value={profile.facebook} onChange={set('facebook')} disabled={readOnly} placeholder="facebook.com/yourpage" style={inputStyle(readOnly)} />
+              </div>
+              <div>
+                {label('WhatsApp')}
+                <input value={profile.whatsapp} onChange={set('whatsapp')} disabled={readOnly} placeholder="+62 812 345 6789" style={inputStyle(readOnly)} />
+              </div>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                {label('YouTube')}
+                <input value={profile.youtube} onChange={set('youtube')} disabled={readOnly} placeholder="youtube.com/@yourchannel" style={inputStyle(readOnly)} />
+              </div>
             </div>
           </div>
         </div>
@@ -2704,6 +2750,12 @@ function PhotosPanel({ experiences, profile }: { experiences?: DashExp[]; profil
   const coverInputRef = useRef<HTMLInputElement>(null)
   const galleryInputRef = useRef<HTMLInputElement>(null)
 
+  // Save state
+  const [dirty, setDirty] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [saveError, setSaveError] = useState(false)
+
   useEffect(() => {
     if (profile?.coverPhoto !== undefined) setCoverPhoto(profile.coverPhoto)
     if (profile?.galleryImages) setGalleryImages(profile.galleryImages)
@@ -2720,52 +2772,35 @@ function PhotosPanel({ experiences, profile }: { experiences?: DashExp[]; profil
     if (readOnly || !file.type.startsWith('image/')) return
     setCoverUploading(true)
     const url = await uploadToBlob(file, 'host profile banner cover photo')
-    if (url) {
-      setCoverPhoto(url)
-      await updateOperatorSettingsAction({ coverPhoto: url })
-    }
+    if (url) { setCoverPhoto(url); setDirty(true) }
     setCoverUploading(false)
   }
 
-  const removeCover = async () => {
-    setCoverPhoto(null)
-    await updateOperatorSettingsAction({ coverPhoto: null })
-  }
+  const removeCover = () => { setCoverPhoto(null); setDirty(true) }
 
   const handleGalleryUpload = async (file: File) => {
     if (readOnly || !file.type.startsWith('image/')) return
     setGalleryUploading(true)
     const url = await uploadToBlob(file, 'host gallery photo Bali')
-    if (url) {
-      const next = [...galleryImages, url]
-      setGalleryImages(next)
-      await updateOperatorSettingsAction({ galleryImages: next })
-    }
+    if (url) { setGalleryImages(prev => { const next = [...prev, url]; return next }); setDirty(true) }
     setGalleryUploading(false)
   }
 
-  const removeGalleryImage = async (idx: number) => {
-    const next = galleryImages.filter((_, i) => i !== idx)
-    setGalleryImages(next)
-    await updateOperatorSettingsAction({ galleryImages: next })
-  }
-
-  const persist = (expId: number, arr: string[]) => {
-    const exp = exps.find(e => e.id === expId)
-    if (exp) updateExperienceImagesAction(exp.slug, arr)
+  const removeGalleryImage = (idx: number) => {
+    setGalleryImages(prev => prev.filter((_, i) => i !== idx)); setDirty(true)
   }
 
   const addPhoto = (expId: number, src: string) =>
-    setGalleries(prev => { const arr = [...(prev[expId] ?? []), src]; persist(expId, arr); return { ...prev, [expId]: arr } })
+    setGalleries(prev => { const arr = [...(prev[expId] ?? []), src]; setDirty(true); return { ...prev, [expId]: arr } })
 
   const removePhoto = (expId: number, idx: number) =>
-    setGalleries(prev => { const arr = [...(prev[expId] ?? [])]; arr.splice(idx, 1); persist(expId, arr); return { ...prev, [expId]: arr } })
+    setGalleries(prev => { const arr = [...(prev[expId] ?? [])]; arr.splice(idx, 1); setDirty(true); return { ...prev, [expId]: arr } })
 
   const setCover = (expId: number, idx: number) =>
     setGalleries(prev => {
       const arr = [...(prev[expId] ?? [])]
       const [photo] = arr.splice(idx, 1); arr.unshift(photo)
-      persist(expId, arr); return { ...prev, [expId]: arr }
+      setDirty(true); return { ...prev, [expId]: arr }
     })
 
   const handleFile = (expId: number, file: File) => {
@@ -2775,6 +2810,31 @@ function PhotosPanel({ experiences, profile }: { experiences?: DashExp[]; profil
     const reader = new FileReader()
     reader.onload = e => { addPhoto(expId, e.target?.result as string); setUploading(u => ({ ...u, [expId]: false })) }
     reader.readAsDataURL(file)
+  }
+
+  const saveAll = async () => {
+    if (saving) return
+    setSaving(true); setSaveError(false)
+    try {
+      await updateOperatorSettingsAction({ coverPhoto, galleryImages })
+      await Promise.all(exps.map(exp => {
+        const imgs = galleries[exp.id]
+        return imgs ? updateExperienceImagesAction(exp.slug, imgs) : Promise.resolve()
+      }))
+      setSaved(true); setDirty(false)
+      setTimeout(() => setSaved(false), 2500)
+    } catch {
+      setSaveError(true); setTimeout(() => setSaveError(false), 3000)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const discard = () => {
+    setCoverPhoto(profile?.coverPhoto ?? null)
+    setGalleryImages(profile?.galleryImages ?? [])
+    setGalleries(Object.fromEntries(exps.map(e => [e.id, e.images.length > 0 ? e.images : [e.image].filter(Boolean)])))
+    setDirty(false)
   }
 
   return (
@@ -2908,6 +2968,42 @@ function PhotosPanel({ experiences, profile }: { experiences?: DashExp[]; profil
           )
         })}
       </div>
+
+      {/* ── Save ── */}
+      {!readOnly && (
+        <div className="flex items-center gap-3 mt-5">
+          <button
+            onClick={saveAll}
+            disabled={saving || !dirty}
+            className="flex items-center gap-2 hover:opacity-90 transition-opacity"
+            style={{
+              height: 44, paddingInline: 24, borderRadius: 10, border: 'none',
+              backgroundColor: saved ? '#4A7C59' : saveError ? '#B66A45' : dirty ? '#111111' : '#D1CDC7',
+              color: 'white', fontSize: 14, fontWeight: 600,
+              cursor: saving || !dirty ? 'default' : 'pointer',
+              fontFamily: 'var(--font-inter)', transition: 'background 0.2s', minWidth: 140,
+            }}
+          >
+            {saved ? <><Check size={14} /> {t('db_saved')}</> : saving ? t('db_saving') : saveError ? t('db_save_failed') : t('db_save_changes')}
+          </button>
+          <button
+            onClick={discard}
+            disabled={!dirty}
+            style={{
+              height: 44, paddingInline: 24, borderRadius: 10, border: '1px solid #E8E4DE',
+              background: 'none', fontSize: 14, color: dirty ? '#6F675C' : '#C8C4BE',
+              cursor: dirty ? 'pointer' : 'default', fontFamily: 'var(--font-inter)',
+            }}
+          >
+            {t('db_discard')}
+          </button>
+          {dirty && !saving && !saveError && (
+            <span style={{ fontSize: 13, color: '#9E9A94', fontFamily: 'var(--font-inter)' }}>
+              {t('db_unsaved_changes')}
+            </span>
+          )}
+        </div>
+      )}
     </div>
   )
 }

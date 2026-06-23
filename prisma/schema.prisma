@@ -16,7 +16,8 @@ model User {
   password      String?
   image         String?
   role          Role      @default(TOURIST)
-  wishlistSlugs String[]  @default([])
+  wishlistSlugs     String[]  @default([])
+  savedHostSlugs    String[]  @default([])
   phone         String?
   nationality   String?
   locale        String?
@@ -93,6 +94,11 @@ model Operator {
   payoutBank          String?
   payoutAccountNumber String?
   payoutAccountName   String?
+  instagram           String?
+  tiktok              String?
+  facebook            String?
+  whatsapp            String?
+  youtube             String?
 
   experiences   Experience[]
   events        Event[]

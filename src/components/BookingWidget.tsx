@@ -49,13 +49,14 @@ function generateSlots(open: string, close: string, durMins: number): string[] {
   return slots
 }
 
-function MiniCalendar({
-  selected, onSelect, schedule, blockedDates = [],
+export function MiniCalendar({
+  selected, onSelect, schedule, blockedDates = [], disabledDates = [],
 }: {
   selected: string[]
   onSelect: (d: string) => void
   schedule: ScheduleDay[] | null
   blockedDates?: string[]
+  disabledDates?: string[]
 }) {
   const now = new Date()
   const [year, setYear] = useState(now.getFullYear())
@@ -70,6 +71,7 @@ function MiniCalendar({
 
   const isAvailable = (d: number) => {
     const dateStr = toStr(d)
+    if (disabledDates.includes(dateStr)) return false
     if (blockedDates.includes(dateStr)) return false
     if (!hasSchedule) return true
     const dow = new Date(year, month, d).getDay()
@@ -116,7 +118,7 @@ function MiniCalendar({
           const unavailable = !isAvailable(day)
           const disabled = isPast || unavailable
           const isToday = ds === todayStr
-          const isSel = selected.includes(ds)
+          const isSel = !disabled && selected.includes(ds)
           return (
             <button key={ds} disabled={disabled} onClick={() => !disabled && onSelect(ds)}
               title={unavailable && !isPast ? 'Closed on this day' : undefined}
@@ -142,10 +144,10 @@ function MiniCalendar({
   )
 }
 
-export default function BookingWidget({ price, slug, duration, maxGuests = 8, embedded = false, rating, totalReviews, blockedDates = [] }: { price: number; slug?: string; duration?: string; maxGuests?: number; embedded?: boolean; rating?: number; totalReviews?: number; blockedDates?: string[] }) {
+export default function BookingWidget({ price, slug, duration, maxGuests = 8, embedded = false, rating, totalReviews, blockedDates = [], title, image, area }: { price: number; slug?: string; duration?: string; maxGuests?: number; embedded?: boolean; rating?: number; totalReviews?: number; blockedDates?: string[]; title?: string; image?: string; area?: string }) {
   const { t } = useLanguage()
-  const [selectedDates, setSelectedDates] = useState<string[]>([])
-  const [selectedTimes, setSelectedTimes] = useState<string[]>([])
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [selectedTime, setSelectedTime] = useState<string | null>(null)
   const [guests, setGuests] = useState(1)
   const [wishlisted, setWishlisted] = useState(false)
   const { status } = useSession()
@@ -170,6 +172,14 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
     return () => clearInterval(id)
   }, [])
 
+  // Clear a stale past-date selection (e.g. restored by browser back-forward cache)
+  useEffect(() => {
+    if (!selectedDate) return
+    const n = new Date()
+    const ts = `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`
+    if (selectedDate < ts) { setSelectedDate(null); setSelectedTime(null) }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   // Initialise wishlist state from localStorage
   useEffect(() => {
     if (!slug) return
@@ -181,51 +191,39 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
     getExperienceScheduleAction(slug).then(s => { if (s) setSchedule(s as ScheduleDay[]) })
   }, [slug])
 
-  // Booked slots are based on the first selected date (for time-slot capacity)
-  const primaryDate = selectedDates[0] ?? null
+  const primaryDate = selectedDate
 
   useEffect(() => {
     if (!slug || !primaryDate) { setBookedGuests({}); return }
     getBookedSlotsAction(slug, primaryDate).then(setBookedGuests)
   }, [slug, primaryDate])
 
-  // Remove dates from selection if the schedule changed to disable them
+  // Clear selected time if it becomes past or fully booked
   useEffect(() => {
-    if (selectedDates.length === 0 || !schedule) return
-    setSelectedDates(prev => prev.filter(d => {
-      const idx = dowToScheduleIdx(new Date(d + 'T12:00:00').getDay())
-      return schedule[idx]?.enabled !== false
-    }))
-  }, [schedule])
-
-  // Remove any selected times that are now past or fully booked
-  useEffect(() => {
-    if (!primaryDate || selectedTimes.length === 0) return
+    if (!primaryDate || !selectedTime) return
     const { todayStr, nowMins } = currentTime
-    setSelectedTimes(prev => prev.filter(t => {
-      const past = primaryDate === todayStr && parseTimeMins(t) <= nowMins
-      const full = (bookedGuests[t] ?? 0) >= effectiveMaxGuests
-      return !past && !full
-    }))
-  }, [primaryDate, bookedGuests, currentTime, effectiveMaxGuests])
+    const past = primaryDate === todayStr && parseTimeMins(selectedTime) <= nowMins
+    const full = (bookedGuests[selectedTime] ?? 0) >= effectiveMaxGuests
+    if (past || full) setSelectedTime(null)
+  }, [primaryDate, bookedGuests, currentTime, effectiveMaxGuests, selectedTime])
 
-  // Toggle a time slot in/out of selectedTimes
+  // Select a single time slot (tap again to deselect)
   const handleTimeSelect = (slot: string) => {
-    setSelectedTimes(prev => {
-      if (prev.includes(slot)) return prev.filter(t => t !== slot)
-      const remaining = effectiveMaxGuests - (bookedGuests[slot] ?? 0)
-      setGuests(g => Math.min(g, remaining))
-      return [...prev, slot]
-    })
+    if (slot === selectedTime) { setSelectedTime(null); return }
+    const remaining = effectiveMaxGuests - (bookedGuests[slot] ?? 0)
+    setGuests(g => Math.min(g, remaining))
+    setSelectedTime(slot)
   }
 
-  // Toggle a date in/out of selectedDates; clear times when selection changes
+  // Select a date; clear time if changed
   const handleDateSelect = (d: string) => {
-    setSelectedDates(prev => {
-      const next = prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d]
-      if (next[0] !== prev[0]) setSelectedTimes([]) // primary date changed → reset times
-      return next
-    })
+    if (d === selectedDate) {
+      setSelectedDate(null)
+      setSelectedTime(null)
+    } else {
+      setSelectedDate(d)
+      setSelectedTime(null)
+    }
   }
 
   const formatted = effectivePrice.toLocaleString('id-ID')
@@ -264,6 +262,15 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
 
   return (
     <div className={embedded ? '' : 'bg-white rounded-xl p-6 sticky top-24'} style={embedded ? {} : { border: '1px solid #E8E4DE' }}>
+      {embedded && title && image && (
+        <div className="flex items-center gap-3 mb-5 pb-5" style={{ borderBottom: '1px solid #E8E4DE' }}>
+          <img src={image} alt={title} className="rounded-lg object-cover flex-shrink-0" style={{ width: 56, height: 56 }} />
+          <div className="min-w-0">
+            <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 14, fontWeight: 600, color: '#111111', lineHeight: 1.3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{title}</p>
+            {area && <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', marginTop: 2 }}>{area}</p>}
+          </div>
+        </div>
+      )}
       <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>From</span>
       <p style={{ fontFamily: 'var(--font-playfair)', fontSize: 24, fontWeight: 700, color: '#111111', marginTop: 2 }}>
         <span style={{ color: '#C8A97E' }}>IDR</span> {formatted}
@@ -292,7 +299,7 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
       {/* Date picker */}
       <div className="mt-5">
         <p className="mb-2" style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>Select date</p>
-        <MiniCalendar selected={selectedDates} onSelect={handleDateSelect} schedule={schedule} blockedDates={blockedDates} />
+        <MiniCalendar selected={selectedDate ? [selectedDate] : []} onSelect={handleDateSelect} schedule={schedule} blockedDates={blockedDates} />
       </div>
 
       {/* Time slots — shown after a date is selected */}
@@ -303,7 +310,7 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
           </p>
           <div className="flex flex-wrap gap-2">
             {slots.map(slot => {
-              const isSel = selectedTimes.includes(slot)
+              const isSel = selectedTime === slot
               const remaining = effectiveMaxGuests - (bookedGuests[slot] ?? 0)
               const isAlmostFull = remaining <= 3
               return (
@@ -361,8 +368,8 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
           className="w-full px-3 py-2.5 rounded-md outline-none appearance-none cursor-pointer"
           style={{ border: '1px solid #E8E4DE', fontFamily: 'var(--font-inter)', fontSize: 14, color: '#111111', backgroundColor: 'white' }}>
           {Array.from(
-            { length: selectedTimes.length > 0
-                ? Math.min(...selectedTimes.map(t => effectiveMaxGuests - (bookedGuests[t] ?? 0)))
+            { length: selectedTime
+                ? effectiveMaxGuests - (bookedGuests[selectedTime] ?? 0)
                 : effectiveMaxGuests },
             (_, i) => i + 1
           ).map(n => (
@@ -372,51 +379,39 @@ export default function BookingWidget({ price, slug, duration, maxGuests = 8, em
       </div>
 
       {/* Summary */}
-      {selectedDates.length > 0 && selectedTimes.length > 0 && (
+      {selectedDate && selectedTime && (
         <div className="mt-4 p-3 rounded-lg" style={{ backgroundColor: '#F5F1EB' }}>
-          {selectedDates.length > 1 && (
-            <div className="flex justify-between mb-1">
-              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>Dates</span>
-              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 600, color: '#111111' }}>
-                {[...selectedDates].sort().map(d => { const [,m,day] = d.split('-'); return `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]} ${+day}` }).join(', ')}
-              </span>
-            </div>
-          )}
           <div className="flex justify-between mb-1">
-            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>Times</span>
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C' }}>Time</span>
             <span style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 600, color: '#111111' }}>
-              {[...selectedTimes].sort().map(t => minsToLabel(parseTimeMins(t))).join(', ')}
+              {minsToLabel(parseTimeMins(selectedTime))}
             </span>
           </div>
           <div className="flex justify-between">
             <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>
               IDR {formatted} × {guests} guest{guests > 1 ? 's' : ''}
-              {(selectedDates.length > 1 || selectedTimes.length > 1) && ` × ${selectedDates.length * selectedTimes.length} session${selectedDates.length * selectedTimes.length > 1 ? 's' : ''}`}
             </span>
             <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111' }}>
-              IDR {(effectivePrice * guests * selectedDates.length * selectedTimes.length).toLocaleString('id-ID')}
+              IDR {(effectivePrice * guests).toLocaleString('id-ID')}
             </span>
           </div>
         </div>
       )}
 
       <a
-        href={(() => {
-          if (selectedDates.length === 0 || selectedTimes.length === 0) return '#'
-          const sorted = [...selectedDates].sort()
-          const extra = sorted.slice(1)
-          return `/checkout?slug=${slug ?? ''}&date=${sorted[0]}&times=${encodeURIComponent(selectedTimes.join(','))}${extra.length ? `&extraDates=${encodeURIComponent(extra.join(','))}` : ''}&guests=${guests}&maxGuests=${effectiveMaxGuests}`
-        })()}
-        onClick={e => { if (selectedDates.length === 0 || selectedTimes.length === 0) e.preventDefault() }}
+        href={selectedDate && selectedTime && slug
+          ? `/checkout?slug=${slug}&date=${selectedDate}&times=${encodeURIComponent(selectedTime)}&guests=${guests}&maxGuests=${effectiveMaxGuests}`
+          : undefined}
+        onClick={e => { if (!selectedDate || !selectedTime || !slug) e.preventDefault() }}
         className="w-full mt-4 flex items-center justify-center font-medium hover:opacity-90 transition-opacity"
         style={{
           height: 44, borderRadius: 8, fontFamily: 'var(--font-inter)', fontSize: 14, fontWeight: 500,
-          textDecoration: 'none', display: 'flex',
-          backgroundColor: selectedDates.length > 0 && selectedTimes.length > 0 ? '#111111' : '#E8E4DE',
-          color: selectedDates.length > 0 && selectedTimes.length > 0 ? 'white' : '#9E9A94',
-          cursor: selectedDates.length > 0 && selectedTimes.length > 0 ? 'pointer' : 'not-allowed',
+          textDecoration: 'none',
+          backgroundColor: selectedDate && selectedTime ? '#111111' : '#E8E4DE',
+          color: selectedDate && selectedTime ? 'white' : '#9E9A94',
+          cursor: selectedDate && selectedTime ? 'pointer' : 'not-allowed',
         }}>
-        {selectedDates.length === 0 ? t('select_date') : selectedTimes.length === 0 ? t('select_time') : t('book_experience')}
+        {!selectedDate ? t('select_date') : !selectedTime ? t('select_time') : t('book_experience')}
       </a>
 
       <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#4A7C59', textAlign: 'center', marginTop: 10 }}>

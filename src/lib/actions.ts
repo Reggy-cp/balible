@@ -85,6 +85,30 @@ export async function getUserWishlist(): Promise<string[]> {
   }
 }
 
+export async function toggleSavedHostAction(slug: string): Promise<{ ok: boolean }> {
+  try {
+    const user = await getSessionUser()
+    if (!user) return { ok: false }
+    const current: string[] = (user as any).savedHostSlugs ?? []
+    const next = current.includes(slug) ? current.filter(s => s !== slug) : [...current, slug]
+    await prisma.user.update({ where: { id: user.id }, data: { savedHostSlugs: next } })
+    return { ok: true }
+  } catch {
+    return { ok: false }
+  }
+}
+
+export async function getSavedHostSlugs(): Promise<string[]> {
+  try {
+    const user = await getSessionUser()
+    if (!user) return []
+    const row = await prisma.user.findUnique({ where: { id: user.id }, select: { savedHostSlugs: true } as any })
+    return (row as any)?.savedHostSlugs ?? []
+  } catch {
+    return []
+  }
+}
+
 // ── Booking ───────────────────────────────────────────────────────────────────
 
 export type CreateBookingInput = {
@@ -1594,6 +1618,11 @@ export type HostProfile = {
   dateOfBirth: string
   coverPhoto: string | null
   galleryImages: string[]
+  instagram: string
+  tiktok: string
+  facebook: string
+  whatsapp: string
+  youtube: string
 }
 
 export type HostDashboardData = {
@@ -1766,6 +1795,11 @@ export async function getHostDashboardData(viewOperatorId?: string): Promise<Hos
       dateOfBirth: (operator.user as any).dateOfBirth ? new Date((operator.user as any).dateOfBirth).toISOString().slice(0, 10) : '',
       coverPhoto: (operator as any).coverPhoto ?? null,
       galleryImages: (operator as any).galleryImages ?? [],
+      instagram: (operator as any).instagram ?? '',
+      tiktok: (operator as any).tiktok ?? '',
+      facebook: (operator as any).facebook ?? '',
+      whatsapp: (operator as any).whatsapp ?? '',
+      youtube: (operator as any).youtube ?? '',
     }
     return { hostName: operator.user.name, commissionRate: Math.round(commRateDecimal * 100), experiences, bookings, reviews, earningsByMonth, totalGross, pendingPayout, profile }
   } catch {
@@ -1780,6 +1814,7 @@ export async function updateHostProfileAction(input: {
   phone?: string; area?: string; languages?: string
   website?: string; address?: string; city?: string; country?: string
   nationality?: string; dateOfBirth?: string; avatar?: string
+  instagram?: string; tiktok?: string; facebook?: string; whatsapp?: string; youtube?: string
 }): Promise<{ ok: boolean; error?: string }> {
   try {
     const user = await getSessionUser()
@@ -1791,15 +1826,20 @@ export async function updateHostProfileAction(input: {
       where: { id: operator.id },
       data: {
         ...(input.businessName !== undefined ? { businessName: input.businessName.trim() } : {}),
-        ...(input.bio !== undefined ? { description: input.bio.trim() } : {}),
-        phone: input.phone?.trim() || null,
-        area: input.area?.trim() || null,
-        languages: input.languages?.trim() || null,
-        website: input.website?.trim() || null,
-        address: input.address?.trim() || null,
-        city: input.city?.trim() || null,
-        country: input.country?.trim() || null,
-        ...(input.avatar !== undefined ? { avatar: input.avatar } : {}),
+        ...(input.bio       !== undefined ? { description: input.bio.trim() } : {}),
+        ...(input.phone     !== undefined ? { phone:     input.phone?.trim()     || null } : {}),
+        ...(input.area      !== undefined ? { area:      input.area?.trim()      || null } : {}),
+        ...(input.languages !== undefined ? { languages: input.languages?.trim() || null } : {}),
+        ...(input.website   !== undefined ? { website:   input.website?.trim()   || null } : {}),
+        ...(input.address   !== undefined ? { address:   input.address?.trim()   || null } : {}),
+        ...(input.city      !== undefined ? { city:      input.city?.trim()      || null } : {}),
+        ...(input.country   !== undefined ? { country:   input.country?.trim()   || null } : {}),
+        ...(input.avatar    !== undefined ? { avatar:    input.avatar } : {}),
+        ...(input.instagram !== undefined ? { instagram: input.instagram?.trim() || null } : {}),
+        ...(input.tiktok    !== undefined ? { tiktok:    input.tiktok?.trim()    || null } : {}),
+        ...(input.facebook  !== undefined ? { facebook:  input.facebook?.trim()  || null } : {}),
+        ...(input.whatsapp  !== undefined ? { whatsapp:  input.whatsapp?.trim()  || null } : {}),
+        ...(input.youtube   !== undefined ? { youtube:   input.youtube?.trim()   || null } : {}),
       },
     })
     const userUpdate: Record<string, unknown> = {}
