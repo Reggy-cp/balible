@@ -2280,10 +2280,11 @@ function AnalyticsPanel() {
 
       {!loading && data && tab === 'revenue' && (
         <div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-            <GAMetricCard label="Gross Revenue"     value={data.metrics.revenue.value}        change={data.metrics.revenue.change}        good="up"   fmtValue={fmt} />
-            <GAMetricCard label="Avg Booking Value" value={data.metrics.avgBookingValue.value} change={data.metrics.avgBookingValue.change} good="up"   fmtValue={fmt} />
-            <GAMetricCard label="Bookings"          value={data.metrics.bookings.value}       change={data.metrics.bookings.change}       good="up"   fmtValue={v => v.toLocaleString()} />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <GAMetricCard label="Gross Revenue"      value={data.metrics.revenue.value}        change={data.metrics.revenue.change}        good="up"   fmtValue={fmt} />
+            <GAMetricCard label={`Commission (${Math.round(data.commissionRate * 100)}%)`} value={data.metrics.commission.value} change={data.metrics.commission.change} good="up" fmtValue={fmt} />
+            <GAMetricCard label="Avg Booking Value"  value={data.metrics.avgBookingValue.value} change={data.metrics.avgBookingValue.change} good="up"   fmtValue={fmt} />
+            <GAMetricCard label="Bookings"           value={data.metrics.bookings.value}       change={data.metrics.bookings.change}       good="up"   fmtValue={v => v.toLocaleString()} />
           </div>
 
           <div className="bg-white rounded-xl p-5 mb-5" style={{ border: `1px solid ${SAND}` }}>

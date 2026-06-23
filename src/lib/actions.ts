@@ -1955,9 +1955,11 @@ export async function updateHostProfileAction(input: {
 export type AnalyticsMetric = { value: number; change: number }
 
 export type AnalyticsData = {
+  commissionRate: number
   metrics: {
     bookings: AnalyticsMetric
     revenue: AnalyticsMetric
+    commission: AnalyticsMetric
     newUsers: AnalyticsMetric
     newHosts: AnalyticsMetric
     avgBookingValue: AnalyticsMetric
@@ -1986,11 +1988,13 @@ const STATUS_COLORS: Record<string, string> = {
 export async function getAnalyticsDataAction(days: number): Promise<AnalyticsData> {
   await requireAdmin()
   const empty: AnalyticsData = {
-    metrics: { bookings: { value: 0, change: 0 }, revenue: { value: 0, change: 0 }, newUsers: { value: 0, change: 0 }, newHosts: { value: 0, change: 0 }, avgBookingValue: { value: 0, change: 0 }, cancelRate: { value: 0, change: 0 } },
+    commissionRate: COMMISSION_RATE,
+    metrics: { bookings: { value: 0, change: 0 }, revenue: { value: 0, change: 0 }, commission: { value: 0, change: 0 }, newUsers: { value: 0, change: 0 }, newHosts: { value: 0, change: 0 }, avgBookingValue: { value: 0, change: 0 }, cancelRate: { value: 0, change: 0 } },
     bookingTrend: [], revenueTrend: [], userGrowth: [],
     topExperiences: [], categoryBreakdown: [], areaBreakdown: [], topHosts: [], bookingStatus: [],
   }
   try {
+    const commRate = await getCommissionRate()
     const now = new Date()
     const periodStart = new Date(now.getTime() - days * 86400000)
     const prevStart   = new Date(periodStart.getTime() - days * 86400000)
@@ -2125,14 +2129,19 @@ export async function getAnalyticsDataAction(days: number): Promise<AnalyticsDat
       status: s.charAt(0) + s.slice(1).toLowerCase(), count, color: STATUS_COLORS[s] ?? '#9E9A94',
     }))
 
+    const currCommission = Math.round(currRev * commRate)
+    const prevCommission = Math.round(prevRev * commRate)
+
     return {
+      commissionRate: commRate,
       metrics: {
-        bookings:       { value: currAllCount, change: pct(currAllCount, prevAllCount) },
-        revenue:        { value: currRev,     change: pct(currRev, prevRev) },
-        newUsers:       { value: currUsers,   change: pct(currUsers, prevUsers) },
-        newHosts:       { value: currHosts,   change: pct(currHosts, prevHosts) },
-        avgBookingValue: { value: currAvg,    change: pct(currAvg, prevAvg) },
-        cancelRate:     { value: currCancel,  change: pct(currCancel, prevCancel) },
+        bookings:       { value: currAllCount,   change: pct(currAllCount, prevAllCount) },
+        revenue:        { value: currRev,        change: pct(currRev, prevRev) },
+        commission:     { value: currCommission, change: pct(currCommission, prevCommission) },
+        newUsers:       { value: currUsers,      change: pct(currUsers, prevUsers) },
+        newHosts:       { value: currHosts,      change: pct(currHosts, prevHosts) },
+        avgBookingValue: { value: currAvg,       change: pct(currAvg, prevAvg) },
+        cancelRate:     { value: currCancel,     change: pct(currCancel, prevCancel) },
       },
       bookingTrend, revenueTrend, userGrowth,
       topExperiences, categoryBreakdown, areaBreakdown, topHosts, bookingStatus,
