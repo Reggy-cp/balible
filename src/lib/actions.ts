@@ -2762,6 +2762,34 @@ export async function saveAdminSettingsAction(settings: Record<string, string>):
   }
 }
 
+export type AdminNotification = {
+  id: string; type: string; title: string; body: string; href: string | null; read: boolean; createdAt: string
+}
+
+export async function getAdminNotificationsAction(): Promise<AdminNotification[]> {
+  await requireAdmin()
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) return []
+  try {
+    const rows = await prisma.notification.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: 'desc' },
+      take: 30,
+    })
+    return rows.map(r => ({
+      id: r.id, type: r.type, title: r.title, body: r.body,
+      href: r.href, read: r.read, createdAt: r.createdAt.toISOString(),
+    }))
+  } catch { return [] }
+}
+
+export async function markAdminNotificationsReadAction(ids: string[]): Promise<void> {
+  await requireAdmin()
+  try {
+    await prisma.notification.updateMany({ where: { id: { in: ids } }, data: { read: true } })
+  } catch {}
+}
+
 // ── Operator settings (notifs + payout bank + blocked dates) ─────────────────
 
 export type OperatorSettings = {

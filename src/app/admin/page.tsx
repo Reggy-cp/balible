@@ -37,6 +37,7 @@ import {
   getActivityLogsAction, type AuditLogEntry,
   getSiteActivityAction, type SiteActivityItem,
   bulkApproveHostsAction, bulkSuspendHostsAction, bulkDeleteUsersAction, bulkRemoveHostsAction,
+  getAdminNotificationsAction, markAdminNotificationsReadAction, type AdminNotification,
 } from '@/lib/actions'
 import { COMMISSION_RATE, PAYOUT_MIN_NET } from '@/lib/constants'
 
@@ -3777,52 +3778,111 @@ function SettingsPanel() {
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 
+const TYPE_DOT: Record<string, string> = {
+  booking: '#4A7C59', host: TERRACOTTA, review: GOLD,
+  listing: GOLD, info: COCONUT, warning: TERRACOTTA,
+}
+
 function AdminNotifBell({ onNavigate, align = 'left', dark = false, pendingHosts = 0, pendingListings = 0 }: { onNavigate: (section: string) => void; align?: 'left' | 'right'; dark?: boolean; pendingHosts?: number; pendingListings?: number }) {
-  const [notifOpen, setNotifOpen] = useState(false)
-  const unreadCount = pendingHosts + pendingListings
+  const [open, setOpen]           = useState(false)
+  const [notifs, setNotifs]       = useState<AdminNotification[]>([])
+  const [loaded, setLoaded]       = useState(false)
 
-  const adminNotifs = [
-    ...(pendingListings > 0 ? [{ id: 'listings', title: `${pendingListings} listing${pendingListings > 1 ? 's' : ''} pending review`, body: 'New listings need your approval', action: 'experiences', dot: GOLD }] : []),
-    ...(pendingHosts > 0    ? [{ id: 'hosts',    title: `${pendingHosts} host application${pendingHosts > 1 ? 's' : ''} pending`,     body: 'New hosts are waiting for approval', action: 'hosts', dot: TERRACOTTA }] : []),
-    { id: 'sys', title: 'Platform running normally', body: 'No critical issues detected', action: 'overview', dot: '#4A7C59' },
+  useEffect(() => {
+    getAdminNotificationsAction().then(d => { setNotifs(d); setLoaded(true) })
+  }, [])
+
+  const dbUnread    = notifs.filter(n => !n.read).length
+  const totalBadge  = dbUnread + pendingHosts + pendingListings
+  const bellColor   = dark
+    ? (totalBadge > 0 ? '#111111' : '#6F675C')
+    : (totalBadge > 0 ? 'white'   : 'rgba(255,255,255,0.55)')
+
+  function openDropdown() {
+    setOpen(true)
+    // Mark all unread as read
+    const unreadIds = notifs.filter(n => !n.read).map(n => n.id)
+    if (unreadIds.length) {
+      markAdminNotificationsReadAction(unreadIds)
+      setNotifs(ns => ns.map(n => ({ ...n, read: true })))
+    }
+  }
+
+  const actionItems = [
+    ...(pendingListings > 0 ? [{ id: 'listings', dot: GOLD,       title: `${pendingListings} listing${pendingListings > 1 ? 's' : ''} pending review`, body: 'New listings need your approval',    action: 'experiences' }] : []),
+    ...(pendingHosts    > 0 ? [{ id: 'hosts',    dot: TERRACOTTA, title: `${pendingHosts} host application${pendingHosts > 1 ? 's' : ''} pending`,      body: 'New hosts are waiting for approval', action: 'hosts'       }] : []),
   ]
-
-  const bellColor = dark ? (unreadCount > 0 ? '#111111' : '#6F675C') : (unreadCount > 0 ? 'white' : 'rgba(255,255,255,0.55)')
 
   return (
     <div className="relative">
-      <button onClick={() => setNotifOpen(o => !o)}
-        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+      <button onClick={() => open ? setOpen(false) : openDropdown()}
+        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, position: 'relative' }}>
         <Bell size={17} style={{ color: bellColor }} />
-        {unreadCount > 0 && (
+        {totalBadge > 0 && (
           <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: TERRACOTTA, fontSize: 9, color: 'white', fontWeight: 700 }}>{unreadCount}</span>
+            style={{ backgroundColor: TERRACOTTA, fontSize: 9, color: 'white', fontWeight: 700 }}>
+            {totalBadge > 9 ? '9+' : totalBadge}
+          </span>
         )}
       </button>
-      {notifOpen && (
+
+      {open && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setNotifOpen(false)} />
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div className="absolute top-9 z-50 bg-white rounded-xl shadow-2xl overflow-hidden"
-            style={{ [align === 'right' ? 'right' : 'left']: 0, width: 'min(300px, calc(100vw - 32px))', border: '1px solid #E8E4DE' }}>
-            <div className="px-4 py-3" style={{ borderBottom: '1px solid #E8E4DE' }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: '#111111' }}>Admin Notifications</span>
+            style={{ [align === 'right' ? 'right' : 'left']: 0, width: 'min(320px, calc(100vw - 32px))', border: '1px solid #E8E4DE' }}>
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid #E8E4DE' }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: '#111111' }}>Notifications</span>
+              {dbUnread > 0 && (
+                <span style={{ fontSize: 11, color: COCONUT }}>{dbUnread} unread</span>
+              )}
             </div>
-            <div>
-              {adminNotifs.map(n => (
-                <div key={n.id} onClick={() => { onNavigate(n.action); setNotifOpen(false) }}
-                  className="px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors"
-                  style={{ borderBottom: '1px solid #F5F1EB' }}>
-                  <div className="flex items-start gap-2">
-                    <span className="mt-1.5 flex-shrink-0 w-2 h-2 rounded-full" style={{ backgroundColor: n.dot }} />
-                    <div>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: '#111111', marginBottom: 2 }}>{n.title}</p>
-                      <p style={{ fontSize: 12, color: '#6F675C' }}>{n.body}</p>
-                    </div>
+
+            <div style={{ maxHeight: 360, overflowY: 'auto' }}>
+              {/* Pending action items */}
+              {actionItems.map(n => (
+                <div key={n.id} onClick={() => { onNavigate(n.action); setOpen(false) }}
+                  className="px-4 py-3 cursor-pointer hover:bg-stone-50 transition-colors flex items-start gap-3"
+                  style={{ borderBottom: `1px solid ${IVORY}` }}>
+                  <span className="mt-1.5 flex-shrink-0 w-2 h-2 rounded-full" style={{ backgroundColor: n.dot }} />
+                  <div className="flex-1 min-w-0">
+                    <p style={{ fontSize: 13, fontWeight: 600, color: '#111111', marginBottom: 2 }}>{n.title}</p>
+                    <p style={{ fontSize: 12, color: '#6F675C' }}>{n.body}</p>
                   </div>
                 </div>
               ))}
+
+              {/* Real DB notifications */}
+              {!loaded && (
+                <div className="px-4 py-4 text-center">
+                  <p style={{ fontSize: 13, color: COCONUT }}>Loading…</p>
+                </div>
+              )}
+              {loaded && notifs.length === 0 && actionItems.length === 0 && (
+                <div className="px-4 py-6 text-center">
+                  <Bell size={20} style={{ color: SAND, margin: '0 auto 8px' }} />
+                  <p style={{ fontSize: 13, color: COCONUT }}>No notifications</p>
+                </div>
+              )}
+              {notifs.map(n => (
+                <div key={n.id}
+                  onClick={() => { if (n.href) { window.location.href = n.href }; setOpen(false) }}
+                  className={`px-4 py-3 flex items-start gap-3 transition-colors ${n.href ? 'cursor-pointer hover:bg-stone-50' : ''}`}
+                  style={{ borderBottom: `1px solid ${IVORY}`, backgroundColor: n.read ? 'white' : '#FAFAF8' }}>
+                  <span className="mt-1.5 flex-shrink-0 w-2 h-2 rounded-full" style={{ backgroundColor: TYPE_DOT[n.type] ?? COCONUT }} />
+                  <div className="flex-1 min-w-0">
+                    <p style={{ fontSize: 13, fontWeight: n.read ? 400 : 600, color: '#111111', marginBottom: 2 }}>{n.title}</p>
+                    <p style={{ fontSize: 12, color: '#6F675C', lineHeight: 1.4 }}>{n.body}</p>
+                    <p style={{ fontSize: 11, color: COCONUT, marginTop: 3 }}>{fmtRelative(n.createdAt)}</p>
+                  </div>
+                  {!n.read && <span className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5" style={{ backgroundColor: GOLD }} />}
+                </div>
+              ))}
             </div>
-            <button onClick={() => { onNavigate('settings'); setNotifOpen(false) }}
+
+            <button onClick={() => { onNavigate('settings'); setOpen(false) }}
               className="w-full py-3 text-center hover:bg-gray-50 transition-colors"
               style={{ fontSize: 12, color: GOLD, fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', borderTop: '1px solid #E8E4DE' }}>
               Notification settings →
