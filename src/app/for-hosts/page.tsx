@@ -176,7 +176,7 @@ export default function ForHostsPage() {
           </div>
 
           {/* Quick stats */}
-          <div className="flex flex-wrap gap-8 mt-12">
+          <div className="flex flex-wrap gap-x-8 gap-y-4 mt-10 sm:mt-12">
             {[
               { value: '320+',    label: 'Active hosts' },
               { value: 'IDR 7.4M', label: 'Avg monthly earnings' },
@@ -289,7 +289,7 @@ export default function ForHostsPage() {
       {/* EARNINGS CALCULATOR */}
       <section id="calculator" className="py-16 px-6 lg:px-16" style={{ backgroundColor: '#F5F1EB' }}>
         <div className="max-w-[1440px] mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-start">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
             <div>
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, fontWeight: 600, color: '#C8A97E', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 10 }}>
                 Earnings
@@ -331,7 +331,7 @@ export default function ForHostsPage() {
                 <button
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
                   className="w-full flex items-center justify-between p-5 hover:bg-ivory transition-colors"
-                  style={{ background: 'none', cursor: 'pointer' }}
+                  style={{ cursor: 'pointer' }}
                 >
                   <span style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 600, color: '#111111', textAlign: 'left', flex: 1, paddingRight: 12 }}>{faq.q}</span>
                   {openFaq === i ? <ChevronUp size={16} style={{ color: '#6F675C', flexShrink: 0 }} /> : <ChevronDown size={16} style={{ color: '#6F675C', flexShrink: 0 }} />}
