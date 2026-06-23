@@ -5,7 +5,7 @@ import { Camera, X, ChevronLeft, ChevronRight } from 'lucide-react'
 
 const FALLBACK = 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=800&auto=format&fit=crop&q=80'
 
-export default function ExperienceGalleryFull({ images, title }: { images: string[]; title: string }) {
+export default function ExperienceGalleryFull({ images, imageAlts, title }: { images: string[]; imageAlts?: string[]; title: string }) {
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
   const [mobileActive, setMobileActive] = useState(0)
@@ -44,7 +44,7 @@ export default function ExperienceGalleryFull({ images, title }: { images: strin
         >
           <img
             src={thumbPhotos[0]}
-            alt={title}
+            alt={imageAlts?.[0] || title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-400"
           />
         </div>
@@ -59,7 +59,7 @@ export default function ExperienceGalleryFull({ images, title }: { images: strin
             >
               <img
                 src={src}
-                alt={`View ${i + 2}`}
+                alt={imageAlts?.[i + 1] || title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-400"
               />
               {i === 3 && (
@@ -85,7 +85,7 @@ export default function ExperienceGalleryFull({ images, title }: { images: strin
           <img
             key={mobileActive}
             src={allPhotos[mobileActive]}
-            alt={title}
+            alt={imageAlts?.[mobileActive] || title}
             className="w-full h-full object-cover"
             style={{ animation: 'galleryFade 0.2s ease-in' }}
           />
@@ -142,7 +142,7 @@ export default function ExperienceGalleryFull({ images, title }: { images: strin
             <img
               key={activeIndex}
               src={allPhotos[activeIndex]}
-              alt={`Photo ${activeIndex + 1}`}
+              alt={imageAlts?.[activeIndex] || title}
               className="max-w-full max-h-full object-contain select-none"
               style={{ borderRadius: 8, animation: 'galleryFade 0.15s ease-in' }}
               draggable={false}

@@ -411,6 +411,7 @@ export type HostListingInput = {
   excludes: string[]
   itinerary: { time: string; activity: string }[]
   imageUrl?: string
+  imageAlts?: string[]
 }
 
 async function getOrCreateOperator(businessName: string) {
@@ -553,6 +554,7 @@ export async function saveExperienceFullAction(
       maxGuests: input.maxGuests || 8,
       minGuests: input.minGuests || 1,
       images: allImages,
+      imageAlts: input.imageAlts ?? [],
       highlights: [],
       includes: input.includes,
       excludes: input.excludes,
@@ -701,6 +703,7 @@ export async function getHostExperiencesAction(): Promise<DashExp[] | null> {
       status: statusDisplay[String(e.status)] ?? 'Draft',
       image: (e.images as string[])[0] ?? '',
       images: e.images as string[],
+      imageAlts: (e as any).imageAlts as string[] ?? [],
       schedule: e.schedule ?? null,
       earnings: (e.bookings as { totalPrice: number }[]).reduce((a, b) => a + b.totalPrice, 0),
       description: e.description,
@@ -1583,7 +1586,7 @@ export type DashExp = {
   id: number; slug: string; title: string; category: string; area: string
   price: number; duration: string; maxGuests: number; minGuests: number; subcategory: string
   rating: number; totalReviews: number; bookings: number; status: string
-  image: string; images: string[]; earnings: number
+  image: string; images: string[]; imageAlts: string[]; earnings: number
   description: string; meetingPoint: string
   schedule: any | null
   includes: string[]; excludes: string[]
@@ -1617,7 +1620,9 @@ export type HostProfile = {
   nationality: string
   dateOfBirth: string
   coverPhoto: string | null
+  coverPhotoAlt: string | null
   galleryImages: string[]
+  galleryImageAlts: string[]
   instagram: string
   tiktok: string
   facebook: string
@@ -1744,6 +1749,7 @@ export async function getHostDashboardData(viewOperatorId?: string): Promise<Hos
       status: expStatusDisplay[String(e.status)] ?? 'Draft',
       image: (e.images as string[])[0] ?? '',
       images: e.images as string[],
+      imageAlts: (e as any).imageAlts as string[] ?? [],
       schedule: e.schedule ?? null,
       earnings: (e.bookings as { totalPrice: number }[]).reduce((a, b) => a + b.totalPrice, 0),
       description: e.description,
@@ -1794,7 +1800,9 @@ export async function getHostDashboardData(viewOperatorId?: string): Promise<Hos
       nationality: (operator.user as any).nationality ?? '',
       dateOfBirth: (operator.user as any).dateOfBirth ? new Date((operator.user as any).dateOfBirth).toISOString().slice(0, 10) : '',
       coverPhoto: (operator as any).coverPhoto ?? null,
+      coverPhotoAlt: (operator as any).coverPhotoAlt ?? null,
       galleryImages: (operator as any).galleryImages ?? [],
+      galleryImageAlts: (operator as any).galleryImageAlts ?? [],
       instagram: (operator as any).instagram ?? '',
       tiktok: (operator as any).tiktok ?? '',
       facebook: (operator as any).facebook ?? '',
@@ -2619,7 +2627,9 @@ export async function updateOperatorSettingsAction(data: {
   payoutAccountName?: string
   blockedDates?: string[]
   coverPhoto?: string | null
+  coverPhotoAlt?: string | null
   galleryImages?: string[]
+  galleryImageAlts?: string[]
 }): Promise<{ ok: boolean }> {
   try {
     const user = await getSessionUser()
@@ -2635,7 +2645,9 @@ export async function updateOperatorSettingsAction(data: {
         ...(data.payoutAccountName !== undefined && { payoutAccountName: data.payoutAccountName || null }),
         ...(data.blockedDates !== undefined && { blockedDates: data.blockedDates }),
         ...(data.coverPhoto !== undefined && { coverPhoto: data.coverPhoto }),
+        ...(data.coverPhotoAlt !== undefined && { coverPhotoAlt: data.coverPhotoAlt }),
         ...(data.galleryImages !== undefined && { galleryImages: data.galleryImages }),
+        ...(data.galleryImageAlts !== undefined && { galleryImageAlts: data.galleryImageAlts }),
       },
     })
     return { ok: true }
@@ -2644,14 +2656,14 @@ export async function updateOperatorSettingsAction(data: {
 
 // ── Experience gallery images ─────────────────────────────────────────────────
 
-export async function updateExperienceImagesAction(slug: string, images: string[]): Promise<{ ok: boolean }> {
+export async function updateExperienceImagesAction(slug: string, images: string[], imageAlts?: string[]): Promise<{ ok: boolean }> {
   try {
     const session = await getServerSession(authOptions)
     const userId = session?.user?.id
     if (!userId) return { ok: false }
     const op = await prisma.operator.findUnique({ where: { userId } })
     if (!op) return { ok: false }
-    await prisma.experience.update({ where: { slug, operatorId: op.id }, data: { images } })
+    await prisma.experience.update({ where: { slug, operatorId: op.id }, data: { images, imageAlts: imageAlts ?? [] } })
     return { ok: true }
   } catch { return { ok: false } }
 }

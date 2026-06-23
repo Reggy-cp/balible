@@ -513,8 +513,10 @@ function ExperiencesPanel({ commissionRate, initialExperiences, triggerNewExp }:
   const [editingExp, setEditingExp] = useState<DashExp | null>(null)
   const [menuOpen, setMenuOpen] = useState<number | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [imageAlt, setImageAlt] = useState<string>('')
   const [imageDragging, setImageDragging] = useState(false)
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([])
+  const [galleryAlts, setGalleryAlts] = useState<string[]>([])
   const [galleryDragging, setGalleryDragging] = useState(false)
   const [uploadingCover, setUploadingCover] = useState(false)
   const [uploadingGalleryCount, setUploadingGalleryCount] = useState(0)
@@ -554,7 +556,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences, triggerNewExp }:
     setUploadingCover(true)
     const result = await uploadImage(file, `${formData.title || 'Bali experience'} cover photo`)
     setUploadingCover(false)
-    if (result) setImagePreview(result.url)
+    if (result) { setImagePreview(result.url); setImageAlt(result.alt) }
   }
 
   const handleGalleryFiles = async (files: FileList | null) => {
@@ -565,11 +567,15 @@ function ExperiencesPanel({ commissionRate, initialExperiences, triggerNewExp }:
     setUploadingGalleryCount(toUpload.length)
     const results = await Promise.all(toUpload.map((f, i) => uploadImage(f, `${formData.title || 'Bali experience'} gallery photo ${galleryPreviews.length + i + 1}`)))
     setUploadingGalleryCount(0)
-    setGalleryPreviews(prev => [...prev, ...(results.filter(Boolean).map(r => r!.url))])
+    const valid = results.filter(Boolean) as { url: string; alt: string }[]
+    setGalleryPreviews(prev => [...prev, ...valid.map(r => r.url)])
+    setGalleryAlts(prev => [...prev, ...valid.map(r => r.alt)])
   }
 
-  const removeGalleryImage = (idx: number) =>
+  const removeGalleryImage = (idx: number) => {
     setGalleryPreviews(prev => prev.filter((_, i) => i !== idx))
+    setGalleryAlts(prev => prev.filter((_, i) => i !== idx))
+  }
 
   const [itinerary, setItinerary] = useState([{ time: '', activity: '' }])
 
@@ -587,7 +593,9 @@ function ExperiencesPanel({ commissionRate, initialExperiences, triggerNewExp }:
       setFormData(BLANK_FORM)
       setFormStep(1)
       setImagePreview(null)
+      setImageAlt('')
       setGalleryPreviews([])
+      setGalleryAlts([])
       setSaveError('')
       setShowForm(true)
     }
@@ -606,7 +614,9 @@ function ExperiencesPanel({ commissionRate, initialExperiences, triggerNewExp }:
     if (readOnly) return
     setEditingExp(exp)
     setImagePreview(exp.image || null)
+    setImageAlt(exp.imageAlts?.[0] ?? '')
     setGalleryPreviews(exp.images.slice(1))
+    setGalleryAlts(exp.imageAlts?.slice(1) ?? [])
     setFormStep(1)
     const isRental = exp.category === 'Rentals'
     const depositLine = (exp.includes ?? []).find((l: string) => l.startsWith('Deposit:'))
@@ -629,6 +639,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences, triggerNewExp }:
     )
     const toLines = (s: string) => s.split('\n').map(l => l.trim()).filter(Boolean)
     const allImages = [imagePreview, ...galleryPreviews].filter(Boolean) as string[]
+    const allAlts = [imageAlt, ...galleryAlts].slice(0, allImages.length)
     const listingInput: HostListingInput = {
       slug,
       title: formData.title || editingExp?.title || '',
@@ -652,6 +663,7 @@ function ExperiencesPanel({ commissionRate, initialExperiences, triggerNewExp }:
       excludes: toLines(formData.excludes),
       itinerary: itinerary.filter(s => s.time || s.activity),
       imageUrl: imagePreview ?? undefined,
+      imageAlts: allAlts,
     }
     try {
       const res = await saveExperienceFullAction({ ...listingInput, schedule, images: allImages }, action)
@@ -673,7 +685,9 @@ function ExperiencesPanel({ commissionRate, initialExperiences, triggerNewExp }:
     setEditingExp(null)
     setFormStep(1)
     setImagePreview(null)
+    setImageAlt('')
     setGalleryPreviews([])
+    setGalleryAlts([])
     setItinerary([{ time: '', activity: '' }])
     setSchedule(WEEK.map(day => ({ day, enabled: false, open: '09:00', close: '17:00' })))
     setFormData(BLANK_FORM)
@@ -911,33 +925,39 @@ function ExperiencesPanel({ commissionRate, initialExperiences, triggerNewExp }:
                     <textarea value={formData.excludes} onChange={e => setField('excludes', e.target.value)} placeholder={"One item per line\ne.g. Transport to venue\nGratuities"} rows={4} style={{ ...inputStyle, resize: 'none' }} />
                   </div>
                   <div>
-                    <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
-                      <label style={labelStyle}>Itinerary <span style={{ fontWeight: 400, color: '#9E9A94' }}>(optional)</span></label>
+                    <div className="flex items-center justify-between" style={{ marginBottom: 8 }}>
+                      <div>
+                        <label style={labelStyle}>Itinerary</label>
+                        <p style={{ fontSize: 11, color: '#9E9A94', marginTop: 1 }}>Optional — add a step-by-step schedule for guests</p>
+                      </div>
                       <button type="button" onClick={addStep}
-                        style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: '#C8A97E', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-                        <Plus size={13} /> Add step
+                        style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: '#C8A97E', background: 'none', border: '1px solid #E8E4DE', borderRadius: 8, cursor: 'pointer', padding: '6px 10px', flexShrink: 0 }}>
+                        <Plus size={12} /> Add step
                       </button>
                     </div>
                     <div className="space-y-2">
                       {itinerary.map((step, idx) => (
-                        <div key={idx} className="flex gap-2 items-start">
+                        <div key={idx} className="flex gap-2 items-center p-3 rounded-xl" style={{ backgroundColor: '#F9F9F7', border: '1px solid #E8E4DE' }}>
+                          <div style={{ flexShrink: 0, width: 20, height: 20, borderRadius: '50%', backgroundColor: '#E8E4DE', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#6F675C' }}>
+                            {idx + 1}
+                          </div>
                           <input
                             type="text"
                             value={step.time}
                             onChange={e => updateStep(idx, 'time', e.target.value)}
-                            placeholder="e.g. 9:00 AM"
-                            style={{ ...inputStyle, width: 110, flexShrink: 0 }}
+                            placeholder="9:00 AM"
+                            style={{ ...inputStyle, width: 100, flexShrink: 0, backgroundColor: 'white', fontSize: 13 }}
                           />
                           <input
                             type="text"
                             value={step.activity}
                             onChange={e => updateStep(idx, 'activity', e.target.value)}
-                            placeholder="Describe this part of the experience"
-                            style={{ ...inputStyle, flex: 1 }}
+                            placeholder="What happens at this time?"
+                            style={{ ...inputStyle, flex: 1, backgroundColor: 'white', fontSize: 13 }}
                           />
                           {itinerary.length > 1 && (
                             <button type="button" onClick={() => removeStep(idx)}
-                              style={{ flexShrink: 0, width: 36, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: '1px solid #E8E4DE', borderRadius: 8, cursor: 'pointer', color: '#B66A45' }}>
+                              style={{ flexShrink: 0, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', borderRadius: 6, cursor: 'pointer', color: '#B66A45' }}>
                               <Trash2 size={13} />
                             </button>
                           )}
@@ -2774,12 +2794,17 @@ function PhotosPanel({ experiences, profile }: { experiences?: DashExp[]; profil
   const [galleries, setGalleries] = useState<Record<number, string[]>>(
     Object.fromEntries(exps.map(e => [e.id, e.images.length > 0 ? e.images : [e.image].filter(Boolean)]))
   )
+  const [expAlts, setExpAlts] = useState<Record<number, string[]>>(
+    Object.fromEntries(exps.map(e => [e.id, e.imageAlts ?? []]))
+  )
   const [uploading, setUploading] = useState<Record<number, boolean>>({})
   const fileRefs = useRef<Record<number, HTMLInputElement | null>>({})
 
   // Profile media state
   const [coverPhoto, setCoverPhoto] = useState<string | null>(profile?.coverPhoto ?? null)
+  const [coverPhotoAlt, setCoverPhotoAlt] = useState<string | null>(profile?.coverPhotoAlt ?? null)
   const [galleryImages, setGalleryImages] = useState<string[]>(profile?.galleryImages ?? [])
+  const [galleryImageAlts, setGalleryImageAlts] = useState<string[]>(profile?.galleryImageAlts ?? [])
   const [coverUploading, setCoverUploading] = useState(false)
   const [galleryUploading, setGalleryUploading] = useState(false)
   const coverInputRef = useRef<HTMLInputElement>(null)
@@ -2793,68 +2818,88 @@ function PhotosPanel({ experiences, profile }: { experiences?: DashExp[]; profil
 
   useEffect(() => {
     if (profile?.coverPhoto !== undefined) setCoverPhoto(profile.coverPhoto)
+    if (profile?.coverPhotoAlt !== undefined) setCoverPhotoAlt(profile.coverPhotoAlt ?? null)
     if (profile?.galleryImages) setGalleryImages(profile.galleryImages)
+    if (profile?.galleryImageAlts) setGalleryImageAlts(profile.galleryImageAlts)
   }, [profile])
 
-  const uploadToBlob = async (file: File, hint: string): Promise<string | null> => {
+  const uploadToBlob = async (file: File, hint: string): Promise<{ url: string; alt: string } | null> => {
     const fd = new FormData(); fd.append('file', file); fd.append('hint', hint)
     const res = await fetch('/api/upload-image', { method: 'POST', body: fd })
+    if (!res.ok) return null
     const json = await res.json()
-    return json.url ?? null
+    return json.url ? { url: json.url, alt: json.alt ?? hint } : null
   }
 
   const handleCoverUpload = async (file: File) => {
     if (readOnly || !file.type.startsWith('image/')) return
     setCoverUploading(true)
-    const url = await uploadToBlob(file, 'host profile banner cover photo')
-    if (url) { setCoverPhoto(url); setDirty(true) }
+    const result = await uploadToBlob(file, 'host profile banner cover photo')
+    if (result) { setCoverPhoto(result.url); setCoverPhotoAlt(result.alt); setDirty(true) }
     setCoverUploading(false)
   }
 
-  const removeCover = () => { setCoverPhoto(null); setDirty(true) }
+  const removeCover = () => { setCoverPhoto(null); setCoverPhotoAlt(null); setDirty(true) }
 
   const handleGalleryUpload = async (file: File) => {
     if (readOnly || !file.type.startsWith('image/')) return
     setGalleryUploading(true)
-    const url = await uploadToBlob(file, 'host gallery photo Bali')
-    if (url) { setGalleryImages(prev => { const next = [...prev, url]; return next }); setDirty(true) }
+    const result = await uploadToBlob(file, 'host gallery photo Bali')
+    if (result) {
+      setGalleryImages(prev => [...prev, result.url])
+      setGalleryImageAlts(prev => [...prev, result.alt])
+      setDirty(true)
+    }
     setGalleryUploading(false)
   }
 
   const removeGalleryImage = (idx: number) => {
-    setGalleryImages(prev => prev.filter((_, i) => i !== idx)); setDirty(true)
+    setGalleryImages(prev => prev.filter((_, i) => i !== idx))
+    setGalleryImageAlts(prev => prev.filter((_, i) => i !== idx))
+    setDirty(true)
   }
 
-  const addPhoto = (expId: number, src: string) =>
+  const addPhoto = (expId: number, src: string, alt = '') => {
     setGalleries(prev => { const arr = [...(prev[expId] ?? []), src]; setDirty(true); return { ...prev, [expId]: arr } })
+    setExpAlts(prev => { const arr = [...(prev[expId] ?? []), alt]; return { ...prev, [expId]: arr } })
+  }
 
-  const removePhoto = (expId: number, idx: number) =>
+  const removePhoto = (expId: number, idx: number) => {
     setGalleries(prev => { const arr = [...(prev[expId] ?? [])]; arr.splice(idx, 1); setDirty(true); return { ...prev, [expId]: arr } })
+    setExpAlts(prev => { const arr = [...(prev[expId] ?? [])]; arr.splice(idx, 1); return { ...prev, [expId]: arr } })
+  }
 
-  const setCover = (expId: number, idx: number) =>
+  const setCover = (expId: number, idx: number) => {
     setGalleries(prev => {
       const arr = [...(prev[expId] ?? [])]
       const [photo] = arr.splice(idx, 1); arr.unshift(photo)
       setDirty(true); return { ...prev, [expId]: arr }
     })
+    setExpAlts(prev => {
+      const arr = [...(prev[expId] ?? [])]
+      const [alt] = arr.splice(idx, 1); arr.unshift(alt)
+      return { ...prev, [expId]: arr }
+    })
+  }
 
-  const handleFile = (expId: number, file: File) => {
+  const handleFile = async (expId: number, file: File) => {
     if (readOnly) return
     if (!file.type.startsWith('image/')) return
     setUploading(u => ({ ...u, [expId]: true }))
-    const reader = new FileReader()
-    reader.onload = e => { addPhoto(expId, e.target?.result as string); setUploading(u => ({ ...u, [expId]: false })) }
-    reader.readAsDataURL(file)
+    const result = await uploadToBlob(file, 'experience photo Bali')
+    if (result) addPhoto(expId, result.url, result.alt)
+    setUploading(u => ({ ...u, [expId]: false }))
   }
 
   const saveAll = async () => {
     if (saving) return
     setSaving(true); setSaveError(false)
     try {
-      await updateOperatorSettingsAction({ coverPhoto, galleryImages })
+      const r = await updateOperatorSettingsAction({ coverPhoto, coverPhotoAlt, galleryImages, galleryImageAlts })
+      if (!r.ok) throw new Error('save failed')
       await Promise.all(exps.map(exp => {
         const imgs = galleries[exp.id]
-        return imgs ? updateExperienceImagesAction(exp.slug, imgs) : Promise.resolve()
+        return imgs ? updateExperienceImagesAction(exp.slug, imgs, expAlts[exp.id]) : Promise.resolve()
       }))
       setSaved(true); setDirty(false)
       setTimeout(() => setSaved(false), 2500)
@@ -2867,8 +2912,11 @@ function PhotosPanel({ experiences, profile }: { experiences?: DashExp[]; profil
 
   const discard = () => {
     setCoverPhoto(profile?.coverPhoto ?? null)
+    setCoverPhotoAlt(profile?.coverPhotoAlt ?? null)
     setGalleryImages(profile?.galleryImages ?? [])
+    setGalleryImageAlts(profile?.galleryImageAlts ?? [])
     setGalleries(Object.fromEntries(exps.map(e => [e.id, e.images.length > 0 ? e.images : [e.image].filter(Boolean)])))
+    setExpAlts(Object.fromEntries(exps.map(e => [e.id, e.imageAlts ?? []])))
     setDirty(false)
   }
 

@@ -87,7 +87,9 @@ model Operator {
   notifSettings       Json?
   blockedDates        String[]  @default([])
   coverPhoto          String?
+  coverPhotoAlt       String?
   galleryImages       String[]  @default([])
+  galleryImageAlts    String[]  @default([])
   verified            Boolean  @default(false)
   rating              Float    @default(0)
   totalReviews        Int      @default(0)
@@ -124,6 +126,7 @@ model Experience {
   minGuests      Int        @default(1)
   subcategory    String     @default("")
   images         String[]
+  imageAlts      String[]   @default([])
   highlights     String[]
   includes       String[]
   excludes       String[]

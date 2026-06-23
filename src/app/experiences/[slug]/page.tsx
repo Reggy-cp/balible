@@ -23,7 +23,7 @@ type ExpData = {
   level: string; language: string; maxGuests: number; rating: number; totalReviews: number;
   description: string; highlights: string[]; includes: string[]; excludes: string[];
   itinerary?: { time: string; activity: string }[];
-  meetingPoint: string; images: string[];
+  meetingPoint: string; images: string[]; imageAlts: string[];
   blockedDates: string[];
   operator: { businessName: string; description: string; avatar?: string | null; rating: number; totalReviews: number; user: { name: string; image?: string | null } };
   reviews: { id: string; rating: number; comment: string; createdAt: Date; user: { name: string; image?: string | null } }[];
@@ -71,7 +71,7 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
         description: dbExp.description, highlights: dbExp.highlights,
         includes: dbExp.includes, excludes: dbExp.excludes,
         itinerary: Array.isArray(dbExp.itinerary) ? (dbExp.itinerary as { time: string; activity: string }[]) : [],
-        meetingPoint: dbExp.meetingPoint, images: dbExp.images,
+        meetingPoint: dbExp.meetingPoint, images: dbExp.images, imageAlts: (dbExp as any).imageAlts ?? [],
         blockedDates: (dbExp.operator.blockedDates as string[]) ?? [],
         operator: {
           businessName: dbExp.operator.businessName,
@@ -142,7 +142,7 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
         </a>
 
         {/* ── PHOTO GALLERY ── */}
-        <ExperienceGalleryFull images={experience.images} title={experience.title} />
+        <ExperienceGalleryFull images={experience.images} imageAlts={experience.imageAlts} title={experience.title} />
 
         {/* ── TWO-COLUMN LAYOUT ── */}
         <div className="flex flex-col lg:flex-row gap-10">
