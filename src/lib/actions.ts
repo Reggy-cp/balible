@@ -1956,10 +1956,12 @@ export type AnalyticsMetric = { value: number; change: number }
 
 export type AnalyticsData = {
   commissionRate: number
+  serviceFeeRate: number
   metrics: {
     bookings: AnalyticsMetric
     revenue: AnalyticsMetric
     commission: AnalyticsMetric
+    platformRevenue: AnalyticsMetric
     newUsers: AnalyticsMetric
     newHosts: AnalyticsMetric
     avgBookingValue: AnalyticsMetric
@@ -1989,12 +1991,13 @@ export async function getAnalyticsDataAction(days: number): Promise<AnalyticsDat
   await requireAdmin()
   const empty: AnalyticsData = {
     commissionRate: COMMISSION_RATE,
-    metrics: { bookings: { value: 0, change: 0 }, revenue: { value: 0, change: 0 }, commission: { value: 0, change: 0 }, newUsers: { value: 0, change: 0 }, newHosts: { value: 0, change: 0 }, avgBookingValue: { value: 0, change: 0 }, cancelRate: { value: 0, change: 0 } },
+    serviceFeeRate: 0,
+    metrics: { bookings: { value: 0, change: 0 }, revenue: { value: 0, change: 0 }, commission: { value: 0, change: 0 }, platformRevenue: { value: 0, change: 0 }, newUsers: { value: 0, change: 0 }, newHosts: { value: 0, change: 0 }, avgBookingValue: { value: 0, change: 0 }, cancelRate: { value: 0, change: 0 } },
     bookingTrend: [], revenueTrend: [], userGrowth: [],
     topExperiences: [], categoryBreakdown: [], areaBreakdown: [], topHosts: [], bookingStatus: [],
   }
   try {
-    const commRate = await getCommissionRate()
+    const [commRate, feeRate] = await Promise.all([getCommissionRate(), getServiceFeeRate()])
     const now = new Date()
     const periodStart = new Date(now.getTime() - days * 86400000)
     const prevStart   = new Date(periodStart.getTime() - days * 86400000)
@@ -2131,17 +2134,27 @@ export async function getAnalyticsDataAction(days: number): Promise<AnalyticsDat
 
     const currCommission = Math.round(currRev * commRate)
     const prevCommission = Math.round(prevRev * commRate)
+    // Platform revenue = service fee (from guest) + commission (from host)
+    // basePrice = totalPrice / (1 + feeRate); serviceFee = totalPrice - basePrice
+    const calcPlatformRev = (rev: number) => {
+      const base = feeRate > 0 ? Math.round(rev / (1 + feeRate)) : rev
+      return Math.round((rev - base) + base * commRate)
+    }
+    const currPlatformRev = calcPlatformRev(currRev)
+    const prevPlatformRev = calcPlatformRev(prevRev)
 
     return {
       commissionRate: commRate,
+      serviceFeeRate: feeRate,
       metrics: {
-        bookings:       { value: currAllCount,   change: pct(currAllCount, prevAllCount) },
-        revenue:        { value: currRev,        change: pct(currRev, prevRev) },
-        commission:     { value: currCommission, change: pct(currCommission, prevCommission) },
-        newUsers:       { value: currUsers,      change: pct(currUsers, prevUsers) },
-        newHosts:       { value: currHosts,      change: pct(currHosts, prevHosts) },
-        avgBookingValue: { value: currAvg,       change: pct(currAvg, prevAvg) },
-        cancelRate:     { value: currCancel,     change: pct(currCancel, prevCancel) },
+        bookings:        { value: currAllCount,    change: pct(currAllCount, prevAllCount) },
+        revenue:         { value: currRev,         change: pct(currRev, prevRev) },
+        commission:      { value: currCommission,  change: pct(currCommission, prevCommission) },
+        platformRevenue: { value: currPlatformRev, change: pct(currPlatformRev, prevPlatformRev) },
+        newUsers:        { value: currUsers,       change: pct(currUsers, prevUsers) },
+        newHosts:        { value: currHosts,       change: pct(currHosts, prevHosts) },
+        avgBookingValue: { value: currAvg,         change: pct(currAvg, prevAvg) },
+        cancelRate:      { value: currCancel,      change: pct(currCancel, prevCancel) },
       },
       bookingTrend, revenueTrend, userGrowth,
       topExperiences, categoryBreakdown, areaBreakdown, topHosts, bookingStatus,

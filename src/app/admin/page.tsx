@@ -2165,8 +2165,8 @@ function AnalyticsPanel() {
           <div className="grid grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
             <GAMetricCard label="Bookings"          value={data.metrics.bookings.value}        change={data.metrics.bookings.change}        good="up"   fmtValue={v => v.toLocaleString()} desc="Total confirmed & pending bookings (experiences + events)" />
             <GAMetricCard label="Gross Revenue"     value={data.metrics.revenue.value}         change={data.metrics.revenue.change}         good="up"   fmtValue={fmt}                     desc="Total amount paid by guests including service fees" />
+            <GAMetricCard label="Platform Revenue"  value={data.metrics.platformRevenue.value} change={data.metrics.platformRevenue.change} good="up"   fmtValue={fmt}                     desc={`What Balible keeps — guest service fee (${Math.round(data.serviceFeeRate * 100)}%) + host commission (${Math.round(data.commissionRate * 100)}%)`} />
             <GAMetricCard label="New Users"         value={data.metrics.newUsers.value}        change={data.metrics.newUsers.change}        good="up"   fmtValue={v => v.toLocaleString()} desc="Guest accounts registered in this period" />
-            <GAMetricCard label="New Hosts"         value={data.metrics.newHosts.value}        change={data.metrics.newHosts.change}        good="up"   fmtValue={v => v.toLocaleString()} desc="Host accounts created in this period" />
             <GAMetricCard label="Avg Booking Value" value={data.metrics.avgBookingValue.value} change={data.metrics.avgBookingValue.change} good="up"   fmtValue={fmt}                     desc="Average revenue per booking across all types" />
             <GAMetricCard label="Cancel Rate"       value={data.metrics.cancelRate.value}      change={data.metrics.cancelRate.change}      good="down" fmtValue={v => `${v}%`}            desc="Percentage of bookings cancelled in this period" />
           </div>
@@ -2283,11 +2283,12 @@ function AnalyticsPanel() {
 
       {!loading && data && tab === 'revenue' && (
         <div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <GAMetricCard label="Gross Revenue"     value={data.metrics.revenue.value}        change={data.metrics.revenue.change}        good="up" fmtValue={fmt}                     desc="Total amount collected from all guest payments" />
-            <GAMetricCard label={`Commission (${Math.round(data.commissionRate * 100)}%)`} value={data.metrics.commission.value} change={data.metrics.commission.change} good="up" fmtValue={fmt} desc="Platform earnings deducted from host payouts" />
+          <div className="grid grid-cols-2 xl:grid-cols-5 gap-4 mb-6">
+            <GAMetricCard label="Gross Revenue"     value={data.metrics.revenue.value}         change={data.metrics.revenue.change}         good="up" fmtValue={fmt}                     desc="Total amount collected from all guest payments" />
+            <GAMetricCard label="Platform Revenue"  value={data.metrics.platformRevenue.value} change={data.metrics.platformRevenue.change} good="up" fmtValue={fmt}                     desc={`Balible's net earnings — service fee + commission`} />
+            <GAMetricCard label={`Commission (${Math.round(data.commissionRate * 100)}%)`} value={data.metrics.commission.value} change={data.metrics.commission.change} good="up" fmtValue={fmt} desc="Deducted from host gross before payout" />
             <GAMetricCard label="Avg Booking Value" value={data.metrics.avgBookingValue.value} change={data.metrics.avgBookingValue.change} good="up" fmtValue={fmt}                     desc="Average revenue per booking this period" />
-            <GAMetricCard label="Bookings"          value={data.metrics.bookings.value}       change={data.metrics.bookings.change}       good="up" fmtValue={v => v.toLocaleString()} desc="Total bookings completed or pending payment" />
+            <GAMetricCard label="Bookings"          value={data.metrics.bookings.value}        change={data.metrics.bookings.change}        good="up" fmtValue={v => v.toLocaleString()} desc="Total bookings completed or pending payment" />
           </div>
 
           <div className="bg-white rounded-xl p-5 mb-5" style={{ border: `1px solid ${SAND}` }}>
