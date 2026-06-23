@@ -136,7 +136,7 @@ export function AllReviewsModal({
             </div>
 
             {/* Reviews list */}
-            <div className="overflow-y-auto p-6 space-y-5" style={{ flex: 1 }}>
+            <div className="overflow-y-auto p-6 space-y-5" style={{ flex: 1, paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
               {reviews.length === 0 ? (
                 <p style={{ fontSize: 14, color: '#9E9A94', textAlign: 'center', padding: '40px 0' }}>No reviews yet.</p>
               ) : reviews.map(r => (

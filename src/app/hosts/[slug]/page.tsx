@@ -216,28 +216,54 @@ function EventCard({ ev }: { ev: HostEvent }) {
 
   return (
     <a href={`/events/${ev.slug}`} className="group block bg-white rounded-2xl overflow-hidden hover:shadow-lg transition-shadow" style={{ border: '1px solid #E8E4DE', textDecoration: 'none' }}>
-      <div className="relative overflow-hidden" style={{ height: 180 }}>
-        {ev.coverImage
-          ? <img src={ev.coverImage} alt={ev.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-          : <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: '#F0EDE8' }}><Ticket size={32} style={{ color: '#C8A97E' }} /></div>
-        }
-        <div className="absolute top-3 left-3">
-          <span style={{ backgroundColor: 'rgba(17,17,17,0.65)', color: 'white', fontSize: 10, fontWeight: 600, padding: '3px 8px', borderRadius: 20 }}>{isPast ? 'Past event' : 'Upcoming'}</span>
+      {/* Mobile: horizontal */}
+      <div className="md:hidden flex gap-3 p-3">
+        <div className="relative flex-shrink-0 overflow-hidden rounded-lg" style={{ width: 100, height: 100 }}>
+          {ev.coverImage
+            ? <img src={ev.coverImage} alt={ev.title} className="w-full h-full object-cover" />
+            : <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: '#F0EDE8' }}><Ticket size={24} style={{ color: '#C8A97E' }} /></div>
+          }
+          <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded" style={{ backgroundColor: 'rgba(0,0,0,0.55)', color: 'white', fontSize: 10, fontWeight: 600 }}>{isPast ? 'Past' : 'Soon'}</span>
+        </div>
+        <div className="flex flex-col justify-between flex-1 min-w-0 py-0.5">
+          <div>
+            <p style={{ fontSize: 10, fontWeight: 700, color: '#C8A97E', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>{dateStr}</p>
+            <h3 className="line-clamp-2 leading-snug" style={{ fontSize: 14, fontWeight: 600, color: '#111111' }}>{ev.title}</h3>
+          </div>
+          <div>
+            <p className="flex items-center gap-1 mb-1" style={{ fontSize: 11, color: '#6F675C' }}><MapPin size={10} />{ev.location.split(',')[0]}</p>
+            <p style={{ fontSize: 13, color: '#111111' }}>
+              {ev.price === 0 ? <span style={{ fontWeight: 600, color: '#4A7C59' }}>Free</span> : <><span style={{ color: '#C8A97E', fontWeight: 600 }}>IDR</span> <span style={{ fontWeight: 600 }}>{ev.price.toLocaleString('id-ID')}</span></>}
+            </p>
+          </div>
         </div>
       </div>
-      <div style={{ padding: '14px 16px 16px' }}>
-        <p style={{ fontSize: 11, fontWeight: 600, color: '#C8A97E', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>{dateStr}</p>
-        <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: '#111111', lineHeight: 1.3, marginBottom: 8 }}>{ev.title}</h3>
-        <div className="flex items-center gap-3 flex-wrap" style={{ marginBottom: 10 }}>
-          <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#6F675C' }}><CalendarDays size={11} style={{ color: '#C8A97E' }} />{timeStr}</span>
-          <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#6F675C' }}><MapPin size={11} />{ev.location.split(',')[0]}</span>
-          <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#6F675C' }}><Users size={11} />Up to {ev.capacity}</span>
+
+      {/* Desktop: vertical */}
+      <div className="hidden md:block">
+        <div className="relative overflow-hidden" style={{ height: 180 }}>
+          {ev.coverImage
+            ? <img src={ev.coverImage} alt={ev.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            : <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: '#F0EDE8' }}><Ticket size={32} style={{ color: '#C8A97E' }} /></div>
+          }
+          <div className="absolute top-3 left-3">
+            <span style={{ backgroundColor: 'rgba(17,17,17,0.65)', color: 'white', fontSize: 10, fontWeight: 600, padding: '3px 8px', borderRadius: 20 }}>{isPast ? 'Past event' : 'Upcoming'}</span>
+          </div>
         </div>
-        <div className="flex items-center justify-between">
-          <p style={{ fontSize: 14, color: '#111111' }}>
-            {ev.price === 0 ? 'Free' : <><span style={{ color: '#C8A97E', fontWeight: 700 }}>IDR</span>{' '}<span style={{ fontWeight: 700 }}>{ev.price.toLocaleString('id-ID')}</span></>}
-          </p>
-          <span className="flex items-center gap-1" style={{ fontSize: 12, fontWeight: 600, color: '#C8A97E' }}>View <ChevronRight size={13} /></span>
+        <div style={{ padding: '14px 16px 16px' }}>
+          <p style={{ fontSize: 11, fontWeight: 600, color: '#C8A97E', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>{dateStr}</p>
+          <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 15, fontWeight: 700, color: '#111111', lineHeight: 1.3, marginBottom: 8 }}>{ev.title}</h3>
+          <div className="flex items-center gap-3 flex-wrap" style={{ marginBottom: 10 }}>
+            <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#6F675C' }}><CalendarDays size={11} style={{ color: '#C8A97E' }} />{timeStr}</span>
+            <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#6F675C' }}><MapPin size={11} />{ev.location.split(',')[0]}</span>
+            <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#6F675C' }}><Users size={11} />Up to {ev.capacity}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <p style={{ fontSize: 14, color: '#111111' }}>
+              {ev.price === 0 ? 'Free' : <><span style={{ color: '#C8A97E', fontWeight: 700 }}>IDR</span>{' '}<span style={{ fontWeight: 700 }}>{ev.price.toLocaleString('id-ID')}</span></>}
+            </p>
+            <span className="flex items-center gap-1" style={{ fontSize: 12, fontWeight: 600, color: '#C8A97E' }}>View <ChevronRight size={13} /></span>
+          </div>
         </div>
       </div>
     </a>
@@ -329,7 +355,7 @@ export default async function HostPage({ params }: { params: { slug: string } })
                   <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)' }}>Member since {host.memberSince}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <HostChatButton firstName={displayName} operatorId={host.operatorId} />
                 <SaveHostButton slug={host.slug} />
               </div>
@@ -466,7 +492,7 @@ export default async function HostPage({ params }: { params: { slug: string } })
           </div>
 
           {/* RIGHT — sticky sidebar */}
-          <div style={{ width: '100%', maxWidth: 280, flexShrink: 0, alignSelf: 'flex-start', position: 'sticky', top: 88 }}>
+          <div className="host-sidebar" style={{ flexShrink: 0, alignSelf: 'flex-start', position: 'sticky', top: 88 }}>
 
             {/* Host details card */}
             <div className="bg-white rounded-2xl p-5 mb-4" style={{ border: '1px solid #E8E4DE' }}>

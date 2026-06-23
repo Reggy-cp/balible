@@ -109,6 +109,17 @@ input[type="range"].price-range::-moz-range-thumb {
   pointer-events: all;
 }
 
+/* Host page sidebar */
+.host-sidebar {
+  width: 100%;
+}
+@media (min-width: 1024px) {
+  .host-sidebar {
+    width: 280px;
+    max-width: 280px;
+  }
+}
+
 /* Dashboard mobile layout */
 .dashboard-main-pb {
   padding-bottom: max(80px, calc(60px + env(safe-area-inset-bottom)));
