@@ -84,7 +84,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
         <div className="flex flex-col lg:flex-row gap-10">
 
           {/* ── LEFT COLUMN ── */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 pb-36 lg:pb-0">
 
             {/* Date pill */}
             <div className="inline-flex items-center gap-2 mb-4"
@@ -124,29 +124,33 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
             </div>
 
             {/* Hosted by */}
-            {event.operatorName && (
-              <div className="bg-white rounded-2xl p-6" style={{ border: '1px solid #E8E4DE' }}>
-                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', marginBottom: 14 }}>
-                  Hosted by
-                </h2>
-                <div className="flex items-center gap-4">
-                  {event.operatorAvatar ? (
-                    <img src={event.operatorAvatar} alt={event.operatorName}
-                      className="rounded-full object-cover flex-shrink-0"
-                      style={{ width: 52, height: 52 }} />
-                  ) : (
-                    <div className="flex-shrink-0 flex items-center justify-center rounded-full"
-                      style={{ width: 52, height: 52, backgroundColor: '#F0EDE8' }}>
-                      <Home size={22} style={{ color: '#9E9A94' }} />
+            {event.operatorName && (() => {
+              const hostSlug = (event.operatorUserName ?? event.operatorName)
+                .toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+              return (
+                <div className="bg-white rounded-2xl p-6" style={{ border: '1px solid #E8E4DE' }}>
+                  <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 700, color: '#111111', marginBottom: 14 }}>
+                    Hosted by
+                  </h2>
+                  <Link href={`/hosts/${hostSlug}`} className="flex items-center gap-4 hover:opacity-80 transition-opacity" style={{ textDecoration: 'none' }}>
+                    {event.operatorAvatar ? (
+                      <img src={event.operatorAvatar} alt={event.operatorName}
+                        className="rounded-full object-cover flex-shrink-0"
+                        style={{ width: 52, height: 52 }} />
+                    ) : (
+                      <div className="flex-shrink-0 flex items-center justify-center rounded-full"
+                        style={{ width: 52, height: 52, backgroundColor: '#F0EDE8' }}>
+                        <Home size={22} style={{ color: '#9E9A94' }} />
+                      </div>
+                    )}
+                    <div>
+                      <p style={{ fontSize: 16, fontWeight: 700, color: '#111111' }}>{event.operatorName}</p>
+                      <p style={{ fontSize: 13, color: '#6F675C', marginTop: 2 }}>Verified Balible host →</p>
                     </div>
-                  )}
-                  <div>
-                    <p style={{ fontSize: 16, fontWeight: 700, color: '#111111' }}>{event.operatorName}</p>
-                    <p style={{ fontSize: 13, color: '#6F675C', marginTop: 2 }}>Verified Balible host</p>
-                  </div>
+                  </Link>
                 </div>
-              </div>
-            )}
+              )
+            })()}
           </div>
 
           {/* ── RIGHT COLUMN — Booking card (desktop only) ── */}

@@ -185,11 +185,11 @@ export async function getEventRemainingTickets(slug: string): Promise<number | n
   } catch { return null }
 }
 
-export async function getEventBySlug(slug: string): Promise<(EventRow & { operatorName: string; operatorAvatar: string | null; operatorPhone: string | null }) | null> {
+export async function getEventBySlug(slug: string): Promise<(EventRow & { operatorName: string; operatorAvatar: string | null; operatorPhone: string | null; operatorUserName: string | null }) | null> {
   try {
     const event = await prisma.event.findUnique({
       where: { slug },
-      include: { operator: { select: { businessName: true, avatar: true, phone: true } } },
+      include: { operator: { select: { businessName: true, avatar: true, phone: true, user: { select: { name: true } } } } },
     })
     if (!event) return null
     return {
@@ -197,6 +197,7 @@ export async function getEventBySlug(slug: string): Promise<(EventRow & { operat
       operatorName: event.operator.businessName,
       operatorAvatar: event.operator.avatar,
       operatorPhone: event.operator.phone ?? null,
+      operatorUserName: event.operator.user?.name ?? null,
     }
   } catch {
     return null
