@@ -16,13 +16,6 @@ export default withAuth(
       return NextResponse.redirect(url)
     }
 
-    // Operators are blocked from transactional/profile pages — redirect to dashboard
-    const OPERATOR_BLOCKED_PREFIXES = ['/profile', '/checkout', '/wishlist', '/for-hosts']
-    if (token?.role === 'OPERATOR' &&
-        OPERATOR_BLOCKED_PREFIXES.some(p => pathname.startsWith(p))) {
-      return NextResponse.redirect(new URL('/dashboard', req.url))
-    }
-
     // Dashboard requires OPERATOR or ADMIN role
     if (pathname.startsWith('/dashboard') && token?.role !== 'OPERATOR' && token?.role !== 'ADMIN') {
       return NextResponse.redirect(new URL('/', req.url))
