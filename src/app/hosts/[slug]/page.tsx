@@ -55,9 +55,19 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const host = await getHostFromDB(params.slug)
   if (!host) return { title: 'Host not found' }
+  const image = host.avatar ?? host.coverImage
   return {
-    title: `${host.businessName || host.name} | Balible`,
+    title: host.businessName || host.name,
     description: host.bio.slice(0, 155),
+    alternates: { canonical: `https://balible.com/hosts/${params.slug}` },
+    openGraph: {
+      title: `${host.businessName || host.name} | Balible Host`,
+      description: host.bio.slice(0, 155),
+      url: `https://balible.com/hosts/${params.slug}`,
+      images: image ? [{ url: image, width: 800, height: 800, alt: host.businessName || host.name }] : [],
+      type: 'profile',
+    },
+    twitter: { card: 'summary_large_image' },
   }
 }
 

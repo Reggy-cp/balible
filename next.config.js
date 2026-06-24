@@ -2,6 +2,7 @@
 
 // Midtrans Snap loads from one of these origins depending on sandbox vs production
 const MIDTRANS_ORIGINS = 'https://app.sandbox.midtrans.com https://app.midtrans.com'
+const GA_ORIGINS = 'https://www.googletagmanager.com https://www.google-analytics.com https://analytics.google.com'
 
 // Content-Security-Policy
 // - unsafe-inline / unsafe-eval required for Next.js hydration + Tailwind inline styles
@@ -10,11 +11,11 @@ const MIDTRANS_ORIGINS = 'https://app.sandbox.midtrans.com https://app.midtrans.
 // - Google profile images come from lh3.googleusercontent.com
 const CSP = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${MIDTRANS_ORIGINS}`,
+  `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${MIDTRANS_ORIGINS} ${GA_ORIGINS}`,
   "style-src 'self' 'unsafe-inline'",
   `img-src 'self' data: blob: https: `,
   "font-src 'self' https://fonts.gstatic.com",
-  `connect-src 'self' ${MIDTRANS_ORIGINS}`,
+  `connect-src 'self' ${MIDTRANS_ORIGINS} ${GA_ORIGINS}`,
   `frame-src ${MIDTRANS_ORIGINS}`,
   "frame-ancestors 'self'",
   "base-uri 'self'",
@@ -40,6 +41,8 @@ const nextConfig = {
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'images.unsplash.com' },
+      { protocol: 'https', hostname: '*.public.blob.vercel-storage.com' },
+      { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
     ],
   },
   async headers() {

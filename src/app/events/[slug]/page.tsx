@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { MapPin, Clock, Users, CalendarDays, Home, Ticket } from 'lucide-react'
@@ -9,6 +10,34 @@ import { getEventBySlug, getPublishedEvents } from '@/lib/event-actions'
 import EventBookingCard from './EventBookingCard'
 import EventMobileModal from './EventMobileModal'
 import { prisma } from '@/lib/prisma'
+
+const TZ = 'Asia/Makassar'
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  try {
+    const event = await getEventBySlug(params.slug)
+    if (!event) return {}
+    const d = new Date(event.date)
+    const dateStr = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: TZ })
+    const desc = `${event.description.slice(0, 140)} — ${dateStr} in Bali.`
+    const image = event.images?.[0] ?? event.coverImage ?? undefined
+    return {
+      title: `${event.title} — ${dateStr}`,
+      description: desc,
+      alternates: { canonical: `https://balible.com/events/${params.slug}` },
+      openGraph: {
+        title: `${event.title} — ${dateStr}`,
+        description: desc,
+        url: `https://balible.com/events/${params.slug}`,
+        images: image ? [{ url: image, width: 1200, height: 630, alt: event.title }] : [],
+        type: 'website',
+      },
+      twitter: { card: 'summary_large_image' },
+    }
+  } catch {
+    return {}
+  }
+}
 
 export const revalidate = 3600
 
@@ -45,13 +74,37 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
     .slice(0, 3)
 
   const d = new Date(event.date)
-  const TZ = 'Asia/Makassar' // Bali is WITA (UTC+8)
   const dateStr = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: TZ })
   const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: TZ })
   const isPast = d < new Date()
 
+  const eventImage = event.images?.[0] ?? event.coverImage ?? undefined
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: event.title,
+    description: event.description,
+    url: `https://balible.com/events/${event.slug}`,
+    startDate: d.toISOString(),
+    image: eventImage,
+    location: {
+      '@type': 'Place',
+      name: event.location ?? 'Bali, Indonesia',
+      address: { '@type': 'PostalAddress', addressCountry: 'ID', addressRegion: 'Bali' },
+    },
+    organizer: { '@type': 'Organization', name: 'Balible', url: 'https://balible.com' },
+    offers: {
+      '@type': 'Offer',
+      price: event.price,
+      priceCurrency: 'IDR',
+      availability: isPast ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock',
+      url: `https://balible.com/events/${event.slug}`,
+    },
+  }
+
   return (
     <div style={{ fontFamily: 'var(--font-inter)' }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Navbar />
 
       <div className="max-w-[1440px] mx-auto px-6 lg:px-16 py-8">

@@ -324,8 +324,17 @@ export async function generateMetadata({ params }: { params: { area: string } })
   const data = AREAS[area]
   if (!data) return {}
   return {
-    title: `${data.name} — Balible Destinations`,
-    description: data.description,
+    title: `Things to Do in ${data.name}, Bali`,
+    description: data.description.slice(0, 157) + '…',
+    alternates: { canonical: `https://balible.com/destinations/${area}` },
+    openGraph: {
+      title: `Things to Do in ${data.name}, Bali | Balible`,
+      description: data.description.slice(0, 157) + '…',
+      url: `https://balible.com/destinations/${area}`,
+      images: [{ url: data.heroImage, width: 1600, height: 900, alt: `${data.name}, Bali` }],
+      type: 'website',
+    },
+    twitter: { card: 'summary_large_image' },
   }
 }
 

@@ -1,14 +1,26 @@
-'use client'
-
-import { useState } from 'react'
+import type { Metadata } from 'next'
 import {
   Star, Shield, TrendingUp, Users, Heart, Globe, ArrowRight,
   CheckCircle2, DollarSign, Calendar, Camera, MessageSquare,
-  ChevronDown, ChevronUp,
 } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import MobileNav from '@/components/MobileNav'
 import Footer from '@/components/Footer'
+import ForHostsEarnings from './ForHostsEarnings'
+import ForHostsFAQ from './ForHostsFAQ'
+
+export const metadata: Metadata = {
+  title: 'List Your Experience — Become a Balible Host',
+  description: 'Join 320+ Balinese hosts earning from their passion. Share your craft, culture or skill with travellers from around the world. Free to list. You keep 85% of every booking.',
+  alternates: { canonical: 'https://balible.com/for-hosts' },
+  openGraph: {
+    title: 'Become a Balible Host — Share Your Bali',
+    description: 'Join 320+ Balinese hosts earning from their passion. Share your craft, culture or skill with travellers from around the world.',
+    url: 'https://balible.com/for-hosts',
+    images: [{ url: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=1200&h=630&auto=format&fit=crop&q=80', width: 1200, height: 630, alt: 'Host teaching pottery in Bali' }],
+  },
+  twitter: { card: 'summary_large_image' },
+}
 
 const STEPS = [
   {
@@ -67,72 +79,7 @@ const HOSTS = [
   },
 ]
 
-const FAQS = [
-  { q: 'Who can become a Balible host?', a: 'Anyone based in Bali who can offer an authentic, meaningful experience. We welcome craft artists, healers, cooks, surfers, dive instructors, temple guides, farmers and more. If you have a skill, culture or space to share, we want to hear from you.' },
-  { q: 'How much does it cost to list?', a: 'Listing on Balible is completely free. We charge a 15% commission only when a booking is confirmed. You keep 85% of every payment.' },
-  { q: 'How and when do I get paid?', a: 'Balible pays out monthly via direct bank transfer to your Indonesian bank account. Payouts for bookings completed in a given month are released on the 5th of the following month.' },
-  { q: 'How do I set my availability?', a: 'Once your listing is approved, you manage your own availability calendar from your host dashboard. Open any day, set slot capacities and block dates whenever you need time off.' },
-  { q: 'What happens if a guest cancels?', a: 'Balible\'s standard cancellation policy protects hosts: guests who cancel within 24 hours of the experience receive no refund. For cancellations 24–72 hours before, hosts receive 50% of the booking value.' },
-  { q: 'How long does approval take?', a: 'Our host review team aims to respond within 48 hours of your application. We may ask for additional photos or details to ensure your listing is its best before going live.' },
-]
-
-function EarningsCalculator() {
-  const [guests, setGuests] = useState(2)
-  const [price, setPrice] = useState(500000)
-  const [sessions, setSessions] = useState(10)
-
-  const gross = price * guests * sessions
-  const net = Math.round(gross * 0.85)
-
-  return (
-    <div className="bg-white rounded-2xl p-6 lg:p-8" style={{ border: '1px solid #E8E4DE' }}>
-      <h3 style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 700, color: '#111111', marginBottom: 6 }}>
-        Estimate your earnings
-      </h3>
-      <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', marginBottom: 24 }}>
-        Adjust the sliders to see what you could earn each month.
-      </p>
-
-      <div className="space-y-6">
-        {[
-          { label: 'Price per person (IDR)',  value: price,    set: setPrice,    min: 100000, max: 2000000, step: 50000,  fmt: (v: number) => `IDR ${(v/1000).toFixed(0)}K` },
-          { label: 'Guests per session',      value: guests,   set: setGuests,   min: 1,      max: 20,      step: 1,      fmt: (v: number) => `${v} guests` },
-          { label: 'Sessions per month',      value: sessions, set: setSessions, min: 1,      max: 30,      step: 1,      fmt: (v: number) => `${v} sessions` },
-        ].map(({ label, value, set, min, max, step, fmt }) => (
-          <div key={label}>
-            <div className="flex justify-between items-center mb-2">
-              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 600, color: '#111111' }}>{label}</span>
-              <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, fontWeight: 700, color: '#C8A97E' }}>{fmt(value)}</span>
-            </div>
-            <input
-              type="range" min={min} max={max} step={step} value={value}
-              onChange={e => set(Number(e.target.value))}
-              className="w-full price-range"
-              style={{ position: 'relative', top: 0 }}
-            />
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-8 p-5 rounded-xl" style={{ backgroundColor: '#F5F1EB' }}>
-        <p style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#6F675C' }}>Estimated monthly earnings</p>
-        <div className="flex items-baseline gap-2 mt-1">
-          <span style={{ fontFamily: 'var(--font-playfair)', fontSize: 32, fontWeight: 700, color: '#111111' }}>
-            IDR {(net / 1_000_000).toFixed(1)}M
-          </span>
-          <span style={{ fontFamily: 'var(--font-inter)', fontSize: 13, color: '#4A7C59' }}>after 15% fee</span>
-        </div>
-        <p style={{ fontFamily: 'var(--font-inter)', fontSize: 12, color: '#6F675C', marginTop: 4 }}>
-          Gross: IDR {(gross / 1_000_000).toFixed(1)}M · You keep 85%
-        </p>
-      </div>
-    </div>
-  )
-}
-
 export default function ForHostsPage() {
-  const [openFaq, setOpenFaq]     = useState<number | null>(null)
-
   return (
     <div style={{ fontFamily: 'var(--font-inter)', backgroundColor: 'white' }}>
 
@@ -314,7 +261,7 @@ export default function ForHostsPage() {
                 ))}
               </ul>
             </div>
-            <EarningsCalculator />
+            <ForHostsEarnings />
           </div>
         </div>
       </section>
@@ -325,25 +272,7 @@ export default function ForHostsPage() {
           <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 'clamp(24px, 3vw, 34px)', fontWeight: 700, color: '#111111', marginBottom: 40, textAlign: 'center' }}>
             Frequently asked questions
           </h2>
-          <div className="space-y-3">
-            {FAQS.map((faq, i) => (
-              <div key={i} className="bg-white rounded-xl overflow-hidden" style={{ border: '1px solid #E8E4DE' }}>
-                <button
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  className="w-full flex items-center justify-between p-5 hover:bg-ivory transition-colors"
-                  style={{ cursor: 'pointer' }}
-                >
-                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: 15, fontWeight: 600, color: '#111111', textAlign: 'left', flex: 1, paddingRight: 12 }}>{faq.q}</span>
-                  {openFaq === i ? <ChevronUp size={16} style={{ color: '#6F675C', flexShrink: 0 }} /> : <ChevronDown size={16} style={{ color: '#6F675C', flexShrink: 0 }} />}
-                </button>
-                {openFaq === i && (
-                  <div className="px-5 pb-5">
-                    <p style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C', lineHeight: 1.7 }}>{faq.a}</p>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+          <ForHostsFAQ />
         </div>
       </section>
 

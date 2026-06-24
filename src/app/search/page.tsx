@@ -1,5 +1,13 @@
+import type { Metadata } from 'next'
 import { getExperienceCards } from '@/lib/experiences'
 import SearchClient, { type SearchResult } from './SearchClient'
+
+export const metadata: Metadata = {
+  title: 'Search Bali Experiences',
+  description: 'Search hundreds of curated Bali experiences by activity, location, and date. Find surf lessons, wellness retreats, cooking classes, cultural tours and more.',
+  alternates: { canonical: 'https://balible.com/search' },
+  robots: { index: false },
+}
 
 const SLUG_TO_LOCATION: Record<string, string> = {
   ubud: 'Ubud', canggu: 'Canggu', uluwatu: 'Uluwatu', seminyak: 'Seminyak',

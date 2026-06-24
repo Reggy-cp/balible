@@ -33,9 +33,21 @@ const AREA_LABEL: Record<string, string> = {
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const r = await prisma.experience.findUnique({ where: { slug: params.slug }, select: { title: true, description: true } })
+  const r = await prisma.experience.findUnique({ where: { slug: params.slug }, select: { title: true, description: true, images: true } })
   if (!r) return {}
-  return { title: `${r.title} — Balible Rentals`, description: r.description?.slice(0, 160) }
+  const desc = r.description?.slice(0, 157) + '…'
+  return {
+    title: `${r.title} — Bali Rental`,
+    description: desc,
+    alternates: { canonical: `https://balible.com/rentals/${params.slug}` },
+    openGraph: {
+      title: `${r.title} | Balible Rentals`,
+      description: desc,
+      url: `https://balible.com/rentals/${params.slug}`,
+      images: r.images?.[0] ? [{ url: r.images[0], width: 1200, height: 630, alt: r.title }] : [],
+    },
+    twitter: { card: 'summary_large_image' },
+  }
 }
 
 export default async function RentalPage({ params }: { params: { slug: string } }) {

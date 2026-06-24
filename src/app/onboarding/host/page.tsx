@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -40,6 +41,7 @@ const labelStyle: React.CSSProperties = {
 
 export default function HostOnboardingPage() {
   const router = useRouter()
+  const { update } = useSession()
   const [step, setStep]         = useState(1)
   const [loading, setLoading]   = useState(false)
   const [error, setError]       = useState('')
@@ -80,27 +82,43 @@ export default function HostOnboardingPage() {
     e.preventDefault()
     setError('')
     setLoading(true)
-    const res = await fetch('/api/onboarding/host/profile', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ businessName, description: bio, phone, area, website }),
-    })
-    setLoading(false)
-    if (!res.ok) { setError((await res.json()).error ?? 'Something went wrong.'); return }
-    setStep(2)
+    try {
+      const res = await fetch('/api/onboarding/host/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ businessName, description: bio, phone, area, website }),
+      })
+      if (!res.ok) { setError((await res.json()).error ?? 'Something went wrong.'); return }
+      setStep(2)
+    } catch {
+      setError('Something went wrong. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function goToDashboard() {
+    await update()
+    router.push('/dashboard')
   }
 
   async function handlePayout(e: React.FormEvent) {
     e.preventDefault()
     setError('')
     setLoading(true)
-    await fetch('/api/onboarding/host/payout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ payoutBank, payoutAccountNumber: payoutAccount, payoutAccountName: payoutName }),
-    })
-    setLoading(false)
-    router.push('/dashboard')
+    try {
+      const res = await fetch('/api/onboarding/host/payout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ payoutBank, payoutAccountNumber: payoutAccount, payoutAccountName: payoutName }),
+      })
+      if (!res.ok) { setError('Could not save bank details. Please try again.'); return }
+      await goToDashboard()
+    } catch {
+      setError('Something went wrong. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (checking) {
@@ -295,7 +313,7 @@ export default function HostOnboardingPage() {
             <p style={{ fontSize: 12, color: '#9E9A94', textAlign: 'center', marginTop: 16 }}>
               You can skip bank details for now and add them later.{' '}
               <button
-                type="button" onClick={() => router.push('/dashboard')}
+                type="button" onClick={goToDashboard}
                 style={{ background: 'none', border: 'none', color: '#111111', fontSize: 12, fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
               >
                 Skip for now

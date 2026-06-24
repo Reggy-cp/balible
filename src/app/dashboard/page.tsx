@@ -2423,22 +2423,24 @@ function EventsPanel({ eventBookings: allEventBookings }: { eventBookings?: Dash
     setSaving(true)
     const validGallery = galleryUrls.filter(u => u.trim())
 
-    if (editing) {
-      const res = await updateEvent(editing.id, form)
-      const updated = { ...editing, ...form, date: new Date(form.date).toISOString(), images: validGallery }
-      if (res.ok && validGallery.length > 0) {
-        await updateEventImagesAction(editing.id, validGallery)
-      }
-      setAndSave(events.map(e => e.id === editing.id ? updated : e))
-    } else {
-      const res = await createEvent(form)
-      if (res.ok && res.event) {
+    try {
+      if (editing) {
+        const res = await updateEvent(editing.id, form)
+        if (!res.ok) { setSaveError('Failed to save. Please try again.'); return }
+        if (validGallery.length > 0) await updateEventImagesAction(editing.id, validGallery)
+        const updatedImages = validGallery.length > 0 ? validGallery : (editing.images ?? [])
+        const updated = { ...editing, ...form, date: new Date(form.date).toISOString(), images: updatedImages }
+        setAndSave(events.map(e => e.id === editing.id ? updated : e))
+      } else {
+        const res = await createEvent(form)
+        if (!res.ok || !res.event) { setSaveError('Failed to create event. Please try again.'); return }
         if (validGallery.length > 0) await updateEventImagesAction(res.event.id, validGallery)
         setAndSave([...events, { ...res.event, images: validGallery }])
       }
+      setShowForm(false)
+    } finally {
+      setSaving(false)
     }
-    setSaving(false)
-    setShowForm(false)
   }
 
   function handleDelete(id: string) {

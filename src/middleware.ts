@@ -38,7 +38,7 @@ export default withAuth(
         // Require auth on host.balible.com root (middleware will redirect to /dashboard)
         if (isHostSubdomain && pathname === '/') return !!token
 
-        const protected_ = ['/dashboard', '/profile', '/admin', '/checkout']
+        const protected_ = ['/dashboard', '/profile', '/admin', '/checkout', '/onboarding']
         if (protected_.some(p => pathname.startsWith(p))) return !!token
         return true
       },
@@ -49,6 +49,8 @@ export default withAuth(
 export const config = {
   matcher: [
     '/',
+    '/onboarding',
+    '/onboarding/:path*',
     '/dashboard/:path*',
     '/profile/:path*',
     '/admin/:path*',

@@ -22,26 +22,29 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Balible — Curated Experiences in Bali',
+  title: {
+    template: '%s | Balible',
+    default: 'Curated Bali Experiences — Balible',
+  },
   description: 'Discover authentic, meaningful, and beautiful experiences across the island of Bali.',
   keywords: 'Bali, experiences, activities, tours, culture, wellness, Ubud, Canggu',
   metadataBase: new URL('https://balible.com'),
   openGraph: {
     type: 'website',
     siteName: 'Balible',
-    title: 'Balible — Curated Experiences in Bali',
+    title: 'Curated Bali Experiences — Balible',
     description: 'Discover authentic, meaningful, and beautiful experiences across the island of Bali.',
     url: 'https://balible.com',
     images: [{
       url: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1200&h=630&auto=format&fit=crop&q=80',
       width: 1200,
       height: 630,
-      alt: 'Balible — Curated Experiences in Bali',
+      alt: 'Curated Bali Experiences — Balible',
     }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Balible — Curated Experiences in Bali',
+    title: 'Curated Bali Experiences — Balible',
     description: 'Discover authentic, meaningful, and beautiful experiences across the island of Bali.',
     images: ['https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1200&h=630&auto=format&fit=crop&q=80'],
   },
@@ -51,7 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <AuthProvider>
       <html lang="en" className={`${playfair.variable} ${inter.variable}`}>
-        <body>
+        <body className="pb-16 md:pb-0">
           <LanguageProvider>
             {children}
           </LanguageProvider>

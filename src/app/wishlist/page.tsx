@@ -186,7 +186,7 @@ export default function WishlistPage() {
               My Wishlist
             </h1>
             <p className="mt-1" style={{ fontFamily: 'var(--font-inter)', fontSize: 14, color: '#6F675C' }}>
-              {mounted ? (expDetails.length > 0 ? `${expDetails.length} saved experience${expDetails.length !== 1 ? 's' : ''}` : 'No saved experiences yet') : ''}
+              {mounted && expDetails.length > 0 ? `${expDetails.length} saved experience${expDetails.length !== 1 ? 's' : ''}` : ''}
             </p>
           </div>
           {mounted && expDetails.length > 0 && (

@@ -225,7 +225,21 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params
   const article = ARTICLES[slug]
   if (!article) return {}
-  return { title: `${article.title} — Balible Journal`, description: article.excerpt }
+  return {
+    title: `${article.title} — Balible Journal`,
+    description: article.excerpt.slice(0, 157) + '…',
+    alternates: { canonical: `https://balible.com/blog/${slug}` },
+    openGraph: {
+      type: 'article',
+      title: article.title,
+      description: article.excerpt.slice(0, 157) + '…',
+      url: `https://balible.com/blog/${slug}`,
+      images: [{ url: article.image, width: 1200, height: 630, alt: article.title }],
+      publishedTime: new Date(article.date).toISOString(),
+      authors: [article.author],
+    },
+    twitter: { card: 'summary_large_image', title: article.title, description: article.excerpt.slice(0, 157) + '…' },
+  }
 }
 
 export default async function BlogArticlePage({ params }: { params: Promise<{ slug: string }> }) {

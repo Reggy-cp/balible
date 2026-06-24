@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { MapPin, Star, Clock, Users, Globe, Signal } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import BookingWidget from '@/components/BookingWidget'
@@ -29,6 +30,33 @@ type ExpData = {
   reviews: { id: string; rating: number; comment: string; createdAt: Date; user: { name: string; image?: string | null } }[];
 }
 
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  try {
+    const exp = await prisma.experience.findUnique({
+      where: { slug: params.slug },
+      select: { title: true, description: true, area: true, price: true, images: true },
+    })
+    if (!exp) return { title: 'Experience — Balible' }
+    const area = AREA_DISPLAY[String(exp.area)] ?? String(exp.area)
+    const desc = `${exp.description.slice(0, 140)} — from IDR ${exp.price.toLocaleString('id-ID')}.`
+    return {
+      title: `${exp.title} in ${area}`,
+      description: desc,
+      alternates: { canonical: `https://balible.com/experiences/${params.slug}` },
+      openGraph: {
+        title: `${exp.title} in ${area}`,
+        description: desc,
+        url: `https://balible.com/experiences/${params.slug}`,
+        images: exp.images[0] ? [{ url: exp.images[0], width: 1200, height: 630, alt: exp.title }] : [],
+        type: 'website',
+      },
+      twitter: { card: 'summary_large_image' },
+    }
+  } catch {
+    return {}
+  }
+}
 
 // Pre-render known slugs at build time; revalidate hourly for new/updated experiences
 export const revalidate = 3600
@@ -129,8 +157,34 @@ export default async function ExperienceDetailPage({ params }: { params: { slug:
     })
     .slice(0, 8)
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'TouristAttraction',
+    name: experience.title,
+    description: experience.description,
+    url: `https://balible.com/experiences/${experience.slug}`,
+    image: experience.images[0] ?? undefined,
+    geo: { '@type': 'GeoCoordinates', addressCountry: 'ID', addressRegion: 'Bali' },
+    offers: {
+      '@type': 'Offer',
+      price: experience.price,
+      priceCurrency: 'IDR',
+      availability: 'https://schema.org/InStock',
+      url: `https://balible.com/experiences/${experience.slug}`,
+    },
+    ...(experience.totalReviews > 0 && {
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: experience.rating.toFixed(1),
+        reviewCount: experience.totalReviews,
+        bestRating: 5,
+      },
+    }),
+  }
+
   return (
     <div style={{ fontFamily: 'var(--font-inter)' }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <Navbar />
 
